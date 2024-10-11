@@ -9,9 +9,11 @@ from components.renderable import Renderable
 from components.animation import Animation
 from components.health import Health
 from components.team import Team, TeamType
+from components.combat import Combat
 from processors.movement_processor import MovementProcessor
 from processors.rendering_processor import RenderingProcessor
 from processors.animation_processor import AnimationProcessor
+from processors.combat_processor import CombatProcessor
 
 pygame.init()
 
@@ -36,30 +38,35 @@ def main():
     pygame.display.set_caption("Battle Swap")
 
     swordsman_sheet = load_sprite_sheet("MiniSwordMan.png")
-    archer_sheet = load_sprite_sheet("MiniArcherMan.png")
 
     # Create an ally swordsman entity
     esper.create_entity(
-        Position(400, 300),
-        Velocity(1, 0),
+        Position(300, 300),
+        Velocity(0, 0),
         Renderable(swordsman_sheet, 32, 32, scale=4),
-        Animation(row=1, frame_count=6, frame_duration=6),
-        Health(100),
-        Team(TeamType.ALLY)
+        Animation(row=0, frame_count=4, frame_duration=6),
+        Health(30),  # Reduced health
+        Team(TeamType.ALLY),
+        Combat(attack_damage=10, attack_range=50, attack_cooldown=30)
     )
 
-    # Create an enemy archer entity
+    # Create an enemy swordsman entity
     esper.create_entity(
-        Position(200, 300),
-        Velocity(-1, 0),
-        Renderable(archer_sheet, 32, 32, scale=4),
-        Animation(row=1, frame_count=6, frame_duration=6),
-        Health(100),
-        Team(TeamType.ENEMY)
+        Position(500, 300),
+        Velocity(0, 0),
+        Renderable(swordsman_sheet, 32, 32, scale=4),
+        Animation(row=0, frame_count=4, frame_duration=6),
+        Health(30),  # Reduced health
+        Team(TeamType.ENEMY),
+        Combat(attack_damage=10, attack_range=50, attack_cooldown=30)
     )
+
+    animation_processor = AnimationProcessor()
+    combat_processor = CombatProcessor(animation_processor)
 
     esper.add_processor(MovementProcessor(0, SCREEN_WIDTH, 0, SCREEN_HEIGHT))
-    esper.add_processor(AnimationProcessor())
+    esper.add_processor(combat_processor)
+    esper.add_processor(animation_processor)
     esper.add_processor(RenderingProcessor(screen))
 
     clock = pygame.time.Clock()
