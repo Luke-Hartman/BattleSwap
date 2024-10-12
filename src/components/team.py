@@ -1,0 +1,23 @@
+"""Team component module for Battle Swap.
+
+This module contains the Team component, which represents which team an entity belongs to.
+"""
+
+from dataclasses import dataclass
+from enum import Enum, auto
+
+class TeamType(Enum):
+    """Enum representing different teams in the game."""
+
+    TEAM1 = auto()
+    """Team 1, facing right."""
+
+    TEAM2 = auto()
+    """Team 2, facing left."""
+
+@dataclass
+class Team:
+    """Represents the team of an entity."""
+
+    type: TeamType
+    """The team the entity belongs to."""

@@ -2,7 +2,7 @@
 Rendering processor module for Battle Swap.
 
 This module contains the RenderingProcessor class, which is responsible for
-rendering entities with Position, AnimationState, and SpriteSheet components.
+rendering entities with Position, AnimationState, SpriteSheet, and Team components.
 """
 
 import esper
@@ -10,6 +10,7 @@ import pygame
 from components.position import Position
 from components.animation import AnimationState
 from components.sprite_sheet import SpriteSheet
+from components.team import Team, TeamType
 
 class RenderingProcessor(esper.Processor):
     """
@@ -36,8 +37,10 @@ class RenderingProcessor(esper.Processor):
             dt (float): Delta time since last frame, in seconds.
         """
         self.screen.fill((34, 100, 34))  # Fill with forest green color
-        for ent, (pos, anim_state, sprite_sheet) in esper.get_components(Position, AnimationState, SpriteSheet):
+        for ent, (pos, anim_state, sprite_sheet, team) in esper.get_components(Position, AnimationState, SpriteSheet, Team):
             frame = self.get_frame(anim_state, sprite_sheet)
+            if team.type == TeamType.TEAM2:
+                frame = pygame.transform.flip(frame, True, False)
             scaled_frame = pygame.transform.scale(frame, (sprite_sheet.frame_width * sprite_sheet.scale, sprite_sheet.frame_height * sprite_sheet.scale))
             dest_rect = scaled_frame.get_rect(center=(pos.x, pos.y))
             self.screen.blit(scaled_frame, dest_rect)
