@@ -1,13 +1,22 @@
-"""Position component for the Battle Swap game."""
+"""
+Position component module for Battle Swap.
+
+This module contains the Position component, which represents the position of an entity in the game world.
+"""
 
 from dataclasses import dataclass
 
 @dataclass
 class Position:
-    """Represents the position of an entity in 2D space."""
+    """
+    Represents the position of an entity in the game world.
 
-    x: float = 0.0
-    """The x-coordinate of the entity."""
+    Attributes:
+        x (int): The x-coordinate of the entity's position, in pixels.
+        y (int): The y-coordinate of the entity's position, in pixels.
+    """
+    x: int
+    """The x-coordinate of the entity's position, in pixels."""
 
-    y: float = 0.0
-    """The y-coordinate of the entity."""
+    y: int
+    """The y-coordinate of the entity's position, in pixels."""

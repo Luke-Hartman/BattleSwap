@@ -28,6 +28,8 @@ With your new forces, you can take on the horsemen, defeating them with 6 spearm
 
 This tutorial introduces the core mechanics: winning battles, expanding your forces, revisiting earlier challenges, and using clever tactics to conserve units and grow your army.
 
+The actual tutorial may be slightly different, in particular I am planning to have units be placed in groups of various sizes rather than being individually placed.
+
 ### **Why Play Battle Swap?**
 - **Puzzle-solving Fun:** Each battle is a puzzle, requiring careful thought and strategy to counter stronger armies with your available units.
 - **Mastery of Mechanics:** Over time, you’ll refine your tactics, learning how to deploy your forces more effectively and make the most of your resources.
