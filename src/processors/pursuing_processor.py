@@ -22,13 +22,13 @@ class PursuingProcessor(esper.Processor):
                 dx = target_pos.x - pos.x
                 dy = target_pos.y - pos.y
                 distance = (dx**2 + dy**2)**0.5
-                if distance > 0:
-                    velocity.x = (dx / distance) * movement.speed
-                    velocity.y = (dy / distance) * movement.speed
                 
                 attack_range = self.get_attack_range(ent)
                 if attack_range is not None and distance <= attack_range:
                     emit_event(TARGET_IN_RANGE, event=TargetInRangeEvent(ent, unit_state.target))
+                else:
+                    velocity.x = (dx / distance) * movement.speed
+                    velocity.y = (dy / distance) * movement.speed
             else:
                 velocity.x = 0
                 velocity.y = 0
