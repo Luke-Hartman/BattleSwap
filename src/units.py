@@ -10,7 +10,7 @@ from components.animation import AnimationState, AnimationType
 from components.sprite_sheet import SpriteSheet
 from components.team import Team, TeamType
 from components.unit_state import UnitState
-from components.attack import Attack
+from components.attack import MeleeAttack, ProjectileAttack
 from components.movement import Movement
 from components.velocity import Velocity
 from components.health import Health
@@ -32,7 +32,7 @@ def create_swordsman(x: int, y: int, team: TeamType, sprite_sheet: pygame.Surfac
     esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
     esper.add_component(entity, Team(type=team))
     esper.add_component(entity, UnitState())
-    esper.add_component(entity, Attack(range=50.0, damage=10))
+    esper.add_component(entity, MeleeAttack(range=50.0, damage=10))
     esper.add_component(entity, Movement(speed=100.0))
     esper.add_component(entity, Velocity(x=0, y=0))
     esper.add_component(entity, SpriteSheet(
@@ -46,7 +46,7 @@ def create_swordsman(x: int, y: int, team: TeamType, sprite_sheet: pygame.Surfac
         sprite_offset=(-13, -19),
         sprite_size=(7, 11)
     ))
-    esper.add_component(entity, Health(current=100, maximum=100))  # Add Health component
+    esper.add_component(entity, Health(current=100, maximum=100))
     return entity
 
 def create_archer(x: int, y: int, team: TeamType, sprite_sheet: pygame.Surface) -> int:
@@ -66,7 +66,7 @@ def create_archer(x: int, y: int, team: TeamType, sprite_sheet: pygame.Surface) 
     esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
     esper.add_component(entity, Team(type=team))
     esper.add_component(entity, UnitState())
-    esper.add_component(entity, Attack(range=200.0, damage=8))
+    esper.add_component(entity, ProjectileAttack(range=200.0, damage=8))
     esper.add_component(entity, Movement(speed=80.0))
     esper.add_component(entity, Velocity(x=0, y=0))
     esper.add_component(entity, SpriteSheet(
@@ -80,5 +80,5 @@ def create_archer(x: int, y: int, team: TeamType, sprite_sheet: pygame.Surface) 
         sprite_offset=(-13, -19),
         sprite_size=(7, 11)
     ))
-    esper.add_component(entity, Health(current=80, maximum=80))  # Add Health component
+    esper.add_component(entity, Health(current=80, maximum=80))
     return entity

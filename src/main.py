@@ -14,6 +14,7 @@ from processors.animation_processor import AnimationProcessor
 from processors.movement_processor import MovementProcessor
 from processors.pursuing_processor import PursuingProcessor
 from processors.targeting_processor import TargetingProcessor
+from handlers.attack_handler import AttackHandler
 from state_machine import StateMachine
 from units import create_swordsman, create_archer
 
@@ -40,7 +41,8 @@ movement_processor = MovementProcessor()
 pursuing_processor = PursuingProcessor()
 targeting_processor = TargetingProcessor()
 
-# Create state machine
+# Create event handlers
+attack_handler = AttackHandler()
 state_machine = StateMachine()
 
 esper.add_processor(targeting_processor)

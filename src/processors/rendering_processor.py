@@ -60,7 +60,7 @@ class RenderingProcessor(esper.Processor):
             pygame.draw.circle(self.screen, (0, 255, 0), (pos.x, pos.y), 3)  # Green circle at unit's position
 
             # Draw health bar if entity has Health component
-            health = esper.component_for_entity(ent, Health)
+            health = esper.try_component(ent, Health)
             if health:
                 self.draw_health_bar(pos, sprite_sheet, health, team)
 
