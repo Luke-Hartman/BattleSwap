@@ -42,8 +42,22 @@ class RenderingProcessor(esper.Processor):
             if team.type == TeamType.TEAM2:
                 frame = pygame.transform.flip(frame, True, False)
             scaled_frame = pygame.transform.scale(frame, (sprite_sheet.frame_width * sprite_sheet.scale, sprite_sheet.frame_height * sprite_sheet.scale))
-            dest_rect = scaled_frame.get_rect(center=(pos.x, pos.y))
-            self.screen.blit(scaled_frame, dest_rect)
+            
+            # Calculate the position to center the sprite on the unit's position
+            sprite_pos = (
+                pos.x - sprite_sheet.scaled_sprite_size[0] // 2 + sprite_sheet.scaled_sprite_offset[0],
+                pos.y - sprite_sheet.scaled_sprite_size[1] // 2 + sprite_sheet.scaled_sprite_offset[1]
+            )
+            self.screen.blit(scaled_frame, sprite_pos)
+            
+            # Draw hitbox
+            hitbox = sprite_sheet.scaled_hitbox
+            hitbox.center = (pos.x, pos.y)
+            pygame.draw.rect(self.screen, (255, 0, 0), hitbox, 1)  # Red rectangle for hitbox
+
+            # Draw circle at unit's position
+            pygame.draw.circle(self.screen, (0, 255, 0), (pos.x, pos.y), 3)  # Green circle at unit's position
+
         pygame.display.flip()
 
     def get_frame(self, anim_state: AnimationState, sprite_sheet: SpriteSheet) -> pygame.Surface:
