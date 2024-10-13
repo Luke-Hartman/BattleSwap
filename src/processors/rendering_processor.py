@@ -11,6 +11,7 @@ from components.position import Position
 from components.animation import AnimationState
 from components.sprite_sheet import SpriteSheet
 from components.team import Team, TeamType
+from components.health import Health
 
 class RenderingProcessor(esper.Processor):
     """
@@ -58,6 +59,11 @@ class RenderingProcessor(esper.Processor):
             # Draw circle at unit's position
             pygame.draw.circle(self.screen, (0, 255, 0), (pos.x, pos.y), 3)  # Green circle at unit's position
 
+            # Draw health bar if entity has Health component
+            health = esper.component_for_entity(ent, Health)
+            if health:
+                self.draw_health_bar(pos, sprite_sheet, health, team)
+
         pygame.display.flip()
 
     def get_frame(self, anim_state: AnimationState, sprite_sheet: SpriteSheet) -> pygame.Surface:
@@ -77,3 +83,24 @@ class RenderingProcessor(esper.Processor):
         if frame.get_alpha() is None:
             frame = frame.convert_alpha()
         return frame
+
+    def draw_health_bar(self, pos: Position, sprite_sheet: SpriteSheet, health: Health, team: Team):
+        """Draw a health bar above the entity."""
+        bar_width = sprite_sheet.scaled_sprite_size[0]
+        bar_height = 5  # pixels
+        bar_y_offset = 5  # pixels above the hitbox
+
+        # Position the health bar above the hitbox
+        bar_x = pos.x - bar_width // 2
+        bar_y = pos.y - sprite_sheet.scaled_sprite_size[1] // 2 - bar_height - bar_y_offset
+
+        # Draw the background (empty health bar)
+        pygame.draw.rect(self.screen, (64, 64, 64), (bar_x, bar_y, bar_width, bar_height))
+
+        # Draw the filled portion of the health bar
+        fill_width = int(bar_width * health.current / health.maximum)
+        fill_color = (0, 255, 0) if team.type == TeamType.TEAM1 else (255, 0, 0)
+        pygame.draw.rect(self.screen, fill_color, (bar_x, bar_y, fill_width, bar_height))
+
+        # Draw the border of the health bar
+        pygame.draw.rect(self.screen, (192, 192, 192), (bar_x, bar_y, bar_width, bar_height), 1)

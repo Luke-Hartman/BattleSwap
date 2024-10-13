@@ -13,6 +13,7 @@ from components.unit_state import UnitState
 from components.attack import Attack
 from components.movement import Movement
 from components.velocity import Velocity
+from components.health import Health
 
 def create_swordsman(x: int, y: int, team: TeamType, sprite_sheet: pygame.Surface) -> int:
     """Create a swordsman entity with all necessary components.
@@ -45,6 +46,7 @@ def create_swordsman(x: int, y: int, team: TeamType, sprite_sheet: pygame.Surfac
         sprite_offset=(-13, -19),
         sprite_size=(7, 11)
     ))
+    esper.add_component(entity, Health(current=100, maximum=100))  # Add Health component
     return entity
 
 def create_archer(x: int, y: int, team: TeamType, sprite_sheet: pygame.Surface) -> int:
@@ -78,4 +80,5 @@ def create_archer(x: int, y: int, team: TeamType, sprite_sheet: pygame.Surface) 
         sprite_offset=(-13, -19),
         sprite_size=(7, 11)
     ))
+    esper.add_component(entity, Health(current=80, maximum=80))  # Add Health component
     return entity
