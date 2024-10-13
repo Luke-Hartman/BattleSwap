@@ -11,6 +11,10 @@ import os
 from components.team import TeamType
 from processors.rendering_processor import RenderingProcessor
 from processors.animation_processor import AnimationProcessor
+from processors.movement_processor import MovementProcessor
+from processors.pursuing_processor import PursuingProcessor
+from processors.targeting_processor import TargetingProcessor
+from state_machine import StateMachine
 from units import create_swordsman, create_archer
 
 # Initialize Pygame
@@ -31,8 +35,19 @@ archer_sheet = pygame.image.load(archer_path).convert_alpha()
 
 # Create processors
 rendering_processor = RenderingProcessor(screen)
+animation_processor = AnimationProcessor()
+movement_processor = MovementProcessor()
+pursuing_processor = PursuingProcessor()
+targeting_processor = TargetingProcessor()
+
+# Create state machine
+state_machine = StateMachine()
+
+esper.add_processor(targeting_processor)
+esper.add_processor(pursuing_processor)
+esper.add_processor(movement_processor)
+esper.add_processor(animation_processor)
 esper.add_processor(rendering_processor)
-esper.add_processor(AnimationProcessor())
 
 # Create team 1 entities (right-facing)
 for i in range(3):
@@ -55,7 +70,6 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    # Process all systems
     esper.process(dt)
 
 pygame.quit()

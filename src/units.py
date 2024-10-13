@@ -9,6 +9,10 @@ from components.position import Position
 from components.animation import AnimationState, AnimationType
 from components.sprite_sheet import SpriteSheet
 from components.team import Team, TeamType
+from components.unit_state import UnitState
+from components.attack import Attack
+from components.movement import Movement
+from components.velocity import Velocity
 
 def create_swordsman(x: int, y: int, team: TeamType, sprite_sheet: pygame.Surface) -> int:
     """Create a swordsman entity with all necessary components.
@@ -26,6 +30,10 @@ def create_swordsman(x: int, y: int, team: TeamType, sprite_sheet: pygame.Surfac
     esper.add_component(entity, Position(x=x, y=y))
     esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
     esper.add_component(entity, Team(type=team))
+    esper.add_component(entity, UnitState())
+    esper.add_component(entity, Attack(range=50.0, damage=10))
+    esper.add_component(entity, Movement(speed=100.0))
+    esper.add_component(entity, Velocity(x=0, y=0))
     esper.add_component(entity, SpriteSheet(
         surface=sprite_sheet,
         frame_width=32,
@@ -53,6 +61,10 @@ def create_archer(x: int, y: int, team: TeamType, sprite_sheet: pygame.Surface) 
     esper.add_component(entity, Position(x=x, y=y))
     esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
     esper.add_component(entity, Team(type=team))
+    esper.add_component(entity, UnitState())
+    esper.add_component(entity, Attack(range=200.0, damage=8))
+    esper.add_component(entity, Movement(speed=80.0))
+    esper.add_component(entity, Velocity(x=0, y=0))
     esper.add_component(entity, SpriteSheet(
         surface=sprite_sheet,
         frame_width=32,

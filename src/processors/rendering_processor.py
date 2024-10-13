@@ -36,7 +36,7 @@ class RenderingProcessor(esper.Processor):
         Args:
             dt (float): Delta time since last frame, in seconds.
         """
-        self.screen.fill((34, 100, 34))  # Fill with forest green color
+        self.screen.fill((34, 100, 34))
         for ent, (pos, anim_state, sprite_sheet, team) in esper.get_components(Position, AnimationState, SpriteSheet, Team):
             frame = self.get_frame(anim_state, sprite_sheet)
             if team.type == TeamType.TEAM2:

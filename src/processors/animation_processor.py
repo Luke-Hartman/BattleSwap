@@ -6,8 +6,10 @@ updating the current frame of entities with AnimationState components.
 """
 
 import esper
-from components.animation import AnimationState
+from components.animation import AnimationState, AnimationType
 from components.sprite_sheet import SpriteSheet
+from components.unit_state import UnitState, State
+from events import AttackCompletedEvent, ATTACK_COMPLETED, emit_event
 
 class AnimationProcessor(esper.Processor):
     """
@@ -21,7 +23,20 @@ class AnimationProcessor(esper.Processor):
         Args:
             dt (float): Delta time since last frame, in seconds.
         """
-        for ent, (anim_state, sprite_sheet) in esper.get_components(AnimationState, SpriteSheet):
+        for ent, (anim_state, sprite_sheet, unit_state) in esper.get_components(AnimationState, SpriteSheet, UnitState):
+            # Update the animation type based on the unit state
+            new_anim_type = {
+                State.IDLE: AnimationType.IDLE,
+                State.PURSUING: AnimationType.WALKING,
+                State.ATTACKING: AnimationType.ATTACKING
+            }.get(unit_state.state, AnimationType.IDLE)
+
+            if anim_state.type != new_anim_type:
+                anim_state.type = new_anim_type
+                anim_state.current_frame = 0
+                anim_state.current_time = 0
+
+            # Update the animation frame based on the current time
             anim_state.current_time += dt
             total_duration = sprite_sheet.animation_durations[anim_state.type]
             frame_count = sprite_sheet.frames[anim_state.type]
@@ -29,4 +44,9 @@ class AnimationProcessor(esper.Processor):
 
             if anim_state.current_time >= frame_duration:
                 anim_state.current_time -= frame_duration
+                # Check if attack animation is completed
+                if unit_state.state == State.ATTACKING and anim_state.type == AnimationType.ATTACKING and anim_state.current_frame == frame_count - 1:
+                    emit_event(ATTACK_COMPLETED, event=AttackCompletedEvent(ent))
                 anim_state.current_frame = (anim_state.current_frame + 1) % frame_count
+
+                
