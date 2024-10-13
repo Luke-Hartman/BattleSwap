@@ -39,6 +39,9 @@ class SpriteSheet:
     sprite_size: Tuple[int, int]
     """The actual size of the sprite (width, height) within the frame, in pixels."""
 
+    attack_activation_frame: int
+    """The frame number when the attack is activated (e.g., sword swing)."""
+
     @property
     def scaled_sprite_offset(self) -> Tuple[int, int]:
         """Returns the scaled sprite offset."""

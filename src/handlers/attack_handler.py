@@ -9,16 +9,16 @@ from components.unit_state import UnitState, State
 from components.attack import MeleeAttack
 from components.health import Health
 from components.position import Position
-from events import AttackCompletedEvent, ATTACK_COMPLETED
+from events import AttackActivatedEvent, ATTACK_ACTIVATED
 from pydispatch import dispatcher
 
 class AttackHandler:
     """Handler responsible for handling attack logic and applying damage."""
 
     def __init__(self):
-        dispatcher.connect(self.handle_attack_completed, signal=ATTACK_COMPLETED)
+        dispatcher.connect(self.handle_attack_activated, signal=ATTACK_ACTIVATED)
 
-    def handle_attack_completed(self, event: AttackCompletedEvent):
+    def handle_attack_activated(self, event: AttackActivatedEvent):
         attacker = event.entity
         attacker_state = esper.component_for_entity(attacker, UnitState)
         
@@ -34,6 +34,7 @@ class AttackHandler:
         if target_health is None:
             raise AssertionError("Target has no health component")
 
+        # Assume target is still in range
         target_health.current -= melee_attack.damage
         if target_health.current < 0:
             target_health.current = 0

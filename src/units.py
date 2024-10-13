@@ -44,7 +44,8 @@ def create_swordsman(x: int, y: int, team: TeamType, sprite_sheet: pygame.Surfac
         rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ATTACKING: 3, AnimationType.DYING: 5},
         animation_durations={AnimationType.IDLE: 0.8, AnimationType.WALKING: 0.6, AnimationType.ATTACKING: 0.6, AnimationType.DYING: 0.8},
         sprite_offset=(-13, -19),
-        sprite_size=(7, 11)
+        sprite_size=(7, 11),
+        attack_activation_frame=2
     ))
     esper.add_component(entity, Health(current=100, maximum=100))
     return entity
@@ -78,7 +79,8 @@ def create_archer(x: int, y: int, team: TeamType, sprite_sheet: pygame.Surface) 
         rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ATTACKING: 3, AnimationType.DYING: 6},
         animation_durations={AnimationType.IDLE: 0.8, AnimationType.WALKING: 0.6, AnimationType.ATTACKING: 1.1, AnimationType.DYING: 0.8},
         sprite_offset=(-13, -19),
-        sprite_size=(7, 11)
+        sprite_size=(7, 11),
+        attack_activation_frame=7
     ))
     esper.add_component(entity, Health(current=80, maximum=80))
     return entity

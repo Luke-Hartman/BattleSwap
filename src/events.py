@@ -31,9 +31,15 @@ class StateChangedEvent:
     entity: int
     new_state: State
 
+@dataclass
+class AttackActivatedEvent:
+    """Event triggered when a unit's attack is activated (e.g., sword swing)."""
+    entity: int
+
 # Define signal names for each event
 TARGET_ACQUIRED = 'target_acquired'
 TARGET_IN_RANGE = 'target_in_range'
+ATTACK_ACTIVATED = 'attack_activated'
 ATTACK_COMPLETED = 'attack_completed'
 STATE_CHANGED = 'state_changed'
 

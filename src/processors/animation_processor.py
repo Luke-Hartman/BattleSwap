@@ -9,7 +9,7 @@ import esper
 from components.animation import AnimationState, AnimationType
 from components.sprite_sheet import SpriteSheet
 from components.unit_state import UnitState, State
-from events import AttackCompletedEvent, ATTACK_COMPLETED, emit_event
+from events import AttackCompletedEvent, AttackActivatedEvent, ATTACK_COMPLETED, ATTACK_ACTIVATED, emit_event
 
 class AnimationProcessor(esper.Processor):
     """
@@ -44,9 +44,11 @@ class AnimationProcessor(esper.Processor):
 
             if anim_state.current_time >= frame_duration:
                 anim_state.current_time -= frame_duration
-                # Check if attack animation is completed
-                if unit_state.state == State.ATTACKING and anim_state.type == AnimationType.ATTACKING and anim_state.current_frame == frame_count - 1:
-                    emit_event(ATTACK_COMPLETED, event=AttackCompletedEvent(ent))
                 anim_state.current_frame = (anim_state.current_frame + 1) % frame_count
 
-                
+                # Check if attack is activated
+                if unit_state.state == State.ATTACKING and anim_state.type == AnimationType.ATTACKING:
+                    if anim_state.current_frame == sprite_sheet.attack_activation_frame:
+                        emit_event(ATTACK_ACTIVATED, event=AttackActivatedEvent(ent))
+                    elif anim_state.current_frame == frame_count - 1:
+                        emit_event(ATTACK_COMPLETED, event=AttackCompletedEvent(ent))
