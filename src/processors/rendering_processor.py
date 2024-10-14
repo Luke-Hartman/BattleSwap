@@ -7,6 +7,7 @@ rendering entities with Position, AnimationState, SpriteSheet, and Team componen
 
 import esper
 import pygame
+import math
 from components.position import Position
 from components.animation import AnimationState
 from components.sprite_sheet import SpriteSheet
@@ -14,6 +15,8 @@ from components.team import Team, TeamType
 from components.health import Health
 from components.unit_state import UnitState, State
 from components.orientation import Orientation, FacingDirection
+from components.velocity import Velocity
+from processors.collision_processor import get_hitbox
 
 class RenderingProcessor(esper.Processor):
     """
@@ -40,10 +43,18 @@ class RenderingProcessor(esper.Processor):
             dt (float): Delta time since last frame, in seconds.
         """
         self.screen.fill((34, 100, 34))
-        for ent, (pos, anim_state, sprite_sheet, team, unit_state, orientation) in esper.get_components(Position, AnimationState, SpriteSheet, Team, UnitState, Orientation):
+        for ent, (pos, anim_state, sprite_sheet, team) in esper.get_components(Position, AnimationState, SpriteSheet, Team):
             frame = self.get_frame(anim_state, sprite_sheet)
-            if orientation.facing == FacingDirection.LEFT:
-                frame = pygame.transform.flip(frame, True, False)
+            
+            if esper.has_component(ent, Orientation): # Currently only units have orientation
+                orientation = esper.component_for_entity(ent, Orientation)
+                if orientation.facing == FacingDirection.LEFT:
+                    frame = pygame.transform.flip(frame, True, False)
+            elif esper.has_component(ent, Velocity): # So this is only projectiles
+                velocity = esper.component_for_entity(ent, Velocity)
+                angle = math.atan2(velocity.y, velocity.x)
+                frame = pygame.transform.rotate(frame, -math.degrees(angle))
+
             scaled_frame = pygame.transform.scale(frame, (sprite_sheet.frame_width * sprite_sheet.scale, sprite_sheet.frame_height * sprite_sheet.scale))
             
             # Calculate the position to center the sprite on the unit's position
@@ -54,17 +65,18 @@ class RenderingProcessor(esper.Processor):
             self.screen.blit(scaled_frame, sprite_pos)
             
             # Draw hitbox
-            hitbox = sprite_sheet.scaled_hitbox
-            hitbox.center = (pos.x, pos.y)
+            hitbox = get_hitbox(sprite_sheet, pos)
             pygame.draw.rect(self.screen, (255, 0, 0), hitbox, 1)  # Red rectangle for hitbox
 
             # Draw circle at unit's position
             pygame.draw.circle(self.screen, (0, 255, 0), (pos.x, pos.y), 3)  # Green circle at unit's position
 
             # Draw health bar if entity has Health component and is not dead
-            health = esper.try_component(ent, Health)
-            if health and unit_state.state != State.DEAD:
-                self.draw_health_bar(pos, sprite_sheet, health, team)
+            if esper.has_component(ent, Health) and esper.has_component(ent, UnitState):
+                health = esper.component_for_entity(ent, Health)
+                unit_state = esper.component_for_entity(ent, UnitState)
+                if unit_state.state != State.DEAD:
+                    self.draw_health_bar(pos, sprite_sheet, health, team)
 
         pygame.display.flip()
 

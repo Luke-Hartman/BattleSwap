@@ -93,7 +93,7 @@ def create_archer(x: int, y: int, team: TeamType) -> int:
     esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
     esper.add_component(entity, Team(type=team))
     esper.add_component(entity, UnitState())
-    esper.add_component(entity, ProjectileAttack(range=200.0, damage=8))
+    esper.add_component(entity, ProjectileAttack(range=200.0, damage=15, projectile_speed=300.0))
     esper.add_component(entity, Movement(speed=80.0))
     esper.add_component(entity, Velocity(x=0, y=0))
     esper.add_component(entity, SpriteSheet(

@@ -17,6 +17,8 @@ from processors.targeting_processor import TargetingProcessor
 from handlers.attack_handler import AttackHandler
 from state_machine import StateMachine
 from units import create_swordsman, create_archer, load_sprite_sheets
+from processors.collision_processor import CollisionProcessor
+from entities.projectiles import load_projectile_sheets
 
 # Initialize Pygame
 pygame.init()
@@ -29,6 +31,7 @@ pygame.display.set_caption("Battle Swap")
 
 # Load sprite sheets
 load_sprite_sheets()
+load_projectile_sheets()
 
 # Create processors
 rendering_processor = RenderingProcessor(screen)
@@ -36,6 +39,7 @@ animation_processor = AnimationProcessor()
 movement_processor = MovementProcessor()
 pursuing_processor = PursuingProcessor()
 targeting_processor = TargetingProcessor()
+collision_processor = CollisionProcessor(screen)  # Pass the screen here
 
 # Create event handlers
 attack_handler = AttackHandler()
@@ -46,9 +50,10 @@ esper.add_processor(pursuing_processor)
 esper.add_processor(movement_processor)
 esper.add_processor(animation_processor)
 esper.add_processor(rendering_processor)
+esper.add_processor(collision_processor)
 
 # Function to add random jitter to positions
-def add_jitter(x, y, max_jitter=20):
+def add_jitter(x, y, max_jitter=50):
     return x + random.randint(-max_jitter, max_jitter), y + random.randint(-max_jitter, max_jitter)
 
 # Vertical spacing between units (doubled)

@@ -25,3 +25,6 @@ class ProjectileAttack:
 
     damage: int
     """The amount of damage the projectile attack deals."""
+
+    projectile_speed: float
+    """The speed of the projectile, in pixels per second."""

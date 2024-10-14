@@ -51,13 +51,3 @@ class SpriteSheet:
     def scaled_sprite_size(self) -> Tuple[int, int]:
         """Returns the scaled sprite size."""
         return (self.sprite_size[0] * self.scale, self.sprite_size[1] * self.scale)
-
-    @property
-    def scaled_hitbox(self) -> pygame.Rect:
-        """Returns the scaled hitbox as a pygame.Rect, centered on the sprite."""
-        return pygame.Rect(
-            self.sprite_offset[0] * self.scale,
-            self.sprite_offset[1] * self.scale,
-            self.sprite_size[0] * self.scale,
-            self.sprite_size[1] * self.scale
-        )
