@@ -5,6 +5,9 @@ This module contains functions for creating different types of units with their 
 
 import esper
 import pygame
+import os
+from enum import Enum, auto
+from typing import Dict
 from components.position import Position
 from components.animation import AnimationState, AnimationType
 from components.sprite_sheet import SpriteSheet
@@ -15,14 +18,34 @@ from components.movement import Movement
 from components.velocity import Velocity
 from components.health import Health
 
-def create_swordsman(x: int, y: int, team: TeamType, sprite_sheet: pygame.Surface) -> int:
+class UnitType(Enum):
+    """Enum representing different types of units."""
+    SWORDSMAN = auto()
+    ARCHER = auto()
+
+# Dictionary to store sprite sheets
+sprite_sheets: Dict[TeamType, Dict[UnitType, pygame.Surface]] = {
+    TeamType.TEAM1: {},
+    TeamType.TEAM2: {}
+}
+
+def load_sprite_sheets():
+    """Load all sprite sheets."""
+    team_colors = {TeamType.TEAM1: "Blue", TeamType.TEAM2: "Red"}
+    unit_filenames = {UnitType.SWORDSMAN: "MiniSwordMan.png", UnitType.ARCHER: "MiniArcherMan.png"}
+
+    for team, color in team_colors.items():
+        for unit_type, filename in unit_filenames.items():
+            path = os.path.join("assets", color, filename)
+            sprite_sheets[team][unit_type] = pygame.image.load(path).convert_alpha()
+
+def create_swordsman(x: int, y: int, team: TeamType) -> int:
     """Create a swordsman entity with all necessary components.
 
     Args:
         x (int): The x-coordinate of the swordsman's position.
         y (int): The y-coordinate of the swordsman's position.
         team (TeamType): The team the swordsman belongs to.
-        sprite_sheet (pygame.Surface): The sprite sheet for the swordsman.
 
     Returns:
         int: The entity ID of the created swordsman.
@@ -36,7 +59,7 @@ def create_swordsman(x: int, y: int, team: TeamType, sprite_sheet: pygame.Surfac
     esper.add_component(entity, Movement(speed=100.0))
     esper.add_component(entity, Velocity(x=0, y=0))
     esper.add_component(entity, SpriteSheet(
-        surface=sprite_sheet,
+        surface=sprite_sheets[team][UnitType.SWORDSMAN],
         frame_width=32,
         frame_height=32,
         scale=4,
@@ -50,14 +73,13 @@ def create_swordsman(x: int, y: int, team: TeamType, sprite_sheet: pygame.Surfac
     esper.add_component(entity, Health(current=100, maximum=100))
     return entity
 
-def create_archer(x: int, y: int, team: TeamType, sprite_sheet: pygame.Surface) -> int:
+def create_archer(x: int, y: int, team: TeamType) -> int:
     """Create an archer entity with all necessary components.
 
     Args:
         x (int): The x-coordinate of the archer's position.
         y (int): The y-coordinate of the archer's position.
         team (TeamType): The team the archer belongs to.
-        sprite_sheet (pygame.Surface): The sprite sheet for the archer.
 
     Returns:
         int: The entity ID of the created archer.
@@ -71,7 +93,7 @@ def create_archer(x: int, y: int, team: TeamType, sprite_sheet: pygame.Surface) 
     esper.add_component(entity, Movement(speed=80.0))
     esper.add_component(entity, Velocity(x=0, y=0))
     esper.add_component(entity, SpriteSheet(
-        surface=sprite_sheet,
+        surface=sprite_sheets[team][UnitType.ARCHER],
         frame_width=32,
         frame_height=32,
         scale=4,

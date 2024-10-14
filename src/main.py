@@ -7,7 +7,6 @@ and runs the main game loop.
 
 import esper
 import pygame
-import os
 import random
 from components.team import TeamType
 from processors.rendering_processor import RenderingProcessor
@@ -17,7 +16,7 @@ from processors.pursuing_processor import PursuingProcessor
 from processors.targeting_processor import TargetingProcessor
 from handlers.attack_handler import AttackHandler
 from state_machine import StateMachine
-from units import create_swordsman, create_archer
+from units import create_swordsman, create_archer, load_sprite_sheets
 
 # Initialize Pygame
 pygame.init()
@@ -28,12 +27,8 @@ SCREEN_HEIGHT = 600  # pixels
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Battle Swap")
 
-# Load the sprite sheets
-swordsman_path = os.path.join("assets", "MinifolksHumans", "Without Outline", "MiniSwordMan.png")
-swordsman_sheet = pygame.image.load(swordsman_path).convert_alpha()
-
-archer_path = os.path.join("assets", "MinifolksHumans", "Without Outline", "MiniArcherMan.png")
-archer_sheet = pygame.image.load(archer_path).convert_alpha()
+# Load sprite sheets
+load_sprite_sheets()
 
 # Create processors
 rendering_processor = RenderingProcessor(screen)
@@ -63,19 +58,19 @@ VERTICAL_SPACING = 150  # pixels
 for i in range(3):
     # Front line (swordsmen)
     x, y = add_jitter(100, SCREEN_HEIGHT // 2 - VERTICAL_SPACING + i * VERTICAL_SPACING)
-    create_swordsman(x, y, TeamType.TEAM1, swordsman_sheet)
+    create_swordsman(x, y, TeamType.TEAM1)
     # Back line (archers)
     x, y = add_jitter(50, SCREEN_HEIGHT // 2 - VERTICAL_SPACING + i * VERTICAL_SPACING)
-    create_archer(x, y, TeamType.TEAM1, archer_sheet)
+    create_archer(x, y, TeamType.TEAM1)
 
 # Create team 2 entities (right side, facing left)
 for i in range(3):
     # Front line (swordsmen)
     x, y = add_jitter(SCREEN_WIDTH - 100, SCREEN_HEIGHT // 2 - VERTICAL_SPACING + i * VERTICAL_SPACING)
-    create_swordsman(x, y, TeamType.TEAM2, swordsman_sheet)
+    create_swordsman(x, y, TeamType.TEAM2)
     # Back line (archers)
     x, y = add_jitter(SCREEN_WIDTH - 50, SCREEN_HEIGHT // 2 - VERTICAL_SPACING + i * VERTICAL_SPACING)
-    create_archer(x, y, TeamType.TEAM2, archer_sheet)
+    create_archer(x, y, TeamType.TEAM2)
 
 # Main game loop
 running = True
