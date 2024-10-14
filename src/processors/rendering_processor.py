@@ -13,6 +13,7 @@ from components.sprite_sheet import SpriteSheet
 from components.team import Team, TeamType
 from components.health import Health
 from components.unit_state import UnitState, State
+from components.orientation import Orientation, FacingDirection
 
 class RenderingProcessor(esper.Processor):
     """
@@ -39,9 +40,9 @@ class RenderingProcessor(esper.Processor):
             dt (float): Delta time since last frame, in seconds.
         """
         self.screen.fill((34, 100, 34))
-        for ent, (pos, anim_state, sprite_sheet, team, unit_state) in esper.get_components(Position, AnimationState, SpriteSheet, Team, UnitState):
+        for ent, (pos, anim_state, sprite_sheet, team, unit_state, orientation) in esper.get_components(Position, AnimationState, SpriteSheet, Team, UnitState, Orientation):
             frame = self.get_frame(anim_state, sprite_sheet)
-            if team.type == TeamType.TEAM2:
+            if orientation.facing == FacingDirection.LEFT:
                 frame = pygame.transform.flip(frame, True, False)
             scaled_frame = pygame.transform.scale(frame, (sprite_sheet.frame_width * sprite_sheet.scale, sprite_sheet.frame_height * sprite_sheet.scale))
             

@@ -17,6 +17,7 @@ from components.attack import MeleeAttack, ProjectileAttack
 from components.movement import Movement
 from components.velocity import Velocity
 from components.health import Health
+from components.orientation import Orientation, FacingDirection
 
 class UnitType(Enum):
     """Enum representing different types of units."""
@@ -71,6 +72,9 @@ def create_swordsman(x: int, y: int, team: TeamType) -> int:
         attack_activation_frame=2
     ))
     esper.add_component(entity, Health(current=100, maximum=100))
+    esper.add_component(entity, Orientation(
+        facing=FacingDirection.RIGHT if team == TeamType.TEAM1 else FacingDirection.LEFT
+    ))
     return entity
 
 def create_archer(x: int, y: int, team: TeamType) -> int:
@@ -105,4 +109,7 @@ def create_archer(x: int, y: int, team: TeamType) -> int:
         attack_activation_frame=7
     ))
     esper.add_component(entity, Health(current=60, maximum=60))
+    esper.add_component(entity, Orientation(
+        facing=FacingDirection.RIGHT if team == TeamType.TEAM1 else FacingDirection.LEFT
+    ))
     return entity
