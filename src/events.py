@@ -36,12 +36,24 @@ class AttackActivatedEvent:
     """Event triggered when a unit's attack is activated (e.g., sword swing)."""
     entity: int
 
+@dataclass
+class KillingBlowEvent:
+    """Event triggered when a unit's health reaches 0."""
+    entity: int
+
+@dataclass
+class TargetLostEvent:
+    """Event triggered when a unit loses its target."""
+    entity: int
+
 # Define signal names for each event
 TARGET_ACQUIRED = 'target_acquired'
 TARGET_IN_RANGE = 'target_in_range'
 ATTACK_ACTIVATED = 'attack_activated'
 ATTACK_COMPLETED = 'attack_completed'
 STATE_CHANGED = 'state_changed'
+KILLING_BLOW = 'killing_blow'
+TARGET_LOST = 'target_lost'
 
 def emit_event(event_type, **kwargs):
     """Emit an event using pydispatch."""

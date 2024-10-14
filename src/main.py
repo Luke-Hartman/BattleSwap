@@ -8,6 +8,7 @@ and runs the main game loop.
 import esper
 import pygame
 import os
+import random
 from components.team import TeamType
 from processors.rendering_processor import RenderingProcessor
 from processors.animation_processor import AnimationProcessor
@@ -51,15 +52,30 @@ esper.add_processor(movement_processor)
 esper.add_processor(animation_processor)
 esper.add_processor(rendering_processor)
 
-# Create team 1 entities (right-facing)
-for i in range(3):
-    create_swordsman(50 + i * 100, SCREEN_HEIGHT // 2 - 50, TeamType.TEAM1, swordsman_sheet)
-    create_archer(50 + i * 100, SCREEN_HEIGHT // 2 + 50, TeamType.TEAM1, archer_sheet)
+# Function to add random jitter to positions
+def add_jitter(x, y, max_jitter=20):
+    return x + random.randint(-max_jitter, max_jitter), y + random.randint(-max_jitter, max_jitter)
 
-# Create team 2 entities (left-facing)
+# Vertical spacing between units (doubled)
+VERTICAL_SPACING = 150  # pixels
+
+# Create team 1 entities (left side, facing right)
 for i in range(3):
-    create_swordsman(SCREEN_WIDTH - 50 - i * 100, SCREEN_HEIGHT // 2 - 50, TeamType.TEAM2, swordsman_sheet)
-    create_archer(SCREEN_WIDTH - 50 - i * 100, SCREEN_HEIGHT // 2 + 50, TeamType.TEAM2, archer_sheet)
+    # Front line (swordsmen)
+    x, y = add_jitter(100, SCREEN_HEIGHT // 2 - VERTICAL_SPACING + i * VERTICAL_SPACING)
+    create_swordsman(x, y, TeamType.TEAM1, swordsman_sheet)
+    # Back line (archers)
+    x, y = add_jitter(50, SCREEN_HEIGHT // 2 - VERTICAL_SPACING + i * VERTICAL_SPACING)
+    create_archer(x, y, TeamType.TEAM1, archer_sheet)
+
+# Create team 2 entities (right side, facing left)
+for i in range(3):
+    # Front line (swordsmen)
+    x, y = add_jitter(SCREEN_WIDTH - 100, SCREEN_HEIGHT // 2 - VERTICAL_SPACING + i * VERTICAL_SPACING)
+    create_swordsman(x, y, TeamType.TEAM2, swordsman_sheet)
+    # Back line (archers)
+    x, y = add_jitter(SCREEN_WIDTH - 50, SCREEN_HEIGHT // 2 - VERTICAL_SPACING + i * VERTICAL_SPACING)
+    create_archer(x, y, TeamType.TEAM2, archer_sheet)
 
 # Main game loop
 running = True

@@ -24,8 +24,8 @@ class TargetingProcessor(esper.Processor):
     def find_nearest_enemy(self, entity: int, position: Position, team: Team) -> int:
         nearest_enemy = None
         min_distance = float('inf')
-        for enemy, (enemy_pos, enemy_team) in esper.get_components(Position, Team):
-            if enemy_team.type != team.type:
+        for enemy, (enemy_pos, enemy_team, enemy_state) in esper.get_components(Position, Team, UnitState):
+            if enemy_team.type != team.type and enemy_state.state != State.DEAD:
                 distance = ((position.x - enemy_pos.x) ** 2 + (position.y - enemy_pos.y) ** 2) ** 0.5
                 if distance < min_distance:
                     min_distance = distance

@@ -28,7 +28,8 @@ class AnimationProcessor(esper.Processor):
             new_anim_type = {
                 State.IDLE: AnimationType.IDLE,
                 State.PURSUING: AnimationType.WALKING,
-                State.ATTACKING: AnimationType.ATTACKING
+                State.ATTACKING: AnimationType.ATTACKING,
+                State.DEAD: AnimationType.DYING
             }.get(unit_state.state, AnimationType.IDLE)
 
             if anim_state.type != new_anim_type:
@@ -44,7 +45,11 @@ class AnimationProcessor(esper.Processor):
 
             if anim_state.current_time >= frame_duration:
                 anim_state.current_time -= frame_duration
-                anim_state.current_frame = (anim_state.current_frame + 1) % frame_count
+                if anim_state.type == AnimationType.DYING and anim_state.current_frame == frame_count - 1:
+                    # Stop the animation at the last frame for death animation
+                    anim_state.current_frame = frame_count - 1
+                else:
+                    anim_state.current_frame = (anim_state.current_frame + 1) % frame_count
 
                 # Check if attack is activated
                 if unit_state.state == State.ATTACKING and anim_state.type == AnimationType.ATTACKING:

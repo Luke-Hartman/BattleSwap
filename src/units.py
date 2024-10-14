@@ -32,7 +32,7 @@ def create_swordsman(x: int, y: int, team: TeamType, sprite_sheet: pygame.Surfac
     esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
     esper.add_component(entity, Team(type=team))
     esper.add_component(entity, UnitState())
-    esper.add_component(entity, MeleeAttack(range=50.0, damage=10))
+    esper.add_component(entity, MeleeAttack(range=50.0, damage=20))
     esper.add_component(entity, Movement(speed=100.0))
     esper.add_component(entity, Velocity(x=0, y=0))
     esper.add_component(entity, SpriteSheet(
@@ -82,5 +82,5 @@ def create_archer(x: int, y: int, team: TeamType, sprite_sheet: pygame.Surface) 
         sprite_size=(7, 11),
         attack_activation_frame=7
     ))
-    esper.add_component(entity, Health(current=80, maximum=80))
+    esper.add_component(entity, Health(current=60, maximum=60))
     return entity

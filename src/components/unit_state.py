@@ -12,6 +12,7 @@ class State(Enum):
     IDLE = auto()
     PURSUING = auto()
     ATTACKING = auto()
+    DEAD = auto()
 
 @dataclass
 class UnitState:

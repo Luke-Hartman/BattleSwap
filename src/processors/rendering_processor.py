@@ -12,6 +12,7 @@ from components.animation import AnimationState
 from components.sprite_sheet import SpriteSheet
 from components.team import Team, TeamType
 from components.health import Health
+from components.unit_state import UnitState, State
 
 class RenderingProcessor(esper.Processor):
     """
@@ -38,7 +39,7 @@ class RenderingProcessor(esper.Processor):
             dt (float): Delta time since last frame, in seconds.
         """
         self.screen.fill((34, 100, 34))
-        for ent, (pos, anim_state, sprite_sheet, team) in esper.get_components(Position, AnimationState, SpriteSheet, Team):
+        for ent, (pos, anim_state, sprite_sheet, team, unit_state) in esper.get_components(Position, AnimationState, SpriteSheet, Team, UnitState):
             frame = self.get_frame(anim_state, sprite_sheet)
             if team.type == TeamType.TEAM2:
                 frame = pygame.transform.flip(frame, True, False)
@@ -59,9 +60,9 @@ class RenderingProcessor(esper.Processor):
             # Draw circle at unit's position
             pygame.draw.circle(self.screen, (0, 255, 0), (pos.x, pos.y), 3)  # Green circle at unit's position
 
-            # Draw health bar if entity has Health component
+            # Draw health bar if entity has Health component and is not dead
             health = esper.try_component(ent, Health)
-            if health:
+            if health and unit_state.state != State.DEAD:
                 self.draw_health_bar(pos, sprite_sheet, health, team)
 
         pygame.display.flip()
