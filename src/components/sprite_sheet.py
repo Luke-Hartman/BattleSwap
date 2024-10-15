@@ -3,44 +3,31 @@
 This module contains the SpriteSheet component, which represents the sprite sheet data, animation frames, and sprite information for an entity.
 """
 
-from dataclasses import dataclass
 import pygame
 from typing import Dict, Tuple
 from components.animation import AnimationType
 
-@dataclass
-class SpriteSheet:
+class SpriteSheet(pygame.sprite.Sprite):
     """Represents the sprite sheet data, animation frames, and sprite information for an entity."""
 
-    surface: pygame.Surface
-    """The pygame Surface containing the sprite sheet."""
+    def __init__(self, surface: pygame.Surface, frame_width: int, frame_height: int, scale: int,
+                 frames: Dict[AnimationType, int], rows: Dict[AnimationType, int],
+                 animation_durations: Dict[AnimationType, float], sprite_offset: Tuple[int, int],
+                 sprite_size: Tuple[int, int], attack_activation_frame: int):
+        super().__init__()
+        self.surface = surface
+        self.frame_width = frame_width
+        self.frame_height = frame_height
+        self.scale = scale
+        self.frames = frames
+        self.rows = rows
+        self.animation_durations = animation_durations
+        self.sprite_offset = sprite_offset
+        self.sprite_size = sprite_size
+        self.attack_activation_frame = attack_activation_frame
 
-    frame_width: int
-    """Width of a single frame in the sprite sheet, in pixels."""
-
-    frame_height: int
-    """Height of a single frame in the sprite sheet, in pixels."""
-
-    scale: int
-    """Scale factor for rendering sprites."""
-
-    frames: Dict[AnimationType, int]
-    """Dictionary mapping AnimationType to the number of frames for that animation."""
-
-    rows: Dict[AnimationType, int]
-    """Dictionary mapping AnimationType to the row in the sprite sheet for that animation."""
-
-    animation_durations: Dict[AnimationType, float]
-    """Dictionary mapping AnimationType to the duration of the full animation cycle, in seconds."""
-
-    sprite_offset: Tuple[int, int]
-    """The offset of the sprite from the top-left corner of the frame (x, y), in pixels."""
-
-    sprite_size: Tuple[int, int]
-    """The actual size of the sprite (width, height) within the frame, in pixels."""
-
-    attack_activation_frame: int
-    """The frame number when the attack is activated (e.g., sword swing)."""
+        self.image = pygame.Surface((frame_width, frame_height), pygame.SRCALPHA)
+        self.rect = self.image.get_rect()
 
     @property
     def scaled_sprite_offset(self) -> Tuple[int, int]:
@@ -51,3 +38,13 @@ class SpriteSheet:
     def scaled_sprite_size(self) -> Tuple[int, int]:
         """Returns the scaled sprite size."""
         return (self.sprite_size[0] * self.scale, self.sprite_size[1] * self.scale)
+
+    def update_frame(self, animation_type: AnimationType, frame: int):
+        """Update the sprite's image to the specified frame of the animation."""
+        row = self.rows[animation_type]
+        col = frame
+        rect = pygame.Rect(col * self.frame_width, row * self.frame_height, self.frame_width, self.frame_height)
+        self.image = self.surface.subsurface(rect).copy()
+        if self.scale != 1:
+            self.image = pygame.transform.scale(self.image, (self.frame_width * self.scale, self.frame_height * self.scale))
+        self.rect = self.image.get_rect()
