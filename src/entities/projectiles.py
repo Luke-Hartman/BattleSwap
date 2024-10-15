@@ -34,7 +34,7 @@ def create_arrow(x: int, y: int, velocity_x: float, velocity_y: float, team: Tea
         surface=projectile_sheets[team],
         frame_width=16,
         frame_height=16,
-        scale=4,
+        scale=2,
         frames={AnimationType.IDLE: 1},  # Only one frame for arrows
         rows={AnimationType.IDLE: 0},
         animation_durations={AnimationType.IDLE: 1.0},  # Duration doesn't matter for single frame

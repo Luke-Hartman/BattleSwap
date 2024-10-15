@@ -53,28 +53,25 @@ esper.add_processor(rendering_processor)
 esper.add_processor(collision_processor)
 
 # Function to add random jitter to positions
-def add_jitter(x, y, max_jitter=50):
-    return x + random.randint(-max_jitter, max_jitter), y + random.randint(-max_jitter, max_jitter)
-
-# Vertical spacing between units (doubled)
-VERTICAL_SPACING = 150  # pixels
+def add_jitter(x, y, x_jitter=30, y_jitter=SCREEN_HEIGHT // 2 - 100):
+    return x + random.randint(-x_jitter, x_jitter), y + random.randint(-y_jitter, y_jitter)
 
 # Create team 1 entities (left side, facing right)
-for i in range(3):
+for i in range(10):
     # Front line (swordsmen)
-    x, y = add_jitter(100, SCREEN_HEIGHT // 2 - VERTICAL_SPACING + i * VERTICAL_SPACING)
+    x, y = add_jitter(100, SCREEN_HEIGHT // 2)
     create_swordsman(x, y, TeamType.TEAM1)
     # Back line (archers)
-    x, y = add_jitter(50, SCREEN_HEIGHT // 2 - VERTICAL_SPACING + i * VERTICAL_SPACING)
+    x, y = add_jitter(50, SCREEN_HEIGHT // 2)
     create_archer(x, y, TeamType.TEAM1)
 
 # Create team 2 entities (right side, facing left)
-for i in range(3):
+for i in range(10):
     # Front line (swordsmen)
-    x, y = add_jitter(SCREEN_WIDTH - 100, SCREEN_HEIGHT // 2 - VERTICAL_SPACING + i * VERTICAL_SPACING)
+    x, y = add_jitter(SCREEN_WIDTH - 100, SCREEN_HEIGHT // 2)
     create_swordsman(x, y, TeamType.TEAM2)
     # Back line (archers)
-    x, y = add_jitter(SCREEN_WIDTH - 50, SCREEN_HEIGHT // 2 - VERTICAL_SPACING + i * VERTICAL_SPACING)
+    x, y = add_jitter(SCREEN_WIDTH - 50, SCREEN_HEIGHT // 2)
     create_archer(x, y, TeamType.TEAM2)
 
 # Main game loop
