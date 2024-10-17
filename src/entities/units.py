@@ -8,12 +8,13 @@ import pygame
 import os
 from enum import Enum, auto
 from typing import Dict
+from CONSTANTS import MINIFOLKS_SCALE
 from components.position import Position
 from components.animation import AnimationState, AnimationType
 from components.sprite_sheet import SpriteSheet
 from components.team import Team, TeamType
 from components.unit_state import UnitState
-from components.attack import MeleeAttack, ProjectileAttack
+from components.attack import MeleeAttack, ProjectileAttack, ProjectileType
 from components.movement import Movement
 from components.velocity import Velocity
 from components.health import Health
@@ -23,7 +24,7 @@ class UnitType(Enum):
     """Enum representing different types of units."""
     SWORDSMAN = auto()
     ARCHER = auto()
-
+    MAGE = auto()
 # Dictionary to store sprite sheets
 sprite_sheets: Dict[TeamType, Dict[UnitType, pygame.Surface]] = {
     TeamType.TEAM1: {},
@@ -33,7 +34,11 @@ sprite_sheets: Dict[TeamType, Dict[UnitType, pygame.Surface]] = {
 def load_sprite_sheets():
     """Load all sprite sheets."""
     team_colors = {TeamType.TEAM1: "Blue", TeamType.TEAM2: "Red"}
-    unit_filenames = {UnitType.SWORDSMAN: "MiniSwordMan.png", UnitType.ARCHER: "MiniArcherMan.png"}
+    unit_filenames = {
+        UnitType.SWORDSMAN: "MiniSwordMan.png", 
+        UnitType.ARCHER: "MiniArcherMan.png", 
+        UnitType.MAGE: "MiniMage.png"
+    }
 
     for team, color in team_colors.items():
         for unit_type, filename in unit_filenames.items():
@@ -63,10 +68,10 @@ def create_swordsman(x: int, y: int, team: TeamType) -> int:
         surface=sprite_sheets[team][UnitType.SWORDSMAN],
         frame_width=32,
         frame_height=32,
-        scale=2,
+        scale=MINIFOLKS_SCALE,
         frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.ATTACKING: 6, AnimationType.DYING: 4},
         rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ATTACKING: 3, AnimationType.DYING: 5},
-        animation_durations={AnimationType.IDLE: 0.8, AnimationType.WALKING: 0.6, AnimationType.ATTACKING: 1, AnimationType.DYING: 0.8},
+        animation_durations={AnimationType.IDLE: 0.8, AnimationType.WALKING: 0.6, AnimationType.ATTACKING: 0.6, AnimationType.DYING: 0.8},
         sprite_offset=(-13, -19),
         sprite_size=(7, 11),
         attack_activation_frame=2
@@ -93,14 +98,24 @@ def create_archer(x: int, y: int, team: TeamType) -> int:
     esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
     esper.add_component(entity, Team(type=team))
     esper.add_component(entity, UnitState())
-    esper.add_component(entity, ProjectileAttack(range=200.0, damage=15, projectile_speed=150.0))
+    esper.add_component(
+        entity,
+        ProjectileAttack(
+            range=200.0, 
+            damage=15, 
+            projectile_speed=300.0, 
+            projectile_type=ProjectileType.ARROW, 
+            projectile_offset_x=5*MINIFOLKS_SCALE,
+            projectile_offset_y=0,
+        )
+    )
     esper.add_component(entity, Movement(speed=40.0))
     esper.add_component(entity, Velocity(x=0, y=0))
     esper.add_component(entity, SpriteSheet(
         surface=sprite_sheets[team][UnitType.ARCHER],
         frame_width=32,
         frame_height=32,
-        scale=2,
+        scale=MINIFOLKS_SCALE,
         frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.ATTACKING: 11, AnimationType.DYING: 4},
         rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ATTACKING: 3, AnimationType.DYING: 6},
         animation_durations={AnimationType.IDLE: 0.8, AnimationType.WALKING: 0.6, AnimationType.ATTACKING: 1.8, AnimationType.DYING: 1.2},
@@ -113,3 +128,51 @@ def create_archer(x: int, y: int, team: TeamType) -> int:
         facing=FacingDirection.RIGHT if team == TeamType.TEAM1 else FacingDirection.LEFT
     ))
     return entity
+
+def create_mage(x: int, y: int, team: TeamType) -> int:
+    """Create a mage entity with all necessary components.
+
+    Args:
+        x (int): The x-coordinate of the mage's position.
+        y (int): The y-coordinate of the mage's position.
+        team (TeamType): The team the mage belongs to.
+
+    Returns:
+        int: The entity ID of the created mage.
+    """
+    entity = esper.create_entity()
+    esper.add_component(entity, Position(x=x, y=y))
+    esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
+    esper.add_component(entity, Team(type=team))
+    esper.add_component(entity, UnitState())
+    esper.add_component(
+        entity,
+        ProjectileAttack(
+            range=300.0, 
+            damage=100, 
+            projectile_speed=400.0, 
+            projectile_type=ProjectileType.FIREBALL,
+            projectile_offset_x=11*MINIFOLKS_SCALE,
+            projectile_offset_y=-4*MINIFOLKS_SCALE,
+        )
+    )
+    esper.add_component(entity, Movement(speed=30.0))
+    esper.add_component(entity, Velocity(x=0, y=0))
+    esper.add_component(entity, SpriteSheet(
+        surface=sprite_sheets[team][UnitType.MAGE],
+        frame_width=32,
+        frame_height=32,
+        scale=MINIFOLKS_SCALE,
+        frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.ATTACKING: 11, AnimationType.DYING: 9},
+        rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ATTACKING: 3, AnimationType.DYING: 7},
+        animation_durations={AnimationType.IDLE: 0.8, AnimationType.WALKING: 0.6, AnimationType.ATTACKING: 3, AnimationType.DYING: 2},
+        sprite_offset=(-13, -19),
+        sprite_size=(7, 11),
+        attack_activation_frame=7
+    ))
+    esper.add_component(entity, Health(current=60, maximum=60))
+    esper.add_component(entity, Orientation(
+        facing=FacingDirection.RIGHT if team == TeamType.TEAM1 else FacingDirection.LEFT
+    ))
+    return entity
+        

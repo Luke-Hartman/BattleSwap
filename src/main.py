@@ -15,8 +15,8 @@ from processors.movement_processor import MovementProcessor
 from processors.pursuing_processor import PursuingProcessor
 from processors.targeting_processor import TargetingProcessor
 from handlers.attack_handler import AttackHandler
-from state_machine import StateMachine
-from units import create_swordsman, create_archer, load_sprite_sheets
+from handlers.state_machine import StateMachine
+from entities.units import create_mage, create_swordsman, create_archer, load_sprite_sheets
 from processors.collision_processor import CollisionProcessor
 from entities.projectiles import load_projectile_sheets
 
@@ -55,24 +55,31 @@ esper.add_processor(collision_processor)
 # Function to add random jitter to positions
 def add_jitter(x, y, x_jitter=30, y_jitter=SCREEN_HEIGHT // 2 - 100):
     return x + random.randint(-x_jitter, x_jitter), y + random.randint(-y_jitter, y_jitter)
-
+n = 2
 # Create team 1 entities (left side, facing right)
-for i in range(10):
+for i in range(n):
     # Front line (swordsmen)
-    x, y = add_jitter(100, SCREEN_HEIGHT // 2)
+    x, y = add_jitter(150, SCREEN_HEIGHT // 2)
     create_swordsman(x, y, TeamType.TEAM1)
-    # Back line (archers)
-    x, y = add_jitter(50, SCREEN_HEIGHT // 2)
+    # Middle line (archers)
+    x, y = add_jitter(100, SCREEN_HEIGHT // 2)
     create_archer(x, y, TeamType.TEAM1)
+    # Back line (mages)
+    x, y = add_jitter(150, SCREEN_HEIGHT // 2)
+    create_mage(x, y, TeamType.TEAM1)
 
 # Create team 2 entities (right side, facing left)
-for i in range(10):
+for i in range(n):
     # Front line (swordsmen)
-    x, y = add_jitter(SCREEN_WIDTH - 100, SCREEN_HEIGHT // 2)
+    x, y = add_jitter(SCREEN_WIDTH - 150, SCREEN_HEIGHT // 2)
     create_swordsman(x, y, TeamType.TEAM2)
-    # Back line (archers)
-    x, y = add_jitter(SCREEN_WIDTH - 50, SCREEN_HEIGHT // 2)
+    # Middle line (archers)
+    x, y = add_jitter(SCREEN_WIDTH - 100, SCREEN_HEIGHT // 2)
     create_archer(x, y, TeamType.TEAM2)
+    # Back line (mages)
+    x, y = add_jitter(SCREEN_WIDTH - 150, SCREEN_HEIGHT // 2)
+    create_mage(x, y, TeamType.TEAM2)
+
 
 # Main game loop
 running = True

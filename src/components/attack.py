@@ -5,6 +5,11 @@ which represent different types of attacks for units.
 """
 
 from dataclasses import dataclass
+from enum import Enum, auto
+
+class ProjectileType(Enum):
+    ARROW = auto()
+    FIREBALL = auto()
 
 @dataclass
 class MeleeAttack:
@@ -28,3 +33,12 @@ class ProjectileAttack:
 
     projectile_speed: float
     """The speed of the projectile, in pixels per second."""
+
+    projectile_type: ProjectileType
+    """The type of projectile to use for the attack."""
+
+    projectile_offset_x: float
+    """The x offset of the projectile, in pixels."""
+
+    projectile_offset_y: float
+    """The y offset of the projectile, in pixels."""

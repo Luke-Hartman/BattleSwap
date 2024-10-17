@@ -8,8 +8,8 @@ from enum import Enum, auto
 
 class FacingDirection(Enum):
     """Enum representing the facing direction of an entity."""
-    LEFT = auto()
-    RIGHT = auto()
+    LEFT = -1
+    RIGHT = 1
 
 @dataclass
 class Orientation:

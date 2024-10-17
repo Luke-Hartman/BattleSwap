@@ -6,8 +6,9 @@ handling attack logic and applying damage.
 
 import esper
 import math
+from components.orientation import Orientation
 from components.unit_state import UnitState, State
-from components.attack import MeleeAttack, ProjectileAttack
+from components.attack import MeleeAttack, ProjectileAttack, ProjectileType
 from components.health import Health
 from components.position import Position
 from components.team import Team
@@ -18,7 +19,7 @@ from events import (
     emit_event
 )
 from pydispatch import dispatcher
-from entities.projectiles import create_arrow
+from entities.projectiles import create_arrow, create_fireball
 
 class AttackHandler:
     """Handler responsible for handling attack logic and applying damage."""
@@ -47,11 +48,14 @@ class AttackHandler:
 
     def handle_projectile_attack(self, attacker: int, target: int, attack: ProjectileAttack):
         attacker_pos = esper.component_for_entity(attacker, Position)
+        attacker_orientation = esper.component_for_entity(attacker, Orientation)
+        projectile_x = attacker_pos.x + attack.projectile_offset_x * attacker_orientation.facing.value
+        projectile_y = attacker_pos.y + attack.projectile_offset_y
         target_pos = esper.component_for_entity(target, Position)
         attacker_team = esper.component_for_entity(attacker, Team)
 
-        dx = target_pos.x - attacker_pos.x
-        dy = target_pos.y - attacker_pos.y
+        dx = target_pos.x - projectile_x
+        dy = target_pos.y - projectile_y
         distance = math.sqrt(dx**2 + dy**2)
         
         if distance > 0:
@@ -60,8 +64,24 @@ class AttackHandler:
         else:
             velocity_x = attack.projectile_speed
             velocity_y = 0
-
-        create_arrow(attacker_pos.x, attacker_pos.y, velocity_x, velocity_y, attacker_team.type, attack.damage)
+        if attack.projectile_type == ProjectileType.ARROW:
+            create_arrow(
+                x=projectile_x,
+                y=projectile_y,
+                velocity_x=velocity_x,
+                velocity_y=velocity_y,
+                team=attacker_team.type,
+                damage=attack.damage,
+            )
+        elif attack.projectile_type == ProjectileType.FIREBALL:
+            create_fireball(
+                x=projectile_x,
+                y=projectile_y,
+                velocity_x=velocity_x,
+                velocity_y=velocity_y,
+                team=attacker_team.type,
+                damage=attack.damage,
+            )
 
     def handle_projectile_hit(self, event: ProjectileHitEvent):
         self.deal_damage(event.target, event.damage)
