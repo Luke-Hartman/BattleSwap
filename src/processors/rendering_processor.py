@@ -27,7 +27,14 @@ class RenderingProcessor(esper.Processor):
 
     def process(self, dt: float):
         self.screen.fill((34, 100, 34))
-        for ent, (pos, anim_state, sprite_sheet, team) in esper.get_components(Position, AnimationState, SpriteSheet, Team):
+        
+        # Get all entities with necessary components
+        entities = esper.get_components(Position, AnimationState, SpriteSheet, Team)
+        
+        # Sort entities based on their y-coordinate (higher y-value means lower on screen)
+        sorted_entities = sorted(entities, key=lambda e: e[1][0].y)
+        
+        for ent, (pos, anim_state, sprite_sheet, team) in sorted_entities:
             sprite_sheet.update_frame(anim_state.type, anim_state.current_frame)
             
             if esper.has_component(ent, Orientation):
