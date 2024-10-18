@@ -8,6 +8,7 @@ and runs the main game loop.
 import esper
 import pygame
 import random
+from CONSTANTS import SCREEN_HEIGHT, SCREEN_WIDTH
 from components.team import TeamType
 from processors.rendering_processor import RenderingProcessor
 from processors.animation_processor import AnimationProcessor
