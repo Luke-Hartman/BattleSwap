@@ -6,7 +6,7 @@ This module contains functions for creating different types of projectiles with 
 import esper
 import pygame
 import os
-from CONSTANTS import MINIFOLKS_SCALE
+from CONSTANTS import GAME_SPEED, MINIFOLKS_SCALE
 from components.position import Position
 from components.velocity import Velocity
 from components.sprite_sheet import SpriteSheet
@@ -30,9 +30,8 @@ def load_projectile_sheets():
             ProjectileType.ARROW: os.path.join("assets", color, "HumansProjectiles.png"),
             ProjectileType.FIREBALL: os.path.join("assets", color, "HumansProjectiles.png")
         }
-        for team in [TeamType.TEAM1, TeamType.TEAM2]:
-            for projectile_type, path in projectile_paths.items():
-                projectile_sheets[team][projectile_type] = pygame.image.load(path).convert_alpha()
+        for projectile_type, path in projectile_paths.items():
+            projectile_sheets[team][projectile_type] = pygame.image.load(path).convert_alpha()
 
 def create_arrow(x: int, y: int, velocity_x: float, velocity_y: float, team: TeamType, damage: int) -> int:
     """Create an arrow entity with all necessary components."""
@@ -69,7 +68,7 @@ def create_fireball(x: int, y: int, velocity_x: float, velocity_y: float, team: 
         scale=MINIFOLKS_SCALE,
         frames={AnimationType.IDLE: 2},
         rows={AnimationType.IDLE: 1},
-        animation_durations={AnimationType.IDLE: 1.0},  # Duration doesn't matter for single frame
+        animation_durations={AnimationType.IDLE: 0.2/GAME_SPEED},
         sprite_offset=(0, 0),
         sprite_size=(16, 16),
         attack_activation_frame=0

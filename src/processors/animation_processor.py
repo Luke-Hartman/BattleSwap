@@ -23,8 +23,13 @@ class AnimationProcessor(esper.Processor):
         Args:
             dt (float): Delta time since last frame, in seconds.
         """
-        for ent, (anim_state, sprite_sheet, unit_state) in esper.get_components(AnimationState, SpriteSheet, UnitState):
+        for ent, (anim_state, sprite_sheet) in esper.get_components(AnimationState, SpriteSheet):
             # Update the animation type based on the unit state
+            if esper.has_component(ent, UnitState):
+                unit_state = esper.component_for_entity(ent, UnitState)
+            else:
+                unit_state = UnitState(state=State.IDLE)
+
             new_anim_type = {
                 State.IDLE: AnimationType.IDLE,
                 State.PURSUING: AnimationType.WALKING,
