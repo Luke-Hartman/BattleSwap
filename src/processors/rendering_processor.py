@@ -66,11 +66,11 @@ class RenderingProcessor(esper.Processor):
             # # Draw circle at unit's position
             # pygame.draw.circle(self.screen, (0, 255, 0), (pos.x, pos.y), 3)  # Green circle at unit's position
 
-            # Draw health bar if entity has Health component and is not dead
+            # Draw health bar if entity has Health component, is not dead, and health is not full
             if esper.has_component(ent, Health) and esper.has_component(ent, UnitState):
                 health = esper.component_for_entity(ent, Health)
                 unit_state = esper.component_for_entity(ent, UnitState)
-                if unit_state.state != State.DEAD:
+                if unit_state.state != State.DEAD and health.current < health.maximum:
                     self.draw_health_bar(pos, sprite_sheet, health, team)
 
         pygame.display.flip()
