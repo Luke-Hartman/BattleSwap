@@ -24,8 +24,6 @@ from entities.projectiles import load_projectile_sheets
 pygame.init()
 
 # Set up the display
-SCREEN_WIDTH = 800  # pixels
-SCREEN_HEIGHT = 600  # pixels
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Battle Swap")
 

@@ -1,10 +1,10 @@
 from components.animation import AnimationType
 
 
-SCREEN_WIDTH = 800  # pixels
-SCREEN_HEIGHT = 600  # pixels
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
 
-MINIFOLKS_SCALE = 4
+MINIFOLKS_SCALE = 2
 GAME_SPEED = 1
 
 SWORDSMAN_HP = 100
