@@ -9,7 +9,7 @@ SWORDSMAN_MOVEMENT_SPEED = 25.0 * MINIFOLKS_SCALE
 SWORDSMAN_ANIMATION_DURATIONS = {
     AnimationType.IDLE: 0.8,
     AnimationType.WALKING: 0.6,
-    AnimationType.ATTACKING: 0.6,
+    AnimationType.ATTACKING: 0.6, # Note that attack animations effect attack speed
     AnimationType.DYING: 0.8
 }
 
