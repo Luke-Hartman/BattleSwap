@@ -60,28 +60,34 @@ class CollisionProcessor(esper.Processor):
             if not self.screen_rect.colliderect(projectile.rect):
                 esper.delete_entity(sprite_to_ent[projectile])
 
-    def process_unit_projectile_collisions(self, p_sprites: pygame.sprite.Group, u_sprites: pygame.sprite.Group, sprite_to_ent: dict):
-        """Handle collisions between projectiles and units of opposing teams."""
-        if not p_sprites or not u_sprites:
-            return
+    def check_sprite_group_collisions(self, group1: pygame.sprite.Group, group2: pygame.sprite.Group) -> list[tuple[pygame.sprite.Sprite, pygame.sprite.Sprite]]:
+        """Check collisions between two sprite groups using KDTree."""
+        if not group1 or not group2:
+            return []
 
-        # Create KDTree for projectiles
-        p_positions = np.array([(p.rect.centerx, p.rect.centery) for p in p_sprites])
-        p_tree = KDTree(p_positions)
+        # Create KDTree for group1
+        g1_positions = np.array([(s.rect.centerx, s.rect.centery) for s in group1])
+        g1_tree = KDTree(g1_positions)
 
-        # Create list of unit positions and max dimensions
-        u_positions = np.array([(u.rect.centerx, u.rect.centery) for u in u_sprites])
-        u_max_dims = np.array([((u.rect.width/2)**2 + (u.rect.height/2)**2)**0.5 for u in u_sprites])
+        # Create list of group2 positions and max dimensions
+        g2_positions = np.array([(s.rect.centerx, s.rect.centery) for s in group2])
+        g2_max_dims = np.array([((s.rect.width/2)**2 + (s.rect.height/2)**2)**0.5 for s in group2])
 
         # Query KDTree for potential collisions
-        potential_collisions = p_tree.query_ball_point(u_positions, u_max_dims)
+        potential_collisions = g1_tree.query_ball_point(g2_positions, g2_max_dims)
 
         collisions = []
-        for (u_sprite, p_indices) in zip(u_sprites, potential_collisions):
-            for p_index in p_indices:
-                p_sprite = list(p_sprites)[p_index]
-                if pygame.sprite.collide_mask(p_sprite, u_sprite):
-                    collisions.append((p_sprite, u_sprite))
+        for s2, s1_indices in zip(group2, potential_collisions):
+            for s1_index in s1_indices:
+                s1 = list(group1)[s1_index]
+                if pygame.sprite.collide_mask(s1, s2):
+                    collisions.append((s1, s2))
+
+        return collisions
+
+    def process_unit_projectile_collisions(self, p_sprites: pygame.sprite.Group, u_sprites: pygame.sprite.Group, sprite_to_ent: dict):
+        """Handle collisions between projectiles and units of opposing teams."""
+        collisions = self.check_sprite_group_collisions(p_sprites, u_sprites)
 
         # Handle found collisions
         collided_projectiles = set()
