@@ -34,7 +34,7 @@ class PursuingProcessor(esper.Processor):
                     target_distance = math.sqrt(target_dx**2 + target_dy**2)
                     destination_distance = math.sqrt(destination_dx**2 + destination_dy**2)
                     
-                    orientation.facing = FacingDirection.RIGHT if destination_dx > 0 else FacingDirection.LEFT
+                    orientation.facing = FacingDirection.RIGHT if target_dx > 0 else FacingDirection.LEFT
                     
                     if self.is_target_in_range(ent, target_dx, target_dy, target_distance):
                         emit_event(TARGET_IN_RANGE, event=TargetInRangeEvent(ent, unit_state.target))
