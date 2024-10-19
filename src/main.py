@@ -17,7 +17,7 @@ from processors.pursuing_processor import PursuingProcessor
 from processors.targeting_processor import TargetingProcessor
 from handlers.attack_handler import AttackHandler
 from handlers.state_machine import StateMachine
-from entities.units import create_mage, create_swordsman, create_archer, load_sprite_sheets
+from entities.units import create_horseman, create_mage, create_swordsman, create_archer, load_sprite_sheets
 from processors.collision_processor import CollisionProcessor
 from entities.projectiles import load_projectile_sheets
 
@@ -66,6 +66,9 @@ for i in range(n):
     # Back line (mages)
     x, y = add_jitter(150, SCREEN_HEIGHT // 2)
     create_mage(x, y, TeamType.TEAM1)
+    # Back line (horsemen)
+    x, y = add_jitter(150, SCREEN_HEIGHT // 2)
+    create_horseman(x, y, TeamType.TEAM1)
 
 # Create team 2 entities (right side, facing left)
 for i in range(n):
@@ -78,6 +81,9 @@ for i in range(n):
     # Back line (mages)
     x, y = add_jitter(SCREEN_WIDTH - 150, SCREEN_HEIGHT // 2)
     create_mage(x, y, TeamType.TEAM2)
+    # Back line (horsemen)
+    x, y = add_jitter(SCREEN_WIDTH - 150, SCREEN_HEIGHT // 2)
+    create_horseman(x, y, TeamType.TEAM2)
 
 
 # Main game loop
