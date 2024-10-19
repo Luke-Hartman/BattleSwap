@@ -15,7 +15,8 @@ from CONSTANTS import (
     MAGE_HP, MAGE_ATTACK_RANGE, MAGE_ATTACK_DAMAGE, MAGE_MOVEMENT_SPEED, MAGE_PROJECTILE_SPEED, MAGE_ANIMATION_DURATIONS,
     HORSEMAN_HP, HORSEMAN_ATTACK_RANGE, HORSEMAN_ATTACK_DAMAGE, HORSEMAN_MOVEMENT_SPEED, HORSEMAN_ANIMATION_DURATIONS,
     TINY_RPG_SCALE,
-    WEREBEAR_HP, WEREBEAR_ATTACK_RANGE, WEREBEAR_ATTACK_DAMAGE, WEREBEAR_MOVEMENT_SPEED, WEREBEAR_ANIMATION_DURATIONS
+    WEREBEAR_HP, WEREBEAR_ATTACK_RANGE, WEREBEAR_ATTACK_DAMAGE, WEREBEAR_MOVEMENT_SPEED, WEREBEAR_ANIMATION_DURATIONS,
+    FANCY_SWORDSMAN_HP, FANCY_SWORDSMAN_ATTACK_RANGE, FANCY_SWORDSMAN_ATTACK_DAMAGE, FANCY_SWORDSMAN_MOVEMENT_SPEED, FANCY_SWORDSMAN_ANIMATION_DURATIONS
 )
 from components.position import Position
 from components.animation import AnimationState, AnimationType
@@ -35,6 +36,7 @@ class UnitType(Enum):
     MAGE = auto()
     HORSEMAN = auto()
     WEREBEAR = auto()
+    FANCY_SWORDSMAN = auto()
 
 # Dictionary to store sprite sheets
 sprite_sheets: Dict[TeamType, Dict[UnitType, pygame.Surface]] = {
@@ -51,7 +53,8 @@ def load_sprite_sheets():
         UnitType.ARCHER: "MiniArcherMan.png", 
         UnitType.MAGE: "MiniMage.png",
         UnitType.HORSEMAN: "MiniHorseman.png",
-        UnitType.WEREBEAR: "Werebear.png"
+        UnitType.WEREBEAR: "Werebear.png",
+        UnitType.FANCY_SWORDSMAN: "Swordsman.png"
     }
 
     for team, color in team_colors.items():
@@ -201,7 +204,7 @@ def create_werebear(x: int, y: int, team: TeamType) -> int:
         surface=sprite_sheets[team][UnitType.WEREBEAR],
         frame_width=100,
         frame_height=100,
-        scale=TINY_RPG_SCALE,
+        scale=1.5*TINY_RPG_SCALE,
         frames={AnimationType.IDLE: 6, AnimationType.WALKING: 7, AnimationType.ATTACKING: 8, AnimationType.DYING: 4},
         rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ATTACKING: 2, AnimationType.DYING: 6},
         animation_durations=WEREBEAR_ANIMATION_DURATIONS,
@@ -209,6 +212,33 @@ def create_werebear(x: int, y: int, team: TeamType) -> int:
         attack_activation_frame=5
     ))
     esper.add_component(entity, Health(current=WEREBEAR_HP, maximum=WEREBEAR_HP))
+    esper.add_component(entity, Orientation(
+        facing=FacingDirection.RIGHT if team == TeamType.TEAM1 else FacingDirection.LEFT
+    ))
+    return entity
+
+def create_fancy_swordsman(x: int, y: int, team: TeamType) -> int:
+    """Create a fancy swordsman entity with all necessary components."""
+    entity = esper.create_entity()
+    esper.add_component(entity, Position(x=x, y=y))
+    esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
+    esper.add_component(entity, Team(type=team))
+    esper.add_component(entity, UnitState())
+    esper.add_component(entity, MeleeAttack(range=FANCY_SWORDSMAN_ATTACK_RANGE, damage=FANCY_SWORDSMAN_ATTACK_DAMAGE))
+    esper.add_component(entity, Movement(speed=FANCY_SWORDSMAN_MOVEMENT_SPEED))
+    esper.add_component(entity, Velocity(x=0, y=0))
+    esper.add_component(entity, SpriteSheet(
+        surface=sprite_sheets[team][UnitType.FANCY_SWORDSMAN],
+        frame_width=100,
+        frame_height=100,
+        scale=TINY_RPG_SCALE,
+        frames={AnimationType.IDLE: 6, AnimationType.WALKING: 8, AnimationType.ATTACKING: 12, AnimationType.DYING: 4},
+        rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ATTACKING: 4, AnimationType.DYING: 6},
+        animation_durations=FANCY_SWORDSMAN_ANIMATION_DURATIONS,
+        sprite_center_offset=(0, 0),
+        attack_activation_frame=7
+    ))
+    esper.add_component(entity, Health(current=FANCY_SWORDSMAN_HP, maximum=FANCY_SWORDSMAN_HP))
     esper.add_component(entity, Orientation(
         facing=FacingDirection.RIGHT if team == TeamType.TEAM1 else FacingDirection.LEFT
     ))
