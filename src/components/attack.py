@@ -4,6 +4,7 @@ This module contains the MeleeAttack and ProjectileAttack components,
 which represent different types of attacks for units.
 """
 
+import math
 from dataclasses import dataclass
 from enum import Enum, auto
 
@@ -20,6 +21,9 @@ class MeleeAttack:
 
     damage: int
     """The amount of damage the melee attack deals."""
+
+    attack_angle: float = math.pi / 3
+    """Attack angle in radians (default: 60 degrees)"""
 
 @dataclass
 class ProjectileAttack:
