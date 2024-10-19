@@ -6,7 +6,7 @@ This module contains functions for creating different types of projectiles with 
 import esper
 import pygame
 import os
-from CONSTANTS import GAME_SPEED, MINIFOLKS_SCALE
+from CONSTANTS import GAME_SPEED, MAGE_FIREBALL_SCALE, MINIFOLKS_SCALE
 from components.position import Position
 from components.velocity import Velocity
 from components.sprite_sheet import SpriteSheet
@@ -22,13 +22,14 @@ projectile_sheets: dict[TeamType, dict[ProjectileType, pygame.Surface]] = {
 
 def load_projectile_sheets():
     """Load all projectile sprite sheets."""
-    team_colors = {TeamType.TEAM1: "Blue", TeamType.TEAM2: "Red"}
+    # team_colors = {TeamType.TEAM1: "Blue", TeamType.TEAM2: "Red"}
+    team_colors = {TeamType.TEAM1: "Blue", TeamType.TEAM2: "Blue"} # Using blue for both teams for now
     
     for team, color in team_colors.items():
         path = os.path.join("assets", color, "HumansProjectiles.png")
         projectile_paths = {
             ProjectileType.ARROW: os.path.join("assets", color, "HumansProjectiles.png"),
-            ProjectileType.FIREBALL: os.path.join("assets", color, "HumansProjectiles.png")
+            ProjectileType.FIREBALL: os.path.join("assets", color, "Wizard.png")
         }
         for projectile_type, path in projectile_paths.items():
             projectile_sheets[team][projectile_type] = pygame.image.load(path).convert_alpha()
@@ -47,8 +48,7 @@ def create_arrow(x: int, y: int, velocity_x: float, velocity_y: float, team: Tea
         frames={AnimationType.IDLE: 1},  # Only one frame for arrows
         rows={AnimationType.IDLE: 0},
         animation_durations={AnimationType.IDLE: 1.0},  # Duration doesn't matter for single frame
-        sprite_offset=(0, 0),
-        sprite_size=(16, 16),
+        sprite_center_offset=(-.5, -.5),
         attack_activation_frame=0
     ))
     esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
@@ -63,14 +63,13 @@ def create_fireball(x: int, y: int, velocity_x: float, velocity_y: float, team: 
     esper.add_component(entity, Team(type=team))
     esper.add_component(entity, SpriteSheet(
         surface=projectile_sheets[team][ProjectileType.FIREBALL],
-        frame_width=16,
-        frame_height=16,
-        scale=MINIFOLKS_SCALE,
-        frames={AnimationType.IDLE: 2},
-        rows={AnimationType.IDLE: 1},
+        frame_width=100,
+        frame_height=100,
+        scale=MAGE_FIREBALL_SCALE,
+        frames={AnimationType.IDLE: 4},
+        rows={AnimationType.IDLE: 5},
         animation_durations={AnimationType.IDLE: 0.2/GAME_SPEED},
-        sprite_offset=(0, 0),
-        sprite_size=(16, 16),
+        sprite_center_offset=(-5, -2),
         attack_activation_frame=0
     ))
     esper.add_component(entity, AnimationState(type=AnimationType.IDLE))

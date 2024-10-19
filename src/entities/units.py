@@ -38,7 +38,8 @@ sprite_sheets: Dict[TeamType, Dict[UnitType, pygame.Surface]] = {
 
 def load_sprite_sheets():
     """Load all sprite sheets."""
-    team_colors = {TeamType.TEAM1: "Blue", TeamType.TEAM2: "Red"}
+    # team_colors = {TeamType.TEAM1: "Blue", TeamType.TEAM2: "Red"}
+    team_colors = {TeamType.TEAM1: "Blue", TeamType.TEAM2: "Blue"} # Using blue for both teams for now
     unit_filenames = {
         UnitType.SWORDSMAN: "MiniSwordMan.png", 
         UnitType.ARCHER: "MiniArcherMan.png", 
@@ -68,8 +69,7 @@ def create_swordsman(x: int, y: int, team: TeamType) -> int:
         frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.ATTACKING: 6, AnimationType.DYING: 4},
         rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ATTACKING: 3, AnimationType.DYING: 5},
         animation_durations=SWORDSMAN_ANIMATION_DURATIONS,
-        sprite_offset=(-13, -19),
-        sprite_size=(7, 11),
+        sprite_center_offset=(0, -8),
         attack_activation_frame=2
     ))
     esper.add_component(entity, Health(current=SWORDSMAN_HP, maximum=SWORDSMAN_HP))
@@ -106,8 +106,7 @@ def create_archer(x: int, y: int, team: TeamType) -> int:
         frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.ATTACKING: 11, AnimationType.DYING: 4},
         rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ATTACKING: 3, AnimationType.DYING: 6},
         animation_durations=ARCHER_ANIMATION_DURATIONS,
-        sprite_offset=(-13, -19),
-        sprite_size=(7, 11),
+        sprite_center_offset=(0, -8),
         attack_activation_frame=7
     ))
     esper.add_component(entity, Health(current=ARCHER_HP, maximum=ARCHER_HP))
@@ -144,8 +143,7 @@ def create_mage(x: int, y: int, team: TeamType) -> int:
         frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.ATTACKING: 11, AnimationType.DYING: 9},
         rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ATTACKING: 3, AnimationType.DYING: 7},
         animation_durations=MAGE_ANIMATION_DURATIONS,
-        sprite_offset=(-13, -19),
-        sprite_size=(7, 11),
+        sprite_center_offset=(0, -8),
         attack_activation_frame=7
     ))
     esper.add_component(entity, Health(current=MAGE_HP, maximum=MAGE_HP))
