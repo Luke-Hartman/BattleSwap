@@ -13,7 +13,9 @@ from CONSTANTS import (
     SWORDSMAN_HP, SWORDSMAN_ATTACK_RANGE, SWORDSMAN_ATTACK_DAMAGE, SWORDSMAN_MOVEMENT_SPEED, SWORDSMAN_ANIMATION_DURATIONS,
     ARCHER_HP, ARCHER_ATTACK_RANGE, ARCHER_ATTACK_DAMAGE, ARCHER_MOVEMENT_SPEED, ARCHER_PROJECTILE_SPEED, ARCHER_ANIMATION_DURATIONS,
     MAGE_HP, MAGE_ATTACK_RANGE, MAGE_ATTACK_DAMAGE, MAGE_MOVEMENT_SPEED, MAGE_PROJECTILE_SPEED, MAGE_ANIMATION_DURATIONS,
-    HORSEMAN_HP, HORSEMAN_ATTACK_RANGE, HORSEMAN_ATTACK_DAMAGE, HORSEMAN_MOVEMENT_SPEED, HORSEMAN_ANIMATION_DURATIONS
+    HORSEMAN_HP, HORSEMAN_ATTACK_RANGE, HORSEMAN_ATTACK_DAMAGE, HORSEMAN_MOVEMENT_SPEED, HORSEMAN_ANIMATION_DURATIONS,
+    TINY_RPG_SCALE,
+    WEREBEAR_HP, WEREBEAR_ATTACK_RANGE, WEREBEAR_ATTACK_DAMAGE, WEREBEAR_MOVEMENT_SPEED, WEREBEAR_ANIMATION_DURATIONS
 )
 from components.position import Position
 from components.animation import AnimationState, AnimationType
@@ -32,6 +34,7 @@ class UnitType(Enum):
     ARCHER = auto()
     MAGE = auto()
     HORSEMAN = auto()
+    WEREBEAR = auto()
 
 # Dictionary to store sprite sheets
 sprite_sheets: Dict[TeamType, Dict[UnitType, pygame.Surface]] = {
@@ -47,7 +50,8 @@ def load_sprite_sheets():
         UnitType.SWORDSMAN: "MiniSwordMan.png", 
         UnitType.ARCHER: "MiniArcherMan.png", 
         UnitType.MAGE: "MiniMage.png",
-        UnitType.HORSEMAN: "MiniHorseman.png"
+        UnitType.HORSEMAN: "MiniHorseman.png",
+        UnitType.WEREBEAR: "Werebear.png"
     }
 
     for team, color in team_colors.items():
@@ -178,6 +182,33 @@ def create_horseman(x: int, y: int, team: TeamType) -> int:
         attack_activation_frame=3
     ))
     esper.add_component(entity, Health(current=HORSEMAN_HP, maximum=HORSEMAN_HP))
+    esper.add_component(entity, Orientation(
+        facing=FacingDirection.RIGHT if team == TeamType.TEAM1 else FacingDirection.LEFT
+    ))
+    return entity
+
+def create_werebear(x: int, y: int, team: TeamType) -> int:
+    """Create a werebear entity with all necessary components."""
+    entity = esper.create_entity()
+    esper.add_component(entity, Position(x=x, y=y))
+    esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
+    esper.add_component(entity, Team(type=team))
+    esper.add_component(entity, UnitState())
+    esper.add_component(entity, MeleeAttack(range=WEREBEAR_ATTACK_RANGE, damage=WEREBEAR_ATTACK_DAMAGE))
+    esper.add_component(entity, Movement(speed=WEREBEAR_MOVEMENT_SPEED))
+    esper.add_component(entity, Velocity(x=0, y=0))
+    esper.add_component(entity, SpriteSheet(
+        surface=sprite_sheets[team][UnitType.WEREBEAR],
+        frame_width=100,
+        frame_height=100,
+        scale=TINY_RPG_SCALE,
+        frames={AnimationType.IDLE: 6, AnimationType.WALKING: 7, AnimationType.ATTACKING: 8, AnimationType.DYING: 4},
+        rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ATTACKING: 2, AnimationType.DYING: 6},
+        animation_durations=WEREBEAR_ANIMATION_DURATIONS,
+        sprite_center_offset=(0, 0),
+        attack_activation_frame=5
+    ))
+    esper.add_component(entity, Health(current=WEREBEAR_HP, maximum=WEREBEAR_HP))
     esper.add_component(entity, Orientation(
         facing=FacingDirection.RIGHT if team == TeamType.TEAM1 else FacingDirection.LEFT
     ))
