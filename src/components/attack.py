@@ -22,8 +22,8 @@ class MeleeAttack:
     damage: int
     """The amount of damage the melee attack deals."""
 
-    attack_angle: float = math.pi / 3
-    """Attack angle in radians (default: 60 degrees)"""
+    attack_angle: float = math.pi / 12
+    """Attack angle in radians (default: 15 degrees)"""
 
 @dataclass
 class ProjectileAttack:
