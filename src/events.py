@@ -4,7 +4,6 @@ This module contains the event classes used for communication between different 
 """
 
 from dataclasses import dataclass
-from components.team import TeamType
 from components.unit_state import State
 from pydispatch import dispatcher
 
