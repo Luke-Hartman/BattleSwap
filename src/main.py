@@ -7,9 +7,8 @@ and runs the main game loop.
 
 import esper
 import pygame
-import random
 from CONSTANTS import SCREEN_HEIGHT, SCREEN_WIDTH
-from components.team import TeamType
+from battles import battles
 from processors.rendering_processor import RenderingProcessor
 from processors.animation_processor import AnimationProcessor
 from processors.movement_processor import MovementProcessor
@@ -17,7 +16,7 @@ from processors.pursuing_processor import PursuingProcessor
 from processors.targeting_processor import TargetingProcessor
 from handlers.attack_handler import AttackHandler
 from handlers.state_machine import StateMachine
-from entities.units import create_horseman, create_mage, create_swordsman, create_archer, create_werebear, load_sprite_sheets
+from entities.units import load_sprite_sheets
 from processors.collision_processor import CollisionProcessor
 from entities.projectiles import load_projectile_sheets
 
@@ -51,46 +50,7 @@ esper.add_processor(animation_processor)
 esper.add_processor(rendering_processor)
 esper.add_processor(collision_processor)
 
-# Function to add random jitter to positions
-def add_jitter(x, y, x_jitter=30, y_jitter=SCREEN_HEIGHT // 2 - 100):
-    return x + random.randint(-x_jitter, x_jitter), y + random.randint(-y_jitter, y_jitter)
-n = 2
-# Create team 1 entities (left side, facing right)
-for i in range(n):
-    # Front line (swordsmen)
-    x, y = add_jitter(150, SCREEN_HEIGHT // 2)
-    create_swordsman(x, y, TeamType.TEAM1)
-    # Middle line (archers)
-    x, y = add_jitter(100, SCREEN_HEIGHT // 2)
-    create_archer(x, y, TeamType.TEAM1)
-    # Back line (mages)
-    x, y = add_jitter(150, SCREEN_HEIGHT // 2)
-    create_mage(x, y, TeamType.TEAM1)
-    # Back line (horsemen)
-    x, y = add_jitter(150, SCREEN_HEIGHT // 2)
-    create_horseman(x, y, TeamType.TEAM1)
-    # Back line (werebear)
-    x, y = add_jitter(150, SCREEN_HEIGHT // 2)
-    create_werebear(x, y, TeamType.TEAM1)
-
-# Create team 2 entities (right side, facing left)
-for i in range(n):
-    # Front line (swordsmen)
-    x, y = add_jitter(SCREEN_WIDTH - 150, SCREEN_HEIGHT // 2)
-    create_swordsman(x, y, TeamType.TEAM2)
-    # Middle line (archers)
-    x, y = add_jitter(SCREEN_WIDTH - 100, SCREEN_HEIGHT // 2)
-    create_archer(x, y, TeamType.TEAM2)
-    # Back line (mages)
-    x, y = add_jitter(SCREEN_WIDTH - 150, SCREEN_HEIGHT // 2)
-    create_mage(x, y, TeamType.TEAM2)
-    # Back line (horsemen)
-    x, y = add_jitter(SCREEN_WIDTH - 150, SCREEN_HEIGHT // 2)
-    create_horseman(x, y, TeamType.TEAM2)
-    # Back line (werebear)
-    x, y = add_jitter(SCREEN_WIDTH - 150, SCREEN_HEIGHT // 2)
-    create_werebear(x, y, TeamType.TEAM2)
-
+battles["tutorial_1"]()
 
 # Main game loop
 running = True
