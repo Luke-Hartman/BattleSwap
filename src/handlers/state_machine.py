@@ -36,8 +36,7 @@ class StateMachine:
 
     def handle_attack_completed(self, event: AttackCompletedEvent):
         unit_state = esper.component_for_entity(event.entity, UnitState)
-        unit_state.state = State.IDLE
-        unit_state.target = None
+        unit_state.state = State.PURSUING
         emit_event(STATE_CHANGED, event=StateChangedEvent(event.entity, State.IDLE))
 
     def handle_killing_blow(self, event: KillingBlowEvent):
