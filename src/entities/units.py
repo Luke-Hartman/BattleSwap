@@ -236,7 +236,7 @@ def create_fancy_swordsman(x: int, y: int, team: TeamType) -> int:
         rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ATTACKING: 4, AnimationType.DYING: 6},
         animation_durations=FANCY_SWORDSMAN_ANIMATION_DURATIONS,
         sprite_center_offset=(0, 0),
-        attack_activation_frame=7
+        attack_activation_frame=5
     ))
     esper.add_component(entity, Health(current=FANCY_SWORDSMAN_HP, maximum=FANCY_SWORDSMAN_HP))
     esper.add_component(entity, Orientation(
