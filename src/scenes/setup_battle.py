@@ -89,10 +89,20 @@ class SetupBattleScene(Scene):
 
     def select_unit(self, mouse_pos: Tuple[int, int]) -> None:
         """Select a unit at the given mouse position."""
+        highest_y = -float('inf') # We want to pick the lowest unit if multiple units are under the mouse
+        highest_y_ent = None
         for ent, (team, sprite) in esper.get_components(Team, SpriteSheet):
             if team.type == TeamType.TEAM1 and sprite.rect.collidepoint(mouse_pos):
-                self.selected_entity = ent
-                break
+                # Check if the mouse position overlaps with a non-transparent pixel
+                relative_mouse_pos = (mouse_pos[0] - sprite.rect.x, mouse_pos[1] - sprite.rect.y)
+                try:
+                    if sprite.image.get_at(relative_mouse_pos).a != 0:
+                        if sprite.rect.y > highest_y:
+                            highest_y = sprite.rect.y
+                            highest_y_ent = ent
+                except IndexError:
+                    pass
+        self.selected_entity = highest_y_ent
 
     def move_unit(self, mouse_pos: Tuple[int, int]) -> None:
         """Move the selected unit to the given mouse position."""
