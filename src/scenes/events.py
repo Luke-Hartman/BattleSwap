@@ -2,6 +2,7 @@
 
 import pygame
 
-CHANGE_TO_BATTLE_SCENE = pygame.event.custom_type()
+SETUP_BATTLE_SCENE = pygame.event.custom_type()
+START_BATTLE = pygame.event.custom_type()
 RETURN_TO_SELECT_BATTLE = pygame.event.custom_type()
 

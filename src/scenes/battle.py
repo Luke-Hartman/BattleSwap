@@ -15,25 +15,17 @@ from CONSTANTS import SCREEN_WIDTH, SCREEN_HEIGHT
 class BattleScene(Scene):
     """The scene for the battle."""
 
-    def __init__(self, screen: pygame.Surface, battle: str):
+    def __init__(self, screen: pygame.Surface):
         self.screen = screen
-        self.battle = battle
         self.manager = pygame_gui.UIManager((SCREEN_WIDTH, SCREEN_HEIGHT))
-        
-        rendering_processor = RenderingProcessor(screen)
-        animation_processor = AnimationProcessor()
         movement_processor = MovementProcessor()
         pursuing_processor = PursuingProcessor()
         targeting_processor = TargetingProcessor()
         collision_processor = CollisionProcessor(screen)
         esper.add_processor(pursuing_processor)
         esper.add_processor(movement_processor)
-        esper.add_processor(animation_processor)
-        esper.add_processor(rendering_processor)
         esper.add_processor(collision_processor)
         esper.add_processor(targeting_processor)
-        battles[battle]()
-
         self.create_return_button()
 
     def create_return_button(self) -> None:
@@ -58,6 +50,14 @@ class BattleScene(Scene):
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.return_button:
                         pygame.event.post(pygame.event.Event(RETURN_TO_SELECT_BATTLE))
+                        esper.clear_database()
+                        esper.remove_processor(RenderingProcessor)
+                        esper.remove_processor(AnimationProcessor)
+                        esper.remove_processor(PursuingProcessor)
+                        esper.remove_processor(MovementProcessor)
+                        esper.remove_processor(CollisionProcessor)
+                        esper.remove_processor(TargetingProcessor)
+                        return True
             
             self.manager.process_events(event)
 

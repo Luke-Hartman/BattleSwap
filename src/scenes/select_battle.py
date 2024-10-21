@@ -3,7 +3,7 @@ from CONSTANTS import SCREEN_HEIGHT, SCREEN_WIDTH
 from battles import battles
 from scenes.scene import Scene
 import pygame_gui
-from scenes.events import CHANGE_TO_BATTLE_SCENE
+from scenes.events import SETUP_BATTLE_SCENE
 
 class SelectBattleScene(Scene):
     """The scene for selecting a battle."""
@@ -38,7 +38,7 @@ class SelectBattleScene(Scene):
                 return False
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
-                    pygame.event.post(pygame.event.Event(CHANGE_TO_BATTLE_SCENE, battle=event.ui_element.text))
+                    pygame.event.post(pygame.event.Event(SETUP_BATTLE_SCENE, battle=event.ui_element.text))
             
             self.manager.process_events(event)
 
