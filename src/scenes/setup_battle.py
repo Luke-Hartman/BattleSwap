@@ -1,6 +1,7 @@
 """Setup battle scene for Battle Swap."""
 
-from typing import Tuple
+from typing import Tuple, Optional
+from dataclasses import dataclass
 import esper
 import pygame
 import pygame_gui
@@ -14,6 +15,12 @@ from scenes.scene import Scene
 from scenes.events import START_BATTLE
 from CONSTANTS import SCREEN_WIDTH, SCREEN_HEIGHT, NO_MANS_LAND_WIDTH
 
+@dataclass
+class SelectedUnit:
+    """Dataclass to store information about the selected unit."""
+    entity: int
+    original_pos: Tuple[float, float]
+
 class SetupBattleScene(Scene):
     """The scene for setting up the battle."""
 
@@ -21,7 +28,7 @@ class SetupBattleScene(Scene):
         self.screen = screen
         self.battle = battle
         self.manager = pygame_gui.UIManager((SCREEN_WIDTH, SCREEN_HEIGHT))
-        self.selected_entity = None
+        self.selected_unit: Optional[SelectedUnit] = None
         
         self.rendering_processor = RenderingProcessor(screen)
         esper.add_processor(self.rendering_processor)
@@ -64,14 +71,17 @@ class SetupBattleScene(Scene):
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.start_button:
                         pygame.event.post(pygame.event.Event(START_BATTLE, battle=self.battle))
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                mouse_pos = pygame.mouse.get_pos()
-                if self.selected_entity is None:
-                    self.select_unit(mouse_pos)
-                else:
-                    self.selected_entity = None
-            if self.selected_entity is not None and event.type == pygame.MOUSEMOTION:
-                pos = esper.component_for_entity(self.selected_entity, Position)
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:  # Left click
+                    mouse_pos = pygame.mouse.get_pos()
+                    if self.selected_unit is None:
+                        self.select_unit(mouse_pos)
+                    else:
+                        self.place_selected_unit(mouse_pos)
+                elif event.button == 3:  # Right click
+                    self.deselect_unit()
+            if self.selected_unit is not None and event.type == pygame.MOUSEMOTION:
+                pos = esper.component_for_entity(self.selected_unit.entity, Position)
                 x, y = event.pos
                 x = min(x, SCREEN_WIDTH // 2 - NO_MANS_LAND_WIDTH//2)
                 pos.x, pos.y = x, y
@@ -81,6 +91,9 @@ class SetupBattleScene(Scene):
         # Draw vertical lines to represent no man's land
         pygame.draw.line(self.screen, (0, 0, 0), (SCREEN_WIDTH // 2 - NO_MANS_LAND_WIDTH//2, 0), (SCREEN_WIDTH // 2 - NO_MANS_LAND_WIDTH//2, SCREEN_HEIGHT), 2)
         pygame.draw.line(self.screen, (0, 0, 0), (SCREEN_WIDTH // 2 + NO_MANS_LAND_WIDTH//2, 0), (SCREEN_WIDTH // 2 + NO_MANS_LAND_WIDTH//2, SCREEN_HEIGHT), 2)
+        # Draw a circle where the selected unit was
+        if self.selected_unit is not None:
+            pygame.draw.circle(self.screen, (0, 200, 0), self.selected_unit.original_pos, 3)
         esper.process(time_delta)
         self.manager.update(time_delta)
         self.manager.draw_ui(self.screen)
@@ -89,24 +102,31 @@ class SetupBattleScene(Scene):
 
     def select_unit(self, mouse_pos: Tuple[int, int]) -> None:
         """Select a unit at the given mouse position."""
-        highest_y = -float('inf') # We want to pick the lowest unit if multiple units are under the mouse
-        highest_y_ent = None
-        for ent, (team, sprite) in esper.get_components(Team, SpriteSheet):
+        candidate_unit = SelectedUnit(None, (0, -float('inf')))
+        for ent, (team, sprite, pos) in esper.get_components(Team, SpriteSheet, Position):
             if team.type == TeamType.TEAM1 and sprite.rect.collidepoint(mouse_pos):
-                # Check if the mouse position overlaps with a non-transparent pixel
                 relative_mouse_pos = (mouse_pos[0] - sprite.rect.x, mouse_pos[1] - sprite.rect.y)
                 try:
                     if sprite.image.get_at(relative_mouse_pos).a != 0:
-                        if sprite.rect.y > highest_y:
-                            highest_y = sprite.rect.y
-                            highest_y_ent = ent
+                        if pos.y > candidate_unit.original_pos[1]:
+                            candidate_unit = SelectedUnit(ent, (pos.x, pos.y))
                 except IndexError:
                     pass
-        self.selected_entity = highest_y_ent
+        if candidate_unit.entity is not None:
+            self.selected_unit = candidate_unit
 
-    def move_unit(self, mouse_pos: Tuple[int, int]) -> None:
-        """Move the selected unit to the given mouse position."""
-        if self.selected_entity is not None:
-            pos = esper.component_for_entity(self.selected_entity, Position)
-            pos.x, pos.y = mouse_pos
-            self.selected_entity = None
+    def place_selected_unit(self, mouse_pos: Tuple[int, int]) -> None:
+        """Place the selected unit at the given mouse position."""
+        if self.selected_unit is not None:
+            pos = esper.component_for_entity(self.selected_unit.entity, Position)
+            x, y = mouse_pos
+            x = min(x, SCREEN_WIDTH // 2 - NO_MANS_LAND_WIDTH//2)
+            pos.x, pos.y = x, y
+            self.selected_unit = None
+
+    def deselect_unit(self) -> None:
+        """Deselect the current unit and return it to its original position."""
+        if self.selected_unit is not None:
+            pos = esper.component_for_entity(self.selected_unit.entity, Position)
+            pos.x, pos.y = self.selected_unit.original_pos
+            self.selected_unit = None
