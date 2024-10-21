@@ -12,7 +12,7 @@ from processors.animation_processor import AnimationProcessor
 from processors.rendering_processor import RenderingProcessor
 from scenes.scene import Scene
 from scenes.events import START_BATTLE
-from CONSTANTS import SCREEN_WIDTH, SCREEN_HEIGHT
+from CONSTANTS import SCREEN_WIDTH, SCREEN_HEIGHT, NO_MANS_LAND_WIDTH
 
 class SetupBattleScene(Scene):
     """The scene for setting up the battle."""
@@ -69,10 +69,18 @@ class SetupBattleScene(Scene):
                 if self.selected_entity is None:
                     self.select_unit(mouse_pos)
                 else:
-                    self.move_unit(mouse_pos)
+                    self.selected_entity = None
+            if self.selected_entity is not None and event.type == pygame.MOUSEMOTION:
+                pos = esper.component_for_entity(self.selected_entity, Position)
+                x, y = event.pos
+                x = min(x, SCREEN_WIDTH // 2 - NO_MANS_LAND_WIDTH//2)
+                pos.x, pos.y = x, y
             self.manager.process_events(event)
 
-        self.screen.fill((200, 200, 200))  # Light gray background
+        self.screen.fill((34, 100, 34))
+        # Draw vertical lines to represent no man's land
+        pygame.draw.line(self.screen, (0, 0, 0), (SCREEN_WIDTH // 2 - NO_MANS_LAND_WIDTH//2, 0), (SCREEN_WIDTH // 2 - NO_MANS_LAND_WIDTH//2, SCREEN_HEIGHT), 2)
+        pygame.draw.line(self.screen, (0, 0, 0), (SCREEN_WIDTH // 2 + NO_MANS_LAND_WIDTH//2, 0), (SCREEN_WIDTH // 2 + NO_MANS_LAND_WIDTH//2, SCREEN_HEIGHT), 2)
         esper.process(time_delta)
         self.manager.update(time_delta)
         self.manager.draw_ui(self.screen)

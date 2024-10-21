@@ -3,6 +3,7 @@ from components.animation import AnimationType
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
+NO_MANS_LAND_WIDTH = 50
 
 MINIFOLKS_SCALE = 2
 TINY_RPG_SCALE = 1.5
