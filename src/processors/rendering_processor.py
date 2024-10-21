@@ -26,7 +26,6 @@ class RenderingProcessor(esper.Processor):
         self.screen = screen
 
     def process(self, dt: float):
-        self.screen.fill((34, 100, 34))
         
         # Get all entities with necessary components
         entities = esper.get_components(Position, AnimationState, SpriteSheet, Team)
@@ -73,8 +72,6 @@ class RenderingProcessor(esper.Processor):
                 unit_state = esper.component_for_entity(ent, UnitState)
                 if unit_state.state != State.DEAD and health.current < health.maximum:
                     self.draw_health_bar(pos, sprite_sheet, health, team)
-
-        pygame.display.flip()
 
     def draw_health_bar(self, pos: Position, sprite_sheet: SpriteSheet, health: Health, team: Team):
         """Draw a health bar above the entity."""

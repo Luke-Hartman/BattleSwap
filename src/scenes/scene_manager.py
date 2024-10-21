@@ -2,7 +2,7 @@ import pygame
 
 from scenes.select_battle import SelectBattleScene
 from scenes.battle import BattleScene
-from scenes.events import CHANGE_TO_BATTLE_SCENE
+from scenes.events import CHANGE_TO_BATTLE_SCENE, RETURN_TO_SELECT_BATTLE
 
 class SceneManager:
     """Handles transitions between scenes and catches events for changing scenes."""
@@ -16,5 +16,7 @@ class SceneManager:
         for event in events:
             if event.type == CHANGE_TO_BATTLE_SCENE:
                 self.current_scene = BattleScene(self.screen, event.battle)
+            elif event.type == RETURN_TO_SELECT_BATTLE:
+                self.current_scene = SelectBattleScene(self.screen)
         
         return self.current_scene.update(time_delta, events)
