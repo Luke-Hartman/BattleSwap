@@ -8,6 +8,7 @@ and runs the main game loop.
 import pygame
 from CONSTANTS import SCREEN_HEIGHT, SCREEN_WIDTH
 from battles import battles
+from camera import Camera
 from entities.units import load_sprite_sheets
 from entities.projectiles import load_projectile_sheets
 from handlers.attack_handler import AttackHandler
@@ -32,7 +33,8 @@ state_machine = StateMachine()
 running = True
 clock = pygame.time.Clock()
 
-scene_manager = SceneManager(screen)
+camera = Camera(SCREEN_WIDTH, SCREEN_HEIGHT)
+scene_manager = SceneManager(screen, camera)
 
 while running:
     dt = clock.tick(60) / 1000.0  # Convert to seconds

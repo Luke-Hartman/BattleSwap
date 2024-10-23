@@ -3,7 +3,7 @@ import pygame
 import pygame_gui
 from battles import battles
 from processors.collision_processor import CollisionProcessor
-from processors.rendering_processor import RenderingProcessor
+from processors.rendering_processor import RenderingProcessor, draw_battlefield
 from processors.animation_processor import AnimationProcessor
 from processors.movement_processor import MovementProcessor
 from processors.pursuing_processor import PursuingProcessor
@@ -11,17 +11,19 @@ from processors.targeting_processor import TargetingProcessor
 from scenes.scene import Scene
 from scenes.events import RETURN_TO_SELECT_BATTLE
 from CONSTANTS import SCREEN_WIDTH, SCREEN_HEIGHT
+from camera import Camera
 
 class BattleScene(Scene):
     """The scene for the battle."""
 
-    def __init__(self, screen: pygame.Surface):
+    def __init__(self, screen: pygame.Surface, camera: Camera):
         self.screen = screen
+        self.camera = camera
         self.manager = pygame_gui.UIManager((SCREEN_WIDTH, SCREEN_HEIGHT))
         movement_processor = MovementProcessor()
         pursuing_processor = PursuingProcessor()
         targeting_processor = TargetingProcessor()
-        collision_processor = CollisionProcessor(screen)
+        collision_processor = CollisionProcessor()
         esper.add_processor(pursuing_processor)
         esper.add_processor(movement_processor)
         esper.add_processor(collision_processor)
@@ -61,7 +63,9 @@ class BattleScene(Scene):
             
             self.manager.process_events(event)
 
-        self.screen.fill((34, 100, 34))
+        self.camera.handle_event(events)
+        self.screen.fill((0, 0, 0))
+        draw_battlefield(self.screen, self.camera, include_no_mans_land=True)
         esper.process(time_delta)
         self.manager.update(time_delta)
         self.manager.draw_ui(self.screen)

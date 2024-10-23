@@ -8,7 +8,7 @@ import esper
 import pygame
 import numpy as np
 from scipy.spatial import KDTree
-from CONSTANTS import SCREEN_HEIGHT, SCREEN_WIDTH
+from CONSTANTS import BATTLEFIELD_WIDTH, BATTLEFIELD_HEIGHT
 from components.sprite_sheet import SpriteSheet
 from components.team import Team, TeamType
 from components.unit_state import UnitState, State
@@ -18,9 +18,8 @@ from events import ProjectileHitEvent, PROJECTILE_HIT, emit_event
 class CollisionProcessor(esper.Processor):
     """Processor responsible for detecting collisions between projectiles and units of opposing teams."""
 
-    def __init__(self, screen):
-        self.screen = screen
-        self.screen_rect = screen.get_rect()
+    def __init__(self):
+        self.battlefield_rect = pygame.Rect(0, 0, BATTLEFIELD_WIDTH, BATTLEFIELD_HEIGHT)
 
     def process(self, dt: float):
         team1_projectiles = pygame.sprite.Group()
@@ -55,9 +54,9 @@ class CollisionProcessor(esper.Processor):
         # Handle collisions between team2 projectiles and team1 units
         self.process_unit_projectile_collisions(team2_projectiles, team1_units, sprite_to_ent)
 
-        # Remove off-screen projectiles
+        # Remove off-battlefield projectiles
         for projectile in [*team1_projectiles, *team2_projectiles]:
-            if not self.screen_rect.colliderect(projectile.rect):
+            if not self.battlefield_rect.colliderect(projectile.rect):
                 esper.delete_entity(sprite_to_ent[projectile])
 
     def check_sprite_group_collisions(self, group1: pygame.sprite.Group, group2: pygame.sprite.Group) -> list[tuple[pygame.sprite.Sprite, pygame.sprite.Sprite]]:
