@@ -1,0 +1,71 @@
+{
+    "@unit_list_item":
+    {
+        "colours":
+        {
+            "normal_bg": "#45494e",
+            "hovered_bg": "#35393e",
+            "disabled_bg": "#25292e",
+            "selected_bg": "#193754",
+            "active_bg": "#193754",
+            "normal_border": "#DDDDDD",
+            "hovered_border": "#FFFFFF",
+            "disabled_border": "#808080",
+            "selected_border": "#8080B0",
+            "active_border": "#8080B0"
+        },
+        "misc":
+        {
+            "border_width": "1",
+            "shadow_width": "2",
+            "shape": "rectangle",
+            "text_horiz_alignment": "right",
+            "text_vert_alignment": "bottom",
+            "text_vert_alignment_padding": "0",
+            "text_horiz_alignment_padding": "0"
+        }
+    },
+    "#archer_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/MiniArcherIcon.png"
+            }
+        }
+    },
+    "#swordman_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/MiniSwordManIcon.png"
+            }
+        }
+    },
+    "#mage_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/MiniMageIcon.png"
+            }
+        }
+    },
+    "#horseman_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/MiniHorsemanIcon.png"
+            }
+        }
+    },
+    "#werebear_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/WerebearIcon.png"
+            }
+        }
+    },
+    "#fancy_swordsman_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/FancySwordsmanIcon.png"
+            }
+        }
+    }
+}
+    
