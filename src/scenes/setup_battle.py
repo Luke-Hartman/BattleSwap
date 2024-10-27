@@ -262,61 +262,27 @@ class SetupBattleScene(Scene):
 
     def update_unit_list(self, unit_type: UnitType, new_count: int) -> None:
         """Update the unit list UI when a unit count changes."""
-        existing_item = None
-        for item in self.unit_list_items:
-            if item.unit_type == unit_type:
-                existing_item = item
-                break
-
         assert new_count >= 0
-        if new_count == 0:
-            if existing_item:
-                # Remove item from list and kill the UI element
-                self.unit_list_items.remove(existing_item)
-                existing_item.kill()
-
-                needs_scrollbar, _ = self._needs_scrollbar(len(self.unit_list_items))
-                
-                # Update container height and reposition items based on scrollbar presence
-                container_height = self.unit_container.rect.height
-                y_offset = (container_height - UnitListItem.size) // 2 if not needs_scrollbar else 0
-                
-                # Reposition remaining items
-                x_position = 0
-                padding = 10
-                for item in self.unit_list_items:
-                    item.set_position((x_position, y_offset))
-                    x_position += item.size + padding // 2
+        
+        previous_count = self.units[unit_type]
+        self.units[unit_type] = new_count
+        
+        # Rebuild if we're adding the first unit or removing the last unit of this type
+        if (previous_count == 1 and new_count == 0) or (previous_count == 0 and new_count > 0):
+            # Kill existing UI elements
+            self.units_panel.kill()
+            self.unit_container.kill()
+            for item in self.unit_list_items:
+                item.kill()
+            
+            # Rebuild everything
+            self.create_ui_elements()
         else:
-            if existing_item:
-                existing_item.set_text(str(new_count))
-            else:
-                # Calculate position for new item
-                x_position = 0
-                padding = 10
-                if self.unit_list_items:
-                    last_item = self.unit_list_items[-1]
-                    x_position = last_item.rect.right + padding // 2
-                needs_scrollbar, _ = self._needs_scrollbar(len(self.unit_list_items) + 1)
-                
-                # Calculate vertical position
-                container_height = self.unit_container.rect.height
-                y_offset = (container_height - UnitListItem.size) // 2 if not needs_scrollbar else 0
-                
-                # Update positions of existing items
-                for item in self.unit_list_items:
-                    current_pos = item.get_relative_rect()
-                    item.set_position((current_pos.x, y_offset))
-
-                new_item = UnitListItem(
-                    x_pos=x_position,
-                    y_pos=y_offset,
-                    unit_type=unit_type,
-                    count=new_count,
-                    manager=self.manager,
-                    container=self.unit_container
-                )
-                self.unit_list_items.append(new_item)
+            # Just update the count on the existing item
+            for item in self.unit_list_items:
+                if item.unit_type == unit_type:
+                    item.set_text(str(new_count))
+                    break
 
 class UnitListItem(pygame_gui.elements.UIButton):
     """A custom UI button that displays a unit icon and its count.
@@ -344,5 +310,7 @@ class UnitListItem(pygame_gui.elements.UIButton):
         )
         self.unit_type = unit_type
         self.count = count
+
+
 
 
