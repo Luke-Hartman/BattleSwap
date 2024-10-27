@@ -1,6 +1,6 @@
 import pygame
 from CONSTANTS import SCREEN_HEIGHT, SCREEN_WIDTH
-from battles import battles
+from battles import enemies
 from scenes.scene import Scene
 import pygame_gui
 from scenes.events import SETUP_BATTLE_SCENE
@@ -19,7 +19,7 @@ class SelectBattleScene(Scene):
         button_spacing = 20
         start_y = 100
 
-        for i, battle in enumerate(battles):
+        for i, battle in enumerate(enemies):
             button_rect = pygame.Rect(
                 (SCREEN_WIDTH // 2 - button_width // 2,
                  start_y + i * (button_height + button_spacing)),

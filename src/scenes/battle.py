@@ -1,7 +1,6 @@
 import esper
 import pygame
 import pygame_gui
-from battles import battles
 from processors.collision_processor import CollisionProcessor
 from processors.rendering_processor import RenderingProcessor, draw_battlefield
 from processors.animation_processor import AnimationProcessor

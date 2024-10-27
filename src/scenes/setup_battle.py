@@ -5,18 +5,17 @@ from dataclasses import dataclass
 import esper
 import pygame
 import pygame_gui
-from battles import battles
 from components.position import Position
 from components.sprite_sheet import SpriteSheet
 from components.team import Team, TeamType
 from processors.animation_processor import AnimationProcessor
 from processors.rendering_processor import RenderingProcessor, draw_battlefield
 from scenes.scene import Scene
-from scenes.events import START_BATTLE
+from scenes.events import RETURN_TO_SELECT_BATTLE, START_BATTLE
 from CONSTANTS import BATTLEFIELD_HEIGHT, BATTLEFIELD_WIDTH, SCREEN_WIDTH, SCREEN_HEIGHT, NO_MANS_LAND_WIDTH
 from camera import Camera
-from barracks import Barracks
-from entities.units import UnitType, TeamType, unit_theme_ids
+from entities.units import UnitType, TeamType, unit_theme_ids, create_unit
+from battles import starting_units, enemies
 
 @dataclass
 class SelectedUnit:
@@ -47,14 +46,36 @@ class SetupBattleScene(Scene):
         self.manager = pygame_gui.UIManager((SCREEN_WIDTH, SCREEN_HEIGHT), 'src/theme.json')
         self.selected_unit: Optional[SelectedUnit] = None
         self.rendering_processor = RenderingProcessor(screen, self.camera)
-        self.barracks = Barracks()
+        self.units = starting_units
+
+        # Center the camera on the battlefield
+        self.camera.x = (BATTLEFIELD_WIDTH - SCREEN_WIDTH) // 2
+        self.camera.y = (BATTLEFIELD_HEIGHT - SCREEN_HEIGHT) // 2
+
+        
+        self.create_return_button()
         
         esper.add_processor(self.rendering_processor)
         animation_processor = AnimationProcessor()
         esper.add_processor(animation_processor)
-        battles[battle]()
+        for unit_type, position in enemies[battle]:
+            create_unit(position[0], position[1], unit_type, TeamType.TEAM2)
 
         self.create_ui_elements()
+
+
+    def create_return_button(self) -> None:
+        button_width = 100
+        button_height = 30
+        button_rect = pygame.Rect(
+            (10, 10),
+            (button_width, button_height)
+        )
+        self.return_button = pygame_gui.elements.UIButton(
+            relative_rect=button_rect,
+            text="Return",
+            manager=self.manager
+        )
 
     def create_ui_elements(self) -> None:
         """Create all UI elements for the scene.
@@ -67,12 +88,13 @@ class SetupBattleScene(Scene):
         """
         # Create barracks panel at the bottom, full width
         panel_height = 110
-        panel_width = SCREEN_WIDTH
+        side_padding = 75
+        panel_width = SCREEN_WIDTH - 2 * side_padding
         panel_rect = pygame.Rect(
-            (0, SCREEN_HEIGHT - panel_height),
+            (side_padding, SCREEN_HEIGHT - panel_height - 10),
             (panel_width, panel_height)
         )
-        self.barracks_panel = pygame_gui.elements.UIPanel(
+        self.units_panel = pygame_gui.elements.UIPanel(
             relative_rect=panel_rect,
             manager=self.manager
         )
@@ -86,31 +108,30 @@ class SetupBattleScene(Scene):
         self.unit_container = pygame_gui.elements.UIScrollingContainer(
             relative_rect=container_rect,
             manager=self.manager,
-            container=self.barracks_panel,
+            container=self.units_panel,
             allow_scroll_y=False,
         )
 
         # Create unit listings horizontally
         self.unit_list_items = []
         x_position = 0
-        for _ in range(3):
-            for unit_type, count in self.barracks.get_contents().items():
-                item = UnitListItem(
-                    x_pos=x_position,
-                    y_pos=0,
-                    unit_type=unit_type,
-                    count=count,
-                    manager=self.manager,
-                    container=self.unit_container
-                )
-                self.unit_list_items.append(item)
-                x_position += item.size + padding // 2
+        for unit_type, count in self.units.items():
+            item = UnitListItem(
+                x_pos=x_position,
+                y_pos=0,
+                unit_type=unit_type,
+                count=count,
+                manager=self.manager,
+                container=self.unit_container
+            )
+            self.unit_list_items.append(item)
+            x_position += item.size + padding // 2
 
-        # Create start button above panel in right corner
+        # Create start button above panel in top right corner
         button_width = 70
         button_height = 40
         button_rect = pygame.Rect(
-            (SCREEN_WIDTH - button_width - 5, SCREEN_HEIGHT - panel_height - button_height - 5),
+            (SCREEN_WIDTH - button_width - 10, 10),
             (button_width, button_height)
         )
         self.start_button = pygame_gui.elements.UIButton(
@@ -138,6 +159,12 @@ class SetupBattleScene(Scene):
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.start_button:
                         pygame.event.post(pygame.event.Event(START_BATTLE, battle=self.battle))
+                    elif event.ui_element == self.return_button:
+                        pygame.event.post(pygame.event.Event(RETURN_TO_SELECT_BATTLE))
+                        esper.clear_database()
+                        esper.remove_processor(RenderingProcessor)
+                        esper.remove_processor(AnimationProcessor)
+                        return True
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:  # Left click
                     mouse_pos = pygame.mouse.get_pos()

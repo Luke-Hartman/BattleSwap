@@ -85,6 +85,17 @@ def load_sprite_sheets():
         path = os.path.join("assets", "icons", filename)
         unit_icon_surfaces[unit_type] = pygame.image.load(path).convert_alpha()
 
+def create_unit(x: int, y: int, unit_type: UnitType, team: TeamType) -> int:
+    """Create a unit entity with all necessary components."""
+    return {
+        UnitType.SWORDSMAN: create_swordsman,
+        UnitType.ARCHER: create_archer,
+        UnitType.MAGE: create_mage,
+        UnitType.HORSEMAN: create_horseman,
+        UnitType.WEREBEAR: create_werebear,
+        UnitType.FANCY_SWORDSMAN: create_fancy_swordsman,
+    }[unit_type](x, y, team)
+
 def create_swordsman(x: int, y: int, team: TeamType) -> int:
     """Create a swordsman entity with all necessary components."""
     entity = esper.create_entity()
