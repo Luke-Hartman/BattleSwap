@@ -69,19 +69,35 @@ class SetupBattleScene(Scene):
             manager=self.manager
         )
 
-    def create_ui_elements(self) -> None:
-        """Create all UI elements for the scene.
+    def _needs_scrollbar(self, total_items: int) -> tuple[bool, int]:
+        """Calculate if scrollbar is needed and return appropriate panel height.
         
-        Creates:
-            - A panel spanning the full width at the bottom showing available units
-            - A scrollable container for unit listings
-            - Individual unit items showing icon and count
-            - A start battle button above the panel
+        Args:
+            total_items: Number of items to display
+            
+        Returns:
+            Tuple of (needs_scrollbar, panel_height)
         """
-        # Create barracks panel at the bottom, full width
-        panel_height = 110
+        padding = 10
         side_padding = 75
         panel_width = SCREEN_WIDTH - 2 * side_padding
+        
+        total_width = total_items * (UnitListItem.size + padding // 2) - padding // 2 if total_items > 0 else 0
+        needs_scrollbar = total_width > panel_width - 2 * padding
+        panel_height = 110 if needs_scrollbar else 85
+        
+        return needs_scrollbar, panel_height
+
+    def create_ui_elements(self) -> None:
+        """Create all UI elements for the scene."""
+        # Create barracks panel at the bottom, full width
+        side_padding = 75
+        panel_width = SCREEN_WIDTH - 2 * side_padding
+        padding = 10
+        
+        visible_unit_count = sum(1 for _, count in self.units.items() if count > 0)
+        needs_scrollbar, panel_height = self._needs_scrollbar(visible_unit_count)
+        
         panel_rect = pygame.Rect(
             (side_padding, SCREEN_HEIGHT - panel_height - 10),
             (panel_width, panel_height)
@@ -91,11 +107,11 @@ class SetupBattleScene(Scene):
             manager=self.manager
         )
 
-        # Create scrolling container for unit listings
-        padding = 10
+        # Create scrolling container
+        container_height = panel_height - 2 * padding
         container_rect = pygame.Rect(
             (padding, padding),
-            (panel_width - 2 * padding, panel_height - 2 * padding)
+            (panel_width - 2 * padding, container_height)
         )
         self.unit_container = pygame_gui.elements.UIScrollingContainer(
             relative_rect=container_rect,
@@ -104,15 +120,17 @@ class SetupBattleScene(Scene):
             allow_scroll_y=False,
         )
 
+        # Calculate vertical centering offset when no scrollbar
+        y_offset = (container_height - UnitListItem.size) // 2 if not needs_scrollbar else 0
+
         # Create unit listings horizontally
         self.unit_list_items = []
         x_position = 0
-        padding = 10
         for unit_type, count in self.units.items():
-            if count > 0:  # Only create items for units with count > 0
+            if count > 0:
                 item = UnitListItem(
                     x_pos=x_position,
-                    y_pos=0,
+                    y_pos=y_offset,
                     unit_type=unit_type,
                     count=count,
                     manager=self.manager,
@@ -243,13 +261,7 @@ class SetupBattleScene(Scene):
         self.selected_unit_id = entity
 
     def update_unit_list(self, unit_type: UnitType, new_count: int) -> None:
-        """Update the unit list UI when a unit count changes.
-        
-        Args:
-            unit_type: The type of unit whose count changed
-            new_count: The new count for this unit type
-        """
-        # Find existing item for this unit type
+        """Update the unit list UI when a unit count changes."""
         existing_item = None
         for item in self.unit_list_items:
             if item.unit_type == unit_type:
@@ -262,27 +274,43 @@ class SetupBattleScene(Scene):
                 # Remove item from list and kill the UI element
                 self.unit_list_items.remove(existing_item)
                 existing_item.kill()
+
+                needs_scrollbar, _ = self._needs_scrollbar(len(self.unit_list_items))
+                
+                # Update container height and reposition items based on scrollbar presence
+                container_height = self.unit_container.rect.height
+                y_offset = (container_height - UnitListItem.size) // 2 if not needs_scrollbar else 0
+                
                 # Reposition remaining items
                 x_position = 0
                 padding = 10
                 for item in self.unit_list_items:
-                    item.set_position((x_position, 0))
+                    item.set_position((x_position, y_offset))
                     x_position += item.size + padding // 2
         else:
             if existing_item:
-                # Just update the count
                 existing_item.set_text(str(new_count))
             else:
-                # Create new item at the end
+                # Calculate position for new item
                 x_position = 0
                 padding = 10
                 if self.unit_list_items:
                     last_item = self.unit_list_items[-1]
                     x_position = last_item.rect.right + padding // 2
+                needs_scrollbar, _ = self._needs_scrollbar(len(self.unit_list_items) + 1)
                 
+                # Calculate vertical position
+                container_height = self.unit_container.rect.height
+                y_offset = (container_height - UnitListItem.size) // 2 if not needs_scrollbar else 0
+                
+                # Update positions of existing items
+                for item in self.unit_list_items:
+                    current_pos = item.get_relative_rect()
+                    item.set_position((current_pos.x, y_offset))
+
                 new_item = UnitListItem(
                     x_pos=x_position,
-                    y_pos=0,
+                    y_pos=y_offset,
                     unit_type=unit_type,
                     count=new_count,
                     manager=self.manager,
@@ -299,12 +327,13 @@ class UnitListItem(pygame_gui.elements.UIButton):
     size = 64
     
     def __init__(self, 
-                 x_pos: int,
-                 y_pos: int,
-                 unit_type: UnitType,
-                 count: int,
-                 manager: pygame_gui.UIManager,
-                 container: pygame_gui.core.UIContainer):
+        x_pos: int,
+        y_pos: int,
+        unit_type: UnitType,
+        count: int,
+        manager: pygame_gui.UIManager,
+        container: pygame_gui.core.UIContainer
+    ):
         """Initialize the unit list item button."""
         super().__init__(
             relative_rect=pygame.Rect((x_pos, y_pos), (self.size, self.size)),
@@ -315,3 +344,5 @@ class UnitListItem(pygame_gui.elements.UIButton):
         )
         self.unit_type = unit_type
         self.count = count
+
+
