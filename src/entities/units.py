@@ -6,7 +6,6 @@ This module contains functions for creating different types of units with their 
 import esper
 import pygame
 import os
-from enum import Enum, auto
 from typing import Dict
 from CONSTANTS import (
     MINIFOLKS_SCALE,
@@ -25,18 +24,10 @@ from components.team import Team, TeamType
 from components.unit_state import UnitState
 from components.attack import MeleeAttack, ProjectileAttack, ProjectileType
 from components.movement import Movement
+from components.unit_type import UnitType, UnitTypeComponent
 from components.velocity import Velocity
 from components.health import Health
 from components.orientation import Orientation, FacingDirection
-
-class UnitType(Enum):
-    """Enum representing different types of units."""
-    SWORDSMAN = auto()
-    ARCHER = auto()
-    MAGE = auto()
-    HORSEMAN = auto()
-    WEREBEAR = auto()
-    FANCY_SWORDSMAN = auto()
 
 unit_theme_ids: Dict[UnitType, str] = {
     UnitType.SWORDSMAN: "#swordman_icon",
@@ -103,6 +94,7 @@ def create_swordsman(x: int, y: int, team: TeamType) -> int:
     esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
     esper.add_component(entity, Team(type=team))
     esper.add_component(entity, UnitState())
+    esper.add_component(entity, UnitTypeComponent(type=UnitType.SWORDSMAN))
     esper.add_component(entity, MeleeAttack(range=SWORDSMAN_ATTACK_RANGE, damage=SWORDSMAN_ATTACK_DAMAGE))
     esper.add_component(entity, Movement(speed=SWORDSMAN_MOVEMENT_SPEED))
     esper.add_component(entity, Velocity(x=0, y=0))
@@ -120,6 +112,7 @@ def create_archer(x: int, y: int, team: TeamType) -> int:
     esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
     esper.add_component(entity, Team(type=team))
     esper.add_component(entity, UnitState())
+    esper.add_component(entity, UnitTypeComponent(type=UnitType.ARCHER))
     esper.add_component(
         entity,
         ProjectileAttack(
@@ -147,6 +140,7 @@ def create_mage(x: int, y: int, team: TeamType) -> int:
     esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
     esper.add_component(entity, Team(type=team))
     esper.add_component(entity, UnitState())
+    esper.add_component(entity, UnitTypeComponent(type=UnitType.MAGE))
     esper.add_component(
         entity,
         ProjectileAttack(
@@ -174,6 +168,7 @@ def create_horseman(x: int, y: int, team: TeamType) -> int:
     esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
     esper.add_component(entity, Team(type=team))
     esper.add_component(entity, UnitState())
+    esper.add_component(entity, UnitTypeComponent(type=UnitType.HORSEMAN))
     esper.add_component(entity, MeleeAttack(range=HORSEMAN_ATTACK_RANGE, damage=HORSEMAN_ATTACK_DAMAGE))
     esper.add_component(entity, Movement(speed=HORSEMAN_MOVEMENT_SPEED))
     esper.add_component(entity, Velocity(x=0, y=0))
@@ -191,6 +186,7 @@ def create_werebear(x: int, y: int, team: TeamType) -> int:
     esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
     esper.add_component(entity, Team(type=team))
     esper.add_component(entity, UnitState())
+    esper.add_component(entity, UnitTypeComponent(type=UnitType.WEREBEAR))
     esper.add_component(entity, MeleeAttack(range=WEREBEAR_ATTACK_RANGE, damage=WEREBEAR_ATTACK_DAMAGE))
     esper.add_component(entity, Movement(speed=WEREBEAR_MOVEMENT_SPEED))
     esper.add_component(entity, Velocity(x=0, y=0))
@@ -208,6 +204,7 @@ def create_fancy_swordsman(x: int, y: int, team: TeamType) -> int:
     esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
     esper.add_component(entity, Team(type=team))
     esper.add_component(entity, UnitState())
+    esper.add_component(entity, UnitTypeComponent(type=UnitType.FANCY_SWORDSMAN))
     esper.add_component(entity, MeleeAttack(range=FANCY_SWORDSMAN_ATTACK_RANGE, damage=FANCY_SWORDSMAN_ATTACK_DAMAGE))
     esper.add_component(entity, Movement(speed=FANCY_SWORDSMAN_MOVEMENT_SPEED))
     esper.add_component(entity, Velocity(x=0, y=0))

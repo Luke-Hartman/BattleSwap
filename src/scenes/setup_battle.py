@@ -1,29 +1,21 @@
 """Setup battle scene for Battle Swap."""
 from pygame_gui.core import ObjectID
 from typing import Tuple, Optional
-from dataclasses import dataclass
 import esper
 import pygame
 import pygame_gui
 from components.position import Position
 from components.sprite_sheet import SpriteSheet
 from components.team import Team, TeamType
+from components.unit_type import UnitType, UnitTypeComponent
 from processors.animation_processor import AnimationProcessor
 from processors.rendering_processor import RenderingProcessor, draw_battlefield
 from scenes.scene import Scene
 from scenes.events import RETURN_TO_SELECT_BATTLE, START_BATTLE
 from CONSTANTS import BATTLEFIELD_HEIGHT, BATTLEFIELD_WIDTH, SCREEN_WIDTH, SCREEN_HEIGHT, NO_MANS_LAND_WIDTH
 from camera import Camera
-from entities.units import UnitType, TeamType, unit_theme_ids, create_unit
+from entities.units import TeamType, unit_theme_ids, create_unit
 from battles import starting_units, enemies
-
-@dataclass
-class SelectedUnit:
-    """Dataclass to store information about the selected unit."""
-    entity: int
-    """The entity ID of the selected unit."""
-    original_pos: Tuple[float, float]
-    """The original position (x, y) of the unit before being moved."""
 
 class SetupBattleScene(Scene):
     """The scene for setting up the battle.
@@ -44,9 +36,9 @@ class SetupBattleScene(Scene):
         self.camera = camera
         self.battle = battle
         self.manager = pygame_gui.UIManager((SCREEN_WIDTH, SCREEN_HEIGHT), 'src/theme.json')
-        self.selected_unit: Optional[SelectedUnit] = None
+        self.selected_unit_id: Optional[int] = None
         self.rendering_processor = RenderingProcessor(screen, self.camera)
-        self.units = starting_units
+        self.units = starting_units.copy()
 
         # Center the camera on the battlefield
         self.camera.x = (BATTLEFIELD_WIDTH - SCREEN_WIDTH) // 2
@@ -103,7 +95,7 @@ class SetupBattleScene(Scene):
         padding = 10
         container_rect = pygame.Rect(
             (padding, padding),
-            (panel_width - 2 * padding, panel_height - 2 * padding)  # Full width of panel
+            (panel_width - 2 * padding, panel_height - 2 * padding)
         )
         self.unit_container = pygame_gui.elements.UIScrollingContainer(
             relative_rect=container_rect,
@@ -115,17 +107,19 @@ class SetupBattleScene(Scene):
         # Create unit listings horizontally
         self.unit_list_items = []
         x_position = 0
+        padding = 10
         for unit_type, count in self.units.items():
-            item = UnitListItem(
-                x_pos=x_position,
-                y_pos=0,
-                unit_type=unit_type,
-                count=count,
-                manager=self.manager,
-                container=self.unit_container
-            )
-            self.unit_list_items.append(item)
-            x_position += item.size + padding // 2
+            if count > 0:  # Only create items for units with count > 0
+                item = UnitListItem(
+                    x_pos=x_position,
+                    y_pos=0,
+                    unit_type=unit_type,
+                    count=count,
+                    manager=self.manager,
+                    container=self.unit_container
+                )
+                self.unit_list_items.append(item)
+                x_position += item.size + padding // 2
 
         # Create start button above panel in top right corner
         button_width = 70
@@ -165,19 +159,22 @@ class SetupBattleScene(Scene):
                         esper.remove_processor(RenderingProcessor)
                         esper.remove_processor(AnimationProcessor)
                         return True
+                    elif isinstance(event.ui_element, UnitListItem):
+                        self.create_unit_from_list(event.ui_element)
+
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:  # Left click
                     mouse_pos = pygame.mouse.get_pos()
-                    if self.selected_unit is None:
+                    if self.selected_unit_id is None:
                         self.select_unit(mouse_pos)
                     else:
-                        self.selected_unit = None
+                        self.selected_unit_id = None
                 elif event.button == 3:  # Right click
                     self.deselect_unit()
             self.manager.process_events(event)
 
-        if self.selected_unit is not None:
-            pos = esper.component_for_entity(self.selected_unit.entity, Position)
+        if self.selected_unit_id is not None:
+            pos = esper.component_for_entity(self.selected_unit_id, Position)
             mouse_pos = pygame.mouse.get_pos()
             adjusted_mouse_pos = (mouse_pos[0] + self.camera.x, mouse_pos[1] + self.camera.y)
             x, y = adjusted_mouse_pos
@@ -188,12 +185,6 @@ class SetupBattleScene(Scene):
 
         self.screen.fill((0, 0, 0))
         draw_battlefield(self.screen, self.camera, include_no_mans_land=True)
-        if self.selected_unit is not None:
-            original_pos_screen = (
-                self.selected_unit.original_pos[0] - self.camera.x,
-                self.selected_unit.original_pos[1] - self.camera.y
-            )
-            pygame.draw.circle(self.screen, (0, 200, 0), original_pos_screen, 3)
         esper.process(time_delta)
         self.manager.update(time_delta)
         self.manager.draw_ui(self.screen)
@@ -209,7 +200,8 @@ class SetupBattleScene(Scene):
             mouse_pos: The (x, y) screen coordinates where the mouse was clicked.
         """
         adjusted_mouse_pos = (mouse_pos[0] + self.camera.x, mouse_pos[1] + self.camera.y)
-        candidate_unit = SelectedUnit(None, (0, -float('inf')))
+        candidate_unit_id = None
+        highest_y = -float('inf')
         for ent, (team, sprite, pos) in esper.get_components(Team, SpriteSheet, Position):
             if team.type == TeamType.TEAM1 and sprite.rect.collidepoint(adjusted_mouse_pos):
                 relative_mouse_pos = (
@@ -218,23 +210,85 @@ class SetupBattleScene(Scene):
                 )
                 try:
                     if sprite.image.get_at(relative_mouse_pos).a != 0:
-                        if pos.y > candidate_unit.original_pos[1]:
-                            candidate_unit = SelectedUnit(ent, (pos.x, pos.y))
+                        if pos.y > highest_y:
+                            highest_y = pos.y
+                            candidate_unit_id = ent
                 except IndexError:
                     pass
-        if candidate_unit.entity is not None:
-            self.selected_unit = candidate_unit
+        if candidate_unit_id is not None:
+            self.selected_unit_id = candidate_unit_id
 
     def deselect_unit(self) -> None:
-        """Deselect the current unit and return it to its original position.
+        """Deselect the current unit and return it to the unit pool."""
+        if self.selected_unit_id is not None:
+            # Get unit type before deleting the entity
+            unit_type = esper.component_for_entity(self.selected_unit_id, UnitTypeComponent).type
+            esper.delete_entity(self.selected_unit_id)
+            self.units[unit_type] += 1
+            # Update the UI
+            self.update_unit_list(unit_type, self.units[unit_type])
+            self.selected_unit_id = None
+
+    def create_unit_from_list(self, unit_list_item: 'UnitListItem') -> None:
+        """Create a unit from a unit list item and update the UI.
         
-        If a unit is currently selected, it will be deselected and moved back
-        to the position it was in when it was selected.
+        Args:
+            unit_list_item: The UI item that was clicked
         """
-        if self.selected_unit is not None:
-            pos = esper.component_for_entity(self.selected_unit.entity, Position)
-            pos.x, pos.y = self.selected_unit.original_pos
-            self.selected_unit = None
+        # 0, 0 b/c position is changed in update call
+        entity = create_unit(0, 0, unit_list_item.unit_type, TeamType.TEAM1)
+        self.units[unit_list_item.unit_type] -= 1
+        assert self.units[unit_list_item.unit_type] >= 0
+        self.update_unit_list(unit_list_item.unit_type, self.units[unit_list_item.unit_type])
+        self.selected_unit_id = entity
+
+    def update_unit_list(self, unit_type: UnitType, new_count: int) -> None:
+        """Update the unit list UI when a unit count changes.
+        
+        Args:
+            unit_type: The type of unit whose count changed
+            new_count: The new count for this unit type
+        """
+        # Find existing item for this unit type
+        existing_item = None
+        for item in self.unit_list_items:
+            if item.unit_type == unit_type:
+                existing_item = item
+                break
+
+        assert new_count >= 0
+        if new_count == 0:
+            if existing_item:
+                # Remove item from list and kill the UI element
+                self.unit_list_items.remove(existing_item)
+                existing_item.kill()
+                # Reposition remaining items
+                x_position = 0
+                padding = 10
+                for item in self.unit_list_items:
+                    item.set_position((x_position, 0))
+                    x_position += item.size + padding // 2
+        else:
+            if existing_item:
+                # Just update the count
+                existing_item.set_text(str(new_count))
+            else:
+                # Create new item at the end
+                x_position = 0
+                padding = 10
+                if self.unit_list_items:
+                    last_item = self.unit_list_items[-1]
+                    x_position = last_item.rect.right + padding // 2
+                
+                new_item = UnitListItem(
+                    x_pos=x_position,
+                    y_pos=0,
+                    unit_type=unit_type,
+                    count=new_count,
+                    manager=self.manager,
+                    container=self.unit_container
+                )
+                self.unit_list_items.append(new_item)
 
 class UnitListItem(pygame_gui.elements.UIButton):
     """A custom UI button that displays a unit icon and its count.
