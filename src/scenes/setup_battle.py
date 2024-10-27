@@ -266,7 +266,7 @@ class SetupBattleScene(Scene):
         self.units[unit_type] = new_count
         
         # Rebuild if we're adding the first unit or removing the last unit of this type
-        if (previous_count == 1 and new_count == 0) or (previous_count == 0 and new_count > 0):
+        if new_count == 0 or previous_count == 0:
             self.units_panel.kill()
             self.unit_container.kill()
             for item in self.unit_list_items:
