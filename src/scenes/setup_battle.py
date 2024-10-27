@@ -255,9 +255,7 @@ class SetupBattleScene(Scene):
         """
         # 0, 0 b/c position is changed in update call
         entity = create_unit(0, 0, unit_list_item.unit_type, TeamType.TEAM1)
-        self.units[unit_list_item.unit_type] -= 1
-        assert self.units[unit_list_item.unit_type] >= 0
-        self.update_unit_list(unit_list_item.unit_type, self.units[unit_list_item.unit_type])
+        self.update_unit_list(unit_list_item.unit_type, self.units[unit_list_item.unit_type] - 1)
         self.selected_unit_id = entity
 
     def update_unit_list(self, unit_type: UnitType, new_count: int) -> None:
