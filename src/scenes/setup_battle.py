@@ -242,9 +242,8 @@ class SetupBattleScene(Scene):
             # Get unit type before deleting the entity
             unit_type = esper.component_for_entity(self.selected_unit_id, UnitTypeComponent).type
             esper.delete_entity(self.selected_unit_id)
-            self.units[unit_type] += 1
             # Update the UI
-            self.update_unit_list(unit_type, self.units[unit_type])
+            self.update_unit_list(unit_type, self.units[unit_type] + 1)
             self.selected_unit_id = None
 
     def create_unit_from_list(self, unit_list_item: 'UnitListItem') -> None:
