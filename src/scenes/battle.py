@@ -11,6 +11,7 @@ from scenes.scene import Scene
 from scenes.events import RETURN_TO_SELECT_BATTLE
 from CONSTANTS import SCREEN_WIDTH, SCREEN_HEIGHT
 from camera import Camera
+from ui_components.return_button import ReturnButton
 
 class BattleScene(Scene):
     """The scene for the battle."""
@@ -27,20 +28,8 @@ class BattleScene(Scene):
         esper.add_processor(movement_processor)
         esper.add_processor(collision_processor)
         esper.add_processor(targeting_processor)
-        self.create_return_button()
-
-    def create_return_button(self) -> None:
-        button_width = 100
-        button_height = 30
-        button_rect = pygame.Rect(
-            (10, 10),
-            (button_width, button_height)
-        )
-        self.return_button = pygame_gui.elements.UIButton(
-            relative_rect=button_rect,
-            text="Return",
-            manager=self.manager
-        )
+        self.return_button = ReturnButton(self.manager)
+        
 
     def update(self, time_delta: float, events: list[pygame.event.Event]) -> bool:
         """Update the battle scene."""

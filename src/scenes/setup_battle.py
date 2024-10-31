@@ -16,6 +16,8 @@ from CONSTANTS import BATTLEFIELD_HEIGHT, BATTLEFIELD_WIDTH, SCREEN_WIDTH, SCREE
 from camera import Camera
 from entities.units import TeamType, unit_theme_ids, create_unit
 from battles import starting_units, enemies
+from ui_components.start_button import StartButton
+from ui_components.return_button import ReturnButton
 
 class SetupBattleScene(Scene):
     """The scene for setting up the battle.
@@ -45,7 +47,7 @@ class SetupBattleScene(Scene):
         self.camera.y = (BATTLEFIELD_HEIGHT - SCREEN_HEIGHT) // 2
 
         
-        self.create_return_button()
+        self.return_button = ReturnButton(self.manager)
         
         esper.add_processor(self.rendering_processor)
         animation_processor = AnimationProcessor()
@@ -54,20 +56,7 @@ class SetupBattleScene(Scene):
             create_unit(position[0], position[1], unit_type, TeamType.TEAM2)
 
         self.create_ui_elements()
-
-
-    def create_return_button(self) -> None:
-        button_width = 100
-        button_height = 30
-        button_rect = pygame.Rect(
-            (10, 10),
-            (button_width, button_height)
-        )
-        self.return_button = pygame_gui.elements.UIButton(
-            relative_rect=button_rect,
-            text="Return",
-            manager=self.manager
-        )
+        
 
     def _needs_scrollbar(self, total_items: int) -> tuple[bool, int]:
         """Calculate if scrollbar is needed and return appropriate panel height.
@@ -139,18 +128,7 @@ class SetupBattleScene(Scene):
                 self.unit_list_items.append(item)
                 x_position += item.size + padding // 2
 
-        # Create start button above panel in top right corner
-        button_width = 70
-        button_height = 40
-        button_rect = pygame.Rect(
-            (SCREEN_WIDTH - button_width - 10, 10),
-            (button_width, button_height)
-        )
-        self.start_button = pygame_gui.elements.UIButton(
-            relative_rect=button_rect,
-            text="Start",
-            manager=self.manager
-        )
+        self.start_button = StartButton(self.manager)
 
     def update(self, time_delta: float, events: list[pygame.event.Event]) -> bool:
         """Update the setup battle scene.
