@@ -1,0 +1,11 @@
+Initial blue palette for minifolks
+1. #4058c0
+2. #6098e8
+3. #b5d6de
+
+Red palette
+1. c04040
+2. e86060
+3. deb5b5
+
+Used https://nezvers.itch.io/spritepalettizer to make swaps
