@@ -29,3 +29,9 @@ enemies = {
     ],
 }
 
+dependencies = {
+    "tutorial_1": [],
+    "tutorial_2": ["tutorial_1"],
+    "tutorial_3": ["tutorial_2"],
+    "tutorial_4": ["tutorial_3"],
+}

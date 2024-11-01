@@ -1,15 +1,16 @@
 import pygame
 from CONSTANTS import SCREEN_HEIGHT, SCREEN_WIDTH
-from battles import enemies
 from scenes.scene import Scene
 import pygame_gui
 from scenes.events import SETUP_BATTLE_SCENE
+from progress_manager import ProgressManager
 
 class SelectBattleScene(Scene):
     """The scene for selecting a battle."""
 
-    def __init__(self, screen: pygame.Surface):
+    def __init__(self, screen: pygame.Surface, progress_manager: ProgressManager):
         self.screen = screen
+        self.progress_manager = progress_manager
         self.manager = pygame_gui.UIManager((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.create_buttons()
 
@@ -19,7 +20,7 @@ class SelectBattleScene(Scene):
         button_spacing = 20
         start_y = 100
 
-        for i, battle in enumerate(enemies):
+        for i, battle in enumerate(self.progress_manager.available_battles()):
             button_rect = pygame.Rect(
                 (SCREEN_WIDTH // 2 - button_width // 2,
                  start_y + i * (button_height + button_spacing)),

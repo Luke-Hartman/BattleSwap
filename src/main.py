@@ -17,6 +17,7 @@ from entities.units import load_sprite_sheets
 from entities.projectiles import load_projectile_sheets
 from handlers.attack_handler import AttackHandler
 from handlers.state_machine import StateMachine
+from progress_manager import ProgressManager
 from scenes.scene_manager import SceneManager
 
 # Initialize Pygame
@@ -44,7 +45,8 @@ camera = Camera(SCREEN_WIDTH, SCREEN_HEIGHT)
 camera.x = initial_camera_x
 camera.y = initial_camera_y
 
-scene_manager = SceneManager(screen, camera)
+progress_manager = ProgressManager()
+scene_manager = SceneManager(screen, camera, progress_manager)
 
 while running:
     dt = clock.tick(60) / 1000.0  # Convert to seconds

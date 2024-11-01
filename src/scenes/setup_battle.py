@@ -7,18 +7,20 @@ import pygame_gui
 from components.position import Position
 from components.sprite_sheet import SpriteSheet
 from components.team import Team, TeamType
-from components.unit_type import UnitType, UnitTypeComponent
+from components.unit_type import UnitTypeComponent
 from processors.animation_processor import AnimationProcessor
 from processors.rendering_processor import RenderingProcessor, draw_battlefield
 from scenes.scene import Scene
 from scenes.events import RETURN_TO_SELECT_BATTLE, START_BATTLE
 from CONSTANTS import BATTLEFIELD_HEIGHT, BATTLEFIELD_WIDTH, SCREEN_WIDTH, SCREEN_HEIGHT, NO_MANS_LAND_WIDTH
 from camera import Camera
-from entities.units import TeamType, unit_theme_ids, create_unit
-from battles import starting_units, enemies
+from entities.units import TeamType, create_unit
+from battles import enemies
 from ui_components.start_button import StartButton
 from ui_components.return_button import ReturnButton
 from ui_components.barracks_ui import BarracksUI, UnitListItem
+from progress_manager import ProgressManager, Solution
+
 
 class SetupBattleScene(Scene):
     """The scene for setting up the battle.
@@ -27,15 +29,17 @@ class SetupBattleScene(Scene):
     It provides a UI for selecting units from the barracks and placing them on the field.
     """
 
-    def __init__(self, screen: pygame.Surface, camera: Camera, battle: str):
+    def __init__(self, screen: pygame.Surface, camera: Camera, battle: str, progress_manager: ProgressManager):
         """Initialize the setup battle scene.
         
         Args:
             screen: The pygame surface to render to.
             camera: The camera object controlling the view of the battlefield.
             battle: The name of the battle to set up.
+            progress_manager: The progress manager for the game.
         """
         self.screen = screen
+        self.progress_manager = progress_manager
         self.camera = camera
         self.battle = battle
         self.manager = pygame_gui.UIManager((SCREEN_WIDTH, SCREEN_HEIGHT), 'src/theme.json')
@@ -54,8 +58,9 @@ class SetupBattleScene(Scene):
         for unit_type, position in enemies[battle]:
             create_unit(position[0], position[1], unit_type, TeamType.TEAM2)
 
-        self.barracks = BarracksUI(self.manager, starting_units.copy())
+        self.barracks = BarracksUI(self.manager, self.progress_manager.available_units())
         self.start_button = StartButton(self.manager)
+        self.potential_solution: Optional[Solution] = None
 
     def update(self, time_delta: float, events: list[pygame.event.Event]) -> bool:
         """Update the setup battle scene.
@@ -75,7 +80,12 @@ class SetupBattleScene(Scene):
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.start_button:
-                        pygame.event.post(pygame.event.Event(START_BATTLE, battle=self.battle))
+                        unit_placements = []
+                        for ent, (team, unit_type, pos) in esper.get_components(Team, UnitTypeComponent, Position):
+                            if team.type == TeamType.TEAM1:
+                                unit_placements.append((unit_type.type, (pos.x, pos.y)))
+                        self.potential_solution = Solution(self.battle, unit_placements)
+                        pygame.event.post(pygame.event.Event(START_BATTLE, potential_solution=self.potential_solution))
                     elif event.ui_element == self.return_button:
                         pygame.event.post(pygame.event.Event(RETURN_TO_SELECT_BATTLE))
                         esper.clear_database()
