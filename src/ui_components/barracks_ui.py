@@ -153,16 +153,15 @@ class BarracksUI(UIPanel):
         Args:
             unit_type: The type of unit to remove
         """
-        if self._units[unit_type] > 0:
-            self._units[unit_type] -= 1
-            
-            if self._units[unit_type] == 0:
-                self._rebuild()
-            else:
-                for item in self.unit_list_items:
-                    if item.unit_type == unit_type:
-                        item.set_text(str(self._units[unit_type]))
-                        break
+        assert self._units[unit_type] > 0
+        self._units[unit_type] -= 1
+        if self._units[unit_type] == 0:
+            self._rebuild()
+        else:
+            for item in self.unit_list_items:
+                if item.unit_type == unit_type:
+                    item.set_text(str(self._units[unit_type]))
+                    break
 
     @property
     def units(self) -> Dict[UnitType, int]:

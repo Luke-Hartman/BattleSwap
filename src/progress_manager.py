@@ -1,7 +1,7 @@
 """Progress manager for the game."""
 
 from collections import defaultdict
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
 import battles
 from components.unit_type import UnitType
