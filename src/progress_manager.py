@@ -1,7 +1,7 @@
 """Progress manager for the game."""
 
 from collections import defaultdict
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import battles
 from components.unit_type import UnitType
@@ -27,7 +27,6 @@ class ProgressManager:
                     units[unit_type] += 1
                 for (unit_type, _) in self.solutions[battle_id].unit_placements:
                     units[unit_type] -= 1
-        print(units)
         for unit_type, count in units.items():
             assert count >= 0
         return units

@@ -18,16 +18,8 @@ class ReturnButton(UIButton):
         Args:
             manager: The UI manager that will handle this button.
         """
-        button_width = 100
-        button_height = 30
-        
-        button_rect = pygame.Rect(
-            (10, 10),
-            (button_width, button_height)
-        )
-        
         super().__init__(
-            relative_rect=button_rect,
+            relative_rect=pygame.Rect((10, 10), (100, 30)),
             text="Return",
             manager=manager
         ) 

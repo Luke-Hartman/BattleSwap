@@ -19,8 +19,8 @@ class StartButton(UIButton):
         Args:
             manager: The UI manager that will handle this button.
         """
-        button_width = 70
-        button_height = 40
+        button_width = 100
+        button_height = 30
         
         button_rect = pygame.Rect(
             (SCREEN_WIDTH - button_width - 10, 10),

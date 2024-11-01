@@ -39,7 +39,13 @@ class SelectBattleScene(Scene):
                 return False
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
-                    pygame.event.post(pygame.event.Event(SETUP_BATTLE_SCENE, battle=event.ui_element.text))
+                    pygame.event.post(
+                        pygame.event.Event(
+                            SETUP_BATTLE_SCENE,
+                            battle=event.ui_element.text,
+                            potential_solution=self.progress_manager.solutions.get(event.ui_element.text, None)
+                        )
+                    )
             
             self.manager.process_events(event)
 

@@ -1,5 +1,4 @@
 """Setup battle scene for Battle Swap."""
-from pygame_gui.core import ObjectID
 from typing import Tuple, Optional
 import esper
 import pygame
@@ -29,7 +28,14 @@ class SetupBattleScene(Scene):
     It provides a UI for selecting units from the barracks and placing them on the field.
     """
 
-    def __init__(self, screen: pygame.Surface, camera: Camera, battle: str, progress_manager: ProgressManager):
+    def __init__(
+            self,
+            screen: pygame.Surface,
+            camera: Camera,
+            battle: str,
+            progress_manager: ProgressManager,
+            potential_solution: Optional[Solution] = None
+    ):
         """Initialize the setup battle scene.
         
         Args:
@@ -37,6 +43,7 @@ class SetupBattleScene(Scene):
             camera: The camera object controlling the view of the battlefield.
             battle: The name of the battle to set up.
             progress_manager: The progress manager for the game.
+            potential_solution: The potential solution to the battle, if any.
         """
         self.screen = screen
         self.progress_manager = progress_manager
@@ -60,7 +67,11 @@ class SetupBattleScene(Scene):
 
         self.barracks = BarracksUI(self.manager, self.progress_manager.available_units())
         self.start_button = StartButton(self.manager)
-        self.potential_solution: Optional[Solution] = None
+        self.potential_solution = potential_solution
+        if potential_solution is not None:
+            for (unit_type, position) in potential_solution.unit_placements:
+                create_unit(position[0], position[1], unit_type, TeamType.TEAM1)
+                self.barracks.remove_unit(unit_type)
 
     def update(self, time_delta: float, events: list[pygame.event.Event]) -> bool:
         """Update the setup battle scene.

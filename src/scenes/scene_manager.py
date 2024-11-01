@@ -20,9 +20,17 @@ class SceneManager:
         """Update the current scene and handle scene transitions."""
         for event in events:
             if event.type == SETUP_BATTLE_SCENE:
-                self.current_scene = SetupBattleScene(self.screen, self.camera, event.battle, self.progress_manager)
+                self.current_scene = SetupBattleScene(
+                    screen=self.screen,
+                    camera=self.camera,
+                    battle=event.battle,
+                    progress_manager=self.progress_manager,
+                    potential_solution=event.potential_solution
+                )
             elif event.type == START_BATTLE:
-                self.current_scene = BattleScene(self.screen, self.camera, self.progress_manager, event.potential_solution)
+                self.current_scene = BattleScene(
+                    self.screen, self.camera, self.progress_manager, event.potential_solution
+                )
             elif event.type == RETURN_TO_SELECT_BATTLE:
                 self.current_scene = SelectBattleScene(self.screen, self.progress_manager)
         

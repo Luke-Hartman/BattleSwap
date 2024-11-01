@@ -8,7 +8,7 @@ from processors.movement_processor import MovementProcessor
 from processors.pursuing_processor import PursuingProcessor
 from processors.targeting_processor import TargetingProcessor
 from scenes.scene import Scene
-from scenes.events import RETURN_TO_SELECT_BATTLE
+from scenes.events import RETURN_TO_SELECT_BATTLE, SETUP_BATTLE_SCENE
 from CONSTANTS import SCREEN_WIDTH, SCREEN_HEIGHT
 from camera import Camera
 from ui_components.return_button import ReturnButton
@@ -34,6 +34,11 @@ class BattleScene(Scene):
         esper.add_processor(collision_processor)
         esper.add_processor(targeting_processor)
         self.return_button = ReturnButton(self.manager)
+        self.restart_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((SCREEN_WIDTH - 210, 10), (100, 30)),
+            text='Restart',
+            manager=self.manager
+        )
         self.victory_button = None
         self.victory_achieved = False
         
@@ -53,7 +58,7 @@ class BattleScene(Scene):
         # If we get here, all enemies are dead
         self.victory_achieved = True
         self.victory_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((SCREEN_WIDTH//2 - 100, SCREEN_HEIGHT//2 - 25), (200, 50)),
+            relative_rect=pygame.Rect((SCREEN_WIDTH//2 - 100, SCREEN_HEIGHT - 75), (200, 50)),
             text='Victory!',
             manager=self.manager
         )
@@ -73,6 +78,10 @@ class BattleScene(Scene):
                         self.progress_manager.save_solution(self.potential_solution)
                         self._cleanup()
                         pygame.event.post(pygame.event.Event(RETURN_TO_SELECT_BATTLE))
+                        return True
+                    elif event.ui_element == self.restart_button:
+                        self._cleanup()
+                        pygame.event.post(pygame.event.Event(SETUP_BATTLE_SCENE, battle=self.potential_solution.battle_id, potential_solution=self.potential_solution))
                         return True
             
             self.manager.process_events(event)
