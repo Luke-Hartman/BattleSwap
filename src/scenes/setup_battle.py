@@ -14,7 +14,7 @@ from scenes.events import RETURN_TO_SELECT_BATTLE, START_BATTLE
 from CONSTANTS import BATTLEFIELD_HEIGHT, BATTLEFIELD_WIDTH, SCREEN_WIDTH, SCREEN_HEIGHT, NO_MANS_LAND_WIDTH
 from camera import Camera
 from entities.units import TeamType, create_unit
-from battles import enemies
+from battles import get_battle
 from ui_components.start_button import StartButton
 from ui_components.return_button import ReturnButton
 from ui_components.barracks_ui import BarracksUI, UnitListItem
@@ -32,7 +32,7 @@ class SetupBattleScene(Scene):
             self,
             screen: pygame.Surface,
             camera: Camera,
-            battle: str,
+            battle_id: str,
             progress_manager: ProgressManager,
             potential_solution: Optional[Solution] = None
     ):
@@ -41,14 +41,14 @@ class SetupBattleScene(Scene):
         Args:
             screen: The pygame surface to render to.
             camera: The camera object controlling the view of the battlefield.
-            battle: The name of the battle to set up.
+            battle_id: The name of the battle to set up.
             progress_manager: The progress manager for the game.
             potential_solution: The potential solution to the battle, if any.
         """
         self.screen = screen
         self.progress_manager = progress_manager
         self.camera = camera
-        self.battle = battle
+        self.battle = get_battle(battle_id)
         self.manager = pygame_gui.UIManager((SCREEN_WIDTH, SCREEN_HEIGHT), 'src/theme.json')
         self.selected_unit_id: Optional[int] = None
         self.rendering_processor = RenderingProcessor(screen, self.camera)
@@ -62,7 +62,8 @@ class SetupBattleScene(Scene):
         esper.add_processor(self.rendering_processor)
         animation_processor = AnimationProcessor()
         esper.add_processor(animation_processor)
-        for unit_type, position in enemies[battle]:
+
+        for unit_type, position in self.battle.enemies:
             create_unit(position[0], position[1], unit_type, TeamType.TEAM2)
 
         self.barracks = BarracksUI(self.manager, self.progress_manager.available_units())
@@ -71,7 +72,7 @@ class SetupBattleScene(Scene):
         if potential_solution is not None:
             for (unit_type, position) in potential_solution.unit_placements:
                 create_unit(position[0], position[1], unit_type, TeamType.TEAM1)
-            if battle not in self.progress_manager.solutions:
+            if battle_id not in self.progress_manager.solutions:
                 for unit_type, _ in potential_solution.unit_placements:
                     self.barracks.remove_unit(unit_type)
 
@@ -97,7 +98,7 @@ class SetupBattleScene(Scene):
                         for ent, (team, unit_type, pos) in esper.get_components(Team, UnitTypeComponent, Position):
                             if team.type == TeamType.TEAM1:
                                 unit_placements.append((unit_type.type, (pos.x, pos.y)))
-                        self.potential_solution = Solution(self.battle, unit_placements)
+                        self.potential_solution = Solution(self.battle.id, unit_placements)
                         pygame.event.post(pygame.event.Event(START_BATTLE, potential_solution=self.potential_solution))
                     elif event.ui_element == self.return_button:
                         pygame.event.post(pygame.event.Event(RETURN_TO_SELECT_BATTLE))

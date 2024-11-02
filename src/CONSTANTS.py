@@ -12,6 +12,8 @@ MINIFOLKS_SCALE = 2
 TINY_RPG_SCALE = 1.5
 MAGE_FIREBALL_SCALE = 1
 GAME_SPEED = 1
+# This messes up the balance since things don't take exact time to complete, and frames matter
+# Would be better to adjust maximum frame rate
 
 SWORDSMAN_HP = 100
 SWORDSMAN_ATTACK_RANGE = 12.5 * MINIFOLKS_SCALE

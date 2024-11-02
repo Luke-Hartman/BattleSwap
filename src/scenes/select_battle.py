@@ -42,7 +42,7 @@ class SelectBattleScene(Scene):
                     pygame.event.post(
                         pygame.event.Event(
                             SETUP_BATTLE_SCENE,
-                            battle=event.ui_element.text,
+                            battle_id=event.ui_element.text,
                             potential_solution=self.progress_manager.solutions.get(event.ui_element.text, None)
                         )
                     )

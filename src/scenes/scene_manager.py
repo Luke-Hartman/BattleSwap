@@ -23,7 +23,7 @@ class SceneManager:
                 self.current_scene = SetupBattleScene(
                     screen=self.screen,
                     camera=self.camera,
-                    battle=event.battle,
+                    battle_id=event.battle_id,
                     progress_manager=self.progress_manager,
                     potential_solution=event.potential_solution
                 )

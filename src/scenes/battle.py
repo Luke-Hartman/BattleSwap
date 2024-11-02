@@ -81,7 +81,7 @@ class BattleScene(Scene):
                         return True
                     elif event.ui_element == self.restart_button:
                         self._cleanup()
-                        pygame.event.post(pygame.event.Event(SETUP_BATTLE_SCENE, battle=self.potential_solution.battle_id, potential_solution=self.potential_solution))
+                        pygame.event.post(pygame.event.Event(SETUP_BATTLE_SCENE, battle_id=self.potential_solution.battle_id, potential_solution=self.potential_solution))
                         return True
             
             self.manager.process_events(event)
