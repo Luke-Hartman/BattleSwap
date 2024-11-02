@@ -119,7 +119,13 @@ class SetupBattleScene(Scene):
                     if self.selected_unit_id is None:
                         self.selected_unit_id = self.click_on_unit(mouse_pos)
                     else:
-                        self.place_unit()
+                        # Mouse must be within 25 pixels of the legal placement area to place the unit
+                        grace_zone = 25
+                        pos = esper.component_for_entity(self.selected_unit_id, Position)
+                        adjusted_mouse_pos = (mouse_pos[0] + self.camera.x, mouse_pos[1] + self.camera.y)
+                        distance = ((adjusted_mouse_pos[0] - pos.x)**2 + (adjusted_mouse_pos[1] - pos.y)**2)**0.5
+                        if distance <= grace_zone:
+                            self.place_unit()
                 elif event.button == 3:  # Right click
                     if self.selected_unit_id is not None:
                         self.return_unit_to_barracks(self.selected_unit_id)
