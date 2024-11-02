@@ -1,5 +1,4 @@
 """Provides the ReturnButton class for scene navigation."""
-from typing import Optional
 
 import pygame
 import pygame_gui

@@ -19,6 +19,7 @@ from ui_components.start_button import StartButton
 from ui_components.return_button import ReturnButton
 from ui_components.barracks_ui import BarracksUI, UnitListItem
 from progress_manager import ProgressManager, Solution
+from ui_components.tip_box import TipBox
 
 
 class SetupBattleScene(Scene):
@@ -75,6 +76,9 @@ class SetupBattleScene(Scene):
             if battle_id not in self.progress_manager.solutions:
                 for unit_type, _ in potential_solution.unit_placements:
                     self.barracks.remove_unit(unit_type)
+
+        
+        self.tip_box = TipBox(self.manager, self.battle)
 
     def update(self, time_delta: float, events: list[pygame.event.Event]) -> bool:
         """Update the setup battle scene.

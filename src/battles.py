@@ -14,6 +14,7 @@ class Battle:
     id: str
     enemies: List[Tuple[UnitType, Tuple[int, int]]]
     dependencies: List[str]
+    tip: List[str]
 
 def get_battle(battle_id: str) -> Battle:
     for battle in battles:
@@ -27,7 +28,14 @@ battles = [
         enemies=[
             (UnitType.HORSEMAN, ((BATTLEFIELD_WIDTH * 3 // 4) + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT // 2)),
         ],
-        dependencies=[]
+        dependencies=[],
+        tip=[
+            "Left click to select/place units.",
+            "Right click to return units to the barracks.",
+            "",
+            "Horsemen are strong against archers,",
+            "but weak against groups of swordsmen.",
+        ]
     ),
     Battle(
         id="tutorial_2", 
@@ -35,14 +43,23 @@ battles = [
             (UnitType.SWORDSMAN, (BATTLEFIELD_WIDTH // 2 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT * 1 // 8)),
             (UnitType.SWORDSMAN, (BATTLEFIELD_WIDTH // 2 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT * 7 // 8)),
         ],
-        dependencies=["tutorial_1"]
+        dependencies=["tutorial_1"],
+        tip=[
+            "Units you defeat are added to your barracks,",
+            "in exchange for the units placed to defeat them.",
+            "Units you don't use remain in your barracks.",
+        ]
     ),
     Battle(
         id="tutorial_3",
         enemies=[
             (UnitType.FANCY_SWORDSMAN, (BATTLEFIELD_WIDTH // 2 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT // 2)),
         ],
-        dependencies=["tutorial_2"]
+        dependencies=["tutorial_2"],
+        tip=[
+            "You can revisit battles you've already completed to change your solutions.",
+            "This enemy is very strong against melee units, but vulnerable to archers.",
+        ]
     ),
     Battle(
         id="tutorial_4",
@@ -55,7 +72,11 @@ battles = [
             (UnitType.ARCHER, (BATTLEFIELD_WIDTH // 2 + BATTLEFIELD_WIDTH * 1 // 10 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT // 2 + BATTLEFIELD_HEIGHT // 4)),
             (UnitType.ARCHER, (BATTLEFIELD_WIDTH // 2 + BATTLEFIELD_WIDTH * 1 // 10 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT // 2 - BATTLEFIELD_HEIGHT // 4)),
         ],
-        dependencies=["tutorial_3"]
+        dependencies=["tutorial_3"],
+        tip=[
+            "In BattleSwap, you will encounter many powerful enemies",
+            "who will become powerful allies after you defeat them.",
+        ]
     ),
 ]
 

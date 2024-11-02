@@ -1,8 +1,8 @@
 from components.animation import AnimationType
 
 
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
+SCREEN_WIDTH = 1000
+SCREEN_HEIGHT = 800
 NO_MANS_LAND_WIDTH = 50
 
 BATTLEFIELD_WIDTH = 700
