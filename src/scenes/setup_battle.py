@@ -112,11 +112,17 @@ class SetupBattleScene(Scene):
                 if event.button == 1:  # Left click
                     mouse_pos = pygame.mouse.get_pos()
                     if self.selected_unit_id is None:
-                        self.select_unit(mouse_pos)
+                        self.selected_unit_id = self.click_on_unit(mouse_pos)
                     else:
-                        self.selected_unit_id = None
+                        self.place_unit()
                 elif event.button == 3:  # Right click
-                    self.deselect_unit()
+                    if self.selected_unit_id is not None:
+                        self.return_unit_to_barracks(self.selected_unit_id)
+                    else:
+                        mouse_pos = pygame.mouse.get_pos()
+                        clicked_on_unit = self.click_on_unit(mouse_pos)
+                        if clicked_on_unit is not None:
+                            self.return_unit_to_barracks(clicked_on_unit)
             self.manager.process_events(event)
 
         if self.selected_unit_id is not None:
@@ -136,8 +142,8 @@ class SetupBattleScene(Scene):
         self.manager.draw_ui(self.screen)
         return True
 
-    def select_unit(self, mouse_pos: Tuple[int, int]) -> None:
-        """Select a unit at the given mouse position.
+    def click_on_unit(self, mouse_pos: Tuple[int, int]) -> Optional[int]:
+        """Return the unit from team 1 at the given mouse position.
         
         Finds the topmost unit (highest y-value) at the clicked position and makes it
         the currently selected unit for movement.
@@ -161,16 +167,26 @@ class SetupBattleScene(Scene):
                             candidate_unit_id = ent
                 except IndexError:
                     pass
-        if candidate_unit_id is not None:
-            self.selected_unit_id = candidate_unit_id
+        return candidate_unit_id
 
-    def deselect_unit(self) -> None:
-        """Deselect the current unit and return it to the unit pool."""
-        if self.selected_unit_id is not None:
-            unit_type = esper.component_for_entity(self.selected_unit_id, UnitTypeComponent).type
-            esper.delete_entity(self.selected_unit_id)
-            self.barracks.add_unit(unit_type)
+    def place_unit(self) -> None:
+        """Place the currently selected unit on the battlefield."""
+        assert self.selected_unit_id is not None
+        unit_type = esper.component_for_entity(self.selected_unit_id, UnitTypeComponent).type
+        # if there are more available, continue to place them
+        if self.barracks.units[unit_type] > 0:
+            entity = create_unit(0, 0, unit_type, TeamType.TEAM1)
+            self.barracks.remove_unit(unit_type)
+            self.selected_unit_id = entity
+        else:
             self.selected_unit_id = None
+
+    def return_unit_to_barracks(self, unit_id: int) -> None:
+        """Deselect the current unit and return it to the unit pool."""
+        unit_type = esper.component_for_entity(unit_id, UnitTypeComponent).type
+        esper.delete_entity(unit_id)
+        self.barracks.add_unit(unit_type)
+        self.selected_unit_id = None
 
     def create_unit_from_list(self, unit_list_item: UnitListItem) -> None:
         """Create a unit from a unit list item and update the UI."""
