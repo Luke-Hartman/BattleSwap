@@ -98,6 +98,9 @@ class SetupBattleScene(Scene):
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.start_button:
+                        if self.selected_unit_id is not None:
+                            self.return_unit_to_barracks(self.selected_unit_id)
+                            self.selected_unit_id = None
                         unit_placements = []
                         for ent, (team, unit_type, pos) in esper.get_components(Team, UnitTypeComponent, Position):
                             if team.type == TeamType.TEAM1:
