@@ -4,8 +4,6 @@ import pygame
 import pygame_gui
 from pygame_gui.elements import UIButton
 
-from CONSTANTS import SCREEN_WIDTH
-
 
 class StartButton(UIButton):
     """A button that triggers battle start.
@@ -23,7 +21,7 @@ class StartButton(UIButton):
         button_height = 30
         
         button_rect = pygame.Rect(
-            (SCREEN_WIDTH - button_width - 10, 10),
+            (pygame.display.Info().current_w - button_width - 10, 10),
             (button_width, button_height)
         )
         

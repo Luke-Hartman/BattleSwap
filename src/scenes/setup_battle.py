@@ -11,7 +11,7 @@ from processors.animation_processor import AnimationProcessor
 from processors.rendering_processor import RenderingProcessor, draw_battlefield
 from scenes.scene import Scene
 from scenes.events import RETURN_TO_SELECT_BATTLE, START_BATTLE
-from CONSTANTS import BATTLEFIELD_HEIGHT, BATTLEFIELD_WIDTH, SCREEN_WIDTH, SCREEN_HEIGHT, NO_MANS_LAND_WIDTH
+from CONSTANTS import BATTLEFIELD_HEIGHT, BATTLEFIELD_WIDTH, NO_MANS_LAND_WIDTH
 from camera import Camera
 from entities.units import TeamType, create_unit
 from battles import get_battle
@@ -50,13 +50,13 @@ class SetupBattleScene(Scene):
         self.progress_manager = progress_manager
         self.camera = camera
         self.battle = get_battle(battle_id)
-        self.manager = pygame_gui.UIManager((SCREEN_WIDTH, SCREEN_HEIGHT), 'src/theme.json')
+        self.manager = pygame_gui.UIManager((pygame.display.Info().current_w, pygame.display.Info().current_h), 'src/theme.json')
         self.selected_unit_id: Optional[int] = None
         self.rendering_processor = RenderingProcessor(screen, self.camera)
 
         # Center the camera on the battlefield
-        self.camera.x = (BATTLEFIELD_WIDTH - SCREEN_WIDTH) // 2
-        self.camera.y = (BATTLEFIELD_HEIGHT - SCREEN_HEIGHT) // 2
+        self.camera.x = (BATTLEFIELD_WIDTH - pygame.display.Info().current_w) // 2
+        self.camera.y = (BATTLEFIELD_HEIGHT - pygame.display.Info().current_h) // 2
         
         self.return_button = ReturnButton(self.manager)
         

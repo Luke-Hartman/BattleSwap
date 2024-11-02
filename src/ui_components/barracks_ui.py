@@ -7,7 +7,6 @@ from pygame_gui.elements import UIPanel, UIScrollingContainer, UIButton
 
 from components.unit_type import UnitType
 from entities.units import unit_theme_ids
-from CONSTANTS import SCREEN_WIDTH, SCREEN_HEIGHT
 
 
 class UnitListItem(UIButton):
@@ -49,13 +48,13 @@ class BarracksUI(UIPanel):
         self._units = starting_units.copy()
         
         side_padding = 75
-        panel_width = SCREEN_WIDTH - 2 * side_padding
+        panel_width = pygame.display.Info().current_w - 2 * side_padding
         padding = 10
         
         needs_scrollbar, panel_height = self._calculate_panel_dimensions()
         
         panel_rect = pygame.Rect(
-            (side_padding, SCREEN_HEIGHT - panel_height - 10),
+            (side_padding, pygame.display.Info().current_h - panel_height - 10),
             (panel_width, panel_height)
         )
         
@@ -72,7 +71,7 @@ class BarracksUI(UIPanel):
         """Calculate if scrollbar is needed and return appropriate panel height."""
         padding = 10
         side_padding = 75
-        panel_width = SCREEN_WIDTH - 2 * side_padding
+        panel_width = pygame.display.Info().current_w - 2 * side_padding
         
         visible_unit_count = sum(1 for _, count in self._units.items() if count > 0)
         total_width = visible_unit_count * (UnitListItem.size + padding // 2) - padding // 2 if visible_unit_count > 0 else 0
@@ -156,4 +155,4 @@ class BarracksUI(UIPanel):
         Returns:
             Dictionary mapping unit types to their current counts
         """
-        return self._units.copy() 
+        return self._units.copy()

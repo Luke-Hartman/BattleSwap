@@ -7,8 +7,6 @@ and runs the main game loop.
 
 import pygame
 from CONSTANTS import (
-    SCREEN_HEIGHT, 
-    SCREEN_WIDTH, 
     BATTLEFIELD_WIDTH, 
     BATTLEFIELD_HEIGHT
 )
@@ -24,7 +22,8 @@ from scenes.scene_manager import SceneManager
 pygame.init()
 
 # Set up the display
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+# Use the full screen
+screen = pygame.display.set_mode(flags=pygame.FULLSCREEN)
 pygame.display.set_caption("Battle Swap")
 
 # Load sprite sheets
@@ -38,10 +37,14 @@ state_machine = StateMachine()
 running = True
 clock = pygame.time.Clock()
 
+# Get screen width and height
+screen_width = pygame.display.Info().current_w
+screen_height = pygame.display.Info().current_h
+
 # Initialize camera centered on battlefield
-initial_camera_x = (BATTLEFIELD_WIDTH - SCREEN_WIDTH) // 2
-initial_camera_y = (BATTLEFIELD_HEIGHT - SCREEN_HEIGHT) // 2
-camera = Camera(SCREEN_WIDTH, SCREEN_HEIGHT)
+initial_camera_x = (BATTLEFIELD_WIDTH - screen_width) // 2
+initial_camera_y = (BATTLEFIELD_HEIGHT - screen_height) // 2
+camera = Camera(screen_width, screen_height)
 camera.x = initial_camera_x
 camera.y = initial_camera_y
 
@@ -51,6 +54,11 @@ scene_manager = SceneManager(screen, camera, progress_manager)
 while running:
     dt = clock.tick(60) / 1000.0  # Convert to seconds
     events = pygame.event.get()
+    # Escape key quits the game
+    for event in events:
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                running = False
     running = scene_manager.update(dt, events)
     pygame.display.flip()
 

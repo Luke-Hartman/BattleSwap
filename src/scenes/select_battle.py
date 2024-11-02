@@ -1,5 +1,4 @@
 import pygame
-from CONSTANTS import SCREEN_HEIGHT, SCREEN_WIDTH
 from scenes.scene import Scene
 import pygame_gui
 from scenes.events import SETUP_BATTLE_SCENE
@@ -11,7 +10,7 @@ class SelectBattleScene(Scene):
     def __init__(self, screen: pygame.Surface, progress_manager: ProgressManager):
         self.screen = screen
         self.progress_manager = progress_manager
-        self.manager = pygame_gui.UIManager((SCREEN_WIDTH, SCREEN_HEIGHT))
+        self.manager = pygame_gui.UIManager((pygame.display.Info().current_w, pygame.display.Info().current_h))
         self.create_buttons()
 
     def create_buttons(self) -> None:
@@ -22,7 +21,7 @@ class SelectBattleScene(Scene):
 
         for i, battle in enumerate(self.progress_manager.available_battles()):
             button_rect = pygame.Rect(
-                (SCREEN_WIDTH // 2 - button_width // 2,
+                (pygame.display.Info().current_w // 2 - button_width // 2,
                  start_y + i * (button_height + button_spacing)),
                 (button_width, button_height)
             )

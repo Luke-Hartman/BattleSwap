@@ -1,7 +1,6 @@
 import pygame
 import pygame_gui
 from battles import Battle
-from CONSTANTS import SCREEN_WIDTH
 
 class TipBox(pygame_gui.elements.UITextBox):
     def __init__(self, manager: pygame_gui.UIManager, battle: Battle) -> None:
@@ -10,7 +9,7 @@ class TipBox(pygame_gui.elements.UITextBox):
         super().__init__(
             html_text='<br>'.join(battle.tip),
             relative_rect=pygame.Rect(
-                (SCREEN_WIDTH//2 - width//2, 10),
+                (pygame.display.Info().current_w//2 - width//2, 10),
                 (width, height)
             ),
             manager=manager

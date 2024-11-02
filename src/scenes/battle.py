@@ -9,7 +9,6 @@ from processors.pursuing_processor import PursuingProcessor
 from processors.targeting_processor import TargetingProcessor
 from scenes.scene import Scene
 from scenes.events import RETURN_TO_SELECT_BATTLE, SETUP_BATTLE_SCENE
-from CONSTANTS import SCREEN_WIDTH, SCREEN_HEIGHT
 from camera import Camera
 from ui_components.return_button import ReturnButton
 from progress_manager import ProgressManager, Solution
@@ -24,7 +23,7 @@ class BattleScene(Scene):
         self.progress_manager = progress_manager
         self.potential_solution = potential_solution
         self.camera = camera
-        self.manager = pygame_gui.UIManager((SCREEN_WIDTH, SCREEN_HEIGHT))
+        self.manager = pygame_gui.UIManager((pygame.display.Info().current_w, pygame.display.Info().current_h))
         movement_processor = MovementProcessor()
         pursuing_processor = PursuingProcessor()
         targeting_processor = TargetingProcessor()
@@ -35,7 +34,7 @@ class BattleScene(Scene):
         esper.add_processor(targeting_processor)
         self.return_button = ReturnButton(self.manager)
         self.restart_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((SCREEN_WIDTH - 210, 10), (100, 30)),
+            relative_rect=pygame.Rect((pygame.display.Info().current_w - 210, 10), (100, 30)),
             text='Restart',
             manager=self.manager
         )
@@ -58,7 +57,7 @@ class BattleScene(Scene):
         # If we get here, all enemies are dead
         self.victory_achieved = True
         self.victory_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((SCREEN_WIDTH//2 - 100, SCREEN_HEIGHT - 75), (200, 50)),
+            relative_rect=pygame.Rect((pygame.display.Info().current_w//2 - 100, pygame.display.Info().current_h - 75), (200, 50)),
             text='Victory!',
             manager=self.manager
         )
