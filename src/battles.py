@@ -48,6 +48,8 @@ battles = [
             "Units you defeat are added to your barracks,",
             "in exchange for the units placed to defeat them.",
             "Units you don't use remain in your barracks.",
+            "",
+            "Despite being strong in groups, swordsmen are weak individually.",
         ]
     ),
     Battle(
