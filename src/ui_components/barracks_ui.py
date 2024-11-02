@@ -136,16 +136,8 @@ class BarracksUI(UIPanel):
         Args:
             unit_type: The type of unit to add
         """
-        previous_count = self._units[unit_type]
-        self._units[unit_type] = previous_count + 1
-        
-        if previous_count == 0:
-            self._rebuild()
-        else:
-            for item in self.unit_list_items:
-                if item.unit_type == unit_type:
-                    item.set_text(str(self._units[unit_type]))
-                    break
+        self._units[unit_type] += 1
+        self._rebuild()
 
     def remove_unit(self, unit_type: UnitType) -> None:
         """Remove one unit of the specified type from the barracks.
@@ -155,13 +147,7 @@ class BarracksUI(UIPanel):
         """
         assert self._units[unit_type] > 0
         self._units[unit_type] -= 1
-        if self._units[unit_type] == 0:
-            self._rebuild()
-        else:
-            for item in self.unit_list_items:
-                if item.unit_type == unit_type:
-                    item.set_text(str(self._units[unit_type]))
-                    break
+        self._rebuild()
 
     @property
     def units(self) -> Dict[UnitType, int]:

@@ -71,6 +71,9 @@ class SetupBattleScene(Scene):
         if potential_solution is not None:
             for (unit_type, position) in potential_solution.unit_placements:
                 create_unit(position[0], position[1], unit_type, TeamType.TEAM1)
+            if battle not in self.progress_manager.solutions:
+                for unit_type, _ in potential_solution.unit_placements:
+                    self.barracks.remove_unit(unit_type)
 
     def update(self, time_delta: float, events: list[pygame.event.Event]) -> bool:
         """Update the setup battle scene.
