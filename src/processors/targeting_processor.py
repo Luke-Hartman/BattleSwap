@@ -26,7 +26,10 @@ class TargetingProcessor(esper.Processor):
         min_distance = float('inf')
         for enemy, (enemy_pos, enemy_team, enemy_state) in esper.get_components(Position, Team, UnitState):
             if enemy_team.type != team.type and enemy_state.state != State.DEAD:
-                distance = ((position.x - enemy_pos.x) ** 2 + (position.y - enemy_pos.y) ** 2) ** 0.5
+                x_weight = 1
+                y_weight = 2
+                # Higher weight makes units less likely to target in that dimension.
+                distance = ((x_weight * (position.x - enemy_pos.x)) ** 2 + (y_weight * (position.y - enemy_pos.y)) ** 2) ** 0.5
                 if distance < min_distance:
                     min_distance = distance
                     nearest_enemy = enemy
