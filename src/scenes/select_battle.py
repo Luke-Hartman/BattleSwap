@@ -49,6 +49,6 @@ class SelectBattleScene(Scene):
             self.manager.process_events(event)
 
         self.manager.update(time_delta)
-        self.screen.fill((200, 200, 200))
+        self.screen.fill((0, 0, 0))
         self.manager.draw_ui(self.screen)
         return True
