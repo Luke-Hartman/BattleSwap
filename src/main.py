@@ -59,6 +59,8 @@ while running:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 running = False
+    if not running:
+        break
     running = scene_manager.update(dt, events)
     pygame.display.flip()
 
