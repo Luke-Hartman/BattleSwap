@@ -200,7 +200,7 @@ class SetupBattleScene(Scene):
     def return_unit_to_barracks(self, unit_id: int) -> None:
         """Deselect the current unit and return it to the unit pool."""
         unit_type = esper.component_for_entity(unit_id, UnitTypeComponent).type
-        esper.delete_entity(unit_id)
+        esper.delete_entity(unit_id, immediate=True)
         self.barracks.add_unit(unit_type)
         self.selected_unit_id = None
 
