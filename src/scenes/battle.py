@@ -18,12 +18,12 @@ from components.team import Team, TeamType
 class BattleScene(Scene):
     """The scene for the battle."""
 
-    def __init__(self, screen: pygame.Surface, camera: Camera, progress_manager: ProgressManager, potential_solution: Solution):
+    def __init__(self, screen: pygame.Surface, camera: Camera, manager: pygame_gui.UIManager, progress_manager: ProgressManager, potential_solution: Solution):
         self.screen = screen
+        self.camera = camera
+        self.manager = manager
         self.progress_manager = progress_manager
         self.potential_solution = potential_solution
-        self.camera = camera
-        self.manager = pygame_gui.UIManager((pygame.display.Info().current_w, pygame.display.Info().current_h))
         movement_processor = MovementProcessor()
         pursuing_processor = PursuingProcessor()
         targeting_processor = TargetingProcessor()

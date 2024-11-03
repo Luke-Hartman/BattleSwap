@@ -17,7 +17,7 @@ from entities.units import TeamType, create_unit
 from battles import get_battle
 from ui_components.start_button import StartButton
 from ui_components.return_button import ReturnButton
-from ui_components.barracks_ui import BarracksUI, UnitListItem
+from ui_components.barracks_ui import BarracksUI, UnitCount
 from progress_manager import ProgressManager, Solution
 from ui_components.tip_box import TipBox
 
@@ -33,6 +33,7 @@ class SetupBattleScene(Scene):
             self,
             screen: pygame.Surface,
             camera: Camera,
+            manager: pygame_gui.UIManager,
             battle_id: str,
             progress_manager: ProgressManager,
             potential_solution: Optional[Solution] = None
@@ -42,6 +43,7 @@ class SetupBattleScene(Scene):
         Args:
             screen: The pygame surface to render to.
             camera: The camera object controlling the view of the battlefield.
+            manager: The pygame_gui manager for the scene.
             battle_id: The name of the battle to set up.
             progress_manager: The progress manager for the game.
             potential_solution: The potential solution to the battle, if any.
@@ -50,7 +52,7 @@ class SetupBattleScene(Scene):
         self.progress_manager = progress_manager
         self.camera = camera
         self.battle = get_battle(battle_id)
-        self.manager = pygame_gui.UIManager((pygame.display.Info().current_w, pygame.display.Info().current_h), 'src/theme.json')
+        self.manager = manager
         self.selected_unit_id: Optional[int] = None
         self.rendering_processor = RenderingProcessor(screen, self.camera)
 
@@ -67,7 +69,7 @@ class SetupBattleScene(Scene):
         for unit_type, position in self.battle.enemies:
             create_unit(position[0], position[1], unit_type, TeamType.TEAM2)
 
-        self.barracks = BarracksUI(self.manager, self.progress_manager.available_units())
+        self.barracks = BarracksUI(self.manager, self.progress_manager.available_units(), interactive=True)
         self.start_button = StartButton(self.manager)
         self.potential_solution = potential_solution
         if potential_solution is not None:
@@ -113,7 +115,7 @@ class SetupBattleScene(Scene):
                         esper.remove_processor(RenderingProcessor)
                         esper.remove_processor(AnimationProcessor)
                         return True
-                    elif isinstance(event.ui_element, UnitListItem):
+                    elif isinstance(event.ui_element, UnitCount):
                         self.create_unit_from_list(event.ui_element)
 
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -202,7 +204,7 @@ class SetupBattleScene(Scene):
         self.barracks.add_unit(unit_type)
         self.selected_unit_id = None
 
-    def create_unit_from_list(self, unit_list_item: UnitListItem) -> None:
+    def create_unit_from_list(self, unit_list_item: UnitCount) -> None:
         """Create a unit from a unit list item and update the UI."""
         entity = create_unit(0, 0, unit_list_item.unit_type, TeamType.TEAM1)
         self.barracks.remove_unit(unit_list_item.unit_type)

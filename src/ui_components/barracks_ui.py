@@ -1,15 +1,15 @@
 """Provides the BarracksUI component for managing available units."""
-from typing import Dict, List
+from typing import Dict, List, Optional
 import pygame
 import pygame_gui
 from pygame_gui.core import ObjectID
 from pygame_gui.elements import UIPanel, UIScrollingContainer, UIButton
 
 from components.unit_type import UnitType
-from entities.units import unit_theme_ids
+from entities.units import unit_theme_ids, unit_icon_surfaces
 
 
-class UnitListItem(UIButton):
+class UnitCount(UIButton):
     """A custom UI button that displays a unit icon and its count."""
     
     size = 64
@@ -19,8 +19,9 @@ class UnitListItem(UIButton):
         y_pos: int,
         unit_type: UnitType,
         count: int,
+        interactive: bool,
         manager: pygame_gui.UIManager,
-        container: pygame_gui.core.UIContainer
+        container: Optional[pygame_gui.core.UIContainer] = None,
     ):
         """Initialize the unit list item button."""
         super().__init__(
@@ -28,24 +29,32 @@ class UnitListItem(UIButton):
             text=str(count),
             manager=manager,
             container=container,
-            object_id=ObjectID(class_id="@unit_list_item", object_id=unit_theme_ids[unit_type])
+            object_id=ObjectID(class_id="@unit_count", object_id=unit_theme_ids[unit_type])
         )
+        if not interactive:
+            self.disable()
         self.unit_type = unit_type
-        self.count = count
 
 
 class BarracksUI(UIPanel):
     """UI component for managing available units in the barracks."""
 
-    def __init__(self, manager: pygame_gui.UIManager, starting_units: Dict[UnitType, int]):
+    def __init__(
+            self,
+            manager: pygame_gui.UIManager,
+            starting_units: Dict[UnitType, int],
+            interactive: bool,
+    ):
         """Initialize the barracks UI panel.
         
         Args:
             manager: The UI manager that will handle this component
             starting_units: Dictionary mapping unit types to their initial counts
+            interactive: Whether the buttons are interactive
         """
         self.manager = manager
         self._units = starting_units.copy()
+        self.interactive = interactive
         
         side_padding = 75
         panel_width = pygame.display.Info().current_w - 2 * side_padding
@@ -63,7 +72,7 @@ class BarracksUI(UIPanel):
             manager=manager
         )
         
-        self.unit_list_items: List[UnitListItem] = []
+        self.unit_list_items: List[UnitCount] = []
         self._create_container(panel_width, panel_height, padding, needs_scrollbar)
         self._populate_units(padding, needs_scrollbar)
 
@@ -74,7 +83,7 @@ class BarracksUI(UIPanel):
         panel_width = pygame.display.Info().current_w - 2 * side_padding
         
         visible_unit_count = sum(1 for _, count in self._units.items() if count > 0)
-        total_width = visible_unit_count * (UnitListItem.size + padding // 2) - padding // 2 if visible_unit_count > 0 else 0
+        total_width = visible_unit_count * (UnitCount.size + padding // 2) - padding // 2 if visible_unit_count > 0 else 0
         needs_scrollbar = total_width > panel_width - 2 * padding
         panel_height = 110 if needs_scrollbar else 85
         
@@ -98,16 +107,17 @@ class BarracksUI(UIPanel):
     def _populate_units(self, padding: int, needs_scrollbar: bool) -> None:
         """Populate the container with unit items."""
         container_height = self.unit_container.rect.height
-        y_offset = (container_height - UnitListItem.size) // 2 if not needs_scrollbar else 0
+        y_offset = (container_height - UnitCount.size) // 2 if not needs_scrollbar else 0
         
         x_position = 0
         for unit_type, count in self._units.items():
             if count > 0:
-                item = UnitListItem(
+                item = UnitCount(
                     x_pos=x_position,
                     y_pos=y_offset,
                     unit_type=unit_type,
                     count=count,
+                    interactive=self.interactive,
                     manager=self.manager,
                     container=self.unit_container
                 )

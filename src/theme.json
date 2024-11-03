@@ -1,8 +1,7 @@
 {
-    "@unit_list_item":
+    "@unit_count":
     {
-        "colours":
-        {
+        "colours": {
             "normal_bg": "#45494e",
             "hovered_bg": "#35393e",
             "disabled_bg": "#25292e",
@@ -14,8 +13,7 @@
             "selected_border": "#8080B0",
             "active_border": "#8080B0"
         },
-        "misc":
-        {
+        "misc": {
             "border_width": "1",
             "shadow_width": "2",
             "shape": "rectangle",

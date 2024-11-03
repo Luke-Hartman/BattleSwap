@@ -33,8 +33,7 @@ battles = [
             "Left click to place/move units.",
             "Right click to return units to the barracks.",
             "",
-            "Horsemen are strong against archers,",
-            "but weak against groups of swordsmen.",
+            "Horsemen are strong against archers, but weak against groups of swordsmen.",
         ]
     ),
     Battle(
@@ -45,10 +44,8 @@ battles = [
         ],
         dependencies=["tutorial_1"],
         tip=[
-            "Units you defeat are added to your barracks,",
-            "in exchange for the units placed to defeat them.",
-            "Units you don't use remain in your barracks,",
-            "so the fewer you use, the more you save for later.",
+            "Units you defeat are added to your barracks, in exchange for the units placed to defeat them.",
+            "Units you don't use remain in your barracks, so the fewer you use, the more you save for later.",
             "",
             "Despite being strong in groups, swordsmen are weak individually.",
         ]
