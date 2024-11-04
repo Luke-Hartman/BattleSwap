@@ -7,16 +7,7 @@ import esper
 import pygame
 import os
 from typing import Dict
-from CONSTANTS import (
-    MINIFOLKS_SCALE,
-    SWORDSMAN_HP, SWORDSMAN_ATTACK_RANGE, SWORDSMAN_ATTACK_DAMAGE, SWORDSMAN_MOVEMENT_SPEED, SWORDSMAN_ANIMATION_DURATIONS,
-    ARCHER_HP, ARCHER_ATTACK_RANGE, ARCHER_ATTACK_DAMAGE, ARCHER_MOVEMENT_SPEED, ARCHER_PROJECTILE_SPEED, ARCHER_ANIMATION_DURATIONS,
-    MAGE_HP, MAGE_ATTACK_RANGE, MAGE_ATTACK_DAMAGE, MAGE_MOVEMENT_SPEED, MAGE_PROJECTILE_SPEED, MAGE_ANIMATION_DURATIONS,
-    HORSEMAN_HP, HORSEMAN_ATTACK_RANGE, HORSEMAN_ATTACK_DAMAGE, HORSEMAN_MOVEMENT_SPEED, HORSEMAN_ANIMATION_DURATIONS,
-    TINY_RPG_SCALE,
-    WEREBEAR_HP, WEREBEAR_ATTACK_RANGE, WEREBEAR_ATTACK_DAMAGE, WEREBEAR_MOVEMENT_SPEED, WEREBEAR_ANIMATION_DURATIONS,
-    FANCY_SWORDSMAN_HP, FANCY_SWORDSMAN_ATTACK_RANGE, FANCY_SWORDSMAN_ATTACK_DAMAGE, FANCY_SWORDSMAN_MOVEMENT_SPEED, FANCY_SWORDSMAN_ANIMATION_DURATIONS
-)
+from CONSTANTS import *
 from components.position import Position
 from components.animation import AnimationState, AnimationType
 from components.sprite_sheet import SpriteSheet
@@ -35,7 +26,8 @@ unit_theme_ids: Dict[UnitType, str] = {
     UnitType.MAGE: "#mage_icon",
     UnitType.HORSEMAN: "#horseman_icon",
     UnitType.WEREBEAR: "#werebear_icon",
-    UnitType.FANCY_SWORDSMAN: "#fancy_swordsman_icon"
+    UnitType.FANCY_SWORDSMAN: "#fancy_swordsman_icon",
+    UnitType.LONGBOWMAN: "#longbowman_icon"
 }
 
 unit_icon_surfaces: Dict[UnitType, pygame.Surface] = {}
@@ -55,7 +47,8 @@ def load_sprite_sheets():
         UnitType.MAGE: "MiniMage.png",
         UnitType.HORSEMAN: "MiniHorseman.png",
         UnitType.WEREBEAR: "Werebear.png",
-        UnitType.FANCY_SWORDSMAN: "Swordsman.png"
+        UnitType.FANCY_SWORDSMAN: "Swordsman.png",
+        UnitType.LONGBOWMAN: "Archer.png"
     }
 
     for team, color in team_colors.items():
@@ -70,7 +63,8 @@ def load_sprite_sheets():
         UnitType.MAGE: "MiniMageIcon.png",
         UnitType.HORSEMAN: "MiniHorseManIcon.png",
         UnitType.WEREBEAR: "WerebearIcon.png",
-        UnitType.FANCY_SWORDSMAN: "FancySwordsmanIcon.png"
+        UnitType.FANCY_SWORDSMAN: "FancySwordsmanIcon.png",
+        UnitType.LONGBOWMAN: "LongbowmanIcon.png"
     }
     for unit_type, filename in unit_icon_paths.items():
         path = os.path.join("assets", "icons", filename)
@@ -85,6 +79,7 @@ def create_unit(x: int, y: int, unit_type: UnitType, team: TeamType) -> int:
         UnitType.HORSEMAN: create_horseman,
         UnitType.WEREBEAR: create_werebear,
         UnitType.FANCY_SWORDSMAN: create_fancy_swordsman,
+        UnitType.LONGBOWMAN: create_longbowman,
     }[unit_type](x, y, team)
 
 def create_swordsman(x: int, y: int, team: TeamType) -> int:
@@ -215,6 +210,34 @@ def create_fancy_swordsman(x: int, y: int, team: TeamType) -> int:
     ))
     return entity
 
+def create_longbowman(x: int, y: int, team: TeamType) -> int:
+    """Create a longbowman entity with all necessary components."""
+    entity = esper.create_entity()
+    esper.add_component(entity, Position(x=x, y=y))
+    esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
+    esper.add_component(entity, Team(type=team))
+    esper.add_component(entity, UnitState())
+    esper.add_component(entity, UnitTypeComponent(type=UnitType.LONGBOWMAN))
+    esper.add_component(
+        entity,
+        ProjectileAttack(
+            range=LONGBOWMAN_ATTACK_RANGE,
+            damage=LONGBOWMAN_ATTACK_DAMAGE,
+            projectile_speed=LONGBOWMAN_PROJECTILE_SPEED,
+            projectile_type=ProjectileType.ARROW,
+            projectile_offset_x=5*MINIFOLKS_SCALE,
+            projectile_offset_y=0
+        )
+    )
+    esper.add_component(entity, Movement(speed=LONGBOWMAN_MOVEMENT_SPEED))
+    esper.add_component(entity, Velocity(x=0, y=0))
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.LONGBOWMAN, team))
+    esper.add_component(entity, Health(current=LONGBOWMAN_HP, maximum=LONGBOWMAN_HP))
+    esper.add_component(entity, Orientation(
+        facing=FacingDirection.RIGHT if team == TeamType.TEAM1 else FacingDirection.LEFT
+    ))
+    return entity
+
 def get_unit_sprite_sheet(unit_type: UnitType, team: TeamType) -> SpriteSheet:
     """Get a SpriteSheet component for a unit type.
     
@@ -296,5 +319,17 @@ def get_unit_sprite_sheet(unit_type: UnitType, team: TeamType) -> SpriteSheet:
             animation_durations=FANCY_SWORDSMAN_ANIMATION_DURATIONS,
             sprite_center_offset=(0, 0),
             attack_activation_frame=5
+        )
+    elif unit_type == UnitType.LONGBOWMAN:
+        return SpriteSheet(
+            surface=sprite_sheets[team][unit_type],
+            frame_width=100,
+            frame_height=100,
+            scale=TINY_RPG_SCALE,
+            frames={AnimationType.IDLE: 6, AnimationType.WALKING: 7, AnimationType.ATTACKING: 8, AnimationType.DYING: 4},
+            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ATTACKING: 2, AnimationType.DYING: 5},
+            animation_durations=LONGBOWMAN_ANIMATION_DURATIONS,
+            sprite_center_offset=(0, 0),
+            attack_activation_frame=6
         )
 

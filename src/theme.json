@@ -64,6 +64,13 @@
                 "path": "assets/icons/FancySwordsmanIcon.png"
             }
         }
+    },
+    "#longbowman_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/LongbowmanIcon.png"
+            }
+        }
     }
 }
     

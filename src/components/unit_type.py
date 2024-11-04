@@ -10,7 +10,7 @@ class UnitType(Enum):
     HORSEMAN = auto()
     WEREBEAR = auto()
     FANCY_SWORDSMAN = auto()
-
+    LONGBOWMAN = auto()
 class UnitTypeComponent:
     """Component that stores the type of a unit."""
     
