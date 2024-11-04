@@ -16,7 +16,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v3
         with:
-          python-version: '3.9'  # Set your game's Python version here
+          python-version: '3.11'
 
       - name: Install dependencies
         run: |
@@ -26,16 +26,16 @@ jobs:
 
       - name: Build executable with PyInstaller
         run: |
-          pyinstaller --onefile --add-data "assets;assets" your_game_script.py
+          pyinstaller --onefile --add-data "assets;assets" src/main.py
         shell: bash
 
       - name: Archive build artifacts
         uses: actions/upload-artifact@v3
         with:
           name: pygame-executable
-          path: dist/your_game_script.exe
+          path: dist/main.exe
 
       - name: Clean up
         run: |
           rmdir /s /q build
-          del /f /q dist\your_game_script.exe
+          del /f /q dist\main.exe
