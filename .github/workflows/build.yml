@@ -27,7 +27,7 @@ jobs:
 
     - name: Build executable with PyInstaller
       run: |
-        pyinstaller --onefile --windowed --name "BattleSwap" main.py
+        pyinstaller --onefile --windowed main.py
       working-directory: src
 
     - name: Prepare distribution folder
