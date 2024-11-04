@@ -36,7 +36,6 @@ jobs:
         copy src\dist\main.exe dist\BattleSwap\BattleSwap.exe
         xcopy assets dist\BattleSwap\assets /E /I
         copy constants.yaml dist\BattleSwap\
-        if exist README.md copy README.md dist\BattleSwap\
 
     - name: Create ZIP archive
       run: |
