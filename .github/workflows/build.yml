@@ -35,6 +35,7 @@ jobs:
         mkdir dist\BattleSwap
         copy src\dist\main.exe dist\BattleSwap\BattleSwap.exe
         xcopy assets dist\BattleSwap\assets /E /I
+        copy src\theme.json dist\BattleSwap\theme.json
 
     - name: Create ZIP archive
       run: |
