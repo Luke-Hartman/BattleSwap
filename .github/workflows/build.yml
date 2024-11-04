@@ -34,8 +34,3 @@ jobs:
         with:
           name: pygame-executable
           path: dist/main.exe
-
-      - name: Clean up
-        run: |
-          rmdir /s /q build
-          del /f /q dist\main.exe
