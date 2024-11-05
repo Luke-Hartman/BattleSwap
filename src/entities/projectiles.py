@@ -15,24 +15,16 @@ from components.projectile_damage import ProjectileDamage
 from components.animation import AnimationState, AnimationType
 from components.attack import ProjectileType
 # Dictionary to store projectile sprite sheets
-projectile_sheets: dict[TeamType, dict[ProjectileType, pygame.Surface]] = {
-    TeamType.TEAM1: {},
-    TeamType.TEAM2: {}
-}
+projectile_sheets: dict[ProjectileType, pygame.Surface] = {}
 
 def load_projectile_sheets():
     """Load all projectile sprite sheets."""
-    # team_colors = {TeamType.TEAM1: "Blue", TeamType.TEAM2: "Red"}
-    team_colors = {TeamType.TEAM1: "Blue", TeamType.TEAM2: "Blue"} # Using blue for both teams for now
-    
-    for team, color in team_colors.items():
-        path = os.path.join("assets", color, "HumansProjectiles.png")
-        projectile_paths = {
-            ProjectileType.ARROW: os.path.join("assets", color, "HumansProjectiles.png"),
-            ProjectileType.FIREBALL: os.path.join("assets", color, "Wizard.png")
-        }
-        for projectile_type, path in projectile_paths.items():
-            projectile_sheets[team][projectile_type] = pygame.image.load(path).convert_alpha()
+    projectile_paths = {
+        ProjectileType.ARROW: os.path.join("assets", "effects", "HumansProjectiles.png"),
+        ProjectileType.FIREBALL: os.path.join("assets", "effects", "Wizard.png")
+    }
+    for projectile_type, path in projectile_paths.items():
+        projectile_sheets[projectile_type] = pygame.image.load(path).convert_alpha()
 
 def create_arrow(x: int, y: int, velocity_x: float, velocity_y: float, team: TeamType, damage: int) -> int:
     """Create an arrow entity with all necessary components."""
@@ -41,7 +33,7 @@ def create_arrow(x: int, y: int, velocity_x: float, velocity_y: float, team: Tea
     esper.add_component(entity, Velocity(x=velocity_x, y=velocity_y))
     esper.add_component(entity, Team(type=team))
     esper.add_component(entity, SpriteSheet(
-        surface=projectile_sheets[team][ProjectileType.ARROW],
+        surface=projectile_sheets[ProjectileType.ARROW],
         frame_width=16,
         frame_height=16,
         scale=MINIFOLKS_SCALE,
@@ -62,7 +54,7 @@ def create_fireball(x: int, y: int, velocity_x: float, velocity_y: float, team: 
     esper.add_component(entity, Velocity(x=velocity_x, y=velocity_y))
     esper.add_component(entity, Team(type=team))
     esper.add_component(entity, SpriteSheet(
-        surface=projectile_sheets[team][ProjectileType.FIREBALL],
+        surface=projectile_sheets[ProjectileType.FIREBALL],
         frame_width=100,
         frame_height=100,
         scale=MAGE_FIREBALL_SCALE,

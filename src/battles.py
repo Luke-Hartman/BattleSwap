@@ -6,7 +6,17 @@ from CONSTANTS import BATTLEFIELD_HEIGHT, BATTLEFIELD_WIDTH, NO_MANS_LAND_WIDTH
 from entities.units import UnitType
 
 starting_units = {
-    UnitType.ARCHER: 5,
+    UnitType.CORE_ARCHER: 10,
+    UnitType.CORE_DUELIST: 10,
+    UnitType.CORE_MAGE: 10,
+    UnitType.CORE_HORSEMAN: 10,
+    UnitType.CORE_SWORDSMAN: 10,
+    UnitType.CRUSADER_BLACK_KNIGHT: 10,
+    UnitType.CRUSADER_GOLD_KNIGHT: 10,
+    UnitType.CRUSADER_LONGBOWMAN: 10,
+    UnitType.CRUSADER_PALADIN: 10,
+    UnitType.CRUSADER_PIKEMAN: 10,
+    UnitType.WEREBEAR: 10,
 }
 
 @dataclass
@@ -26,9 +36,9 @@ battles = [
     Battle(
         id="tutorial_1",
         enemies=[
-            (UnitType.HORSEMAN, ((BATTLEFIELD_WIDTH * 3 // 4) + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT // 2)),
+            (UnitType.CORE_HORSEMAN, ((BATTLEFIELD_WIDTH * 3 // 4) + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT // 2)),
         ],
-        dependencies=[],
+        dependencies=["TODO REMOVE ME"],
         tip=[
             "Left click to place/move units.",
             "Right click to return units to the barracks.",
@@ -39,8 +49,8 @@ battles = [
     Battle(
         id="tutorial_2", 
         enemies=[
-            (UnitType.SWORDSMAN, (BATTLEFIELD_WIDTH // 2 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT * 1 // 8)),
-            (UnitType.SWORDSMAN, (BATTLEFIELD_WIDTH // 2 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT * 7 // 8)),
+            (UnitType.CORE_SWORDSMAN, (BATTLEFIELD_WIDTH // 2 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT * 1 // 8)),
+            (UnitType.CORE_SWORDSMAN, (BATTLEFIELD_WIDTH // 2 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT * 7 // 8)),
         ],
         dependencies=["tutorial_1"],
         tip=[
@@ -53,7 +63,7 @@ battles = [
     Battle(
         id="tutorial_3",
         enemies=[
-            (UnitType.FANCY_SWORDSMAN, (BATTLEFIELD_WIDTH // 2 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT // 2)),
+            (UnitType.CORE_DUELIST, (BATTLEFIELD_WIDTH // 2 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT // 2)),
         ],
         dependencies=["tutorial_2"],
         tip=[
@@ -64,19 +74,107 @@ battles = [
     Battle(
         id="tutorial_4",
         enemies=[
-            (UnitType.SWORDSMAN, (BATTLEFIELD_WIDTH // 2 + BATTLEFIELD_WIDTH * 0 // 10 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT // 2)),
-            (UnitType.SWORDSMAN, (BATTLEFIELD_WIDTH // 2 + BATTLEFIELD_WIDTH * 1 // 10 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT // 2)),
-            (UnitType.SWORDSMAN, (BATTLEFIELD_WIDTH // 2 + BATTLEFIELD_WIDTH * 2 // 10 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT // 2)),
-            (UnitType.SWORDSMAN, (BATTLEFIELD_WIDTH // 2 + BATTLEFIELD_WIDTH * 3 // 10 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT // 2)),
-            (UnitType.SWORDSMAN, (BATTLEFIELD_WIDTH // 2 + BATTLEFIELD_WIDTH * 4 // 10 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT // 2)),
-            (UnitType.ARCHER, (BATTLEFIELD_WIDTH // 2 + BATTLEFIELD_WIDTH * 1 // 10 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT // 2 + BATTLEFIELD_HEIGHT // 4)),
-            (UnitType.ARCHER, (BATTLEFIELD_WIDTH // 2 + BATTLEFIELD_WIDTH * 1 // 10 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT // 2 - BATTLEFIELD_HEIGHT // 4)),
+            (UnitType.CORE_SWORDSMAN, (BATTLEFIELD_WIDTH // 2 + BATTLEFIELD_WIDTH * 0 // 10 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT // 2)),
+            (UnitType.CORE_SWORDSMAN, (BATTLEFIELD_WIDTH // 2 + BATTLEFIELD_WIDTH * 1 // 10 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT // 2)),
+            (UnitType.CORE_SWORDSMAN, (BATTLEFIELD_WIDTH // 2 + BATTLEFIELD_WIDTH * 2 // 10 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT // 2)),
+            (UnitType.CORE_SWORDSMAN, (BATTLEFIELD_WIDTH // 2 + BATTLEFIELD_WIDTH * 3 // 10 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT // 2)),
+            (UnitType.CORE_SWORDSMAN, (BATTLEFIELD_WIDTH // 2 + BATTLEFIELD_WIDTH * 4 // 10 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT // 2)),
+            (UnitType.CORE_ARCHER, (BATTLEFIELD_WIDTH // 2 + BATTLEFIELD_WIDTH * 1 // 10 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT // 2 + BATTLEFIELD_HEIGHT // 4)),
+            (UnitType.CORE_ARCHER, (BATTLEFIELD_WIDTH // 2 + BATTLEFIELD_WIDTH * 1 // 10 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT // 2 - BATTLEFIELD_HEIGHT // 4)),
         ],
         dependencies=["tutorial_3"],
         tip=[
             "In BattleSwap, you will encounter many powerful enemies",
             "who will become powerful allies after you defeat them.",
         ]
+    ),
+    Battle(
+        id="core_archer",
+        enemies=[
+            (UnitType.CORE_ARCHER, (BATTLEFIELD_WIDTH // 2 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT // 2)),
+        ],
+        dependencies=[],
+        tip=["1"],
+    ),
+    Battle(
+        id="core_duelist",
+        enemies=[
+            (UnitType.CORE_DUELIST, (BATTLEFIELD_WIDTH // 2 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT // 2)),
+        ],
+        dependencies=[],
+        tip=["1"],
+    ),
+    Battle(
+        id="core_mage",
+        enemies=[
+            (UnitType.CORE_MAGE, (BATTLEFIELD_WIDTH // 2 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT // 2)),
+        ],
+        dependencies=[],
+        tip=["1"],
+    ),
+    Battle(
+        id="core_horseman",
+        enemies=[
+            (UnitType.CORE_HORSEMAN, (BATTLEFIELD_WIDTH // 2 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT // 2)),
+        ],
+        dependencies=[],
+        tip=["1"],
+    ),
+    Battle(
+        id="core_swordman",
+        enemies=[
+            (UnitType.CORE_SWORDSMAN, (BATTLEFIELD_WIDTH // 2 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT // 2)),
+        ],
+        dependencies=[],
+        tip=["1"],
+    ),  
+    Battle(
+        id="crusader_black_knight",
+        enemies=[
+            (UnitType.CRUSADER_BLACK_KNIGHT, (BATTLEFIELD_WIDTH // 2 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT // 2)),
+        ],
+        dependencies=[],
+        tip=["1"],
+    ),
+    Battle(
+        id="crusader_gold_knight",
+        enemies=[
+            (UnitType.CRUSADER_GOLD_KNIGHT, (BATTLEFIELD_WIDTH // 2 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT // 2)),
+        ],
+        dependencies=[],
+        tip=["1"],
+    ),
+    Battle(
+        id="crusader_longbowman",
+        enemies=[
+            (UnitType.CRUSADER_LONGBOWMAN, (BATTLEFIELD_WIDTH // 2 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT // 2)),
+        ],
+        dependencies=[],
+        tip=["1"],
+    ),
+    Battle(
+        id="crusader_paladin",
+        enemies=[
+            (UnitType.CRUSADER_PALADIN, (BATTLEFIELD_WIDTH // 2 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT // 2)),
+        ],
+        dependencies=[],
+        tip=["1"],
+    ),
+    Battle(
+        id="crusader_pikeman",
+        enemies=[
+            (UnitType.CRUSADER_PIKEMAN, (BATTLEFIELD_WIDTH // 2 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT // 2)),
+        ],
+        dependencies=[],
+        tip=["1"],
+    ),
+    Battle(
+        id="werebear",
+        enemies=[
+            (UnitType.WEREBEAR, (BATTLEFIELD_WIDTH // 2 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT // 2)),
+        ],
+        dependencies=[],
+        tip=["1"],
     ),
 ]
 

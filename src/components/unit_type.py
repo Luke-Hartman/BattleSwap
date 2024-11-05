@@ -4,13 +4,18 @@ from enum import Enum, auto
 
 class UnitType(Enum):
     """Enum representing different types of units."""
-    SWORDSMAN = auto()
-    ARCHER = auto()
-    MAGE = auto()
-    HORSEMAN = auto()
+    CORE_SWORDSMAN = auto()
+    CORE_ARCHER = auto()
+    CORE_MAGE = auto()
+    CORE_HORSEMAN = auto()
     WEREBEAR = auto()
-    FANCY_SWORDSMAN = auto()
-    LONGBOWMAN = auto()
+    CORE_DUELIST = auto()
+    CRUSADER_BLACK_KNIGHT = auto()
+    CRUSADER_GOLD_KNIGHT = auto()
+    CRUSADER_LONGBOWMAN = auto()
+    CRUSADER_PALADIN = auto()
+    CRUSADER_PIKEMAN = auto()
+
 class UnitTypeComponent:
     """Component that stores the type of a unit."""
     

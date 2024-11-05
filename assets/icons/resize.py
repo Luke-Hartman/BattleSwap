@@ -1,7 +1,7 @@
 from PIL import Image
 
 filenames = [
-    'WerebearIcon',
+    'CrusaderGoldKnightIcon',
 ]
 for filename in filenames:
     # Load the 32x32 image

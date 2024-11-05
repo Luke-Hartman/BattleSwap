@@ -23,31 +23,73 @@
             "text_horiz_alignment_padding": "0"
         }
     },
-    "#archer_icon": {
+    "#core_archer_icon": {
         "images": {
             "normal_image": {
-                "path": "assets/icons/MiniArcherIcon.png"
+                "path": "assets/icons/CoreArcherIcon.png"
             }
         }
     },
-    "#swordman_icon": {
+    "#core_duelist_icon": {
         "images": {
             "normal_image": {
-                "path": "assets/icons/MiniSwordManIcon.png"
+                "path": "assets/icons/CoreDuelistIcon.png"
             }
         }
     },
-    "#mage_icon": {
+    "#core_horseman_icon": {
         "images": {
             "normal_image": {
-                "path": "assets/icons/MiniMageIcon.png"
+                "path": "assets/icons/CoreHorsemanIcon.png"
             }
         }
     },
-    "#horseman_icon": {
+    "#core_mage_icon": {
         "images": {
             "normal_image": {
-                "path": "assets/icons/MiniHorsemanIcon.png"
+                "path": "assets/icons/CoreMageIcon.png"
+            }
+        }
+    },
+    "#core_swordsman_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/CoreSwordsmanIcon.png"
+            }
+        }
+    },
+    "#crusader_black_knight_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/CrusaderBlackKnightIcon.png"
+            }
+        }
+    },
+    "#crusader_gold_knight_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/CrusaderGoldKnightIcon.png"
+            }
+        }
+    },
+    "#crusader_longbowman_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/CrusaderLongbowmanIcon.png"
+            }
+        }
+    },
+    "#crusader_paladin_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/CrusaderPaladinIcon.png"
+            }
+        }
+    },
+    "#crusader_pikeman_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/CrusaderPikemanIcon.png"
             }
         }
     },
@@ -55,20 +97,6 @@
         "images": {
             "normal_image": {
                 "path": "assets/icons/WerebearIcon.png"
-            }
-        }
-    },
-    "#fancy_swordsman_icon": {
-        "images": {
-            "normal_image": {
-                "path": "assets/icons/FancySwordsmanIcon.png"
-            }
-        }
-    },
-    "#longbowman_icon": {
-        "images": {
-            "normal_image": {
-                "path": "assets/icons/LongbowmanIcon.png"
             }
         }
     }
