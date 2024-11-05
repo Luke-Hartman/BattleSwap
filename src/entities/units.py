@@ -410,8 +410,8 @@ def get_unit_sprite_sheet(unit_type: UnitType, team: TeamType) -> SpriteSheet:
             frame_width=100,
             frame_height=100,
             scale=TINY_RPG_SCALE,
-            frames={AnimationType.IDLE: 6, AnimationType.WALKING: 8, AnimationType.ATTACKING: 8, AnimationType.DYING: 4},
-            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ATTACKING: 2, AnimationType.DYING: 6},
+            frames={AnimationType.IDLE: 6, AnimationType.WALKING: 8, AnimationType.ATTACKING: 9, AnimationType.DYING: 4},
+            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ATTACKING: 2, AnimationType.DYING: 5},
             animation_durations=CRUSADER_GOLD_KNIGHT_ANIMATION_DURATIONS,
             sprite_center_offset=(0, 0),
             attack_activation_frame=4
