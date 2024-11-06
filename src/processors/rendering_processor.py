@@ -65,6 +65,7 @@ class RenderingProcessor(esper.Processor):
                 orientation = esper.component_for_entity(ent, Orientation)
                 if orientation.facing == FacingDirection.LEFT:
                     sprite_sheet.image = pygame.transform.flip(sprite_sheet.image, True, False)
+                    x_offset = -x_offset
             elif esper.has_component(ent, Velocity):
                 velocity = esper.component_for_entity(ent, Velocity)
                 angle = math.atan2(velocity.y, velocity.x)

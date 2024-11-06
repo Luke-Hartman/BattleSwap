@@ -65,6 +65,27 @@
             }
         }
     },
+    "#crusader_cleric_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/CrusaderClericIcon.png"
+            }
+        }
+    },
+    "#crusader_commander_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/CrusaderCommanderIcon.png"
+            }
+        }
+    },  
+    "#crusader_defender_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/CrusaderDefenderIcon.png"
+            }
+        }
+    },
     "#crusader_gold_knight_icon": {
         "images": {
             "normal_image": {

@@ -27,6 +27,9 @@ unit_theme_ids: Dict[UnitType, str] = {
     UnitType.CORE_MAGE: "#core_mage_icon",
     UnitType.CORE_SWORDSMAN: "#core_swordsman_icon",
     UnitType.CRUSADER_BLACK_KNIGHT: "#crusader_black_knight_icon",
+    UnitType.CRUSADER_CLERIC: "#crusader_cleric_icon",
+    UnitType.CRUSADER_COMMANDER: "#crusader_commander_icon",
+    UnitType.CRUSADER_DEFENDER: "#crusader_defender_icon",
     UnitType.CRUSADER_GOLD_KNIGHT: "#crusader_gold_knight_icon",
     UnitType.CRUSADER_LONGBOWMAN: "#crusader_longbowman_icon",
     UnitType.CRUSADER_PALADIN: "#crusader_paladin_icon",
@@ -50,6 +53,9 @@ def load_sprite_sheets():
         UnitType.CORE_MAGE: "CoreMage.png",
         UnitType.CORE_SWORDSMAN: "CoreSwordsman.png", 
         UnitType.CRUSADER_BLACK_KNIGHT: "CrusaderBlackKnight.png",
+        UnitType.CRUSADER_CLERIC: "CrusaderCleric.png",
+        UnitType.CRUSADER_COMMANDER: "CrusaderCommander.png",
+        UnitType.CRUSADER_DEFENDER: "CrusaderDefender.png",
         UnitType.CRUSADER_GOLD_KNIGHT: "CrusaderGoldKnight.png",
         UnitType.CRUSADER_LONGBOWMAN: "CrusaderLongbowman.png",
         UnitType.CRUSADER_PALADIN: "CrusaderPaladin.png",
@@ -68,6 +74,9 @@ def load_sprite_sheets():
         UnitType.CORE_MAGE: "CoreMageIcon.png",
         UnitType.CORE_SWORDSMAN: "CoreSwordsmanIcon.png",
         UnitType.CRUSADER_BLACK_KNIGHT: "CrusaderBlackKnightIcon.png",
+        UnitType.CRUSADER_CLERIC: "CrusaderClericIcon.png",
+        UnitType.CRUSADER_COMMANDER: "CrusaderCommanderIcon.png",
+        UnitType.CRUSADER_DEFENDER: "CrusaderDefenderIcon.png",
         UnitType.CRUSADER_GOLD_KNIGHT: "CrusaderGoldKnightIcon.png",
         UnitType.CRUSADER_LONGBOWMAN: "CrusaderLongbowmanIcon.png",
         UnitType.CRUSADER_PALADIN: "CrusaderPaladinIcon.png",
@@ -87,6 +96,9 @@ def create_unit(x: int, y: int, unit_type: UnitType, team: TeamType) -> int:
         UnitType.CORE_MAGE: create_core_mage,
         UnitType.CORE_SWORDSMAN: create_core_swordsman,
         UnitType.CRUSADER_BLACK_KNIGHT: create_crusader_black_knight,
+        UnitType.CRUSADER_CLERIC: create_crusader_cleric,
+        UnitType.CRUSADER_COMMANDER: create_crusader_commander,
+        UnitType.CRUSADER_DEFENDER: create_crusader_defender,
         UnitType.CRUSADER_GOLD_KNIGHT: create_crusader_gold_knight,
         UnitType.CRUSADER_LONGBOWMAN: create_crusader_longbowman,
         UnitType.CRUSADER_PALADIN: create_crusader_paladin,
@@ -217,6 +229,60 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
     esper.add_component(entity, Velocity(x=0, y=0))
     esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_BLACK_KNIGHT, team))
     esper.add_component(entity, Health(current=CRUSADER_BLACK_KNIGHT_HP, maximum=CRUSADER_BLACK_KNIGHT_HP))
+    esper.add_component(entity, Orientation(
+        facing=FacingDirection.RIGHT if team == TeamType.TEAM1 else FacingDirection.LEFT
+    ))
+    return entity
+
+def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
+    """Create a cleric entity with all necessary components."""
+    entity = esper.create_entity()
+    esper.add_component(entity, Position(x=x, y=y))
+    esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
+    esper.add_component(entity, Team(type=team))
+    esper.add_component(entity, UnitState())
+    esper.add_component(entity, UnitTypeComponent(type=UnitType.CRUSADER_CLERIC))
+    esper.add_component(entity, MeleeAttack(range=CRUSADER_CLERIC_ATTACK_RANGE, damage=CRUSADER_CLERIC_ATTACK_DAMAGE))
+    esper.add_component(entity, Movement(speed=CRUSADER_CLERIC_MOVEMENT_SPEED))
+    esper.add_component(entity, Velocity(x=0, y=0))
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_CLERIC, team))
+    esper.add_component(entity, Health(current=CRUSADER_CLERIC_HP, maximum=CRUSADER_CLERIC_HP))
+    esper.add_component(entity, Orientation(
+        facing=FacingDirection.RIGHT if team == TeamType.TEAM1 else FacingDirection.LEFT
+    ))
+    return entity
+
+def create_crusader_commander(x: int, y: int, team: TeamType) -> int:
+    """Create a commander entity with all necessary components."""
+    entity = esper.create_entity()
+    esper.add_component(entity, Position(x=x, y=y))
+    esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
+    esper.add_component(entity, Team(type=team))
+    esper.add_component(entity, UnitState())
+    esper.add_component(entity, UnitTypeComponent(type=UnitType.CRUSADER_COMMANDER))
+    esper.add_component(entity, MeleeAttack(range=CRUSADER_COMMANDER_ATTACK_RANGE, damage=CRUSADER_COMMANDER_ATTACK_DAMAGE))
+    esper.add_component(entity, Movement(speed=CRUSADER_COMMANDER_MOVEMENT_SPEED))
+    esper.add_component(entity, Velocity(x=0, y=0))
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_COMMANDER, team))
+    esper.add_component(entity, Health(current=CRUSADER_COMMANDER_HP, maximum=CRUSADER_COMMANDER_HP))
+    esper.add_component(entity, Orientation(
+        facing=FacingDirection.RIGHT if team == TeamType.TEAM1 else FacingDirection.LEFT
+    ))
+    return entity
+
+def create_crusader_defender(x: int, y: int, team: TeamType) -> int:
+    """Create a defender entity with all necessary components."""
+    entity = esper.create_entity()
+    esper.add_component(entity, Position(x=x, y=y))
+    esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
+    esper.add_component(entity, Team(type=team))
+    esper.add_component(entity, UnitState())
+    esper.add_component(entity, UnitTypeComponent(type=UnitType.CRUSADER_DEFENDER))
+    esper.add_component(entity, MeleeAttack(range=CRUSADER_DEFENDER_ATTACK_RANGE, damage=CRUSADER_DEFENDER_ATTACK_DAMAGE))
+    esper.add_component(entity, Movement(speed=CRUSADER_DEFENDER_MOVEMENT_SPEED))
+    esper.add_component(entity, Velocity(x=0, y=0))
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_DEFENDER, team))
+    esper.add_component(entity, Health(current=CRUSADER_DEFENDER_HP, maximum=CRUSADER_DEFENDER_HP))
     esper.add_component(entity, Orientation(
         facing=FacingDirection.RIGHT if team == TeamType.TEAM1 else FacingDirection.LEFT
     ))
@@ -404,6 +470,42 @@ def get_unit_sprite_sheet(unit_type: UnitType, team: TeamType) -> SpriteSheet:
             sprite_center_offset=(0, 0),
             attack_activation_frame=3
         )
+    elif unit_type == UnitType.CRUSADER_CLERIC:
+        return SpriteSheet(
+            surface=sprite_sheets[unit_type],
+            frame_width=100,
+            frame_height=100,
+            scale=TINY_RPG_SCALE,
+            frames={AnimationType.IDLE: 6, AnimationType.WALKING: 8, AnimationType.ATTACKING: 9, AnimationType.DYING: 4},
+            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ATTACKING: 2, AnimationType.DYING: 7},
+            animation_durations=CRUSADER_CLERIC_ANIMATION_DURATIONS,
+            sprite_center_offset=(0, 0),
+            attack_activation_frame=3
+        )
+    elif unit_type == UnitType.CRUSADER_COMMANDER:
+        return SpriteSheet(
+            surface=sprite_sheets[unit_type],
+            frame_width=100,
+            frame_height=100,
+            scale=TINY_RPG_SCALE,
+            frames={AnimationType.IDLE: 6, AnimationType.WALKING: 8, AnimationType.ATTACKING: 7, AnimationType.DYING: 4},
+            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ATTACKING: 4, AnimationType.DYING: 8},
+            animation_durations=CRUSADER_COMMANDER_ANIMATION_DURATIONS,
+            sprite_center_offset=(0, 0),
+            attack_activation_frame=4
+        )
+    elif unit_type == UnitType.CRUSADER_DEFENDER:
+        return SpriteSheet(
+            surface=sprite_sheets[unit_type],
+            frame_width=32,
+            frame_height=32,
+            scale=MINIFOLKS_SCALE,
+            frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.ATTACKING: 6, AnimationType.DYING: 4},
+            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ATTACKING: 3, AnimationType.DYING: 6},
+            animation_durations=CRUSADER_DEFENDER_ANIMATION_DURATIONS,
+            sprite_center_offset=(0, -8),
+            attack_activation_frame=4
+        )
     elif unit_type == UnitType.CRUSADER_GOLD_KNIGHT:
         return SpriteSheet(
             surface=sprite_sheets[unit_type],
@@ -443,13 +545,13 @@ def get_unit_sprite_sheet(unit_type: UnitType, team: TeamType) -> SpriteSheet:
     elif unit_type == UnitType.CRUSADER_PIKEMAN:
         return SpriteSheet(
             surface=sprite_sheets[unit_type],
-            frame_width=32,
-            frame_height=32,
+            frame_width=100,
+            frame_height=68,
             scale=MINIFOLKS_SCALE,
-            frames={AnimationType.IDLE: 4, AnimationType.WALKING: 5, AnimationType.ATTACKING: 6, AnimationType.DYING: 5},
-            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ATTACKING: 2, AnimationType.DYING: 4},
+            frames={AnimationType.IDLE: 4, AnimationType.WALKING: 5, AnimationType.ATTACKING: 7, AnimationType.DYING: 7},
+            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ATTACKING: 2, AnimationType.DYING: 3},
             animation_durations=CRUSADER_PIKEMAN_ANIMATION_DURATIONS,
-            sprite_center_offset=(0, -8),
+            sprite_center_offset=(24, -16),
             attack_activation_frame=3
         )
     elif unit_type == UnitType.WEREBEAR:
@@ -464,4 +566,6 @@ def get_unit_sprite_sheet(unit_type: UnitType, team: TeamType) -> SpriteSheet:
             sprite_center_offset=(0, 0),
             attack_activation_frame=5
         )
+    else:
+        raise ValueError(f"Unknown unit type: {unit_type}")
 
