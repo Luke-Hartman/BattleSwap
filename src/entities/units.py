@@ -8,6 +8,7 @@ import pygame
 import os
 from typing import Dict
 from CONSTANTS import *
+from components.armor import Armor
 from components.position import Position
 from components.animation import AnimationState, AnimationType
 from components.sprite_sheet import SpriteSheet
@@ -229,6 +230,7 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
     esper.add_component(entity, Velocity(x=0, y=0))
     esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_BLACK_KNIGHT, team))
     esper.add_component(entity, Health(current=CRUSADER_BLACK_KNIGHT_HP, maximum=CRUSADER_BLACK_KNIGHT_HP))
+    esper.add_component(entity, Armor(flat_reduction=CRUSADER_BLACK_KNIGHT_ARMOR_FLAT_REDUCTION, percent_reduction=CRUSADER_BLACK_KNIGHT_ARMOR_PERCENT_REDUCTION))
     esper.add_component(entity, Orientation(
         facing=FacingDirection.RIGHT if team == TeamType.TEAM1 else FacingDirection.LEFT
     ))
@@ -265,6 +267,7 @@ def create_crusader_commander(x: int, y: int, team: TeamType) -> int:
     esper.add_component(entity, Velocity(x=0, y=0))
     esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_COMMANDER, team))
     esper.add_component(entity, Health(current=CRUSADER_COMMANDER_HP, maximum=CRUSADER_COMMANDER_HP))
+    esper.add_component(entity, Armor(flat_reduction=CRUSADER_COMMANDER_ARMOR_FLAT_REDUCTION, percent_reduction=CRUSADER_COMMANDER_ARMOR_PERCENT_REDUCTION))
     esper.add_component(entity, Orientation(
         facing=FacingDirection.RIGHT if team == TeamType.TEAM1 else FacingDirection.LEFT
     ))
@@ -283,6 +286,7 @@ def create_crusader_defender(x: int, y: int, team: TeamType) -> int:
     esper.add_component(entity, Velocity(x=0, y=0))
     esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_DEFENDER, team))
     esper.add_component(entity, Health(current=CRUSADER_DEFENDER_HP, maximum=CRUSADER_DEFENDER_HP))
+    esper.add_component(entity, Armor(flat_reduction=CRUSADER_DEFENDER_ARMOR_FLAT_REDUCTION, percent_reduction=CRUSADER_DEFENDER_ARMOR_PERCENT_REDUCTION))
     esper.add_component(entity, Orientation(
         facing=FacingDirection.RIGHT if team == TeamType.TEAM1 else FacingDirection.LEFT
     ))
@@ -301,6 +305,7 @@ def create_crusader_gold_knight(x: int, y: int, team: TeamType) -> int:
     esper.add_component(entity, Velocity(x=0, y=0))
     esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_GOLD_KNIGHT, team))
     esper.add_component(entity, Health(current=CRUSADER_GOLD_KNIGHT_HP, maximum=CRUSADER_GOLD_KNIGHT_HP))
+    esper.add_component(entity, Armor(flat_reduction=CRUSADER_GOLD_KNIGHT_ARMOR_FLAT_REDUCTION, percent_reduction=CRUSADER_GOLD_KNIGHT_ARMOR_PERCENT_REDUCTION))
     esper.add_component(entity, Orientation(
         facing=FacingDirection.RIGHT if team == TeamType.TEAM1 else FacingDirection.LEFT
     ))
@@ -347,6 +352,7 @@ def create_crusader_paladin(x: int, y: int, team: TeamType) -> int:
     esper.add_component(entity, Velocity(x=0, y=0))
     esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_PALADIN, team))
     esper.add_component(entity, Health(current=CRUSADER_PALADIN_HP, maximum=CRUSADER_PALADIN_HP))
+    esper.add_component(entity, Armor(flat_reduction=CRUSADER_PALADIN_ARMOR_FLAT_REDUCTION, percent_reduction=CRUSADER_PALADIN_ARMOR_PERCENT_REDUCTION))
     esper.add_component(entity, Orientation(
         facing=FacingDirection.RIGHT if team == TeamType.TEAM1 else FacingDirection.LEFT
     ))

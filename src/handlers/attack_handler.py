@@ -6,6 +6,7 @@ handling attack logic and applying damage.
 
 import esper
 import math
+from components.armor import Armor
 from components.orientation import Orientation
 from components.unit_state import UnitState, State
 from components.attack import MeleeAttack, ProjectileAttack, ProjectileType
@@ -88,6 +89,9 @@ class AttackHandler:
 
     def deal_damage(self, target: int, damage: int):
         target_health = esper.component_for_entity(target, Health)
+        target_armor = esper.try_component(target, Armor)
+        if target_armor:
+            damage = target_armor.calculate_damage_after_armor(damage)
         if target_health is None:
             raise AssertionError("Target has no health component")
 
