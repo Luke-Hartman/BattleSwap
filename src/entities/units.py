@@ -559,7 +559,7 @@ def get_unit_sprite_sheet(unit_type: UnitType, team: TeamType) -> SpriteSheet:
             surface=sprite_sheets[unit_type],
             frame_width=100,
             frame_height=100,
-            scale=1.5*TINY_RPG_SCALE,
+            scale=TINY_RPG_SCALE,
             frames={AnimationType.IDLE: 6, AnimationType.WALKING: 7, AnimationType.ATTACKING: 8, AnimationType.DYING: 4},
             rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ATTACKING: 2, AnimationType.DYING: 6},
             animation_durations=WEREBEAR_ANIMATION_DURATIONS,
