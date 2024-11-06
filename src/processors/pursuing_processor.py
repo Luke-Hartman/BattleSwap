@@ -11,7 +11,7 @@ from components.team import Team, TeamType
 from components.unit_state import UnitState, State
 from components.movement import Movement
 from components.velocity import Velocity
-from components.attack import MeleeAttack, ProjectileAttack
+from components.attack import HealingAttack, MeleeAttack, ProjectileAttack
 from components.orientation import Orientation, FacingDirection
 from events import TargetInRangeEvent, TARGET_IN_RANGE, emit_event, TargetLostEvent, TARGET_LOST
 
@@ -65,6 +65,9 @@ class PursuingProcessor(esper.Processor):
         if projectile_attack:
             return distance <= projectile_attack.range
         
+        healing_attack = esper.try_component(entity, HealingAttack)
+        if healing_attack:
+            return distance <= healing_attack.range
         return False
 
     def calculate_destination(self, entity: int, pos: Position, target_pos: Position) -> Position:

@@ -46,3 +46,13 @@ class ProjectileAttack:
 
     projectile_offset_y: float
     """The y offset of the projectile, in pixels."""
+
+@dataclass
+class HealingAttack:
+    """Represents a healing attack."""
+
+    range: float
+    """The range of the healing attack, in pixels."""
+
+    healing: int
+    """The amount of healing the attack deals."""

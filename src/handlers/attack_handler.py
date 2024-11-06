@@ -9,10 +9,11 @@ import math
 from components.armor import Armor
 from components.orientation import Orientation
 from components.unit_state import UnitState, State
-from components.attack import MeleeAttack, ProjectileAttack, ProjectileType
+from components.attack import HealingAttack, MeleeAttack, ProjectileAttack, ProjectileType
 from components.health import Health
 from components.position import Position
 from components.team import Team
+from entities.effects import create_healing_effect
 from events import (
     AttackActivatedEvent, ATTACK_ACTIVATED, 
     KillingBlowEvent, KILLING_BLOW, 
@@ -39,10 +40,16 @@ class AttackHandler:
         melee_attack = esper.try_component(attacker, MeleeAttack)
         if melee_attack:
             self.handle_melee_attack(attacker, attacker_state.target, melee_attack)
-        else:
-            projectile_attack = esper.try_component(attacker, ProjectileAttack)
-            if projectile_attack:
-                self.handle_projectile_attack(attacker, attacker_state.target, projectile_attack)
+            return
+        projectile_attack = esper.try_component(attacker, ProjectileAttack)
+        if projectile_attack:
+            self.handle_projectile_attack(attacker, attacker_state.target, projectile_attack)
+            return
+        healing_attack = esper.try_component(attacker, HealingAttack)
+        if healing_attack:
+            self.handle_healing_attack(attacker, attacker_state.target, healing_attack)
+            return
+        raise AssertionError("Attack type not supported")
 
     def handle_melee_attack(self, attacker: int, target: int, attack: MeleeAttack):
         self.deal_damage(target, attack.damage)
@@ -84,6 +91,10 @@ class AttackHandler:
                 damage=attack.damage,
             )
 
+    def handle_healing_attack(self, attacker: int, target: int, attack: HealingAttack):
+        self.deal_healing(target, attack.healing)
+        create_healing_effect(target)
+
     def handle_projectile_hit(self, event: ProjectileHitEvent):
         self.deal_damage(event.target, event.damage)
 
@@ -99,3 +110,7 @@ class AttackHandler:
         target_health.current = max(target_health.current - damage, 0)
         if target_health.current == 0 and previous_health > 0:
             emit_event(KILLING_BLOW, event=KillingBlowEvent(target))
+
+    def deal_healing(self, target: int, healing: int):
+        target_health = esper.component_for_entity(target, Health)
+        target_health.current = min(target_health.current + healing, target_health.maximum)

@@ -9,7 +9,7 @@ from components.position import Position
 from components.velocity import Velocity
 
 class MovementProcessor(esper.Processor):
-    """Processor responsible for moving entities based on their velocity."""
+    """Processor responsible for moving entities."""
 
     def process(self, dt: float):
         for ent, (pos, velocity) in esper.get_components(Position, Velocity):

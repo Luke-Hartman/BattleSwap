@@ -51,12 +51,12 @@ class RenderingProcessor(esper.Processor):
 
     def process(self, dt: float):        
         # Get all entities with necessary components
-        entities = esper.get_components(Position, AnimationState, SpriteSheet, Team)
+        entities = esper.get_components(Position, AnimationState, SpriteSheet)
         
         # Sort entities based on their y-coordinate (higher y-value means lower on screen)
         sorted_entities = sorted(entities, key=lambda e: e[1][0].y)
         
-        for ent, (pos, anim_state, sprite_sheet, team) in sorted_entities:
+        for ent, (pos, anim_state, sprite_sheet) in sorted_entities:
             sprite_sheet.update_frame(anim_state.type, anim_state.current_frame)
             x_offset = sprite_sheet.sprite_center_offset[0] * sprite_sheet.scale
             y_offset = sprite_sheet.sprite_center_offset[1] * sprite_sheet.scale
@@ -85,9 +85,14 @@ class RenderingProcessor(esper.Processor):
             render_pos = sprite_sheet.rect.move(-self.camera.x, -self.camera.y)
             self.screen.blit(sprite_sheet.image, render_pos)
 
-            # Draw health bar if entity has Health component, is not dead, and health is not full
-            if esper.has_component(ent, Health) and esper.has_component(ent, UnitState):
+            # Draw health bar if entity has Health, Team, and UnitState components, is not dead, and health is not full
+            if (
+                esper.has_component(ent, Health) and
+                esper.has_component(ent, Team) and
+                esper.has_component(ent, UnitState)
+            ):
                 health = esper.component_for_entity(ent, Health)
+                team = esper.component_for_entity(ent, Team)
                 unit_state = esper.component_for_entity(ent, UnitState)
                 if unit_state.state != State.DEAD and health.current < health.maximum:
                     self.draw_health_bar(pos, sprite_sheet, health, team)

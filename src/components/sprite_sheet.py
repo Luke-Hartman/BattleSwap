@@ -19,7 +19,7 @@ class SpriteSheet(pygame.sprite.Sprite):
         rows: Dict[AnimationType, int],
         animation_durations: Dict[AnimationType, float],
         sprite_center_offset: Tuple[int, int],
-        attack_activation_frame: int,
+        attack_activation_frame: Optional[int] = None,
         skill_activation_frame: Optional[int] = None,
     ):
         super().__init__()
@@ -32,6 +32,8 @@ class SpriteSheet(pygame.sprite.Sprite):
         self.animation_durations = animation_durations
         self.sprite_center_offset = sprite_center_offset
         self.attack_activation_frame = attack_activation_frame
+        assert (attack_activation_frame is None) == (AnimationType.ATTACKING not in frames)
+        assert (attack_activation_frame is None) == (AnimationType.ATTACKING not in rows)
         self.skill_activation_frame = skill_activation_frame
         assert (skill_activation_frame is None) == (AnimationType.SKILL not in frames)
         assert (skill_activation_frame is None) == (AnimationType.SKILL not in rows)

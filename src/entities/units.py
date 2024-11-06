@@ -13,9 +13,10 @@ from components.position import Position
 from components.animation import AnimationState, AnimationType
 from components.skill import SelfHeal, Skill, UnderHealthPercent
 from components.sprite_sheet import SpriteSheet
+from components.targetting_strategy import TargettingStrategyComponent, TargettingStrategyType
 from components.team import Team, TeamType
 from components.unit_state import UnitState
-from components.attack import MeleeAttack, ProjectileAttack, ProjectileType
+from components.attack import HealingAttack, MeleeAttack, ProjectileAttack, ProjectileType
 from components.movement import Movement
 from components.unit_type import UnitType, UnitTypeComponent
 from components.velocity import Velocity
@@ -116,6 +117,7 @@ def create_core_archer(x: int, y: int, team: TeamType) -> int:
     esper.add_component(entity, Team(type=team))
     esper.add_component(entity, UnitState())
     esper.add_component(entity, UnitTypeComponent(type=UnitType.CORE_ARCHER))
+    esper.add_component(entity, TargettingStrategyComponent(type=TargettingStrategyType.NEAREST_ENEMY))
     esper.add_component(
         entity,
         ProjectileAttack(
@@ -144,6 +146,7 @@ def create_core_duelist(x: int, y: int, team: TeamType) -> int:
     esper.add_component(entity, Team(type=team))
     esper.add_component(entity, UnitState())
     esper.add_component(entity, UnitTypeComponent(type=UnitType.CORE_DUELIST))
+    esper.add_component(entity, TargettingStrategyComponent(type=TargettingStrategyType.NEAREST_ENEMY))
     esper.add_component(entity, MeleeAttack(range=CORE_DUELIST_ATTACK_RANGE, damage=CORE_DUELIST_ATTACK_DAMAGE))
     esper.add_component(entity, Movement(speed=CORE_DUELIST_MOVEMENT_SPEED))
     esper.add_component(entity, Velocity(x=0, y=0))
@@ -162,6 +165,7 @@ def create_core_horseman(x: int, y: int, team: TeamType) -> int:
     esper.add_component(entity, Team(type=team))
     esper.add_component(entity, UnitState())
     esper.add_component(entity, UnitTypeComponent(type=UnitType.CORE_HORSEMAN))
+    esper.add_component(entity, TargettingStrategyComponent(type=TargettingStrategyType.NEAREST_ENEMY))
     esper.add_component(entity, MeleeAttack(range=CORE_HORSEMAN_ATTACK_RANGE, damage=CORE_HORSEMAN_ATTACK_DAMAGE))
     esper.add_component(entity, Movement(speed=CORE_HORSEMAN_MOVEMENT_SPEED))
     esper.add_component(entity, Velocity(x=0, y=0))
@@ -180,6 +184,7 @@ def create_core_mage(x: int, y: int, team: TeamType) -> int:
     esper.add_component(entity, Team(type=team))
     esper.add_component(entity, UnitState())
     esper.add_component(entity, UnitTypeComponent(type=UnitType.CORE_MAGE))
+    esper.add_component(entity, TargettingStrategyComponent(type=TargettingStrategyType.NEAREST_ENEMY))
     esper.add_component(
         entity,
         ProjectileAttack(
@@ -208,6 +213,7 @@ def create_core_swordsman(x: int, y: int, team: TeamType) -> int:
     esper.add_component(entity, Team(type=team))
     esper.add_component(entity, UnitState())
     esper.add_component(entity, UnitTypeComponent(type=UnitType.CORE_SWORDSMAN))
+    esper.add_component(entity, TargettingStrategyComponent(type=TargettingStrategyType.NEAREST_ENEMY))
     esper.add_component(entity, MeleeAttack(range=CORE_SWORDSMAN_ATTACK_RANGE, damage=CORE_SWORDSMAN_ATTACK_DAMAGE))
     esper.add_component(entity, Movement(speed=CORE_SWORDSMAN_MOVEMENT_SPEED))
     esper.add_component(entity, Velocity(x=0, y=0))
@@ -226,6 +232,7 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
     esper.add_component(entity, Team(type=team))
     esper.add_component(entity, UnitState())
     esper.add_component(entity, UnitTypeComponent(type=UnitType.CRUSADER_BLACK_KNIGHT))
+    esper.add_component(entity, TargettingStrategyComponent(type=TargettingStrategyType.NEAREST_ENEMY))
     esper.add_component(entity, MeleeAttack(range=CRUSADER_BLACK_KNIGHT_ATTACK_RANGE, damage=CRUSADER_BLACK_KNIGHT_ATTACK_DAMAGE))
     esper.add_component(entity, Movement(speed=CRUSADER_BLACK_KNIGHT_MOVEMENT_SPEED))
     esper.add_component(entity, Velocity(x=0, y=0))
@@ -245,7 +252,8 @@ def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
     esper.add_component(entity, Team(type=team))
     esper.add_component(entity, UnitState())
     esper.add_component(entity, UnitTypeComponent(type=UnitType.CRUSADER_CLERIC))
-    esper.add_component(entity, MeleeAttack(range=CRUSADER_CLERIC_ATTACK_RANGE, damage=CRUSADER_CLERIC_ATTACK_DAMAGE))
+    esper.add_component(entity, TargettingStrategyComponent(type=TargettingStrategyType.STRONGEST_ALLY))
+    esper.add_component(entity, HealingAttack(range=CRUSADER_CLERIC_ATTACK_RANGE, healing=CRUSADER_CLERIC_HEALING))
     esper.add_component(entity, Movement(speed=CRUSADER_CLERIC_MOVEMENT_SPEED))
     esper.add_component(entity, Velocity(x=0, y=0))
     esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_CLERIC, team))
@@ -263,6 +271,7 @@ def create_crusader_commander(x: int, y: int, team: TeamType) -> int:
     esper.add_component(entity, Team(type=team))
     esper.add_component(entity, UnitState())
     esper.add_component(entity, UnitTypeComponent(type=UnitType.CRUSADER_COMMANDER))
+    esper.add_component(entity, TargettingStrategyComponent(type=TargettingStrategyType.NEAREST_ENEMY))
     esper.add_component(entity, MeleeAttack(range=CRUSADER_COMMANDER_ATTACK_RANGE, damage=CRUSADER_COMMANDER_ATTACK_DAMAGE))
     esper.add_component(entity, Movement(speed=CRUSADER_COMMANDER_MOVEMENT_SPEED))
     esper.add_component(entity, Velocity(x=0, y=0))
@@ -282,6 +291,7 @@ def create_crusader_defender(x: int, y: int, team: TeamType) -> int:
     esper.add_component(entity, Team(type=team))
     esper.add_component(entity, UnitState())
     esper.add_component(entity, UnitTypeComponent(type=UnitType.CRUSADER_DEFENDER))
+    esper.add_component(entity, TargettingStrategyComponent(type=TargettingStrategyType.NEAREST_ENEMY))
     esper.add_component(entity, MeleeAttack(range=CRUSADER_DEFENDER_ATTACK_RANGE, damage=CRUSADER_DEFENDER_ATTACK_DAMAGE))
     esper.add_component(entity, Movement(speed=CRUSADER_DEFENDER_MOVEMENT_SPEED))
     esper.add_component(entity, Velocity(x=0, y=0))
@@ -301,6 +311,7 @@ def create_crusader_gold_knight(x: int, y: int, team: TeamType) -> int:
     esper.add_component(entity, Team(type=team))
     esper.add_component(entity, UnitState())
     esper.add_component(entity, UnitTypeComponent(type=UnitType.CRUSADER_GOLD_KNIGHT))
+    esper.add_component(entity, TargettingStrategyComponent(type=TargettingStrategyType.NEAREST_ENEMY))
     esper.add_component(entity, MeleeAttack(range=CRUSADER_GOLD_KNIGHT_ATTACK_RANGE, damage=CRUSADER_GOLD_KNIGHT_ATTACK_DAMAGE))
     esper.add_component(entity, Movement(speed=CRUSADER_GOLD_KNIGHT_MOVEMENT_SPEED))
     esper.add_component(entity, Velocity(x=0, y=0))
@@ -320,6 +331,7 @@ def create_crusader_longbowman(x: int, y: int, team: TeamType) -> int:
     esper.add_component(entity, Team(type=team))
     esper.add_component(entity, UnitState())
     esper.add_component(entity, UnitTypeComponent(type=UnitType.CRUSADER_LONGBOWMAN))
+    esper.add_component(entity, TargettingStrategyComponent(type=TargettingStrategyType.NEAREST_ENEMY))
     esper.add_component(
         entity,
         ProjectileAttack(
@@ -348,6 +360,7 @@ def create_crusader_paladin(x: int, y: int, team: TeamType) -> int:
     esper.add_component(entity, Team(type=team))
     esper.add_component(entity, UnitState())
     esper.add_component(entity, UnitTypeComponent(type=UnitType.CRUSADER_PALADIN))
+    esper.add_component(entity, TargettingStrategyComponent(type=TargettingStrategyType.NEAREST_ENEMY))
     esper.add_component(entity, MeleeAttack(range=CRUSADER_PALADIN_ATTACK_RANGE, damage=CRUSADER_PALADIN_ATTACK_DAMAGE))
     esper.add_component(
         entity,
@@ -375,6 +388,7 @@ def create_crusader_pikeman(x: int, y: int, team: TeamType) -> int:
     esper.add_component(entity, Team(type=team))
     esper.add_component(entity, UnitState())
     esper.add_component(entity, UnitTypeComponent(type=UnitType.CRUSADER_PIKEMAN))
+    esper.add_component(entity, TargettingStrategyComponent(type=TargettingStrategyType.NEAREST_ENEMY))
     esper.add_component(entity, MeleeAttack(range=CRUSADER_PIKEMAN_ATTACK_RANGE, damage=CRUSADER_PIKEMAN_ATTACK_DAMAGE))
     esper.add_component(entity, Movement(speed=CRUSADER_PIKEMAN_MOVEMENT_SPEED))
     esper.add_component(entity, Velocity(x=0, y=0))
@@ -393,6 +407,7 @@ def create_werebear(x: int, y: int, team: TeamType) -> int:
     esper.add_component(entity, Team(type=team))
     esper.add_component(entity, UnitState())
     esper.add_component(entity, UnitTypeComponent(type=UnitType.WEREBEAR))
+    esper.add_component(entity, TargettingStrategyComponent(type=TargettingStrategyType.NEAREST_ENEMY))
     esper.add_component(entity, MeleeAttack(range=WEREBEAR_ATTACK_RANGE, damage=WEREBEAR_ATTACK_DAMAGE))
     esper.add_component(entity, Movement(speed=WEREBEAR_MOVEMENT_SPEED))
     esper.add_component(entity, Velocity(x=0, y=0))
@@ -491,11 +506,11 @@ def get_unit_sprite_sheet(unit_type: UnitType, team: TeamType) -> SpriteSheet:
             frame_width=100,
             frame_height=100,
             scale=TINY_RPG_SCALE,
-            frames={AnimationType.IDLE: 6, AnimationType.WALKING: 8, AnimationType.ATTACKING: 9, AnimationType.DYING: 4},
-            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ATTACKING: 2, AnimationType.DYING: 7},
+            frames={AnimationType.IDLE: 6, AnimationType.WALKING: 8, AnimationType.ATTACKING: 6, AnimationType.DYING: 4},
+            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ATTACKING: 4, AnimationType.DYING: 7},
             animation_durations=CRUSADER_CLERIC_ANIMATION_DURATIONS,
             sprite_center_offset=(0, 0),
-            attack_activation_frame=3
+            attack_activation_frame=2
         )
     elif unit_type == UnitType.CRUSADER_COMMANDER:
         return SpriteSheet(

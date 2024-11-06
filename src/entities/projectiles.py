@@ -41,7 +41,6 @@ def create_arrow(x: int, y: int, velocity_x: float, velocity_y: float, team: Tea
         rows={AnimationType.IDLE: 0},
         animation_durations={AnimationType.IDLE: 1.0},  # Duration doesn't matter for single frame
         sprite_center_offset=(-.5, -.5),
-        attack_activation_frame=0
     ))
     esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
     esper.add_component(entity, ProjectileDamage(damage=damage))
@@ -62,7 +61,6 @@ def create_fireball(x: int, y: int, velocity_x: float, velocity_y: float, team: 
         rows={AnimationType.IDLE: 5},
         animation_durations={AnimationType.IDLE: 0.2/GAME_SPEED},
         sprite_center_offset=(-5, -2),
-        attack_activation_frame=0
     ))
     esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
     esper.add_component(entity, ProjectileDamage(damage=damage))
