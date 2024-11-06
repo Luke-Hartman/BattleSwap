@@ -11,6 +11,7 @@ from CONSTANTS import *
 from components.armor import Armor
 from components.position import Position
 from components.animation import AnimationState, AnimationType
+from components.skill import SelfHeal, Skill, UnderHealthPercent
 from components.sprite_sheet import SpriteSheet
 from components.team import Team, TeamType
 from components.unit_state import UnitState
@@ -348,6 +349,14 @@ def create_crusader_paladin(x: int, y: int, team: TeamType) -> int:
     esper.add_component(entity, UnitState())
     esper.add_component(entity, UnitTypeComponent(type=UnitType.CRUSADER_PALADIN))
     esper.add_component(entity, MeleeAttack(range=CRUSADER_PALADIN_ATTACK_RANGE, damage=CRUSADER_PALADIN_ATTACK_DAMAGE))
+    esper.add_component(
+        entity,
+        Skill(
+            trigger_condition=UnderHealthPercent(percent=CRUSADER_PALADIN_SKILL_HEALTH_PERCENT_THRESHOLD),
+            effect=SelfHeal(percent=CRUSADER_PALADIN_SKILL_HEAL_PERCENT),
+            cooldown=CRUSADER_PALADIN_SKILL_COOLDOWN
+        )
+    )
     esper.add_component(entity, Movement(speed=CRUSADER_PALADIN_MOVEMENT_SPEED))
     esper.add_component(entity, Velocity(x=0, y=0))
     esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_PALADIN, team))
@@ -396,7 +405,7 @@ def create_werebear(x: int, y: int, team: TeamType) -> int:
 
 def get_unit_sprite_sheet(unit_type: UnitType, team: TeamType) -> SpriteSheet:
     """Get a SpriteSheet component for a unit type.
-    
+
     Args:
         unit_type: The type of unit to get sprite sheet for.
         team: The team the unit belongs to.
@@ -542,11 +551,12 @@ def get_unit_sprite_sheet(unit_type: UnitType, team: TeamType) -> SpriteSheet:
             frame_width=100,
             frame_height=100,
             scale=TINY_RPG_SCALE,
-            frames={AnimationType.IDLE: 6, AnimationType.WALKING: 8, AnimationType.ATTACKING: 6, AnimationType.DYING: 4},
-            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ATTACKING: 3, AnimationType.DYING: 6},
+            frames={AnimationType.IDLE: 6, AnimationType.WALKING: 8, AnimationType.ATTACKING: 6, AnimationType.SKILL: 13, AnimationType.DYING: 4},
+            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ATTACKING: 3, AnimationType.SKILL: 7, AnimationType.DYING: 6},
             animation_durations=CRUSADER_PALADIN_ANIMATION_DURATIONS,
             sprite_center_offset=(0, 0),
-            attack_activation_frame=3
+            attack_activation_frame=3,
+            skill_activation_frame=9
         )
     elif unit_type == UnitType.CRUSADER_PIKEMAN:
         return SpriteSheet(

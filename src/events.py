@@ -4,6 +4,7 @@ This module contains the event classes used for communication between different 
 """
 
 from dataclasses import dataclass
+from components.skill import Skill
 from components.unit_state import State
 from pydispatch import dispatcher
 
@@ -51,6 +52,21 @@ class ProjectileHitEvent:
     target: int
     damage: int
 
+@dataclass
+class SkillTriggeredEvent:
+    """Event triggered when a skill is triggered."""
+    entity: int
+
+@dataclass
+class SkillActivatedEvent:
+    """Event triggered when a skill is activated."""
+    entity: int
+
+@dataclass
+class SkillCompletedEvent:
+    """Event triggered when a skill is completed."""
+    entity: int
+
 # Define signal names for each event
 TARGET_ACQUIRED = 'target_acquired'
 TARGET_IN_RANGE = 'target_in_range'
@@ -60,7 +76,9 @@ STATE_CHANGED = 'state_changed'
 KILLING_BLOW = 'killing_blow'
 TARGET_LOST = 'target_lost'
 PROJECTILE_HIT = 'projectile_hit'
-
+SKILL_TRIGGERED = 'skill_triggered'
+SKILL_ACTIVATED = 'skill_activated'
+SKILL_COMPLETED = 'skill_completed'
 def emit_event(event_type, **kwargs):
     """Emit an event using pydispatch."""
     dispatcher.send(signal=event_type, sender=dispatcher.Any, **kwargs)

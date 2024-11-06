@@ -14,6 +14,7 @@ from camera import Camera
 from entities.units import load_sprite_sheets
 from entities.projectiles import load_projectile_sheets
 from handlers.attack_handler import AttackHandler
+from handlers.skill_handler import SkillHandler
 from handlers.state_machine import StateMachine
 from progress_manager import ProgressManager
 from scenes.scene_manager import SceneManager
@@ -31,6 +32,7 @@ load_sprite_sheets()
 load_projectile_sheets()
         
 attack_handler = AttackHandler()
+skill_handler = SkillHandler()
 state_machine = StateMachine()
 
 # Main game loop

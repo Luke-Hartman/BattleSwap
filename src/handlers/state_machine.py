@@ -7,7 +7,7 @@ managing the states of units based on events.
 import esper
 from components.unit_state import UnitState, State
 from events import (
-    TargetAcquiredEvent, TargetInRangeEvent, AttackCompletedEvent, StateChangedEvent,
+    SKILL_COMPLETED, SKILL_TRIGGERED, SkillCompletedEvent, SkillTriggeredEvent, TargetAcquiredEvent, TargetInRangeEvent, AttackCompletedEvent, StateChangedEvent,
     TARGET_ACQUIRED, TARGET_IN_RANGE, ATTACK_COMPLETED, STATE_CHANGED,
     emit_event, KillingBlowEvent, KILLING_BLOW, TargetLostEvent, TARGET_LOST
 )
@@ -22,6 +22,8 @@ class StateMachine:
         dispatcher.connect(self.handle_attack_completed, signal=ATTACK_COMPLETED)
         dispatcher.connect(self.handle_killing_blow, signal=KILLING_BLOW)
         dispatcher.connect(self.handle_target_lost, signal=TARGET_LOST)
+        dispatcher.connect(self.handle_skill_triggered, signal=SKILL_TRIGGERED)
+        dispatcher.connect(self.handle_skill_completed, signal=SKILL_COMPLETED)
 
     def handle_target_acquired(self, event: TargetAcquiredEvent):
         unit_state = esper.component_for_entity(event.entity, UnitState)
@@ -49,4 +51,15 @@ class StateMachine:
         unit_state = esper.component_for_entity(event.entity, UnitState)
         unit_state.state = State.IDLE
         unit_state.target = None
+        emit_event(STATE_CHANGED, event=StateChangedEvent(event.entity, State.IDLE))
+
+    def handle_skill_triggered(self, event: SkillTriggeredEvent):
+        unit_state = esper.component_for_entity(event.entity, UnitState)
+        unit_state.state = State.SKILL
+        unit_state.target = None
+        emit_event(STATE_CHANGED, event=StateChangedEvent(event.entity, State.SKILL))
+
+    def handle_skill_completed(self, event: SkillCompletedEvent):
+        unit_state = esper.component_for_entity(event.entity, UnitState)
+        unit_state.state = State.IDLE
         emit_event(STATE_CHANGED, event=StateChangedEvent(event.entity, State.IDLE))

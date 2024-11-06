@@ -22,6 +22,9 @@ class AnimationType(Enum):
     ATTACKING = auto()
     """The attacking animation state."""
 
+    SKILL = auto()
+    """The skill animation state."""
+
     DYING = auto()
     """The dying animation state."""
 

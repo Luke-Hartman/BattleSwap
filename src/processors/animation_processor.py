@@ -9,7 +9,7 @@ import esper
 from components.animation import AnimationState, AnimationType
 from components.sprite_sheet import SpriteSheet
 from components.unit_state import UnitState, State
-from events import AttackCompletedEvent, AttackActivatedEvent, ATTACK_COMPLETED, ATTACK_ACTIVATED, emit_event
+from events import SKILL_ACTIVATED, SKILL_COMPLETED, AttackCompletedEvent, AttackActivatedEvent, ATTACK_COMPLETED, ATTACK_ACTIVATED, SkillActivatedEvent, SkillCompletedEvent, emit_event
 
 class AnimationProcessor(esper.Processor):
     """
@@ -34,6 +34,7 @@ class AnimationProcessor(esper.Processor):
                 State.IDLE: AnimationType.IDLE,
                 State.PURSUING: AnimationType.WALKING,
                 State.ATTACKING: AnimationType.ATTACKING,
+                State.SKILL: AnimationType.SKILL,
                 State.DEAD: AnimationType.DYING
             }.get(unit_state.state, AnimationType.IDLE)
 
@@ -62,3 +63,10 @@ class AnimationProcessor(esper.Processor):
                         emit_event(ATTACK_ACTIVATED, event=AttackActivatedEvent(ent))
                     elif anim_state.current_frame == frame_count - 1:
                         emit_event(ATTACK_COMPLETED, event=AttackCompletedEvent(ent))
+
+                # Check if skill is activated
+                if unit_state.state == State.SKILL and anim_state.type == AnimationType.SKILL:
+                    if anim_state.current_frame == sprite_sheet.skill_activation_frame:
+                        emit_event(SKILL_ACTIVATED, event=SkillActivatedEvent(ent))
+                    elif anim_state.current_frame == frame_count - 1:
+                        emit_event(SKILL_COMPLETED, event=SkillCompletedEvent(ent))

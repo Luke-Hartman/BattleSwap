@@ -1,7 +1,7 @@
 """Attack handler module for Battle Swap.
 
 This module contains the AttackHandler class, which is responsible for
-handling attack logic and applying damage.
+handling attack logic and applying damage from attacks.
 """
 
 import esper
