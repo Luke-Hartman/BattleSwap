@@ -2,6 +2,7 @@ import esper
 import pygame
 import pygame_gui
 from processors.attached_processor import AttachedProcessor
+from processors.aura_processor import AuraProcessor
 from processors.collision_processor import CollisionProcessor
 from processors.cooldown_skill_processor import CooldownSkillProcessor
 from processors.expiration_processor import ExpirationProcessor
@@ -27,6 +28,7 @@ class BattleScene(Scene):
         self.manager = manager
         self.progress_manager = progress_manager
         self.potential_solution = potential_solution
+        aura_processor = AuraProcessor()
         movement_processor = MovementProcessor()
         pursuing_processor = PursuingProcessor()
         targeting_processor = TargetingProcessor()
@@ -34,6 +36,7 @@ class BattleScene(Scene):
         cooldown_skill_processor = CooldownSkillProcessor()
         attached_processor = AttachedProcessor()
         expiration_processor = ExpirationProcessor()
+        esper.add_processor(aura_processor)
         esper.add_processor(pursuing_processor)
         esper.add_processor(movement_processor)
         esper.add_processor(collision_processor)
@@ -107,6 +110,7 @@ class BattleScene(Scene):
     def _cleanup(self) -> None:
         """Clean up processors and entity database."""
         esper.clear_database()
+        esper.remove_processor(AuraProcessor)
         esper.remove_processor(RenderingProcessor)
         esper.remove_processor(AnimationProcessor)
         esper.remove_processor(PursuingProcessor)

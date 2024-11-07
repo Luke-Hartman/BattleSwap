@@ -7,6 +7,7 @@ handling attack logic and applying damage from attacks.
 import esper
 import math
 from components.armor import Armor
+from components.aura import AffectedByAuras, DamageBuffAura
 from components.orientation import Orientation
 from components.unit_state import UnitState, State
 from components.attack import HealingAttack, MeleeAttack, ProjectileAttack, ProjectileType
@@ -52,7 +53,12 @@ class AttackHandler:
         raise AssertionError("Attack type not supported")
 
     def handle_melee_attack(self, attacker: int, target: int, attack: MeleeAttack):
-        self.deal_damage(target, attack.damage)
+        affected_by_auras = esper.component_for_entity(attacker, AffectedByAuras)
+        damage = attack.damage
+        for effect in affected_by_auras.effects:
+            if isinstance(effect, DamageBuffAura) and effect.affects_melee:
+                damage *= 1 + effect.damage_percentage
+        self.deal_damage(target, damage)
 
     def handle_projectile_attack(self, attacker: int, target: int, attack: ProjectileAttack):
         attacker_pos = esper.component_for_entity(attacker, Position)
@@ -72,6 +78,12 @@ class AttackHandler:
         else:
             velocity_x = attack.projectile_speed
             velocity_y = 0
+
+        damage = attack.damage
+        affected_by_auras = esper.component_for_entity(attacker, AffectedByAuras)
+        for effect in affected_by_auras.effects:
+            if isinstance(effect, DamageBuffAura) and effect.affects_ranged:
+                damage *= 1 + effect.damage_percentage
         if attack.projectile_type == ProjectileType.ARROW:
             create_arrow(
                 x=projectile_x,
@@ -79,7 +91,7 @@ class AttackHandler:
                 velocity_x=velocity_x,
                 velocity_y=velocity_y,
                 team=attacker_team.type,
-                damage=attack.damage,
+                damage=damage,
             )
         elif attack.projectile_type == ProjectileType.FIREBALL:
             create_fireball(
@@ -88,11 +100,16 @@ class AttackHandler:
                 velocity_x=velocity_x,
                 velocity_y=velocity_y,
                 team=attacker_team.type,
-                damage=attack.damage,
+                damage=damage,
             )
 
     def handle_healing_attack(self, attacker: int, target: int, attack: HealingAttack):
-        self.deal_healing(target, attack.healing)
+        healing = attack.healing
+        affected_by_auras = esper.component_for_entity(attacker, AffectedByAuras)
+        for effect in affected_by_auras.effects:
+            if isinstance(effect, DamageBuffAura) and effect.affects_healing:
+                healing *= 1 + effect.damage_percentage
+        self.deal_healing(target, healing)
         create_healing_effect(target)
 
     def handle_projectile_hit(self, event: ProjectileHitEvent):

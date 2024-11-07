@@ -8,6 +8,7 @@ rendering entities with Position, AnimationState, SpriteSheet, and Team componen
 import esper
 import pygame
 import math
+from components.aura import Aura
 from components.position import Position
 from components.animation import AnimationState
 from components.sprite_sheet import SpriteSheet
@@ -49,7 +50,17 @@ class RenderingProcessor(esper.Processor):
         self.camera = camera
         self.battlefield_rect = pygame.Rect(0, 0, BATTLEFIELD_WIDTH, BATTLEFIELD_HEIGHT)
 
-    def process(self, dt: float):        
+    def process(self, dt: float):
+        # Draw all auras
+        for ent, (aura, position) in esper.get_components(Aura, Position):
+            # Draw filled circle with opacity
+            surface = pygame.Surface((aura.radius * 2, aura.radius * 2), pygame.SRCALPHA)
+            # Filling
+            pygame.draw.circle(surface, (*aura.color, 25), (aura.radius, aura.radius), aura.radius)
+            # Outline
+            pygame.draw.circle(self.screen, (*aura.color, 120), (position.x - self.camera.x, position.y - self.camera.y), aura.radius, 1)
+            self.screen.blit(surface, (position.x - self.camera.x - aura.radius, position.y - self.camera.y - aura.radius))
+
         # Get all entities with necessary components
         entities = esper.get_components(Position, AnimationState, SpriteSheet)
         

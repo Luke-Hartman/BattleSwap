@@ -9,6 +9,7 @@ import os
 from typing import Dict
 from CONSTANTS import *
 from components.armor import Armor
+from components.aura import AffectedByAuras, Aura, DamageBuffAura
 from components.position import Position
 from components.animation import AnimationState, AnimationType
 from components.skill import SelfHeal, Skill, UnderHealthPercent
@@ -68,7 +69,7 @@ def load_sprite_sheets():
     for unit_type, filename in unit_filenames.items():
         path = os.path.join("assets", "units", filename)
         sprite_sheets[unit_type] = pygame.image.load(path).convert_alpha()
-    
+
     # Load unit icons
     unit_icon_paths: Dict[UnitType, str] = {
         UnitType.CORE_ARCHER: "CoreArcherIcon.png",
@@ -109,14 +110,35 @@ def create_unit(x: int, y: int, unit_type: UnitType, team: TeamType) -> int:
         UnitType.WEREBEAR: create_werebear,
     }[unit_type](x, y, team)
 
-def create_core_archer(x: int, y: int, team: TeamType) -> int:
-    """Create an archer entity with all necessary components."""
+
+def unit_base_entity(
+        x: int,
+        y: int,
+        team: TeamType,
+        unit_type: UnitType,
+        movement_speed: float,
+        health: int,
+    ) -> int:
+    """Create a unit entity with all components shared by all units."""
     entity = esper.create_entity()
     esper.add_component(entity, Position(x=x, y=y))
+    esper.add_component(entity, Velocity(x=0, y=0))
+    esper.add_component(entity, Movement(speed=movement_speed))
     esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
     esper.add_component(entity, Team(type=team))
     esper.add_component(entity, UnitState())
-    esper.add_component(entity, UnitTypeComponent(type=UnitType.CORE_ARCHER))
+    esper.add_component(entity, UnitTypeComponent(type=unit_type))
+    esper.add_component(entity, Health(current=health, maximum=health))
+    esper.add_component(entity, AffectedByAuras())
+    esper.add_component(entity, get_unit_sprite_sheet(unit_type))
+    esper.add_component(entity, Orientation(
+        facing=FacingDirection.RIGHT if team == TeamType.TEAM1 else FacingDirection.LEFT
+    ))
+    return entity
+
+def create_core_archer(x: int, y: int, team: TeamType) -> int:
+    """Create an archer entity with all necessary components."""
+    entity = unit_base_entity(x, y, team, UnitType.CORE_ARCHER, CORE_ARCHER_MOVEMENT_SPEED, CORE_ARCHER_HP)
     esper.add_component(entity, TargettingStrategyComponent(type=TargettingStrategyType.NEAREST_ENEMY))
     esper.add_component(
         entity,
@@ -129,61 +151,25 @@ def create_core_archer(x: int, y: int, team: TeamType) -> int:
             projectile_offset_y=0,
         )
     )
-    esper.add_component(entity, Movement(speed=CORE_ARCHER_MOVEMENT_SPEED))
-    esper.add_component(entity, Velocity(x=0, y=0))
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CORE_ARCHER, team))
-    esper.add_component(entity, Health(current=CORE_ARCHER_HP, maximum=CORE_ARCHER_HP))
-    esper.add_component(entity, Orientation(
-        facing=FacingDirection.RIGHT if team == TeamType.TEAM1 else FacingDirection.LEFT
-    ))
     return entity
 
 def create_core_duelist(x: int, y: int, team: TeamType) -> int:
     """Create a fancy swordsman entity with all necessary components."""
-    entity = esper.create_entity()
-    esper.add_component(entity, Position(x=x, y=y))
-    esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
-    esper.add_component(entity, Team(type=team))
-    esper.add_component(entity, UnitState())
-    esper.add_component(entity, UnitTypeComponent(type=UnitType.CORE_DUELIST))
+    entity = unit_base_entity(x, y, team, UnitType.CORE_DUELIST, CORE_DUELIST_MOVEMENT_SPEED, CORE_DUELIST_HP)
     esper.add_component(entity, TargettingStrategyComponent(type=TargettingStrategyType.NEAREST_ENEMY))
     esper.add_component(entity, MeleeAttack(range=CORE_DUELIST_ATTACK_RANGE, damage=CORE_DUELIST_ATTACK_DAMAGE))
-    esper.add_component(entity, Movement(speed=CORE_DUELIST_MOVEMENT_SPEED))
-    esper.add_component(entity, Velocity(x=0, y=0))
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CORE_DUELIST, team))
-    esper.add_component(entity, Health(current=CORE_DUELIST_HP, maximum=CORE_DUELIST_HP))
-    esper.add_component(entity, Orientation(
-        facing=FacingDirection.RIGHT if team == TeamType.TEAM1 else FacingDirection.LEFT
-    ))
     return entity
 
 def create_core_horseman(x: int, y: int, team: TeamType) -> int:
     """Create a horseman entity with all necessary components."""
-    entity = esper.create_entity()
-    esper.add_component(entity, Position(x=x, y=y))
-    esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
-    esper.add_component(entity, Team(type=team))
-    esper.add_component(entity, UnitState())
-    esper.add_component(entity, UnitTypeComponent(type=UnitType.CORE_HORSEMAN))
+    entity = unit_base_entity(x, y, team, UnitType.CORE_HORSEMAN, CORE_HORSEMAN_MOVEMENT_SPEED, CORE_HORSEMAN_HP)
     esper.add_component(entity, TargettingStrategyComponent(type=TargettingStrategyType.NEAREST_ENEMY))
     esper.add_component(entity, MeleeAttack(range=CORE_HORSEMAN_ATTACK_RANGE, damage=CORE_HORSEMAN_ATTACK_DAMAGE))
-    esper.add_component(entity, Movement(speed=CORE_HORSEMAN_MOVEMENT_SPEED))
-    esper.add_component(entity, Velocity(x=0, y=0))
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CORE_HORSEMAN, team))
-    esper.add_component(entity, Health(current=CORE_HORSEMAN_HP, maximum=CORE_HORSEMAN_HP))
-    esper.add_component(entity, Orientation(
-        facing=FacingDirection.RIGHT if team == TeamType.TEAM1 else FacingDirection.LEFT
-    ))
     return entity
 
 def create_core_mage(x: int, y: int, team: TeamType) -> int:
     """Create a mage entity with all necessary components."""
-    entity = esper.create_entity()
-    esper.add_component(entity, Position(x=x, y=y))
-    esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
-    esper.add_component(entity, Team(type=team))
-    esper.add_component(entity, UnitState())
-    esper.add_component(entity, UnitTypeComponent(type=UnitType.CORE_MAGE))
+    entity = unit_base_entity(x, y, team, UnitType.CORE_MAGE, CORE_MAGE_MOVEMENT_SPEED, CORE_MAGE_HP)
     esper.add_component(entity, TargettingStrategyComponent(type=TargettingStrategyType.NEAREST_ENEMY))
     esper.add_component(
         entity,
@@ -196,141 +182,80 @@ def create_core_mage(x: int, y: int, team: TeamType) -> int:
             projectile_offset_y=-4*MINIFOLKS_SCALE,
         )
     )
-    esper.add_component(entity, Movement(speed=CORE_MAGE_MOVEMENT_SPEED))
-    esper.add_component(entity, Velocity(x=0, y=0))
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CORE_MAGE, team))
-    esper.add_component(entity, Health(current=CORE_MAGE_HP, maximum=CORE_MAGE_HP))
-    esper.add_component(entity, Orientation(
-        facing=FacingDirection.RIGHT if team == TeamType.TEAM1 else FacingDirection.LEFT
-    ))
     return entity
 
 def create_core_swordsman(x: int, y: int, team: TeamType) -> int:
     """Create a swordsman entity with all necessary components."""
-    entity = esper.create_entity()
-    esper.add_component(entity, Position(x=x, y=y))
-    esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
-    esper.add_component(entity, Team(type=team))
-    esper.add_component(entity, UnitState())
-    esper.add_component(entity, UnitTypeComponent(type=UnitType.CORE_SWORDSMAN))
+    entity = unit_base_entity(x, y, team, UnitType.CORE_SWORDSMAN, CORE_SWORDSMAN_MOVEMENT_SPEED, CORE_SWORDSMAN_HP)
     esper.add_component(entity, TargettingStrategyComponent(type=TargettingStrategyType.NEAREST_ENEMY))
     esper.add_component(entity, MeleeAttack(range=CORE_SWORDSMAN_ATTACK_RANGE, damage=CORE_SWORDSMAN_ATTACK_DAMAGE))
-    esper.add_component(entity, Movement(speed=CORE_SWORDSMAN_MOVEMENT_SPEED))
-    esper.add_component(entity, Velocity(x=0, y=0))
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CORE_SWORDSMAN, team))
-    esper.add_component(entity, Health(current=CORE_SWORDSMAN_HP, maximum=CORE_SWORDSMAN_HP))
-    esper.add_component(entity, Orientation(
-        facing=FacingDirection.RIGHT if team == TeamType.TEAM1 else FacingDirection.LEFT
-    ))
     return entity
 
 def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
     """Create a black knight entity with all necessary components."""
-    entity = esper.create_entity()
-    esper.add_component(entity, Position(x=x, y=y))
-    esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
-    esper.add_component(entity, Team(type=team))
-    esper.add_component(entity, UnitState())
-    esper.add_component(entity, UnitTypeComponent(type=UnitType.CRUSADER_BLACK_KNIGHT))
+    entity = unit_base_entity(x, y, team, UnitType.CRUSADER_BLACK_KNIGHT, CRUSADER_BLACK_KNIGHT_MOVEMENT_SPEED, CRUSADER_BLACK_KNIGHT_HP)
     esper.add_component(entity, TargettingStrategyComponent(type=TargettingStrategyType.NEAREST_ENEMY))
     esper.add_component(entity, MeleeAttack(range=CRUSADER_BLACK_KNIGHT_ATTACK_RANGE, damage=CRUSADER_BLACK_KNIGHT_ATTACK_DAMAGE))
-    esper.add_component(entity, Movement(speed=CRUSADER_BLACK_KNIGHT_MOVEMENT_SPEED))
-    esper.add_component(entity, Velocity(x=0, y=0))
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_BLACK_KNIGHT, team))
-    esper.add_component(entity, Health(current=CRUSADER_BLACK_KNIGHT_HP, maximum=CRUSADER_BLACK_KNIGHT_HP))
     esper.add_component(entity, Armor(flat_reduction=CRUSADER_BLACK_KNIGHT_ARMOR_FLAT_REDUCTION, percent_reduction=CRUSADER_BLACK_KNIGHT_ARMOR_PERCENT_REDUCTION))
-    esper.add_component(entity, Orientation(
-        facing=FacingDirection.RIGHT if team == TeamType.TEAM1 else FacingDirection.LEFT
+    esper.add_component(entity, Aura(
+        radius=CRUSADER_BLACK_KNIGHT_AURA_RADIUS,
+        effect=DamageBuffAura( # Debuffs enemy damage
+            key="CRUSADER_BLACK_KNIGHT_AURA",
+            damage_percentage=-CRUSADER_BLACK_KNIGHT_AURA_DAMAGE_PERCENT_REDUCTION,
+            affects_enemies=True,
+            affects_melee=True,
+            affects_ranged=True,
+            affects_healing=False,
+        ),
+        color=(150, 0, 0)
     ))
     return entity
 
 def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
     """Create a cleric entity with all necessary components."""
-    entity = esper.create_entity()
-    esper.add_component(entity, Position(x=x, y=y))
-    esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
-    esper.add_component(entity, Team(type=team))
-    esper.add_component(entity, UnitState())
-    esper.add_component(entity, UnitTypeComponent(type=UnitType.CRUSADER_CLERIC))
+    entity = unit_base_entity(x, y, team, UnitType.CRUSADER_CLERIC, CRUSADER_CLERIC_MOVEMENT_SPEED, CRUSADER_CLERIC_HP)
     esper.add_component(entity, TargettingStrategyComponent(type=TargettingStrategyType.STRONGEST_ALLY))
     esper.add_component(entity, HealingAttack(range=CRUSADER_CLERIC_ATTACK_RANGE, healing=CRUSADER_CLERIC_HEALING))
-    esper.add_component(entity, Movement(speed=CRUSADER_CLERIC_MOVEMENT_SPEED))
-    esper.add_component(entity, Velocity(x=0, y=0))
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_CLERIC, team))
-    esper.add_component(entity, Health(current=CRUSADER_CLERIC_HP, maximum=CRUSADER_CLERIC_HP))
-    esper.add_component(entity, Orientation(
-        facing=FacingDirection.RIGHT if team == TeamType.TEAM1 else FacingDirection.LEFT
-    ))
     return entity
 
 def create_crusader_commander(x: int, y: int, team: TeamType) -> int:
     """Create a commander entity with all necessary components."""
-    entity = esper.create_entity()
-    esper.add_component(entity, Position(x=x, y=y))
-    esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
-    esper.add_component(entity, Team(type=team))
-    esper.add_component(entity, UnitState())
-    esper.add_component(entity, UnitTypeComponent(type=UnitType.CRUSADER_COMMANDER))
+    entity = unit_base_entity(x, y, team, UnitType.CRUSADER_COMMANDER, CRUSADER_COMMANDER_MOVEMENT_SPEED, CRUSADER_COMMANDER_HP)
     esper.add_component(entity, TargettingStrategyComponent(type=TargettingStrategyType.NEAREST_ENEMY))
     esper.add_component(entity, MeleeAttack(range=CRUSADER_COMMANDER_ATTACK_RANGE, damage=CRUSADER_COMMANDER_ATTACK_DAMAGE))
-    esper.add_component(entity, Movement(speed=CRUSADER_COMMANDER_MOVEMENT_SPEED))
-    esper.add_component(entity, Velocity(x=0, y=0))
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_COMMANDER, team))
-    esper.add_component(entity, Health(current=CRUSADER_COMMANDER_HP, maximum=CRUSADER_COMMANDER_HP))
     esper.add_component(entity, Armor(flat_reduction=CRUSADER_COMMANDER_ARMOR_FLAT_REDUCTION, percent_reduction=CRUSADER_COMMANDER_ARMOR_PERCENT_REDUCTION))
-    esper.add_component(entity, Orientation(
-        facing=FacingDirection.RIGHT if team == TeamType.TEAM1 else FacingDirection.LEFT
-    ))
     return entity
 
 def create_crusader_defender(x: int, y: int, team: TeamType) -> int:
     """Create a defender entity with all necessary components."""
-    entity = esper.create_entity()
-    esper.add_component(entity, Position(x=x, y=y))
-    esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
-    esper.add_component(entity, Team(type=team))
-    esper.add_component(entity, UnitState())
-    esper.add_component(entity, UnitTypeComponent(type=UnitType.CRUSADER_DEFENDER))
+    entity = unit_base_entity(x, y, team, UnitType.CRUSADER_DEFENDER, CRUSADER_DEFENDER_MOVEMENT_SPEED, CRUSADER_DEFENDER_HP)
     esper.add_component(entity, TargettingStrategyComponent(type=TargettingStrategyType.NEAREST_ENEMY))
     esper.add_component(entity, MeleeAttack(range=CRUSADER_DEFENDER_ATTACK_RANGE, damage=CRUSADER_DEFENDER_ATTACK_DAMAGE))
-    esper.add_component(entity, Movement(speed=CRUSADER_DEFENDER_MOVEMENT_SPEED))
-    esper.add_component(entity, Velocity(x=0, y=0))
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_DEFENDER, team))
-    esper.add_component(entity, Health(current=CRUSADER_DEFENDER_HP, maximum=CRUSADER_DEFENDER_HP))
     esper.add_component(entity, Armor(flat_reduction=CRUSADER_DEFENDER_ARMOR_FLAT_REDUCTION, percent_reduction=CRUSADER_DEFENDER_ARMOR_PERCENT_REDUCTION))
-    esper.add_component(entity, Orientation(
-        facing=FacingDirection.RIGHT if team == TeamType.TEAM1 else FacingDirection.LEFT
-    ))
     return entity
 
 def create_crusader_gold_knight(x: int, y: int, team: TeamType) -> int:
     """Create a gold knight entity with all necessary components."""
-    entity = esper.create_entity()
-    esper.add_component(entity, Position(x=x, y=y))
-    esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
-    esper.add_component(entity, Team(type=team))
-    esper.add_component(entity, UnitState())
-    esper.add_component(entity, UnitTypeComponent(type=UnitType.CRUSADER_GOLD_KNIGHT))
+    entity = unit_base_entity(x, y, team, UnitType.CRUSADER_GOLD_KNIGHT, CRUSADER_GOLD_KNIGHT_MOVEMENT_SPEED, CRUSADER_GOLD_KNIGHT_HP)
     esper.add_component(entity, TargettingStrategyComponent(type=TargettingStrategyType.NEAREST_ENEMY))
     esper.add_component(entity, MeleeAttack(range=CRUSADER_GOLD_KNIGHT_ATTACK_RANGE, damage=CRUSADER_GOLD_KNIGHT_ATTACK_DAMAGE))
-    esper.add_component(entity, Movement(speed=CRUSADER_GOLD_KNIGHT_MOVEMENT_SPEED))
-    esper.add_component(entity, Velocity(x=0, y=0))
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_GOLD_KNIGHT, team))
-    esper.add_component(entity, Health(current=CRUSADER_GOLD_KNIGHT_HP, maximum=CRUSADER_GOLD_KNIGHT_HP))
     esper.add_component(entity, Armor(flat_reduction=CRUSADER_GOLD_KNIGHT_ARMOR_FLAT_REDUCTION, percent_reduction=CRUSADER_GOLD_KNIGHT_ARMOR_PERCENT_REDUCTION))
-    esper.add_component(entity, Orientation(
-        facing=FacingDirection.RIGHT if team == TeamType.TEAM1 else FacingDirection.LEFT
+    esper.add_component(entity, Aura(
+        radius=CRUSADER_GOLD_KNIGHT_AURA_RADIUS,
+        effect=DamageBuffAura( # Buffs ally melee damage, excluding self
+            key="CRUSADER_GOLD_KNIGHT_AURA",
+            damage_percentage=CRUSADER_GOLD_KNIGHT_AURA_DAMAGE_PERCENT_BUFF,
+            affects_allies=True,
+            affects_melee=True,
+            affects_self=False,
+        ),
+        color=(255, 215, 0)
     ))
     return entity
 
 def create_crusader_longbowman(x: int, y: int, team: TeamType) -> int:
     """Create a longbowman entity with all necessary components."""
-    entity = esper.create_entity()
-    esper.add_component(entity, Position(x=x, y=y))
-    esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
-    esper.add_component(entity, Team(type=team))
-    esper.add_component(entity, UnitState())
-    esper.add_component(entity, UnitTypeComponent(type=UnitType.CRUSADER_LONGBOWMAN))
+    entity = unit_base_entity(x, y, team, UnitType.CRUSADER_LONGBOWMAN, CRUSADER_LONGBOWMAN_MOVEMENT_SPEED, CRUSADER_LONGBOWMAN_HP)
     esper.add_component(entity, TargettingStrategyComponent(type=TargettingStrategyType.NEAREST_ENEMY))
     esper.add_component(
         entity,
@@ -343,23 +268,11 @@ def create_crusader_longbowman(x: int, y: int, team: TeamType) -> int:
             projectile_offset_y=0
         )
     )
-    esper.add_component(entity, Movement(speed=CRUSADER_LONGBOWMAN_MOVEMENT_SPEED))
-    esper.add_component(entity, Velocity(x=0, y=0))
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_LONGBOWMAN, team))
-    esper.add_component(entity, Health(current=CRUSADER_LONGBOWMAN_HP, maximum=CRUSADER_LONGBOWMAN_HP))
-    esper.add_component(entity, Orientation(
-        facing=FacingDirection.RIGHT if team == TeamType.TEAM1 else FacingDirection.LEFT
-    ))
     return entity
 
 def create_crusader_paladin(x: int, y: int, team: TeamType) -> int:
     """Create a paladin entity with all necessary components."""
-    entity = esper.create_entity()
-    esper.add_component(entity, Position(x=x, y=y))
-    esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
-    esper.add_component(entity, Team(type=team))
-    esper.add_component(entity, UnitState())
-    esper.add_component(entity, UnitTypeComponent(type=UnitType.CRUSADER_PALADIN))
+    entity = unit_base_entity(x, y, team, UnitType.CRUSADER_PALADIN, CRUSADER_PALADIN_MOVEMENT_SPEED, CRUSADER_PALADIN_HP)
     esper.add_component(entity, TargettingStrategyComponent(type=TargettingStrategyType.NEAREST_ENEMY))
     esper.add_component(entity, MeleeAttack(range=CRUSADER_PALADIN_ATTACK_RANGE, damage=CRUSADER_PALADIN_ATTACK_DAMAGE))
     esper.add_component(
@@ -370,55 +283,24 @@ def create_crusader_paladin(x: int, y: int, team: TeamType) -> int:
             cooldown=CRUSADER_PALADIN_SKILL_COOLDOWN
         )
     )
-    esper.add_component(entity, Movement(speed=CRUSADER_PALADIN_MOVEMENT_SPEED))
-    esper.add_component(entity, Velocity(x=0, y=0))
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_PALADIN, team))
-    esper.add_component(entity, Health(current=CRUSADER_PALADIN_HP, maximum=CRUSADER_PALADIN_HP))
     esper.add_component(entity, Armor(flat_reduction=CRUSADER_PALADIN_ARMOR_FLAT_REDUCTION, percent_reduction=CRUSADER_PALADIN_ARMOR_PERCENT_REDUCTION))
-    esper.add_component(entity, Orientation(
-        facing=FacingDirection.RIGHT if team == TeamType.TEAM1 else FacingDirection.LEFT
-    ))
     return entity
 
 def create_crusader_pikeman(x: int, y: int, team: TeamType) -> int:
     """Create a pikeman entity with all necessary components."""
-    entity = esper.create_entity()
-    esper.add_component(entity, Position(x=x, y=y))
-    esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
-    esper.add_component(entity, Team(type=team))
-    esper.add_component(entity, UnitState())
-    esper.add_component(entity, UnitTypeComponent(type=UnitType.CRUSADER_PIKEMAN))
+    entity = unit_base_entity(x, y, team, UnitType.CRUSADER_PIKEMAN, CRUSADER_PIKEMAN_MOVEMENT_SPEED, CRUSADER_PIKEMAN_HP)
     esper.add_component(entity, TargettingStrategyComponent(type=TargettingStrategyType.NEAREST_ENEMY))
     esper.add_component(entity, MeleeAttack(range=CRUSADER_PIKEMAN_ATTACK_RANGE, damage=CRUSADER_PIKEMAN_ATTACK_DAMAGE))
-    esper.add_component(entity, Movement(speed=CRUSADER_PIKEMAN_MOVEMENT_SPEED))
-    esper.add_component(entity, Velocity(x=0, y=0))
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_PIKEMAN, team))
-    esper.add_component(entity, Health(current=CRUSADER_PIKEMAN_HP, maximum=CRUSADER_PIKEMAN_HP))
-    esper.add_component(entity, Orientation(
-        facing=FacingDirection.RIGHT if team == TeamType.TEAM1 else FacingDirection.LEFT
-    ))
     return entity
 
 def create_werebear(x: int, y: int, team: TeamType) -> int:
     """Create a werebear entity with all necessary components."""
-    entity = esper.create_entity()
-    esper.add_component(entity, Position(x=x, y=y))
-    esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
-    esper.add_component(entity, Team(type=team))
-    esper.add_component(entity, UnitState())
-    esper.add_component(entity, UnitTypeComponent(type=UnitType.WEREBEAR))
+    entity = unit_base_entity(x, y, team, UnitType.WEREBEAR, WEREBEAR_MOVEMENT_SPEED, WEREBEAR_HP)
     esper.add_component(entity, TargettingStrategyComponent(type=TargettingStrategyType.NEAREST_ENEMY))
     esper.add_component(entity, MeleeAttack(range=WEREBEAR_ATTACK_RANGE, damage=WEREBEAR_ATTACK_DAMAGE))
-    esper.add_component(entity, Movement(speed=WEREBEAR_MOVEMENT_SPEED))
-    esper.add_component(entity, Velocity(x=0, y=0))
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.WEREBEAR, team))
-    esper.add_component(entity, Health(current=WEREBEAR_HP, maximum=WEREBEAR_HP))
-    esper.add_component(entity, Orientation(
-        facing=FacingDirection.RIGHT if team == TeamType.TEAM1 else FacingDirection.LEFT
-    ))
     return entity
 
-def get_unit_sprite_sheet(unit_type: UnitType, team: TeamType) -> SpriteSheet:
+def get_unit_sprite_sheet(unit_type: UnitType) -> SpriteSheet:
     """Get a SpriteSheet component for a unit type.
 
     Args:
