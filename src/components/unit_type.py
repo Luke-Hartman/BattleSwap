@@ -18,6 +18,7 @@ class UnitType(Enum):
     CRUSADER_LONGBOWMAN = auto()
     CRUSADER_PALADIN = auto()
     CRUSADER_PIKEMAN = auto()
+    CRUSADER_RED_KNIGHT = auto()
 
 class UnitTypeComponent:
     """Component that stores the type of a unit."""

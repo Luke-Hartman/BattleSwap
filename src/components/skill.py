@@ -2,9 +2,11 @@
 
 from dataclasses import dataclass
 
+from components.aoe import AoEEffect
+from visuals import Visual
+
 class SkillEffect:
     """The effect of the skill."""
-
 
 @dataclass
 class SelfHeal(SkillEffect):
@@ -13,6 +15,18 @@ class SelfHeal(SkillEffect):
     percent: float
     """The percent of health to heal."""
 
+@dataclass
+class CreateAoE(SkillEffect):
+    """The effect of the skill."""
+
+    effect: AoEEffect
+    """The AoE effect of the skill."""
+    visual: Visual
+    """The visual of the AoE."""
+    duration: float
+    """The duration of the AoE."""
+    scale: float
+    """The scale of the AoE."""
 
 class TriggerCondition:
     """The condition that triggers the skill."""
@@ -25,6 +39,12 @@ class UnderHealthPercent(TriggerCondition):
     percent: float
     """The percent of health at which the skill is triggered."""
 
+@dataclass
+class TargetInRange(TriggerCondition):
+    """The condition that triggers the skill when the target is in range."""
+
+    range: float
+    """The range of the skill."""
 
 @dataclass
 class Skill:

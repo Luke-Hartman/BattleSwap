@@ -17,6 +17,7 @@ class Visual(Enum):
     Fireball = auto()
     Explosion = auto()
     Healing = auto()
+    CrusaderRedKnightFireSlash = auto()
 
 visual_sheets: dict[Visual, pygame.Surface] = {}
 
@@ -27,6 +28,7 @@ def load_visual_sheets():
         Visual.Fireball: os.path.join("assets", "effects", "Wizard.png"),
         Visual.Explosion: os.path.join("assets", "effects", "explosiontip1_32x32.png"),
         Visual.Healing: os.path.join("assets", "units", "CrusaderCleric.png"),
+        Visual.CrusaderRedKnightFireSlash: os.path.join("assets", "effects", "Knight-Attack03_Effect.png"),
     }
     for visual, path in visual_paths.items():
         visual_sheets[visual] = pygame.image.load(path).convert_alpha()
@@ -89,6 +91,21 @@ def create_visual_spritesheet(visual: Visual, duration: Optional[float] = None, 
             frame_height=32,
             scale=scale,
             frames={AnimationType.IDLE: 6},
+            rows={AnimationType.IDLE: 0},
+            animation_durations={AnimationType.IDLE: duration},
+            sprite_center_offset=(0, 0),
+        )
+    elif visual == Visual.CrusaderRedKnightFireSlash:
+        if duration is None:
+            duration = 0.2 / GAME_SPEED
+        if scale is None:
+            scale = TINY_RPG_SCALE
+        return SpriteSheet(
+            surface=visual_sheets[visual],
+            frame_width=100,
+            frame_height=100,
+            scale=scale,
+            frames={AnimationType.IDLE: 3},
             rows={AnimationType.IDLE: 0},
             animation_durations={AnimationType.IDLE: duration},
             sprite_center_offset=(0, 0),

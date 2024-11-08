@@ -19,6 +19,7 @@ starting_units = {
     UnitType.CRUSADER_LONGBOWMAN: 10,
     UnitType.CRUSADER_PALADIN: 10,
     UnitType.CRUSADER_PIKEMAN: 10,
+    UnitType.CRUSADER_RED_KNIGHT: 10,
     UnitType.WEREBEAR: 10,
 }
 
@@ -90,14 +91,6 @@ battles = [
             "In BattleSwap, you will encounter many powerful enemies",
             "who will become powerful allies after you defeat them.",
         ]
-    ),
-    Battle(
-        id="core_archer",
-        enemies=[
-            (UnitType.CORE_ARCHER, (BATTLEFIELD_WIDTH // 2 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT // 2)),
-        ],
-        dependencies=[],
-        tip=["1"],
     ),
     Battle(
         id="core_duelist",
@@ -186,6 +179,14 @@ battles = [
         ],
         dependencies=[],
         tip=["1"],
-    )
+    ),
+    Battle(
+        id="crusader_red_knight",
+        enemies=[
+            (UnitType.CRUSADER_RED_KNIGHT, (BATTLEFIELD_WIDTH // 2 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT // 2)),
+        ],
+        dependencies=[],
+        tip=["1"],
+    ),
 ]
 

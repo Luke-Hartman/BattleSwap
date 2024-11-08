@@ -14,7 +14,7 @@ from components.aura import AffectedByAuras, Aura, DamageBuffAura
 from components.position import Position
 from components.animation import AnimationState, AnimationType
 from components.projectile import AoEProjectile, DamageProjectile
-from components.skill import SelfHeal, Skill, UnderHealthPercent
+from components.skill import CreateAoE, SelfHeal, Skill, TargetInRange, UnderHealthPercent
 from components.sprite_sheet import SpriteSheet
 from components.targetting_strategy import TargettingStrategyComponent, TargettingStrategyType
 from components.team import Team, TeamType
@@ -41,6 +41,7 @@ unit_theme_ids: Dict[UnitType, str] = {
     UnitType.CRUSADER_LONGBOWMAN: "#crusader_longbowman_icon",
     UnitType.CRUSADER_PALADIN: "#crusader_paladin_icon",
     UnitType.CRUSADER_PIKEMAN: "#crusader_pikeman_icon",
+    UnitType.CRUSADER_RED_KNIGHT: "#crusader_red_knight_icon",
     UnitType.WEREBEAR: "#werebear_icon",
 }
 
@@ -67,6 +68,7 @@ def load_sprite_sheets():
         UnitType.CRUSADER_LONGBOWMAN: "CrusaderLongbowman.png",
         UnitType.CRUSADER_PALADIN: "CrusaderPaladin.png",
         UnitType.CRUSADER_PIKEMAN: "CrusaderPikeman.png",
+        UnitType.CRUSADER_RED_KNIGHT: "CrusaderRedKnight.png",
         UnitType.WEREBEAR: "Werebear.png",
     }
     for unit_type, filename in unit_filenames.items():
@@ -88,6 +90,7 @@ def load_sprite_sheets():
         UnitType.CRUSADER_LONGBOWMAN: "CrusaderLongbowmanIcon.png",
         UnitType.CRUSADER_PALADIN: "CrusaderPaladinIcon.png",
         UnitType.CRUSADER_PIKEMAN: "CrusaderPikemanIcon.png",
+        UnitType.CRUSADER_RED_KNIGHT: "CrusaderRedKnightIcon.png",
         UnitType.WEREBEAR: "WerebearIcon.png",
     }
     for unit_type, filename in unit_icon_paths.items():
@@ -110,6 +113,7 @@ def create_unit(x: int, y: int, unit_type: UnitType, team: TeamType) -> int:
         UnitType.CRUSADER_LONGBOWMAN: create_crusader_longbowman,
         UnitType.CRUSADER_PALADIN: create_crusader_paladin,
         UnitType.CRUSADER_PIKEMAN: create_crusader_pikeman,
+        UnitType.CRUSADER_RED_KNIGHT: create_crusader_red_knight,
         UnitType.WEREBEAR: create_werebear,
     }[unit_type](x, y, team)
 
@@ -272,6 +276,22 @@ def create_crusader_longbowman(x: int, y: int, team: TeamType) -> int:
             projectile_offset_y=0
         )
     )
+    return entity
+
+def create_crusader_red_knight(x: int, y: int, team: TeamType) -> int:
+    """Create a red knight entity with all necessary components."""
+    entity = unit_base_entity(x, y, team, UnitType.CRUSADER_RED_KNIGHT, CRUSADER_RED_KNIGHT_MOVEMENT_SPEED, CRUSADER_RED_KNIGHT_HP)
+    esper.add_component(entity, TargettingStrategyComponent(type=TargettingStrategyType.NEAREST_ENEMY))
+    esper.add_component(entity, MeleeAttack(range=CRUSADER_RED_KNIGHT_ATTACK_RANGE, damage=CRUSADER_RED_KNIGHT_ATTACK_DAMAGE))
+    esper.add_component(
+        entity,
+        Skill(
+            trigger_condition=TargetInRange(range=CRUSADER_RED_KNIGHT_SKILL_RANGE),
+            effect=CreateAoE(effect=DamageAoE(affects_allies=True, affects_enemies=True, damage=CRUSADER_RED_KNIGHT_SKILL_DAMAGE), visual=Visual.CrusaderRedKnightFireSlash, duration=CRUSADER_RED_KNIGHT_SKILL_AOE_DURATION, scale=CRUSADER_RED_KNIGHT_SKILL_AOE_SCALE),
+            cooldown=CRUSADER_RED_KNIGHT_SKILL_COOLDOWN
+        )
+    )
+    esper.add_component(entity, Armor(flat_reduction=CRUSADER_RED_KNIGHT_ARMOR_FLAT_REDUCTION, percent_reduction=CRUSADER_RED_KNIGHT_ARMOR_PERCENT_REDUCTION))
     return entity
 
 def create_crusader_paladin(x: int, y: int, team: TeamType) -> int:
@@ -470,6 +490,31 @@ def get_unit_sprite_sheet(unit_type: UnitType) -> SpriteSheet:
             animation_durations=CRUSADER_PIKEMAN_ANIMATION_DURATIONS,
             sprite_center_offset=(24, -16),
             attack_activation_frame=3
+        )
+    elif unit_type == UnitType.CRUSADER_RED_KNIGHT:
+        return SpriteSheet(
+            surface=sprite_sheets[unit_type],
+            frame_width=100,
+            frame_height=100,
+            scale=TINY_RPG_SCALE,
+            frames={
+                AnimationType.IDLE: 6,
+                AnimationType.WALKING: 8,
+                AnimationType.ATTACKING: 7,
+                AnimationType.SKILL: 11,
+                AnimationType.DYING: 4
+            },
+            rows={
+                AnimationType.IDLE: 0,
+                AnimationType.WALKING: 1,
+                AnimationType.ATTACKING: 2,
+                AnimationType.SKILL: 4,
+                AnimationType.DYING: 7
+            },
+            animation_durations=CRUSADER_RED_KNIGHT_ANIMATION_DURATIONS,
+            sprite_center_offset=(0, 0),
+            attack_activation_frame=3,
+            skill_activation_frame=7
         )
     elif unit_type == UnitType.WEREBEAR:
         return SpriteSheet(

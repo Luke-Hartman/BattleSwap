@@ -15,7 +15,7 @@ from components.aura import AffectedByAuras, DamageBuffAura
 from components.expiration import Expiration
 from components.orientation import Orientation
 from components.projectile import AoEProjectile, DamageProjectile, Projectile
-from components.skill import SelfHeal, Skill
+from components.skill import CreateAoE, SelfHeal, Skill
 from components.unit_state import UnitState, State
 from components.attack import HealingAttack, MeleeAttack, ProjectileAttack
 from components.health import Health
@@ -70,6 +70,18 @@ class CombatHandler:
         if isinstance(skill.effect, SelfHeal):
             health = esper.component_for_entity(entity, Health)
             health.current = min(health.current + skill.effect.percent * health.maximum, health.maximum)
+        elif isinstance(skill.effect, CreateAoE):
+            position = esper.component_for_entity(entity, Position)
+            team = esper.component_for_entity(entity, Team)
+            orientation = esper.component_for_entity(entity, Orientation)
+            aoe = esper.create_entity()
+            esper.add_component(aoe, Position(x=position.x, y=position.y))
+            esper.add_component(aoe, Team(type=team.type))
+            esper.add_component(aoe, AoE(effect=skill.effect.effect, owner=entity, affected_entities=[entity]))
+            esper.add_component(aoe, create_visual_spritesheet(skill.effect.visual, duration=skill.effect.duration, scale=skill.effect.scale))
+            esper.add_component(aoe, AnimationState(type=AnimationType.IDLE))
+            esper.add_component(aoe, Expiration(time_left=skill.effect.duration))
+            esper.add_component(aoe, Orientation(facing=orientation.facing))
         else:
             raise ValueError(f"Skill effect {skill.effect} not supported")
 

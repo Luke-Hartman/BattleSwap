@@ -114,6 +114,13 @@
             }
         }
     },
+    "#crusader_red_knight_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/CrusaderRedKnightIcon.png"
+            }
+        }
+    },
     "#werebear_icon": {
         "images": {
             "normal_image": {
