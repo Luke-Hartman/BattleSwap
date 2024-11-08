@@ -34,24 +34,18 @@ class AuraEffect:
 
 
 class DamageBuffAura(AuraEffect):
-    """Increases (or decreases) the damage of nearby units by a percentage."""
+    """Increases (or decreases) the damage of affected units by a percentage."""
 
     def __init__(
         self,
         key: str,
         damage_percentage: float,
-        affects_melee: bool = False,
-        affects_ranged: bool = False,
-        affects_healing: bool = False,
         affects_self: bool = False,
         affects_allies: bool = False,
         affects_enemies: bool = False,
         priority: int = 0,
     ):
         self.damage_percentage = damage_percentage
-        self.affects_melee = affects_melee
-        self.affects_ranged = affects_ranged
-        self.affects_healing = affects_healing
         super().__init__(
             key=key,
             affects_self=affects_self,

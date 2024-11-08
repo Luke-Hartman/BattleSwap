@@ -6,18 +6,16 @@ which represent different types of attacks for units.
 
 import math
 from dataclasses import dataclass
-from enum import Enum, auto
 
-class ProjectileType(Enum):
-    ARROW = auto()
-    FIREBALL = auto()
+from components.projectile import ProjectileEffect
+from visuals import Visual
 
 @dataclass
 class MeleeAttack:
     """Represents a melee attack."""
 
     range: float
-    """The range of the melee attack, in pixels."""
+    """How close the unit needs to be to the target to attack."""
 
     damage: int
     """The amount of damage the melee attack deals."""
@@ -30,19 +28,22 @@ class ProjectileAttack:
     """Represents a projectile attack."""
 
     range: float
-    """The range of the projectile attack, in pixels."""
-
-    damage: int
-    """The amount of damage the projectile attack deals."""
+    """How close the unit needs to be to the target to attack."""
 
     projectile_speed: float
     """The speed of the projectile, in pixels per second."""
 
-    projectile_type: ProjectileType
+    projectile_effect: ProjectileEffect
     """The type of projectile to use for the attack."""
 
+    visual: Visual
+    """The visual of the projectile."""
+
     projectile_offset_x: float
-    """The x offset of the projectile, in pixels."""
+    """The x offset of the projectile from the unit position, in pixels.
+    
+    (Assuming the unit is facing right)
+    """
 
     projectile_offset_y: float
     """The y offset of the projectile, in pixels."""
@@ -52,7 +53,7 @@ class HealingAttack:
     """Represents a healing attack."""
 
     range: float
-    """The range of the healing attack, in pixels."""
+    """How close the unit needs to be to the target to attack."""
 
     healing: int
     """The amount of healing the attack deals."""

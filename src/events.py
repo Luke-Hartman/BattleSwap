@@ -49,8 +49,8 @@ class TargetLostEvent:
 @dataclass
 class ProjectileHitEvent:
     """Event triggered when a projectile hits a target."""
+    entity: int
     target: int
-    damage: int
 
 @dataclass
 class SkillTriggeredEvent:
@@ -67,6 +67,15 @@ class SkillCompletedEvent:
     """Event triggered when a skill is completed."""
     entity: int
 
+@dataclass
+class AoEHitEvent:
+    """Event triggered when an AoE hits a unit.
+    
+    Note that this doesn't mean the AoE will actually affect the unit.
+    """
+    aoe: int
+    target: int
+
 # Define signal names for each event
 TARGET_ACQUIRED = 'target_acquired'
 TARGET_IN_RANGE = 'target_in_range'
@@ -79,6 +88,8 @@ PROJECTILE_HIT = 'projectile_hit'
 SKILL_TRIGGERED = 'skill_triggered'
 SKILL_ACTIVATED = 'skill_activated'
 SKILL_COMPLETED = 'skill_completed'
+AOE_HIT = 'aoe_hit'
+
 def emit_event(event_type, **kwargs):
     """Emit an event using pydispatch."""
     dispatcher.send(signal=event_type, sender=dispatcher.Any, **kwargs)

@@ -179,5 +179,13 @@ battles = [
         dependencies=[],
         tip=["1"],
     ),
+    Battle(
+        id="core_mage",
+        enemies=[
+            (UnitType.CORE_MAGE, (BATTLEFIELD_WIDTH // 2 + NO_MANS_LAND_WIDTH // 2, BATTLEFIELD_HEIGHT // 2)),
+        ],
+        dependencies=[],
+        tip=["1"],
+    )
 ]
 

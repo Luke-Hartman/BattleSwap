@@ -8,21 +8,24 @@ import pygame
 import os
 from typing import Dict
 from CONSTANTS import *
+from components.aoe import DamageAoE
 from components.armor import Armor
 from components.aura import AffectedByAuras, Aura, DamageBuffAura
 from components.position import Position
 from components.animation import AnimationState, AnimationType
+from components.projectile import AoEProjectile, DamageProjectile
 from components.skill import SelfHeal, Skill, UnderHealthPercent
 from components.sprite_sheet import SpriteSheet
 from components.targetting_strategy import TargettingStrategyComponent, TargettingStrategyType
 from components.team import Team, TeamType
 from components.unit_state import UnitState
-from components.attack import HealingAttack, MeleeAttack, ProjectileAttack, ProjectileType
+from components.attack import HealingAttack, MeleeAttack, ProjectileAttack
 from components.movement import Movement
 from components.unit_type import UnitType, UnitTypeComponent
 from components.velocity import Velocity
 from components.health import Health
 from components.orientation import Orientation, FacingDirection
+from visuals import Visual
 
 unit_theme_ids: Dict[UnitType, str] = {
     UnitType.CORE_ARCHER: "#core_archer_icon", 
@@ -144,9 +147,9 @@ def create_core_archer(x: int, y: int, team: TeamType) -> int:
         entity,
         ProjectileAttack(
             range=CORE_ARCHER_ATTACK_RANGE,
-            damage=CORE_ARCHER_ATTACK_DAMAGE,
             projectile_speed=CORE_ARCHER_PROJECTILE_SPEED,
-            projectile_type=ProjectileType.ARROW,
+            projectile_effect=DamageProjectile(damage=CORE_ARCHER_ATTACK_DAMAGE),
+            visual=Visual.Arrow,
             projectile_offset_x=5*MINIFOLKS_SCALE,
             projectile_offset_y=0,
         )
@@ -175,9 +178,14 @@ def create_core_mage(x: int, y: int, team: TeamType) -> int:
         entity,
         ProjectileAttack(
             range=CORE_MAGE_ATTACK_RANGE,
-            damage=CORE_MAGE_ATTACK_DAMAGE,
             projectile_speed=CORE_MAGE_PROJECTILE_SPEED,
-            projectile_type=ProjectileType.FIREBALL,
+            projectile_effect=AoEProjectile(
+                effect=DamageAoE(affects_allies=True, affects_enemies=True, damage=CORE_MAGE_ATTACK_DAMAGE),
+                visual=Visual.Explosion,
+                duration=CORE_MAGE_FIREBALL_AOE_DURATION,
+                scale=CORE_MAGE_FIREBALL_AOE_SCALE,
+            ),
+            visual=Visual.Fireball,
             projectile_offset_x=11*MINIFOLKS_SCALE,
             projectile_offset_y=-4*MINIFOLKS_SCALE,
         )
@@ -203,9 +211,6 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
             key="CRUSADER_BLACK_KNIGHT_AURA",
             damage_percentage=-CRUSADER_BLACK_KNIGHT_AURA_DAMAGE_PERCENT_REDUCTION,
             affects_enemies=True,
-            affects_melee=True,
-            affects_ranged=True,
-            affects_healing=False,
         ),
         color=(150, 0, 0)
     ))
@@ -242,11 +247,10 @@ def create_crusader_gold_knight(x: int, y: int, team: TeamType) -> int:
     esper.add_component(entity, Armor(flat_reduction=CRUSADER_GOLD_KNIGHT_ARMOR_FLAT_REDUCTION, percent_reduction=CRUSADER_GOLD_KNIGHT_ARMOR_PERCENT_REDUCTION))
     esper.add_component(entity, Aura(
         radius=CRUSADER_GOLD_KNIGHT_AURA_RADIUS,
-        effect=DamageBuffAura( # Buffs ally melee damage, excluding self
+        effect=DamageBuffAura( # Buffs ally damage, excluding self
             key="CRUSADER_GOLD_KNIGHT_AURA",
             damage_percentage=CRUSADER_GOLD_KNIGHT_AURA_DAMAGE_PERCENT_BUFF,
             affects_allies=True,
-            affects_melee=True,
             affects_self=False,
         ),
         color=(255, 215, 0)
@@ -261,9 +265,9 @@ def create_crusader_longbowman(x: int, y: int, team: TeamType) -> int:
         entity,
         ProjectileAttack(
             range=CRUSADER_LONGBOWMAN_ATTACK_RANGE,
-            damage=CRUSADER_LONGBOWMAN_ATTACK_DAMAGE,
             projectile_speed=CRUSADER_LONGBOWMAN_PROJECTILE_SPEED,
-            projectile_type=ProjectileType.ARROW,
+            projectile_effect=DamageProjectile(damage=CRUSADER_LONGBOWMAN_ATTACK_DAMAGE),
+            visual=Visual.Arrow,
             projectile_offset_x=5*MINIFOLKS_SCALE,
             projectile_offset_y=0
         )

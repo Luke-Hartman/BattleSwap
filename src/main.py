@@ -11,14 +11,12 @@ from CONSTANTS import (
     BATTLEFIELD_HEIGHT
 )
 from camera import Camera
-from entities.effects import load_effect_sheets
 from entities.units import load_sprite_sheets
-from entities.projectiles import load_projectile_sheets
-from handlers.attack_handler import AttackHandler
-from handlers.skill_handler import SkillHandler
+from handlers.combat_handler import CombatHandler
 from handlers.state_machine import StateMachine
 from progress_manager import ProgressManager
 from scenes.scene_manager import SceneManager
+from visuals import load_visual_sheets
 
 # Initialize Pygame
 pygame.init()
@@ -30,11 +28,9 @@ pygame.display.set_caption("Battle Swap")
 
 # Load sprite sheets
 load_sprite_sheets()
-load_projectile_sheets()
-load_effect_sheets()
+load_visual_sheets()
 
-attack_handler = AttackHandler()
-skill_handler = SkillHandler()
+combat_handler = CombatHandler()
 state_machine = StateMachine()
 
 # Main game loop
