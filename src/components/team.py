@@ -15,6 +15,10 @@ class TeamType(Enum):
     TEAM2 = auto()
     """Team 2, facing left."""
 
+    def other(self) -> "TeamType":
+        """Get the other team."""
+        return TeamType.TEAM2 if self == TeamType.TEAM1 else TeamType.TEAM1
+
 @dataclass
 class Team:
     """Represents the team of an entity."""

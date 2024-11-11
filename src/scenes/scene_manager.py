@@ -3,7 +3,6 @@ import pygame_gui
 
 from camera import Camera
 from progress_manager import ProgressManager
-from scenes.scene import Scene
 from scenes.select_battle import SelectBattleScene
 from scenes.setup_battle import SetupBattleScene
 from scenes.battle import BattleScene

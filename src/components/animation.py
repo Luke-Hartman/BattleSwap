@@ -19,11 +19,14 @@ class AnimationType(Enum):
     WALKING = auto()
     """The walking animation state."""
 
-    ATTACKING = auto()
-    """The attacking animation state."""
+    ABILITY1 = auto()
+    """The highest priority ability animation state."""
 
-    SKILL = auto()
-    """The skill animation state."""
+    ABILITY2 = auto()
+    """The second highest priority ability animation state."""
+
+    ABILITY3 = auto()
+    """The third highest priority ability animation state."""
 
     DYING = auto()
     """The dying animation state."""

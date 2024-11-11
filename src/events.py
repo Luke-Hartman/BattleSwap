@@ -4,46 +4,67 @@ This module contains the event classes used for communication between different 
 """
 
 from dataclasses import dataclass
-from components.skill import Skill
+from typing import Tuple
 from components.unit_state import State
 from pydispatch import dispatcher
 
 @dataclass
-class TargetAcquiredEvent:
-    """Event triggered when a unit identifies an enemy target."""
+class AbilityActivatedEvent:
+    """Event triggered when a unit's ability is activated."""
+    entity: int
+    index: int
+    frame: int
+
+@dataclass
+class AbilityInterruptedEvent:
+    """Event triggered when a unit's ability is interrupted."""
+    entity: int
+    index: int
+
+@dataclass
+class AbilityCompletedEvent:
+    """Event triggered when a unit's ability is completed."""
+    entity: int
+    index: int
+
+@dataclass
+class AbilityTriggeredEvent:
+    """Event triggered when a unit's ability is triggered."""
+    entity: int
+    index: int
+
+@dataclass
+class AoEHitEvent:
+    """Event triggered when an AoE hits a unit.
+    
+    Note that this doesn't mean the AoE will actually affect the unit.
+    """
     entity: int
     target: int
 
 @dataclass
-class TargetInRangeEvent:
-    """Event triggered when a unit gets within attack range of its target."""
+class AuraHitEvent:
+    """Event triggered when an aura hits a unit.
+    
+    Note that this doesn't mean the aura will actually affect the unit.
+    """
     entity: int
     target: int
 
 @dataclass
-class AttackCompletedEvent:
-    """Event triggered when a unit's attack animation is completed."""
+class DestinationTargetAcquiredEvent:
+    """Event triggered when a unit identifies a destination."""
     entity: int
+    destination: Tuple[float, float]
 
 @dataclass
-class StateChangedEvent:
-    """Event triggered when a unit's state changes."""
-    entity: int
-    new_state: State
-
-@dataclass
-class AttackActivatedEvent:
-    """Event triggered when a unit's attack is activated (e.g., sword swing)."""
+class DestinationTargetLostEvent:
+    """Event triggered when a unit loses its destination."""
     entity: int
 
 @dataclass
 class KillingBlowEvent:
     """Event triggered when a unit's health reaches 0."""
-    entity: int
-
-@dataclass
-class TargetLostEvent:
-    """Event triggered when a unit loses its target."""
     entity: int
 
 @dataclass
@@ -53,42 +74,23 @@ class ProjectileHitEvent:
     target: int
 
 @dataclass
-class SkillTriggeredEvent:
-    """Event triggered when a skill is triggered."""
+class StateChangedEvent:
+    """Event triggered when a unit's state changes."""
     entity: int
-
-@dataclass
-class SkillActivatedEvent:
-    """Event triggered when a skill is activated."""
-    entity: int
-
-@dataclass
-class SkillCompletedEvent:
-    """Event triggered when a skill is completed."""
-    entity: int
-
-@dataclass
-class AoEHitEvent:
-    """Event triggered when an AoE hits a unit.
-    
-    Note that this doesn't mean the AoE will actually affect the unit.
-    """
-    aoe: int
-    target: int
+    new_state: State
 
 # Define signal names for each event
-TARGET_ACQUIRED = 'target_acquired'
-TARGET_IN_RANGE = 'target_in_range'
-ATTACK_ACTIVATED = 'attack_activated'
-ATTACK_COMPLETED = 'attack_completed'
-STATE_CHANGED = 'state_changed'
-KILLING_BLOW = 'killing_blow'
-TARGET_LOST = 'target_lost'
-PROJECTILE_HIT = 'projectile_hit'
-SKILL_TRIGGERED = 'skill_triggered'
-SKILL_ACTIVATED = 'skill_activated'
-SKILL_COMPLETED = 'skill_completed'
+ABILITY_ACTIVATED = 'ability_activated'
+ABILITY_COMPLETED = 'ability_completed'
+ABILITY_INTERRUPTED = 'ability_interrupted'
+ABILITY_TRIGGERED = 'ability_triggered'
 AOE_HIT = 'aoe_hit'
+AURA_HIT = 'aura_hit'
+DESTINATION_TARGET_ACQUIRED = 'destination_target_acquired'
+DESTINATION_TARGET_LOST = 'destination_target_lost'
+KILLING_BLOW = 'killing_blow'
+PROJECTILE_HIT = 'projectile_hit'
+STATE_CHANGED = 'state_changed'
 
 def emit_event(event_type, **kwargs):
     """Emit an event using pydispatch."""

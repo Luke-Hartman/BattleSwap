@@ -1,23 +1,22 @@
 """Processor for aura effects."""
 
+import time
 import esper
-from components.aura import Aura, AffectedByAuras
+from components.aura import Aura
 from components.position import Position
-from components.team import Team
+from events import AURA_HIT, AuraHitEvent, emit_event
 
 
 class AuraProcessor(esper.Processor):
     """Processor for aura effects."""
 
     def process(self, dt: float):
-        for other_ent, (affected_by_auras, other_position, other_team) in esper.get_components(AffectedByAuras, Position, Team):
-            affected_by_auras.clear()
-        for ent, (aura, position, team) in esper.get_components(Aura, Position, Team):
-            for other_ent, (affected_by_auras, other_position, other_team) in esper.get_components(AffectedByAuras, Position, Team):
-                if ent == other_ent:
-                    affected_by_auras.add(aura.effect)
-                elif (other_position.x - position.x)**2 + (other_position.y - position.y)**2 <= aura.radius**2:
-                    if team.type == other_team.type and aura.effect.affects_allies:
-                        affected_by_auras.add(aura.effect)
-                    elif team.type != other_team.type and aura.effect.affects_enemies:
-                        affected_by_auras.add(aura.effect)
+        for ent, (aura, position) in esper.get_components(Aura, Position):
+            current_time = time.time()
+            time_since_last_triggered = current_time - aura.last_triggered
+            if time_since_last_triggered < aura.period:
+                continue
+            aura.last_triggered = current_time
+            for other_ent, (other_position,) in esper.get_components(Position):
+                if position.distance(other_position, y_bias=None) <= aura.radius:
+                    emit_event(AURA_HIT, event=AuraHitEvent(entity=ent, target=other_ent))

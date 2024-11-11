@@ -4,7 +4,7 @@ This module contains the SpriteSheet component, which represents the sprite shee
 """
 
 import pygame
-from typing import Dict, Optional, Tuple
+from typing import Dict, Tuple
 from components.animation import AnimationType
 
 class SpriteSheet(pygame.sprite.Sprite):
@@ -19,8 +19,6 @@ class SpriteSheet(pygame.sprite.Sprite):
         rows: Dict[AnimationType, int],
         animation_durations: Dict[AnimationType, float],
         sprite_center_offset: Tuple[int, int],
-        attack_activation_frame: Optional[int] = None,
-        skill_activation_frame: Optional[int] = None,
     ):
         super().__init__()
         self.surface = surface
@@ -31,13 +29,6 @@ class SpriteSheet(pygame.sprite.Sprite):
         self.rows = rows
         self.animation_durations = animation_durations
         self.sprite_center_offset = sprite_center_offset
-        self.attack_activation_frame = attack_activation_frame
-        assert (attack_activation_frame is None) == (AnimationType.ATTACKING not in frames)
-        assert (attack_activation_frame is None) == (AnimationType.ATTACKING not in rows)
-        self.skill_activation_frame = skill_activation_frame
-        assert (skill_activation_frame is None) == (AnimationType.SKILL not in frames)
-        assert (skill_activation_frame is None) == (AnimationType.SKILL not in rows)
-
         self.image = pygame.Surface((frame_width, frame_height), pygame.SRCALPHA)
         self.rect = self.image.get_rect()
 

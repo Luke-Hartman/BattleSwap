@@ -7,28 +7,23 @@ that affects entities in a radius of another entity.
 
 from typing import List, Optional
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
-class AoEEffect:
-    """AoE effect."""
-
-    def __init__(self, affects_allies: bool, affects_enemies: bool):
-        """Initialize the AoE effect."""
-        self.affects_allies = affects_allies
-        self.affects_enemies = affects_enemies
-
-class DamageAoE(AoEEffect):
-    """AoE effect that deals damage to entities."""
-
-    def __init__(self, affects_allies: bool, affects_enemies: bool, damage: int):
-        super().__init__(affects_allies, affects_enemies)
-        self.damage = damage
+if TYPE_CHECKING:
+    from effects import Effect
 
 @dataclass
 class AoE:
     """The AoE component."""
 
-    effect: AoEEffect
+    effects: List["Effect"]
     owner: Optional[int]
     """Owner is used to apply buffs/debuffs to AoE effects."""
-    affected_entities: List[int] = field(default_factory=list)
-    """Used to prevent double hits."""
+    hits_owner: bool
+    """Whether the AoE hits the owner."""
+    hits_allies: bool
+    """Whether the AoE hits allies."""
+    hits_enemies: bool
+    """Whether the AoE hits enemies."""
+    hit_entities: List[int] = field(default_factory=list)
+    """Entities that have already been hit by the AoE."""

@@ -1,16 +1,17 @@
 import esper
 import pygame
 import pygame_gui
+from processors.ability_processor import AbilityProcessor
 from processors.attached_processor import AttachedProcessor
 from processors.aura_processor import AuraProcessor
 from processors.collision_processor import CollisionProcessor
-from processors.cooldown_skill_processor import CooldownSkillProcessor
 from processors.expiration_processor import ExpirationProcessor
 from processors.rendering_processor import RenderingProcessor, draw_battlefield
 from processors.animation_processor import AnimationProcessor
 from processors.movement_processor import MovementProcessor
 from processors.pursuing_processor import PursuingProcessor
-from processors.targeting_processor import TargetingProcessor
+from processors.status_effect_processor import StatusEffectProcessor
+from processors.targetting_processor import TargettingProcessor
 from scenes.scene import Scene
 from scenes.events import RETURN_TO_SELECT_BATTLE, SETUP_BATTLE_SCENE
 from camera import Camera
@@ -28,22 +29,24 @@ class BattleScene(Scene):
         self.manager = manager
         self.progress_manager = progress_manager
         self.potential_solution = potential_solution
+        targetting_processor = TargettingProcessor()
         aura_processor = AuraProcessor()
         movement_processor = MovementProcessor()
         pursuing_processor = PursuingProcessor()
-        targeting_processor = TargetingProcessor()
         collision_processor = CollisionProcessor()
-        cooldown_skill_processor = CooldownSkillProcessor()
         attached_processor = AttachedProcessor()
         expiration_processor = ExpirationProcessor()
+        status_effect_processor = StatusEffectProcessor()
+        ability_processor = AbilityProcessor()
+        esper.add_processor(targetting_processor)
         esper.add_processor(aura_processor)
         esper.add_processor(pursuing_processor)
         esper.add_processor(movement_processor)
         esper.add_processor(collision_processor)
-        esper.add_processor(targeting_processor)
-        esper.add_processor(cooldown_skill_processor)
         esper.add_processor(attached_processor)
         esper.add_processor(expiration_processor)
+        esper.add_processor(status_effect_processor)
+        esper.add_processor(ability_processor)
         self.return_button = ReturnButton(self.manager)
         self.restart_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((pygame.display.Info().current_w - 210, 10), (100, 30)),
@@ -110,13 +113,14 @@ class BattleScene(Scene):
     def _cleanup(self) -> None:
         """Clean up processors and entity database."""
         esper.clear_database()
+        esper.remove_processor(TargettingProcessor)
         esper.remove_processor(AuraProcessor)
         esper.remove_processor(RenderingProcessor)
         esper.remove_processor(AnimationProcessor)
         esper.remove_processor(PursuingProcessor)
         esper.remove_processor(MovementProcessor)
         esper.remove_processor(CollisionProcessor)
-        esper.remove_processor(TargetingProcessor)
-        esper.remove_processor(CooldownSkillProcessor)
         esper.remove_processor(AttachedProcessor)
         esper.remove_processor(ExpirationProcessor)
+        esper.remove_processor(StatusEffectProcessor)
+        esper.remove_processor(AbilityProcessor)

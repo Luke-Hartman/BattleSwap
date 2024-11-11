@@ -6,10 +6,11 @@ updating the current frame of entities with AnimationState components.
 """
 
 import esper
+from components.ability import Abilities
 from components.animation import AnimationState, AnimationType
 from components.sprite_sheet import SpriteSheet
 from components.unit_state import UnitState, State
-from events import SKILL_ACTIVATED, SKILL_COMPLETED, AttackCompletedEvent, AttackActivatedEvent, ATTACK_COMPLETED, ATTACK_ACTIVATED, SkillActivatedEvent, SkillCompletedEvent, emit_event
+from events import ABILITY_ACTIVATED, ABILITY_COMPLETED, AbilityActivatedEvent, AbilityCompletedEvent, emit_event
 
 class AnimationProcessor(esper.Processor):
     """
@@ -33,8 +34,9 @@ class AnimationProcessor(esper.Processor):
             new_anim_type = {
                 State.IDLE: AnimationType.IDLE,
                 State.PURSUING: AnimationType.WALKING,
-                State.ATTACKING: AnimationType.ATTACKING,
-                State.SKILL: AnimationType.SKILL,
+                State.ABILITY1: AnimationType.ABILITY1,
+                State.ABILITY2: AnimationType.ABILITY2,
+                State.ABILITY3: AnimationType.ABILITY3,
                 State.DEAD: AnimationType.DYING
             }.get(unit_state.state, AnimationType.IDLE)
 
@@ -57,16 +59,18 @@ class AnimationProcessor(esper.Processor):
                 else:
                     anim_state.current_frame = (anim_state.current_frame + 1) % frame_count
 
-                # Check if attack is activated
-                if unit_state.state == State.ATTACKING and anim_state.type == AnimationType.ATTACKING:
-                    if anim_state.current_frame == sprite_sheet.attack_activation_frame:
-                        emit_event(ATTACK_ACTIVATED, event=AttackActivatedEvent(ent))
+                # Check if ability is activated
+                index = None
+                if unit_state.state == State.ABILITY1 and anim_state.type == AnimationType.ABILITY1:
+                    index = 0
+                elif unit_state.state == State.ABILITY2 and anim_state.type == AnimationType.ABILITY2:
+                    index = 1
+                elif unit_state.state == State.ABILITY3 and anim_state.type == AnimationType.ABILITY3:
+                    index = 2
+                
+                if index is not None:
+                    ability = esper.component_for_entity(ent, Abilities).abilities[index]
+                    if ability.effects.get(anim_state.current_frame, None):
+                        emit_event(ABILITY_ACTIVATED, event=AbilityActivatedEvent(ent, index, anim_state.current_frame))
                     elif anim_state.current_frame == frame_count - 1:
-                        emit_event(ATTACK_COMPLETED, event=AttackCompletedEvent(ent))
-
-                # Check if skill is activated
-                if unit_state.state == State.SKILL and anim_state.type == AnimationType.SKILL:
-                    if anim_state.current_frame == sprite_sheet.skill_activation_frame:
-                        emit_event(SKILL_ACTIVATED, event=SkillActivatedEvent(ent))
-                    elif anim_state.current_frame == frame_count - 1:
-                        emit_event(SKILL_COMPLETED, event=SkillCompletedEvent(ent))
+                        emit_event(ABILITY_COMPLETED, event=AbilityCompletedEvent(ent, index))

@@ -11,6 +11,7 @@ import math
 from components.aura import Aura
 from components.position import Position
 from components.animation import AnimationState
+from components.projectile import Projectile
 from components.sprite_sheet import SpriteSheet
 from components.team import Team, TeamType
 from components.health import Health
@@ -71,13 +72,8 @@ class RenderingProcessor(esper.Processor):
             sprite_sheet.update_frame(anim_state.type, anim_state.current_frame)
             x_offset = sprite_sheet.sprite_center_offset[0] * sprite_sheet.scale
             y_offset = sprite_sheet.sprite_center_offset[1] * sprite_sheet.scale
-            
-            if esper.has_component(ent, Orientation):
-                orientation = esper.component_for_entity(ent, Orientation)
-                if orientation.facing == FacingDirection.LEFT:
-                    sprite_sheet.image = pygame.transform.flip(sprite_sheet.image, True, False)
-                    x_offset = -x_offset
-            elif esper.has_component(ent, Velocity):
+
+            if esper.has_component(ent, Projectile):
                 velocity = esper.component_for_entity(ent, Velocity)
                 angle = math.atan2(velocity.y, velocity.x)
                 # See https://stackoverflow.com/questions/4183208/how-do-i-rotate-an-image-around-its-center-using-pygame
@@ -87,6 +83,12 @@ class RenderingProcessor(esper.Processor):
                 y_offset = x_offset * math.sin(angle) + y_offset * math.cos(angle)
                 sprite_sheet.image = rotated_image
                 sprite_sheet.rect = new_rect
+            elif esper.has_component(ent, Orientation):
+                orientation = esper.component_for_entity(ent, Orientation)
+                if orientation.facing == FacingDirection.LEFT:
+                    sprite_sheet.image = pygame.transform.flip(sprite_sheet.image, True, False)
+                    x_offset = -x_offset
+            
 
             # Calculate the position to center the sprite on the unit's position
             sprite_sheet.rect.center = (

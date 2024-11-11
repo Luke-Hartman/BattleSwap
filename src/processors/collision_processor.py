@@ -113,4 +113,4 @@ class CollisionProcessor(esper.Processor):
         for aoe_sprite, u_sprite in collisions:
             aoe_ent = sprite_to_ent[aoe_sprite]
             u_ent = sprite_to_ent[u_sprite]
-            emit_event(AOE_HIT, event=AoEHitEvent(aoe=aoe_ent, target=u_ent))
+            emit_event(AOE_HIT, event=AoEHitEvent(entity=aoe_ent, target=u_ent))
