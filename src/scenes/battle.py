@@ -30,6 +30,7 @@ class BattleScene(Scene):
         self.progress_manager = progress_manager
         self.potential_solution = potential_solution
         targetting_processor = TargettingProcessor()
+        ability_processor = AbilityProcessor()
         aura_processor = AuraProcessor()
         movement_processor = MovementProcessor()
         pursuing_processor = PursuingProcessor()
@@ -37,8 +38,8 @@ class BattleScene(Scene):
         attached_processor = AttachedProcessor()
         expiration_processor = ExpirationProcessor()
         status_effect_processor = StatusEffectProcessor()
-        ability_processor = AbilityProcessor()
         esper.add_processor(targetting_processor)
+        esper.add_processor(ability_processor)
         esper.add_processor(aura_processor)
         esper.add_processor(pursuing_processor)
         esper.add_processor(movement_processor)
@@ -46,7 +47,6 @@ class BattleScene(Scene):
         esper.add_processor(attached_processor)
         esper.add_processor(expiration_processor)
         esper.add_processor(status_effect_processor)
-        esper.add_processor(ability_processor)
         self.return_button = ReturnButton(self.manager)
         self.restart_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((pygame.display.Info().current_w - 210, 10), (100, 30)),
@@ -114,6 +114,7 @@ class BattleScene(Scene):
         """Clean up processors and entity database."""
         esper.clear_database()
         esper.remove_processor(TargettingProcessor)
+        esper.remove_processor(AbilityProcessor)
         esper.remove_processor(AuraProcessor)
         esper.remove_processor(RenderingProcessor)
         esper.remove_processor(AnimationProcessor)
@@ -123,4 +124,3 @@ class BattleScene(Scene):
         esper.remove_processor(AttachedProcessor)
         esper.remove_processor(ExpirationProcessor)
         esper.remove_processor(StatusEffectProcessor)
-        esper.remove_processor(AbilityProcessor)

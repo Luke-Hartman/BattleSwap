@@ -52,8 +52,8 @@ battles = [
             (UnitType.CRUSADER_PIKEMAN, (BATTLEFIELD_WIDTH * 3 // 4, BATTLEFIELD_HEIGHT // 2 + 100)),
             (UnitType.CRUSADER_PIKEMAN, (BATTLEFIELD_WIDTH * 3 // 4, BATTLEFIELD_HEIGHT // 2)),
             (UnitType.CRUSADER_PIKEMAN, (BATTLEFIELD_WIDTH * 3 // 4, BATTLEFIELD_HEIGHT // 2 - 100)),
-            (UnitType.CRUSADER_CLERIC, (BATTLEFIELD_WIDTH * 3 // 4 + 50, BATTLEFIELD_HEIGHT // 2 + 50)),
-            (UnitType.CRUSADER_CLERIC, (BATTLEFIELD_WIDTH * 3 // 4 + 50, BATTLEFIELD_HEIGHT // 2 - 50)),
+            (UnitType.CRUSADER_CLERIC, (BATTLEFIELD_WIDTH * 3 // 4 + 125, BATTLEFIELD_HEIGHT // 2 + 75)),
+            (UnitType.CRUSADER_CLERIC, (BATTLEFIELD_WIDTH * 3 // 4 + 125, BATTLEFIELD_HEIGHT // 2 - 75)),
         ],
         dependencies=[],
         tip=[

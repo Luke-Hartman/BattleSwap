@@ -688,22 +688,15 @@ def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
                                 Alive(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=CRUSADER_CLERIC_ATTACK_RANGE,
-                                    y_bias=2
+                                    distance=CRUSADER_CLERIC_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
+                                    y_bias=2,
                                 )
                             ])
                         )
                     ],
                     persistent_conditions=[
                         HasTarget(
-                            unit_condition=All([
-                                Alive(),
-                                MaximumDistanceFromEntity(
-                                    entity=entity,
-                                    distance=CRUSADER_CLERIC_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
-                                    y_bias=2
-                                )
-                            ])
+                            unit_condition=Alive()
                         )
                     ],
                     effects={
