@@ -3,6 +3,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import List, Optional
+import math
 
 import esper
 
@@ -142,3 +143,25 @@ class MinimumDistanceFromEntity(UnitCondition):
         if position is None or other_position is None:
             return False
         return position.distance(other_position, self.y_bias) >= self.distance
+
+@dataclass
+class MaximumAngleFromEntity(UnitCondition):
+    """The unit is within a certain angle from the given entity."""
+
+    entity: int
+    """The entity to check against."""
+
+    maximum_angle: float
+    """The maximum angle (in radians) within which the condition is met."""
+
+    def check(self, entity: int) -> bool:
+        position = esper.try_component(self.entity, Position)
+        other_position = esper.try_component(entity, Position)
+        if position is None or other_position is None:
+            return False
+        
+        angle = math.atan2(
+            abs(other_position.y - position.y),
+            abs(other_position.x - position.x)
+        )
+        return abs(angle) <= self.maximum_angle

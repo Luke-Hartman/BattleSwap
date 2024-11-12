@@ -42,22 +42,8 @@ def check_condition(entity: int, condition: Condition, ability: Ability) -> bool
     elif isinstance(condition, HasTarget):
         if ability.target is None:
             return False
-        if condition.requires_living_target and not esper.component_for_entity(ability.target, UnitState).state != State.DEAD:
+        if not condition.unit_condition.check(ability.target):
             return False
-        if condition.maximum_distance is not None:
-            pos = esper.component_for_entity(entity, Position)
-            target_pos = esper.component_for_entity(ability.target, Position)
-            if pos.distance(target_pos, condition.y_bias) >= condition.maximum_distance:
-                return False
-        if condition.maximum_angle is not None:
-            pos = esper.component_for_entity(entity, Position)
-            target_pos = esper.component_for_entity(ability.target, Position)
-            angle = math.atan2(
-                abs(target_pos.y - pos.y),
-                abs(target_pos.x - pos.x)
-            )
-            if abs(angle) > condition.maximum_angle:
-                return False
     elif isinstance(condition, SatisfiesUnitCondition):
         if not condition.unit_condition.check(entity):
             return False

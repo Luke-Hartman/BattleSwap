@@ -26,7 +26,10 @@ from components.velocity import Velocity
 from components.health import Health
 from components.orientation import Orientation, FacingDirection
 from effects import AppliesStatusEffect, CreatesAoE, CreatesAttachedVisual, CreatesProjectile, Damages, Heals, Recipient
-from unit_condition import All, Alive, HealthBelowPercent, MinimumDistanceFromEntity, Never, NotEntity, OnTeam
+from unit_condition import (
+    All, Alive, HealthBelowPercent, MinimumDistanceFromEntity, Never, NotEntity, OnTeam,
+    MaximumDistanceFromEntity, MaximumAngleFromEntity
+)
 from visuals import Visual
 
 unit_theme_ids: Dict[UnitType, str] = {
@@ -171,18 +174,26 @@ def create_core_archer(x: int, y: int, team: TeamType) -> int:
                     target_strategy=targetting_strategy,
                     trigger_conditions=[
                         HasTarget(
-                            requires_living_target=True,
-                            maximum_distance=CORE_ARCHER_ATTACK_RANGE,
-                            y_bias=2,
-                            maximum_angle=None,
+                            unit_condition=All([
+                                Alive(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=CORE_ARCHER_ATTACK_RANGE,
+                                    y_bias=2
+                                )
+                            ])
                         )
                     ],
                     persistent_conditions=[
                         HasTarget(
-                            requires_living_target=True,
-                            maximum_distance=CORE_ARCHER_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
-                            y_bias=2,
-                            maximum_angle=None,
+                            unit_condition=All([
+                                Alive(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=CORE_ARCHER_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
+                                    y_bias=2
+                                )
+                            ])
                         )
                     ],
                     effects={
@@ -240,18 +251,34 @@ def create_core_duelist(x: int, y: int, team: TeamType) -> int:
                     target_strategy=targetting_strategy,
                     trigger_conditions=[
                         HasTarget(
-                            requires_living_target=True,
-                            maximum_distance=CORE_DUELIST_ATTACK_RANGE,
-                            y_bias=2,
-                            maximum_angle=math.pi/16,
+                            unit_condition=All([
+                                Alive(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=CORE_DUELIST_ATTACK_RANGE,
+                                    y_bias=2
+                                ),
+                                MaximumAngleFromEntity(
+                                    entity=entity,
+                                    maximum_angle=math.pi/16
+                                )
+                            ])
                         )
                     ],
                     persistent_conditions=[
                         HasTarget(
-                            requires_living_target=True,
-                            maximum_distance=CORE_DUELIST_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
-                            y_bias=2,
-                            maximum_angle=math.pi/12,
+                            unit_condition=All([
+                                Alive(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=CORE_DUELIST_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
+                                    y_bias=2
+                                ),
+                                MaximumAngleFromEntity(
+                                    entity=entity,
+                                    maximum_angle=math.pi/12
+                                )
+                            ])
                         )
                     ],
                     effects={
@@ -307,18 +334,33 @@ def create_core_horseman(x: int, y: int, team: TeamType) -> int:
                     target_strategy=targetting_strategy,
                     trigger_conditions=[
                         HasTarget(
-                            requires_living_target=True,
-                            maximum_distance=CORE_HORSEMAN_ATTACK_RANGE,
-                            y_bias=2,
-                            maximum_angle=math.pi/12,
+                            unit_condition=All([
+                                Alive(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=CORE_HORSEMAN_ATTACK_RANGE,
+                                    y_bias=2
+                                ),
+                                MaximumAngleFromEntity(
+                                    entity=entity,
+                                    maximum_angle=math.pi/12
+                                )
+                            ])
                         )
                     ],
                     persistent_conditions=[
                         HasTarget(
-                            requires_living_target=False,
-                            maximum_distance=CORE_HORSEMAN_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
-                            y_bias=2,
-                            maximum_angle=math.pi/12,
+                            unit_condition=All([
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=CORE_HORSEMAN_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
+                                    y_bias=2
+                                ),
+                                MaximumAngleFromEntity(
+                                    entity=entity,
+                                    maximum_angle=math.pi/12
+                                )
+                            ])
                         )
                     ],
                     effects={3: [Damages(damage=CORE_HORSEMAN_ATTACK_DAMAGE, recipient=Recipient.TARGET)]},
@@ -366,18 +408,25 @@ def create_core_mage(x: int, y: int, team: TeamType) -> int:
                     target_strategy=targetting_strategy,
                     trigger_conditions=[
                         HasTarget(
-                            requires_living_target=True,
-                            maximum_distance=CORE_MAGE_ATTACK_RANGE,
-                            y_bias=2,
-                            maximum_angle=None,
+                            unit_condition=All([
+                                Alive(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=CORE_MAGE_ATTACK_RANGE,
+                                    y_bias=2
+                                )
+                            ])
                         )
                     ],
                     persistent_conditions=[
                         HasTarget(
-                            requires_living_target=False,
-                            maximum_distance=CORE_MAGE_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
-                            y_bias=2,
-                            maximum_angle=None,
+                            unit_condition=All([
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=CORE_MAGE_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
+                                    y_bias=2
+                                )
+                            ])
                         )
                     ],
                     effects={
@@ -452,18 +501,33 @@ def create_core_swordsman(x: int, y: int, team: TeamType) -> int:
                     target_strategy=targetting_strategy,
                     trigger_conditions=[
                         HasTarget(
-                            requires_living_target=True,
-                            maximum_distance=CORE_SWORDSMAN_ATTACK_RANGE,
-                            y_bias=2,
-                            maximum_angle=math.pi/12,
+                            unit_condition=All([
+                                Alive(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=CORE_SWORDSMAN_ATTACK_RANGE,
+                                    y_bias=2
+                                ),
+                                MaximumAngleFromEntity(
+                                    entity=entity,
+                                    maximum_angle=math.pi/12
+                                )
+                            ])
                         )
                     ],
                     persistent_conditions=[
                         HasTarget(
-                            requires_living_target=False,
-                            maximum_distance=CORE_SWORDSMAN_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
-                            y_bias=2,
-                            maximum_angle=math.pi/12,
+                            unit_condition=All([
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=CORE_SWORDSMAN_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
+                                    y_bias=2
+                                ),
+                                MaximumAngleFromEntity(
+                                    entity=entity,
+                                    maximum_angle=math.pi/12
+                                )
+                            ])
                         )
                     ],
                     effects={2: [Damages(damage=CORE_SWORDSMAN_ATTACK_DAMAGE, recipient=Recipient.TARGET)]},
@@ -511,18 +575,33 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
                     target_strategy=targetting_strategy,
                     trigger_conditions=[
                         HasTarget(
-                            requires_living_target=True,
-                            maximum_distance=CRUSADER_BLACK_KNIGHT_ATTACK_RANGE,
-                            y_bias=2,
-                            maximum_angle=math.pi/12,
+                            unit_condition=All([
+                                Alive(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=CRUSADER_BLACK_KNIGHT_ATTACK_RANGE,
+                                    y_bias=2
+                                ),
+                                MaximumAngleFromEntity(
+                                    entity=entity,
+                                    maximum_angle=math.pi/12
+                                )
+                            ])
                         )
                     ],
                     persistent_conditions=[
                         HasTarget(
-                            requires_living_target=False,
-                            maximum_distance=CRUSADER_BLACK_KNIGHT_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
-                            y_bias=2,
-                            maximum_angle=math.pi/12,
+                            unit_condition=All([
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=CRUSADER_BLACK_KNIGHT_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
+                                    y_bias=2
+                                ),
+                                MaximumAngleFromEntity(
+                                    entity=entity,
+                                    maximum_angle=math.pi/12
+                                )
+                            ])
                         )
                     ],
                     effects={2: [Damages(damage=CRUSADER_BLACK_KNIGHT_ATTACK_DAMAGE, recipient=Recipient.TARGET)]},
@@ -605,18 +684,26 @@ def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
                     ),
                     trigger_conditions=[
                         HasTarget(
-                            requires_living_target=True,
-                            maximum_distance=CRUSADER_CLERIC_ATTACK_RANGE,
-                            y_bias=2,
-                            maximum_angle=None,
+                            unit_condition=All([
+                                Alive(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=CRUSADER_CLERIC_ATTACK_RANGE,
+                                    y_bias=2
+                                )
+                            ])
                         )
                     ],
                     persistent_conditions=[
                         HasTarget(
-                            requires_living_target=True,
-                            maximum_distance=CRUSADER_CLERIC_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
-                            y_bias=2,
-                            maximum_angle=None,
+                            unit_condition=All([
+                                Alive(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=CRUSADER_CLERIC_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
+                                    y_bias=2
+                                )
+                            ])
                         )
                     ],
                     effects={
@@ -674,18 +761,33 @@ def create_crusader_commander(x: int, y: int, team: TeamType) -> int:
                     target_strategy=targetting_strategy,
                     trigger_conditions=[
                         HasTarget(
-                            requires_living_target=True,
-                            maximum_distance=CRUSADER_COMMANDER_ATTACK_RANGE,
-                            y_bias=2,
-                            maximum_angle=math.pi/12,
+                            unit_condition=All([
+                                Alive(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=CRUSADER_COMMANDER_ATTACK_RANGE,
+                                    y_bias=2
+                                ),
+                                MaximumAngleFromEntity(
+                                    entity=entity,
+                                    maximum_angle=math.pi/12
+                                )
+                            ])
                         )
                     ],
                     persistent_conditions=[
                         HasTarget(
-                            requires_living_target=False,
-                            maximum_distance=CRUSADER_COMMANDER_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
-                            y_bias=2,
-                            maximum_angle=math.pi/12,
+                            unit_condition=All([
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=CRUSADER_COMMANDER_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
+                                    y_bias=2
+                                ),
+                                MaximumAngleFromEntity(
+                                    entity=entity,
+                                    maximum_angle=math.pi/12
+                                )
+                            ])
                         )
                     ],
                     effects={4: [Damages(damage=CRUSADER_COMMANDER_ATTACK_DAMAGE, recipient=Recipient.TARGET)]},
@@ -734,18 +836,33 @@ def create_crusader_defender(x: int, y: int, team: TeamType) -> int:
                     target_strategy=targetting_strategy,
                     trigger_conditions=[
                         HasTarget(
-                            requires_living_target=True,
-                            maximum_distance=CRUSADER_DEFENDER_ATTACK_RANGE,
-                            y_bias=2,
-                            maximum_angle=math.pi/12,
+                            unit_condition=All([
+                                Alive(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=CRUSADER_DEFENDER_ATTACK_RANGE,
+                                    y_bias=2
+                                ),
+                                MaximumAngleFromEntity(
+                                    entity=entity,
+                                    maximum_angle=math.pi/12
+                                )
+                            ])
                         )
                     ],
                     persistent_conditions=[
                         HasTarget(
-                            requires_living_target=False,
-                            maximum_distance=CRUSADER_DEFENDER_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
-                            y_bias=2,
-                            maximum_angle=math.pi/12,
+                            unit_condition=All([
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=CRUSADER_DEFENDER_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
+                                    y_bias=2
+                                ),
+                                MaximumAngleFromEntity(
+                                    entity=entity,
+                                    maximum_angle=math.pi/12
+                                )
+                            ])
                         )
                     ],
                     effects={4: [Damages(damage=CRUSADER_DEFENDER_ATTACK_DAMAGE, recipient=Recipient.TARGET)]},
@@ -794,18 +911,33 @@ def create_crusader_gold_knight(x: int, y: int, team: TeamType) -> int:
                     target_strategy=targetting_strategy,
                     trigger_conditions=[
                         HasTarget(
-                            requires_living_target=True,
-                            maximum_distance=CRUSADER_GOLD_KNIGHT_ATTACK_RANGE,
-                            y_bias=2,
-                            maximum_angle=math.pi/12,
+                            unit_condition=All([
+                                Alive(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=CRUSADER_GOLD_KNIGHT_ATTACK_RANGE,
+                                    y_bias=2
+                                ),
+                                MaximumAngleFromEntity(
+                                    entity=entity,
+                                    maximum_angle=math.pi/12
+                                )
+                            ])
                         )
                     ],
                     persistent_conditions=[
                         HasTarget(
-                            requires_living_target=False,
-                            maximum_distance=CRUSADER_GOLD_KNIGHT_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
-                            y_bias=2,
-                            maximum_angle=math.pi/12,
+                            unit_condition=All([
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=CRUSADER_GOLD_KNIGHT_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
+                                    y_bias=2
+                                ),
+                                MaximumAngleFromEntity(
+                                    entity=entity,
+                                    maximum_angle=math.pi/12
+                                )
+                            ])
                         )
                     ],
                     effects={4: [Damages(damage=CRUSADER_GOLD_KNIGHT_ATTACK_DAMAGE, recipient=Recipient.TARGET)]},
@@ -873,18 +1005,26 @@ def create_crusader_longbowman(x: int, y: int, team: TeamType) -> int:
                     target_strategy=targetting_strategy,
                     trigger_conditions=[
                         HasTarget(
-                            requires_living_target=True,
-                            maximum_distance=CRUSADER_LONGBOWMAN_ATTACK_RANGE,
-                            y_bias=2,
-                            maximum_angle=None,
+                            unit_condition=All([
+                                Alive(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=CRUSADER_LONGBOWMAN_ATTACK_RANGE,
+                                    y_bias=2
+                                )
+                            ])
                         )
                     ],
                     persistent_conditions=[
                         HasTarget(
-                            requires_living_target=True,
-                            maximum_distance=CRUSADER_LONGBOWMAN_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
-                            y_bias=2,
-                            maximum_angle=None,
+                            unit_condition=All([
+                                Alive(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=CRUSADER_LONGBOWMAN_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
+                                    y_bias=2
+                                )
+                            ])
                         )
                     ],
                     effects={6: [
@@ -955,18 +1095,33 @@ def create_crusader_paladin(x: int, y: int, team: TeamType) -> int:
                     target_strategy=targetting_strategy,
                     trigger_conditions=[
                         HasTarget(
-                            requires_living_target=True,
-                            maximum_distance=CRUSADER_PALADIN_ATTACK_RANGE,
-                            y_bias=2,
-                            maximum_angle=math.pi/12,
+                            unit_condition=All([
+                                Alive(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=CRUSADER_PALADIN_ATTACK_RANGE,
+                                    y_bias=2
+                                ),
+                                MaximumAngleFromEntity(
+                                    entity=entity,
+                                    maximum_angle=math.pi/12
+                                )
+                            ])
                         )
                     ],
                     persistent_conditions=[
                         HasTarget(
-                            requires_living_target=False,
-                            maximum_distance=CRUSADER_PALADIN_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
-                            y_bias=2,
-                            maximum_angle=math.pi/12,
+                            unit_condition=All([
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=CRUSADER_PALADIN_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
+                                    y_bias=2
+                                ),
+                                MaximumAngleFromEntity(
+                                    entity=entity,
+                                    maximum_angle=math.pi/12
+                                )
+                            ])
                         )
                     ],
                     effects={3: [Damages(damage=CRUSADER_PALADIN_ATTACK_DAMAGE, recipient=Recipient.TARGET)]},
@@ -1018,18 +1173,33 @@ def create_crusader_pikeman(x: int, y: int, team: TeamType) -> int:
                     target_strategy=targetting_strategy,
                     trigger_conditions=[
                         HasTarget(
-                            requires_living_target=True,
-                            maximum_distance=CRUSADER_PIKEMAN_ATTACK_RANGE,
-                            y_bias=2,
-                            maximum_angle=math.pi/16,
+                            unit_condition=All([
+                                Alive(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=CRUSADER_PIKEMAN_ATTACK_RANGE,
+                                    y_bias=2
+                                ),
+                                MaximumAngleFromEntity(
+                                    entity=entity,
+                                    maximum_angle=math.pi/16
+                                )
+                            ])
                         )
                     ],
                     persistent_conditions=[
                         HasTarget(
-                            requires_living_target=False,
-                            maximum_distance=CRUSADER_PIKEMAN_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
-                            y_bias=2,
-                            maximum_angle=math.pi/12,
+                            unit_condition=All([
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=CRUSADER_PIKEMAN_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
+                                    y_bias=2
+                                ),
+                                MaximumAngleFromEntity(
+                                    entity=entity,
+                                    maximum_angle=math.pi/12
+                                )
+                            ])
                         )
                     ],
                     effects={3: [Damages(damage=CRUSADER_PIKEMAN_ATTACK_DAMAGE, recipient=Recipient.TARGET)]},
@@ -1080,10 +1250,18 @@ def create_crusader_red_knight(x: int, y: int, team: TeamType) -> int:
                     target_strategy=targetting_strategy,
                     trigger_conditions=[
                         HasTarget(
-                            requires_living_target=True,
-                            maximum_distance=CRUSADER_RED_KNIGHT_SKILL_RANGE,
-                            y_bias=2,
-                            maximum_angle=math.pi/3,
+                            unit_condition=All([
+                                Alive(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=CRUSADER_RED_KNIGHT_SKILL_RANGE,
+                                    y_bias=2
+                                ),
+                                MaximumAngleFromEntity(
+                                    entity=entity,
+                                    maximum_angle=math.pi/3
+                                )
+                            ])
                         ),
                         Cooldown(duration=CRUSADER_RED_KNIGHT_SKILL_COOLDOWN)
                     ],
@@ -1114,18 +1292,25 @@ def create_crusader_red_knight(x: int, y: int, team: TeamType) -> int:
                     target_strategy=targetting_strategy,
                     trigger_conditions=[
                         HasTarget(
-                            requires_living_target=True,
-                            maximum_distance=CRUSADER_RED_KNIGHT_ATTACK_RANGE,
-                            y_bias=2,
-                            maximum_angle=None,
+                            unit_condition=All([
+                                Alive(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=CRUSADER_RED_KNIGHT_ATTACK_RANGE,
+                                    y_bias=2
+                                )
+                            ])
                         )
                     ],
                     persistent_conditions=[
                         HasTarget(
-                            requires_living_target=False,
-                            maximum_distance=CRUSADER_RED_KNIGHT_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
-                            y_bias=2,
-                            maximum_angle=None,
+                            unit_condition=All([
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=CRUSADER_RED_KNIGHT_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
+                                    y_bias=2
+                                )
+                            ])
                         )
                     ],
                     effects={
@@ -1151,7 +1336,6 @@ def create_crusader_red_knight(x: int, y: int, team: TeamType) -> int:
         )
     )
     return entity
-
 
 def create_werebear(x: int, y: int, team: TeamType) -> int:
     """Create a werebear entity with all necessary components."""
@@ -1181,18 +1365,33 @@ def create_werebear(x: int, y: int, team: TeamType) -> int:
                     target_strategy=targetting_strategy,
                     trigger_conditions=[
                         HasTarget(
-                            requires_living_target=True,
-                            maximum_distance=WEREBEAR_ATTACK_RANGE,
-                            y_bias=2,
-                            maximum_angle=math.pi/12,
+                            unit_condition=All([
+                                Alive(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=WEREBEAR_ATTACK_RANGE,
+                                    y_bias=2
+                                ),
+                                MaximumAngleFromEntity(
+                                    entity=entity,
+                                    maximum_angle=math.pi/12
+                                )
+                            ])
                         )
                     ],
                     persistent_conditions=[
                         HasTarget(
-                            requires_living_target=False,
-                            maximum_distance=WEREBEAR_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
-                            y_bias=2,
-                            maximum_angle=math.pi/12,
+                            unit_condition=All([
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=WEREBEAR_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
+                                    y_bias=2
+                                ),
+                                MaximumAngleFromEntity(
+                                    entity=entity,
+                                    maximum_angle=math.pi/12
+                                )
+                            ])
                         )
                     ],
                     effects={5: [Damages(damage=WEREBEAR_ATTACK_DAMAGE, recipient=Recipient.TARGET)]},

@@ -20,23 +20,10 @@ class Cooldown(Condition):
 
 @dataclass
 class HasTarget(Condition):
-    """Ability requires a target."""
+    """Ability requires a target that satisfies the given condition."""
 
-    requires_living_target: bool
-    """Whether the ability requires a living target.
-    
-    The purpose of this is to allow abilities which are currently locked onto a
-    dead target to not be immediately interrupted, and instead finish the animation.
-    """
-
-    maximum_distance: Optional[float]
-    """The maximum distance to the target."""
-
-    y_bias: Optional[float]
-    """The y-bias for the distance check to the target."""
-
-    maximum_angle: Optional[float]
-    """The maximum angle to the target."""
+    unit_condition: UnitCondition
+    """The condition that the target must satisfy."""
 
 @dataclass
 class SatisfiesUnitCondition(Condition):
