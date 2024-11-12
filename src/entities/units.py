@@ -677,7 +677,7 @@ def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
                 Ability(
                     target_strategy=TargetStrategy(
                         rankings=[
-                            ByMissingHealth(ascending=True),
+                            ByMissingHealth(ascending=False),
                             ByDistance(entity=entity, y_bias=2, ascending=True),
                         ],
                         unit_condition=All([OnTeam(team=team), Alive(), HealthBelowPercent(percent=0.9)])

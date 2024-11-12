@@ -1,11 +1,9 @@
 """Processor responsible for abilities."""
 
-import math
 import time
 import esper
 
 from components.ability import Abilities, Ability, Condition, Cooldown, HasTarget, SatisfiesUnitCondition
-from components.position import Position
 from components.unit_state import State, UnitState
 from events import ABILITY_INTERRUPTED, ABILITY_TRIGGERED, AbilityInterruptedEvent, AbilityTriggeredEvent, emit_event
 
@@ -14,7 +12,7 @@ class AbilityProcessor(esper.Processor):
 
     def process(self, dt: float):
         for ent, (unit_state, abilities) in esper.get_components(UnitState, Abilities):
-            if unit_state.state == State.PURSUING:
+            if unit_state.state in [State.IDLE, State.PURSUING]:
                 for i, ability in enumerate(abilities.abilities):
                     ability.target = ability.target_strategy.target
                     if not all(check_condition(ent, condition, ability) for condition in ability.trigger_conditions):
