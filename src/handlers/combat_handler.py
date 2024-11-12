@@ -9,8 +9,6 @@ from components.ability import Abilities
 from components.aoe import AoE
 from components.aura import Aura
 from components.projectile import Projectile
-from components.unit_state import UnitState
-from components.team import Team
 from events import (
     AbilityActivatedEvent, ABILITY_ACTIVATED,
     AoEHitEvent, AOE_HIT,
@@ -56,17 +54,9 @@ class CombatHandler:
         aoe = esper.component_for_entity(aoe_ent, AoE)
         if target_ent in aoe.hit_entities:
             return
-        aoe.hit_entities.append(target_ent)
-        aoe_team = esper.component_for_entity(aoe_ent, Team)
-        target_team = esper.component_for_entity(target_ent, Team)
-        is_owner = target_ent == aoe.owner
-        is_ally = aoe_team.type == target_team.type and not is_owner
-        is_enemy = aoe_team.type != target_team.type
-        if (
-            aoe.hits_allies and is_ally or
-            aoe.hits_enemies and is_enemy or
-            aoe.hits_owner and is_owner
-        ):
+        
+        if aoe.unit_condition.check(target_ent):
+            aoe.hit_entities.append(target_ent)
             for effect in aoe.effects:
                 effect.apply(
                     owner=aoe.owner,
@@ -78,14 +68,8 @@ class CombatHandler:
         owner_ent = event.entity
         target_ent = event.target
         aura = esper.component_for_entity(owner_ent, Aura)
-        aura_team = esper.component_for_entity(owner_ent, Team)
-        target_team = esper.component_for_entity(target_ent, Team)
-        ally = aura_team.type == target_team.type
-        if (
-            aura.hits_allies and ally or
-            aura.hits_enemies and not ally or
-            aura.hits_owner and target_ent == aura.owner
-        ):
+        
+        if aura.unit_condition.check(target_ent):
             for effect in aura.effects:
                 effect.apply(
                     owner=owner_ent,

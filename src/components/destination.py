@@ -3,7 +3,7 @@ This module contains the Destination component, which represents a destination s
 """
 
 from dataclasses import dataclass
-from targetting_strategy import TargetStrategy
+from target_strategy import TargetStrategy
 
 @dataclass
 class Destination:

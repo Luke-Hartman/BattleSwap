@@ -19,6 +19,20 @@ class UnitCondition(ABC):
         """Check if the condition is met for the given entity."""
 
 @dataclass
+class Always(UnitCondition):
+    """The condition that is always met."""
+
+    def check(self, entity: int) -> bool:
+        return True
+
+@dataclass
+class Never(UnitCondition):
+    """The condition that is never met."""
+
+    def check(self, entity: int) -> bool:
+        return False
+
+@dataclass
 class Not(UnitCondition):
     """The negation of the given condition."""
 

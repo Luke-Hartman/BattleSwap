@@ -16,7 +16,7 @@ from components.position import Position
 from components.animation import AnimationState, AnimationType
 from components.sprite_sheet import SpriteSheet
 from components.status_effect import CrusaderBlackKnightDebuffed, CrusaderGoldKnightEmpowered, Ignited, StatusEffects
-from targetting_strategy import FindNearest, FindMostDamaged, FindStrongest, FindNothing
+from target_strategy import ByDistance, ByMaxHealth, ByMissingHealth, Ranking, TargetStrategy
 from components.destination import Destination
 from components.team import Team, TeamType
 from components.unit_state import UnitState
@@ -26,7 +26,7 @@ from components.velocity import Velocity
 from components.health import Health
 from components.orientation import Orientation, FacingDirection
 from effects import AppliesStatusEffect, CreatesAoE, CreatesAttachedVisual, CreatesProjectile, Damages, Heals, Recipient
-from unit_condition import All, Alive, HealthBelowPercent, MinimumDistanceFromEntity, NotEntity, OnTeam
+from unit_condition import All, Alive, HealthBelowPercent, MinimumDistanceFromEntity, Never, NotEntity, OnTeam
 from visuals import Visual
 
 unit_theme_ids: Dict[UnitType, str] = {
@@ -153,9 +153,10 @@ def create_core_archer(x: int, y: int, team: TeamType) -> int:
         movement_speed=CORE_ARCHER_MOVEMENT_SPEED,
         health=CORE_ARCHER_HP,
     )
-    targetting_strategy = FindNearest(
-        targeting_range=None,
-        y_bias=2,
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=2, ascending=True),
+        ],
         unit_condition=All([OnTeam(team=team.other()), Alive()])
     )
     esper.add_component(
@@ -221,9 +222,10 @@ def create_core_duelist(x: int, y: int, team: TeamType) -> int:
         movement_speed=CORE_DUELIST_MOVEMENT_SPEED,
         health=CORE_DUELIST_HP,
     )
-    targetting_strategy = FindNearest(
-        targeting_range=None,
-        y_bias=2,
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=2, ascending=True),
+        ],
         unit_condition=All([OnTeam(team=team.other()), Alive()])
     )
     esper.add_component(
@@ -287,9 +289,10 @@ def create_core_horseman(x: int, y: int, team: TeamType) -> int:
         movement_speed=CORE_HORSEMAN_MOVEMENT_SPEED,
         health=CORE_HORSEMAN_HP,
     )
-    targetting_strategy = FindNearest(
-        targeting_range=None,
-        y_bias=2,
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=2, ascending=True),
+        ],
         unit_condition=All([OnTeam(team=team.other()), Alive()])
     )
     esper.add_component(
@@ -345,9 +348,10 @@ def create_core_mage(x: int, y: int, team: TeamType) -> int:
         movement_speed=CORE_MAGE_MOVEMENT_SPEED,
         health=CORE_MAGE_HP,
     )
-    targetting_strategy = FindNearest(
-        targeting_range=None,
-        y_bias=2,
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=2, ascending=True),
+        ],
         unit_condition=All([OnTeam(team=team.other()), Alive()])
     )
     esper.add_component(
@@ -395,9 +399,7 @@ def create_core_mage(x: int, y: int, team: TeamType) -> int:
                                         visual=Visual.Explosion,
                                         duration=CORE_MAGE_FIREBALL_AOE_DURATION,
                                         scale=CORE_MAGE_FIREBALL_AOE_SCALE,
-                                        hits_owner=True,
-                                        hits_allies=True,
-                                        hits_enemies=True,
+                                        unit_condition=Alive(),
                                     )
                                 ],
                                 visual=Visual.Fireball,
@@ -432,9 +434,10 @@ def create_core_swordsman(x: int, y: int, team: TeamType) -> int:
         movement_speed=CORE_SWORDSMAN_MOVEMENT_SPEED,
         health=CORE_SWORDSMAN_HP,
     )
-    targetting_strategy = FindNearest(
-        targeting_range=None,
-        y_bias=2,
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=2, ascending=True),
+        ],
         unit_condition=All([OnTeam(team=team.other()), Alive()])
     )
     esper.add_component(
@@ -490,9 +493,10 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
         movement_speed=CRUSADER_BLACK_KNIGHT_MOVEMENT_SPEED,
         health=CRUSADER_BLACK_KNIGHT_HP,
     )
-    targetting_strategy = FindNearest(
-        targeting_range=None,
-        y_bias=2,
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=2, ascending=True),
+        ],
         unit_condition=All([OnTeam(team=team.other()), Alive()])
     )
     esper.add_component(
@@ -539,9 +543,10 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
             ],
             color=(150, 0, 0),
             period=DEFAULT_AURA_PERIOD,
-            hits_owner=False,
-            hits_allies=False,
-            hits_enemies=True,
+            unit_condition=All([
+                OnTeam(team=team.other()),
+                Alive()
+            ])
         )
     )
     esper.add_component(entity, SpriteSheet(
@@ -569,9 +574,11 @@ def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
     esper.add_component(
         entity,
         Destination(
-            target_strategy=FindStrongest(
-                targeting_range=None,
-                y_bias=2,
+            target_strategy=TargetStrategy(
+                rankings=[
+                    ByMaxHealth(ascending=False),
+                    ByDistance(entity=entity, y_bias=2, ascending=True),
+                ],
                 unit_condition=All(
                     [
                         OnTeam(team=team),
@@ -589,9 +596,11 @@ def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
         Abilities(
             abilities=[
                 Ability(
-                    target_strategy=FindMostDamaged(
-                        targeting_range=CRUSADER_CLERIC_ATTACK_RANGE,
-                        y_bias=2,
+                    target_strategy=TargetStrategy(
+                        rankings=[
+                            ByMissingHealth(ascending=True),
+                            ByDistance(entity=entity, y_bias=2, ascending=True),
+                        ],
                         unit_condition=All([OnTeam(team=team), Alive(), HealthBelowPercent(percent=0.9)])
                     ),
                     trigger_conditions=[
@@ -647,9 +656,10 @@ def create_crusader_commander(x: int, y: int, team: TeamType) -> int:
         movement_speed=CRUSADER_COMMANDER_MOVEMENT_SPEED,
         health=CRUSADER_COMMANDER_HP,
     )
-    targetting_strategy = FindNearest(
-        targeting_range=None,
-        y_bias=2,
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=2, ascending=True),
+        ],
         unit_condition=All([OnTeam(team=team.other()), Alive()])
     )
     esper.add_component(
@@ -706,9 +716,10 @@ def create_crusader_defender(x: int, y: int, team: TeamType) -> int:
         movement_speed=CRUSADER_DEFENDER_MOVEMENT_SPEED,
         health=CRUSADER_DEFENDER_HP,
     )
-    targetting_strategy = FindNearest(
-        targeting_range=None,
-        y_bias=2,
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=2, ascending=True),
+        ],
         unit_condition=All([OnTeam(team=team.other()), Alive()])
     )
     esper.add_component(
@@ -765,9 +776,10 @@ def create_crusader_gold_knight(x: int, y: int, team: TeamType) -> int:
         movement_speed=CRUSADER_GOLD_KNIGHT_MOVEMENT_SPEED,
         health=CRUSADER_GOLD_KNIGHT_HP,
     )
-    targetting_strategy = FindNearest(
-        targeting_range=None,
-        y_bias=2,
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=2, ascending=True),
+        ],
         unit_condition=All([OnTeam(team=team.other()), Alive()])
     )
     esper.add_component(
@@ -813,9 +825,11 @@ def create_crusader_gold_knight(x: int, y: int, team: TeamType) -> int:
                 )
             ],
             period=DEFAULT_AURA_PERIOD,
-            hits_owner=False,
-            hits_allies=True,
-            hits_enemies=False,
+            unit_condition=All([
+                NotEntity(entity=entity),
+                OnTeam(team=team),
+                Alive()
+            ]),
             color=(255, 215, 0)
         )
     )
@@ -841,9 +855,10 @@ def create_crusader_longbowman(x: int, y: int, team: TeamType) -> int:
         movement_speed=CRUSADER_LONGBOWMAN_MOVEMENT_SPEED,
         health=CRUSADER_LONGBOWMAN_HP,
     )
-    targetting_strategy = FindNearest(
-        targeting_range=None,
-        y_bias=2,
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=2, ascending=True),
+        ],
         unit_condition=All([OnTeam(team=team.other()), Alive()])
     )
     esper.add_component(
@@ -910,9 +925,10 @@ def create_crusader_paladin(x: int, y: int, team: TeamType) -> int:
         movement_speed=CRUSADER_PALADIN_MOVEMENT_SPEED,
         health=CRUSADER_PALADIN_HP,
     )
-    targetting_strategy = FindNearest(
-        targeting_range=None,
-        y_bias=2,
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=2, ascending=True),
+        ],
         unit_condition=All([OnTeam(team=team.other()), Alive()])
     )
     esper.add_component(
@@ -924,7 +940,10 @@ def create_crusader_paladin(x: int, y: int, team: TeamType) -> int:
         Abilities(
             abilities=[
                 Ability(
-                    target_strategy=FindNothing(),
+                    target_strategy=TargetStrategy(
+                        rankings=[ByDistance(entity=entity, y_bias=2, ascending=True)],
+                        unit_condition=Never(),
+                    ),
                     trigger_conditions=[
                         Cooldown(duration=CRUSADER_PALADIN_SKILL_COOLDOWN),
                         SatisfiesUnitCondition(unit_condition=HealthBelowPercent(percent=CRUSADER_PALADIN_SKILL_HEALTH_PERCENT_THRESHOLD))
@@ -981,9 +1000,10 @@ def create_crusader_pikeman(x: int, y: int, team: TeamType) -> int:
         movement_speed=CRUSADER_PIKEMAN_MOVEMENT_SPEED,
         health=CRUSADER_PIKEMAN_HP,
     )
-    targetting_strategy = FindNearest(
-        targeting_range=None,
-        y_bias=2,
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=2, ascending=True),
+        ],
         unit_condition=All([OnTeam(team=team.other()), Alive()])
     )
     esper.add_component(
@@ -1042,9 +1062,10 @@ def create_crusader_red_knight(x: int, y: int, team: TeamType) -> int:
         movement_speed=CRUSADER_RED_KNIGHT_MOVEMENT_SPEED,
         health=CRUSADER_RED_KNIGHT_HP,
     )
-    targetting_strategy = FindNearest(
-        targeting_range=None,
-        y_bias=2,
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=2, ascending=True),
+        ],
         unit_condition=All([OnTeam(team=team.other()), Alive()])
     )
     esper.add_component(
@@ -1082,9 +1103,10 @@ def create_crusader_red_knight(x: int, y: int, team: TeamType) -> int:
                             visual=Visual.CrusaderRedKnightFireSlash,
                             duration=CRUSADER_RED_KNIGHT_SKILL_AOE_DURATION,
                             scale=CRUSADER_RED_KNIGHT_SKILL_AOE_SCALE,
-                            hits_owner=False,
-                            hits_allies=True,
-                            hits_enemies=True,
+                            unit_condition=All([
+                                NotEntity(entity=entity),
+                                Alive()
+                            ])
                         )
                     ]},
                 ),
@@ -1141,9 +1163,10 @@ def create_werebear(x: int, y: int, team: TeamType) -> int:
         movement_speed=WEREBEAR_MOVEMENT_SPEED,
         health=WEREBEAR_HP,
     )
-    targetting_strategy = FindNearest(
-        targeting_range=None,
-        y_bias=2,
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=2, ascending=True),
+        ],
         unit_condition=All([OnTeam(team=team.other()), Alive()])
     )
     esper.add_component(

@@ -5,7 +5,6 @@ import time
 import esper
 
 from components.ability import Abilities, Ability, Condition, Cooldown, HasTarget, SatisfiesUnitCondition
-from components.health import Health
 from components.position import Position
 from components.unit_state import State, UnitState
 from events import ABILITY_INTERRUPTED, ABILITY_TRIGGERED, AbilityInterruptedEvent, AbilityTriggeredEvent, emit_event

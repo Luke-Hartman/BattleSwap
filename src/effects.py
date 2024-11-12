@@ -20,6 +20,7 @@ from components.team import Team
 from components.velocity import Velocity
 from events import KILLING_BLOW, KillingBlowEvent, emit_event
 from visuals import Visual, create_visual_spritesheet
+from unit_condition import UnitCondition
 
 
 class Recipient(Enum):
@@ -122,14 +123,8 @@ class CreatesAoE(Effect):
     visual: Visual
     """The visual of the AoE."""
 
-    hits_owner: bool
-    """Whether the AoE hits the owner."""
-
-    hits_allies: bool
-    """Whether the AoE hits allies."""
-
-    hits_enemies: bool
-    """Whether the AoE hits enemies."""
+    unit_condition: "UnitCondition"
+    """Condition that determines which units are affected by the AoE."""
 
     def apply(self, owner: Optional[int], parent: int, target: int) -> None:
         entity = esper.create_entity()
@@ -138,7 +133,11 @@ class CreatesAoE(Effect):
         orientation = esper.component_for_entity(parent, Orientation)
         esper.add_component(entity, Position(x=position.x, y=position.y))
         esper.add_component(entity, Team(type=team.type))
-        esper.add_component(entity, AoE(effects=self.effects, owner=owner, hits_owner=self.hits_owner, hits_allies=self.hits_allies, hits_enemies=self.hits_enemies))
+        esper.add_component(entity, AoE(
+            effects=self.effects,
+            owner=owner,
+            unit_condition=self.unit_condition
+        ))
         esper.add_component(entity, create_visual_spritesheet(
             visual=self.visual,
             scale=self.scale,

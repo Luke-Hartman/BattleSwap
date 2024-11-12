@@ -3,7 +3,7 @@
 from dataclasses import dataclass, field
 from typing import List, Optional
 
-from targetting_strategy import TargetStrategy
+from target_strategy import TargetStrategy
 from effects import Effect
 from unit_condition import UnitCondition
 

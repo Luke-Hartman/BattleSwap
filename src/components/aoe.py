@@ -1,4 +1,4 @@
-"""Compontent for area of effect abilities.
+"""Component for area of effect abilities.
 
 The primary difference between an AoE and an Aura, is than an AoE is an entity that
 affects other entities which collide with it, while an Aura is a continuous effect
@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from effects import Effect
+    from unit_condition import UnitCondition
 
 @dataclass
 class AoE:
@@ -19,11 +20,7 @@ class AoE:
     effects: List["Effect"]
     owner: Optional[int]
     """Owner is used to apply buffs/debuffs to AoE effects."""
-    hits_owner: bool
-    """Whether the AoE hits the owner."""
-    hits_allies: bool
-    """Whether the AoE hits allies."""
-    hits_enemies: bool
-    """Whether the AoE hits enemies."""
+    unit_condition: "UnitCondition"
+    """Condition that determines which units are affected by the AoE."""
     hit_entities: List[int] = field(default_factory=list)
     """Entities that have already been hit by the AoE."""
