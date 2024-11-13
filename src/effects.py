@@ -2,7 +2,7 @@ from abc import abstractmethod
 from dataclasses import dataclass
 from enum import Enum, auto
 import math
-from typing import List, Optional
+from typing import Callable, List, Optional, Tuple
 
 import esper
 
@@ -15,7 +15,7 @@ from components.health import Health
 from components.orientation import FacingDirection, Orientation
 from components.position import Position
 from components.projectile import Projectile
-from components.status_effect import CrusaderBlackKnightDebuffed, CrusaderGoldKnightEmpowered, StatusEffect, StatusEffects
+from components.status_effect import CrusaderBlackKnightDebuffed, CrusaderCommanderEmpowered, StatusEffect, StatusEffects
 from components.team import Team
 from components.velocity import Velocity
 from events import KILLING_BLOW, KillingBlowEvent, emit_event
@@ -65,7 +65,7 @@ class Damages(Effect):
         if owner and esper.entity_exists(owner):
             status_effects = esper.component_for_entity(owner, StatusEffects)
             for status_effect in status_effects.active_effects():
-                if isinstance(status_effect, CrusaderGoldKnightEmpowered) and not applied_gold_knight_empowered:
+                if isinstance(status_effect, CrusaderCommanderEmpowered) and not applied_gold_knight_empowered:
                     damage *= 1 + status_effect.damage_percentage
                     applied_gold_knight_empowered = True
                 elif isinstance(status_effect, CrusaderBlackKnightDebuffed) and not applied_black_knight_debuffed:
@@ -120,11 +120,17 @@ class CreatesAoE(Effect):
     scale: float
     """The scale of the AoE."""
 
+    unit_condition: "UnitCondition"
+    """Condition that determines which units are affected by the AoE."""
+
     visual: Visual
     """The visual of the AoE."""
 
-    unit_condition: "UnitCondition"
-    """Condition that determines which units are affected by the AoE."""
+    visual_frames: Optional[Tuple[int, int]] = None
+    """The frames of the visual of the AoE."""
+
+    on_create: Optional[Callable[[int], None]] = None
+    """Function to call when the AoE is created."""
 
     def apply(self, owner: Optional[int], parent: int, target: int) -> None:
         entity = esper.create_entity()
@@ -141,11 +147,14 @@ class CreatesAoE(Effect):
         esper.add_component(entity, create_visual_spritesheet(
             visual=self.visual,
             scale=self.scale,
-            duration=self.duration
+            duration=self.duration,
+            frames=self.visual_frames
         ))
         esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
         esper.add_component(entity, Expiration(time_left=self.duration))
         esper.add_component(entity, Orientation(facing=orientation.facing))
+        if self.on_create:
+            self.on_create(entity)
 
 
 @dataclass
@@ -173,6 +182,9 @@ class CreatesProjectile(Effect):
     projectile_offset_y: float
     """The y offset of the projectile from the parent's position, in pixels."""
 
+    on_create: Optional[Callable[[int], None]] = None
+    """Function to call when the projectile is created."""
+
     def apply(self, owner: Optional[int], parent: int, target: int) -> None:
         entity = esper.create_entity()
         parent_position = esper.component_for_entity(parent, Position)
@@ -199,6 +211,8 @@ class CreatesProjectile(Effect):
         esper.add_component(entity, Orientation(facing=FacingDirection.LEFT if dx < 0 else FacingDirection.RIGHT))
         esper.add_component(entity, create_visual_spritesheet(self.visual))
         esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
+        if self.on_create:
+            self.on_create(entity)
 
 
 @dataclass

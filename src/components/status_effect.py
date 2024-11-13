@@ -1,23 +1,22 @@
 """Status effect component."""
 
-from abc import ABC, abstractmethod
 import time
 from typing import Dict, List
 
-from CONSTANTS import CRUSADER_BLACK_KNIGHT_DEBUFFED_DAMAGE_PERCENTAGE, CRUSADER_GOLD_KNIGHT_EMPOWERED_DAMAGE_PERCENTAGE
+from CONSTANTS import CRUSADER_BLACK_KNIGHT_DEBUFFED_DAMAGE_PERCENTAGE, CRUSADER_COMMANDER_EMPOWERED_DAMAGE_PERCENTAGE
 
-class StatusEffect(ABC):
+class StatusEffect:
     """A status effect."""
 
     def __init__(self, duration: float):
         self.duration = duration
 
-class CrusaderGoldKnightEmpowered(StatusEffect):
+class CrusaderCommanderEmpowered(StatusEffect):
     """Status effect buffs damage."""
 
     def __init__(self, duration: float):
         super().__init__(duration)
-        self.damage_percentage = CRUSADER_GOLD_KNIGHT_EMPOWERED_DAMAGE_PERCENTAGE
+        self.damage_percentage = CRUSADER_COMMANDER_EMPOWERED_DAMAGE_PERCENTAGE
 
 class CrusaderBlackKnightDebuffed(StatusEffect):
     """Status effect debuffs damage."""
@@ -41,7 +40,7 @@ class StatusEffects:
     def __init__(self):
         self._status_by_type = {
             Ignited: [],
-            CrusaderGoldKnightEmpowered: [],
+            CrusaderCommanderEmpowered: [],
             CrusaderBlackKnightDebuffed: [],
         }
         self.application_time: Dict[StatusEffect, float] = {}
@@ -64,8 +63,8 @@ class StatusEffects:
         if self._status_by_type[Ignited]:
             strongest_ignited = max(self._status_by_type[Ignited], key=lambda e: e.dps)
             active_effects.append(strongest_ignited)
-        if self._status_by_type[CrusaderGoldKnightEmpowered]:
-            active_effects.append(self._status_by_type[CrusaderGoldKnightEmpowered][0])
+        if self._status_by_type[CrusaderCommanderEmpowered]:
+            active_effects.append(self._status_by_type[CrusaderCommanderEmpowered][0])
         if self._status_by_type[CrusaderBlackKnightDebuffed]:
             active_effects.append(self._status_by_type[CrusaderBlackKnightDebuffed][0])
         return active_effects

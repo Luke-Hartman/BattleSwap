@@ -4,7 +4,7 @@ For example, any visual which is simply a looping animation should be defined he
 """
 
 import os
-from typing import Optional
+from typing import Optional, Tuple
 import pygame
 from enum import Enum, auto
 
@@ -18,6 +18,7 @@ class Visual(Enum):
     Explosion = auto()
     Healing = auto()
     CrusaderRedKnightFireSlash = auto()
+    CrusaderGoldKnightAttack = auto()
 
 visual_sheets: dict[Visual, pygame.Surface] = {}
 
@@ -29,17 +30,20 @@ def load_visual_sheets():
         Visual.Explosion: os.path.join("assets", "effects", "explosiontip1_32x32.png"),
         Visual.Healing: os.path.join("assets", "units", "CrusaderCleric.png"),
         Visual.CrusaderRedKnightFireSlash: os.path.join("assets", "effects", "Knight-Attack03_Effect.png"),
+        Visual.CrusaderGoldKnightAttack: os.path.join("assets", "effects", "CrusaderGoldKnightAttackEffect.png"),
     }
     for visual, path in visual_paths.items():
         visual_sheets[visual] = pygame.image.load(path).convert_alpha()
 
-def create_visual_spritesheet(visual: Visual, duration: Optional[float] = None, scale: Optional[float] = None) -> SpriteSheet:
+def create_visual_spritesheet(visual: Visual, duration: Optional[float] = None, scale: Optional[float] = None, frames: Optional[Tuple[int, int]] = None) -> SpriteSheet:
     """Get the sprite sheet for a visual."""
     if visual == Visual.Arrow:
         if duration is None:
             duration = 1.0 # Doesn't matter for single frame
         if scale is None:
             scale = MINIFOLKS_SCALE
+        if frames is not None:
+            raise NotImplementedError("Arrow visual cannot specify frames")
         return SpriteSheet(
             surface=visual_sheets[visual],
             frame_width=16,
@@ -55,6 +59,8 @@ def create_visual_spritesheet(visual: Visual, duration: Optional[float] = None, 
             duration = 0.2 / GAME_SPEED
         if scale is None:
             scale = TINY_RPG_SCALE
+        if frames is not None:
+            raise NotImplementedError("Fireball visual cannot specify frames")
         return SpriteSheet(
             surface=visual_sheets[visual],
             frame_width=100,
@@ -70,6 +76,8 @@ def create_visual_spritesheet(visual: Visual, duration: Optional[float] = None, 
             duration = 1.0 / GAME_SPEED
         if scale is None:
             scale = TINY_RPG_SCALE
+        if frames is not None:
+            raise NotImplementedError("Healing visual cannot specify frames")
         return SpriteSheet(
             surface=visual_sheets[visual],
             frame_width=100,
@@ -85,6 +93,8 @@ def create_visual_spritesheet(visual: Visual, duration: Optional[float] = None, 
             duration = 0.2 / GAME_SPEED
         if scale is None:
             scale = TINY_RPG_SCALE
+        if frames is not None:
+            raise NotImplementedError("Explosion visual cannot specify frames")
         return SpriteSheet(
             surface=visual_sheets[visual],
             frame_width=32,
@@ -100,6 +110,8 @@ def create_visual_spritesheet(visual: Visual, duration: Optional[float] = None, 
             duration = 0.2 / GAME_SPEED
         if scale is None:
             scale = TINY_RPG_SCALE
+        if frames is not None:
+            raise NotImplementedError("CrusaderRedKnightFireSlash visual cannot specify frames")
         return SpriteSheet(
             surface=visual_sheets[visual],
             frame_width=100,
@@ -109,5 +121,23 @@ def create_visual_spritesheet(visual: Visual, duration: Optional[float] = None, 
             rows={AnimationType.IDLE: 0},
             animation_durations={AnimationType.IDLE: duration},
             sprite_center_offset=(0, 0),
+        )
+    elif visual == Visual.CrusaderGoldKnightAttack:
+        if duration is None:
+            duration = 0.2 / GAME_SPEED
+        if scale is None:
+            scale = TINY_RPG_SCALE
+        if frames is None:
+            frames = (0, 4)
+        return SpriteSheet(
+            surface=visual_sheets[visual],
+            frame_width=100,
+            frame_height=100,
+            scale=scale,
+            frames={AnimationType.IDLE: frames[1] - frames[0]},
+            rows={AnimationType.IDLE: 0},
+            animation_durations={AnimationType.IDLE: duration},
+            sprite_center_offset=(0, 0),
+            start_frames={AnimationType.IDLE: frames[0]}
         )
 

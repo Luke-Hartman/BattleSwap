@@ -15,8 +15,8 @@ from components.aura import Aura
 from components.position import Position
 from components.animation import AnimationState, AnimationType
 from components.sprite_sheet import SpriteSheet
-from components.status_effect import CrusaderBlackKnightDebuffed, CrusaderGoldKnightEmpowered, Ignited, StatusEffects
-from target_strategy import ByDistance, ByMaxHealth, ByMissingHealth, Ranking, TargetStrategy
+from components.status_effect import CrusaderBlackKnightDebuffed, CrusaderCommanderEmpowered, Ignited, StatusEffects
+from target_strategy import ByDistance, ByMaxHealth, ByMissingHealth, TargetStrategy
 from components.destination import Destination
 from components.team import Team, TeamType
 from components.unit_state import UnitState
@@ -609,7 +609,6 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
             ]
         )
     )
-    esper.add_component(entity, Armor(flat_reduction=CRUSADER_BLACK_KNIGHT_ARMOR_FLAT_REDUCTION, percent_reduction=CRUSADER_BLACK_KNIGHT_ARMOR_PERCENT_REDUCTION))
     esper.add_component(
         entity,
         Aura(
@@ -788,7 +787,25 @@ def create_crusader_commander(x: int, y: int, team: TeamType) -> int:
             ]
         )
     )
-    esper.add_component(entity, Armor(flat_reduction=CRUSADER_COMMANDER_ARMOR_FLAT_REDUCTION, percent_reduction=CRUSADER_COMMANDER_ARMOR_PERCENT_REDUCTION))
+    esper.add_component(
+        entity,
+        Aura(
+            radius=CRUSADER_COMMANDER_AURA_RADIUS,
+            effects=[
+                AppliesStatusEffect(
+                    status_effect=CrusaderCommanderEmpowered(duration=DEFAULT_AURA_PERIOD),
+                    recipient=Recipient.TARGET
+                )
+            ],
+            period=DEFAULT_AURA_PERIOD,
+            unit_condition=All([
+                NotEntity(entity=entity),
+                OnTeam(team=team),
+                Alive()
+            ]),
+            color=(255, 215, 0)
+        )
+    )
     esper.add_component(entity, SpriteSheet(
         surface=sprite_sheets[UnitType.CRUSADER_COMMANDER],
         frame_width=100,
@@ -913,49 +930,31 @@ def create_crusader_gold_knight(x: int, y: int, team: TeamType) -> int:
                                 ),
                                 MaximumAngleFromEntity(
                                     entity=entity,
-                                    maximum_angle=math.pi/12
+                                    maximum_angle=math.pi/4
                                 )
                             ])
                         )
                     ],
-                    persistent_conditions=[
-                        HasTarget(
-                            unit_condition=All([
-                                MaximumDistanceFromEntity(
-                                    entity=entity,
-                                    distance=CRUSADER_GOLD_KNIGHT_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
-                                    y_bias=2
-                                ),
-                                MaximumAngleFromEntity(
-                                    entity=entity,
-                                    maximum_angle=math.pi/12
-                                )
-                            ])
-                        )
-                    ],
-                    effects={4: [Damages(damage=CRUSADER_GOLD_KNIGHT_ATTACK_DAMAGE, recipient=Recipient.TARGET)]},
+                    persistent_conditions=[],
+                    effects={
+                        0: [
+                            CreatesAoE(
+                                effects=[
+                                    Damages(damage=CRUSADER_GOLD_KNIGHT_ATTACK_DAMAGE/4, recipient=Recipient.TARGET),
+                                    Heals(amount=CRUSADER_GOLD_KNIGHT_ATTACK_HEAL/4, recipient=Recipient.OWNER)
+                                ],
+                                duration=CRUSADER_GOLD_KNIGHT_ANIMATION_DURATIONS[AnimationType.ABILITY1],
+                                scale=TINY_RPG_SCALE,
+                                unit_condition=All([
+                                    OnTeam(team=team.other()),
+                                    Alive()
+                                ]),
+                                visual=Visual.CrusaderGoldKnightAttack,
+                            )
+                        ]
+                    },
                 )
             ]
-        )
-    )
-    esper.add_component(entity, Armor(flat_reduction=CRUSADER_GOLD_KNIGHT_ARMOR_FLAT_REDUCTION, percent_reduction=CRUSADER_GOLD_KNIGHT_ARMOR_PERCENT_REDUCTION))
-    esper.add_component(
-        entity,
-        Aura(
-            radius=CRUSADER_GOLD_KNIGHT_AURA_RADIUS,
-            effects=[
-                AppliesStatusEffect(
-                    status_effect=CrusaderGoldKnightEmpowered(duration=DEFAULT_AURA_PERIOD),
-                    recipient=Recipient.TARGET
-                )
-            ],
-            period=DEFAULT_AURA_PERIOD,
-            unit_condition=All([
-                NotEntity(entity=entity),
-                OnTeam(team=team),
-                Alive()
-            ]),
-            color=(255, 215, 0)
         )
     )
     esper.add_component(entity, SpriteSheet(
@@ -963,8 +962,8 @@ def create_crusader_gold_knight(x: int, y: int, team: TeamType) -> int:
         frame_width=100,
         frame_height=100,
         scale=TINY_RPG_SCALE,
-        frames={AnimationType.IDLE: 6, AnimationType.WALKING: 8, AnimationType.ABILITY1: 9, AnimationType.DYING: 4},
-        rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 2, AnimationType.DYING: 5},
+        frames={AnimationType.IDLE: 6, AnimationType.WALKING: 8, AnimationType.ABILITY1: 4, AnimationType.DYING: 4},
+        rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 6, AnimationType.DYING: 5},
         animation_durations=CRUSADER_GOLD_KNIGHT_ANIMATION_DURATIONS,
         sprite_center_offset=(0, 0),
     ))
@@ -1122,7 +1121,6 @@ def create_crusader_paladin(x: int, y: int, team: TeamType) -> int:
             ]
         )
     )
-    esper.add_component(entity, Armor(flat_reduction=CRUSADER_PALADIN_ARMOR_FLAT_REDUCTION, percent_reduction=CRUSADER_PALADIN_ARMOR_PERCENT_REDUCTION))
     esper.add_component(
         entity,
         SpriteSheet(
@@ -1314,7 +1312,6 @@ def create_crusader_red_knight(x: int, y: int, team: TeamType) -> int:
             ]
         )
     )
-    esper.add_component(entity, Armor(flat_reduction=CRUSADER_RED_KNIGHT_ARMOR_FLAT_REDUCTION, percent_reduction=CRUSADER_RED_KNIGHT_ARMOR_PERCENT_REDUCTION))
     esper.add_component(
         entity,
         SpriteSheet(
