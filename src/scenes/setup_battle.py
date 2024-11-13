@@ -69,15 +69,13 @@ class SetupBattleScene(Scene):
         for unit_type, position in self.battle.enemies:
             create_unit(position[0], position[1], unit_type, TeamType.TEAM2)
 
-        self.barracks = BarracksUI(self.manager, self.progress_manager.available_units(), interactive=True)
+        self.barracks = BarracksUI(self.manager, self.progress_manager.available_units(current_battle_id=battle_id), interactive=True)
         self.start_button = StartButton(self.manager)
         self.potential_solution = potential_solution
         if potential_solution is not None:
             for (unit_type, position) in potential_solution.unit_placements:
                 create_unit(position[0], position[1], unit_type, TeamType.TEAM1)
-            if battle_id not in self.progress_manager.solutions:
-                for unit_type, _ in potential_solution.unit_placements:
-                    self.barracks.remove_unit(unit_type)
+                self.barracks.remove_unit(unit_type)
 
         
         self.tip_box = TipBox(self.manager, self.battle)

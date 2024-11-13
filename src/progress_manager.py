@@ -1,7 +1,7 @@
 """Progress manager for the game."""
 
 from collections import defaultdict
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import battles
 from components.unit_type import UnitType
@@ -17,7 +17,7 @@ class ProgressManager:
     def __init__(self):
         self.solutions: Dict[str, Solution] = {}
 
-    def available_units(self) -> Dict[UnitType, int]:
+    def available_units(self, current_battle_id: Optional[str]) -> Dict[UnitType, int]:
         """Get the available units for the player."""
         units = defaultdict(int)
         units.update(battles.starting_units)
@@ -25,8 +25,9 @@ class ProgressManager:
             if battle.id in self.solutions:
                 for (unit_type, _) in battle.enemies:
                     units[unit_type] += 1
-                for (unit_type, _) in self.solutions[battle.id].unit_placements:
-                    units[unit_type] -= 1
+                if current_battle_id != battle.id:
+                    for (unit_type, _) in self.solutions[battle.id].unit_placements:
+                        units[unit_type] -= 1
         for unit_type, count in units.items():
             assert count >= 0
         return units
