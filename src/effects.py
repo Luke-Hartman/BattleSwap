@@ -16,8 +16,9 @@ from components.health import Health
 from components.orientation import FacingDirection, Orientation
 from components.position import Position
 from components.projectile import Projectile
-from components.status_effect import CrusaderBlackKnightDebuffed, CrusaderCommanderEmpowered, StatusEffect, StatusEffects
+from components.status_effect import CrusaderCommanderEmpowered, StatusEffect, StatusEffects
 from components.team import Team
+from components.unique import Unique
 from components.velocity import Velocity
 from events import KILLING_BLOW, KillingBlowEvent, emit_event
 from visuals import Visual, create_visual_spritesheet
@@ -65,17 +66,12 @@ class Damages(Effect):
         # Apply buffs/debuffs from the owner to the damage
         damage = self.damage
         applied_gold_knight_empowered = False
-        applied_black_knight_debuffed = False
         if owner and esper.entity_exists(owner):
-            print(esper.components_for_entity(owner))
             status_effects = esper.component_for_entity(owner, StatusEffects)
             for status_effect in status_effects.active_effects():
                 if isinstance(status_effect, CrusaderCommanderEmpowered) and not applied_gold_knight_empowered:
                     damage *= 1 + status_effect.damage_percentage
                     applied_gold_knight_empowered = True
-                elif isinstance(status_effect, CrusaderBlackKnightDebuffed) and not applied_black_knight_debuffed:
-                    damage *= 1 - status_effect.damage_percentage
-                    applied_black_knight_debuffed = True
 
         # Apply armor to the damage
         recipient_health = esper.component_for_entity(recipient, Health)
@@ -251,6 +247,9 @@ class CreatesTemporaryAura(Effect):
     remove_on_death: bool
     """Whether the aura should be removed when the recipient dies."""
 
+    unique_key: Optional[str]
+    """The key of the unique component to attach to the aura."""
+
     def apply(self, owner: Optional[int], parent: int, target: int) -> None:
         if self.recipient == Recipient.OWNER:
             recipient = owner
@@ -272,6 +271,8 @@ class CreatesTemporaryAura(Effect):
         esper.add_component(entity, Attached(entity=recipient, remove_on_death=self.remove_on_death))
         position = esper.component_for_entity(recipient, Position)
         esper.add_component(entity, Position(x=position.x, y=position.y))
+        if self.unique_key:
+            esper.add_component(entity, Unique(key=self.unique_key))
 
 
 @dataclass

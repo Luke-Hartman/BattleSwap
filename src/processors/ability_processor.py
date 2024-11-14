@@ -5,6 +5,7 @@ import esper
 
 from components.ability import Abilities, Ability, Condition, Cooldown, HasTarget, SatisfiesUnitCondition
 from components.unit_state import State, UnitState
+from components.velocity import Velocity
 from events import ABILITY_INTERRUPTED, ABILITY_TRIGGERED, AbilityInterruptedEvent, AbilityTriggeredEvent, emit_event
 
 class AbilityProcessor(esper.Processor):
@@ -31,6 +32,10 @@ class AbilityProcessor(esper.Processor):
             ability = abilities.abilities[index]
             if not all(check_condition(ent, condition, ability) for condition in ability.persistent_conditions):
                 emit_event(ABILITY_INTERRUPTED, event=AbilityInterruptedEvent(ent, index))
+        for ent, (unit_state, velocity) in esper.get_components(UnitState, Velocity):
+            if unit_state.state in [State.ABILITY1, State.ABILITY2, State.ABILITY3]:
+                velocity.x = 0
+                velocity.y = 0
 
 def check_condition(entity: int, condition: Condition, ability: Ability) -> bool:
     """Check if the condition is met for the given ability."""

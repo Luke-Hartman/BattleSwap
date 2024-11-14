@@ -63,6 +63,16 @@ class DestinationTargetLostEvent:
     entity: int
 
 @dataclass
+class FleeingStartedEvent:
+    """Event triggered when a unit starts fleeing."""
+    entity: int
+
+@dataclass
+class FleeingExpiredEvent:
+    """Event triggered when a fleeing unit's fleeing effect expires."""
+    entity: int
+
+@dataclass
 class KillingBlowEvent:
     """Event triggered when a unit's health reaches 0."""
     entity: int
@@ -88,6 +98,8 @@ AOE_HIT = 'aoe_hit'
 AURA_HIT = 'aura_hit'
 DESTINATION_TARGET_ACQUIRED = 'destination_target_acquired'
 DESTINATION_TARGET_LOST = 'destination_target_lost'
+FLEEING_STARTED = 'fleeing_started'
+FLEEING_EXPIRED = 'fleeing_expired'
 KILLING_BLOW = 'killing_blow'
 PROJECTILE_HIT = 'projectile_hit'
 STATE_CHANGED = 'state_changed'

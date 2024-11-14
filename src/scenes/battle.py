@@ -5,13 +5,17 @@ from processors.ability_processor import AbilityProcessor
 from processors.attached_processor import AttachedProcessor
 from processors.aura_processor import AuraProcessor
 from processors.collision_processor import CollisionProcessor
+from processors.dead_processor import DeadProcessor
 from processors.expiration_processor import ExpirationProcessor
+from processors.fleeing_processor import FleeingProcessor
+from processors.idle_processor import IdleProcessor
 from processors.rendering_processor import RenderingProcessor, draw_battlefield
 from processors.animation_processor import AnimationProcessor
 from processors.movement_processor import MovementProcessor
 from processors.pursuing_processor import PursuingProcessor
 from processors.status_effect_processor import StatusEffectProcessor
 from processors.targetting_processor import TargettingProcessor
+from processors.unique_processor import UniqueProcessor
 from scenes.scene import Scene
 from scenes.events import RETURN_TO_SELECT_BATTLE, SETUP_BATTLE_SCENE
 from camera import Camera
@@ -29,8 +33,12 @@ class BattleScene(Scene):
         self.manager = manager
         self.progress_manager = progress_manager
         self.potential_solution = potential_solution
+        unique_processor = UniqueProcessor()
         targetting_processor = TargettingProcessor()
+        idle_processor = IdleProcessor()
+        fleeing_processor = FleeingProcessor()
         ability_processor = AbilityProcessor()
+        dead_processor = DeadProcessor()
         aura_processor = AuraProcessor()
         movement_processor = MovementProcessor()
         pursuing_processor = PursuingProcessor()
@@ -38,10 +46,14 @@ class BattleScene(Scene):
         attached_processor = AttachedProcessor()
         expiration_processor = ExpirationProcessor()
         status_effect_processor = StatusEffectProcessor()
+        esper.add_processor(unique_processor)
         esper.add_processor(targetting_processor)
+        esper.add_processor(idle_processor)
+        esper.add_processor(fleeing_processor)
         esper.add_processor(ability_processor)
-        esper.add_processor(aura_processor)
         esper.add_processor(pursuing_processor)
+        esper.add_processor(dead_processor)
+        esper.add_processor(aura_processor)
         esper.add_processor(movement_processor)
         esper.add_processor(collision_processor)
         esper.add_processor(attached_processor)
@@ -113,12 +125,16 @@ class BattleScene(Scene):
     def _cleanup(self) -> None:
         """Clean up processors and entity database."""
         esper.clear_database()
+        esper.remove_processor(UniqueProcessor)
         esper.remove_processor(TargettingProcessor)
+        esper.remove_processor(IdleProcessor)
+        esper.remove_processor(FleeingProcessor)
         esper.remove_processor(AbilityProcessor)
+        esper.remove_processor(PursuingProcessor)
+        esper.remove_processor(DeadProcessor)
         esper.remove_processor(AuraProcessor)
         esper.remove_processor(RenderingProcessor)
         esper.remove_processor(AnimationProcessor)
-        esper.remove_processor(PursuingProcessor)
         esper.remove_processor(MovementProcessor)
         esper.remove_processor(CollisionProcessor)
         esper.remove_processor(AttachedProcessor)

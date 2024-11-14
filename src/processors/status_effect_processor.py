@@ -1,7 +1,7 @@
 """Processor for status effects."""
 
 from components.health import Health
-from components.status_effect import CrusaderBlackKnightDebuffed, CrusaderCommanderEmpowered, Ignited, StatusEffects
+from components.status_effect import CrusaderCommanderEmpowered, Fleeing, Ignited, StatusEffects
 import esper
 
 from events import KILLING_BLOW, KillingBlowEvent, emit_event
@@ -19,8 +19,10 @@ class StatusEffectProcessor(esper.Processor):
                     if health.current == 0:
                         emit_event(KILLING_BLOW, event=KillingBlowEvent(entity=ent))
                 elif isinstance(status_effect, CrusaderCommanderEmpowered):
+                    # Handled in the damage effect
                     pass
-                elif isinstance(status_effect, CrusaderBlackKnightDebuffed):
+                elif isinstance(status_effect, Fleeing):
+                    # Handled in the fleeing processor
                     pass
                 else:
                     raise ValueError(f"Unknown status effect: {status_effect}")

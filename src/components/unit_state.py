@@ -10,6 +10,7 @@ class State(Enum):
     """Enum representing different states a unit can be in."""
     IDLE = auto()
     PURSUING = auto()
+    FLEEING = auto()
     ABILITY1 = auto()
     ABILITY2 = auto()
     ABILITY3 = auto()

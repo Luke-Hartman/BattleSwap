@@ -34,11 +34,12 @@ class AnimationProcessor(esper.Processor):
             new_anim_type = {
                 State.IDLE: AnimationType.IDLE,
                 State.PURSUING: AnimationType.WALKING,
+                State.FLEEING: AnimationType.WALKING,
                 State.ABILITY1: AnimationType.ABILITY1,
                 State.ABILITY2: AnimationType.ABILITY2,
                 State.ABILITY3: AnimationType.ABILITY3,
                 State.DEAD: AnimationType.DYING
-            }.get(unit_state.state, AnimationType.IDLE)
+            }[unit_state.state]
 
             if anim_state.type != new_anim_type:
                 anim_state.type = new_anim_type

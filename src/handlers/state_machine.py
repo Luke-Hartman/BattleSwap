@@ -11,6 +11,8 @@ from events import (
     AbilityCompletedEvent, ABILITY_COMPLETED,
     DestinationTargetAcquiredEvent, DESTINATION_TARGET_ACQUIRED,
     DestinationTargetLostEvent, DESTINATION_TARGET_LOST,
+    FleeingStartedEvent, FLEEING_STARTED,
+    FleeingExpiredEvent, FLEEING_EXPIRED,
     KillingBlowEvent, KILLING_BLOW,
     StateChangedEvent, STATE_CHANGED,
     emit_event
@@ -27,6 +29,8 @@ class StateMachine:
         dispatcher.connect(self.handle_destination_target_acquired, signal=DESTINATION_TARGET_ACQUIRED)
         dispatcher.connect(self.handle_destination_target_lost, signal=DESTINATION_TARGET_LOST)
         dispatcher.connect(self.handle_killing_blow, signal=KILLING_BLOW)
+        dispatcher.connect(self.handle_fleeing_started, signal=FLEEING_STARTED)
+        dispatcher.connect(self.handle_fleeing_expired, signal=FLEEING_EXPIRED)
 
     def handle_ability_interrupted(self, event: AbilityInterruptedEvent):
         unit_state = esper.component_for_entity(event.entity, UnitState)
@@ -56,6 +60,16 @@ class StateMachine:
         emit_event(STATE_CHANGED, event=StateChangedEvent(event.entity, State.PURSUING))
 
     def handle_destination_target_lost(self, event: DestinationTargetLostEvent):
+        unit_state = esper.component_for_entity(event.entity, UnitState)
+        unit_state.state = State.IDLE
+        emit_event(STATE_CHANGED, event=StateChangedEvent(event.entity, State.IDLE))
+
+    def handle_fleeing_started(self, event: FleeingStartedEvent):
+        unit_state = esper.component_for_entity(event.entity, UnitState)
+        unit_state.state = State.FLEEING
+        emit_event(STATE_CHANGED, event=StateChangedEvent(event.entity, State.FLEEING))
+
+    def handle_fleeing_expired(self, event: FleeingExpiredEvent):
         unit_state = esper.component_for_entity(event.entity, UnitState)
         unit_state.state = State.IDLE
         emit_event(STATE_CHANGED, event=StateChangedEvent(event.entity, State.IDLE))

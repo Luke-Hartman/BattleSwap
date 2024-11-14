@@ -3,7 +3,7 @@
 import time
 from typing import Dict, List
 
-from CONSTANTS import CRUSADER_BLACK_KNIGHT_DEBUFFED_DAMAGE_PERCENTAGE, CRUSADER_COMMANDER_EMPOWERED_DAMAGE_PERCENTAGE
+from CONSTANTS import CRUSADER_COMMANDER_EMPOWERED_DAMAGE_PERCENTAGE
 
 class StatusEffect:
     """A status effect."""
@@ -18,19 +18,20 @@ class CrusaderCommanderEmpowered(StatusEffect):
         super().__init__(duration)
         self.damage_percentage = CRUSADER_COMMANDER_EMPOWERED_DAMAGE_PERCENTAGE
 
-class CrusaderBlackKnightDebuffed(StatusEffect):
-    """Status effect debuffs damage."""
-
-    def __init__(self, duration: float):
-        super().__init__(duration)
-        self.damage_percentage = CRUSADER_BLACK_KNIGHT_DEBUFFED_DAMAGE_PERCENTAGE
-
 class Ignited(StatusEffect):
     """Status effect that deals damage over time."""
 
     def __init__(self, dps: float, duration: float):
         super().__init__(duration)
         self.dps = dps
+
+class Fleeing(StatusEffect):
+    """Status effect that makes a unit flee from a specific entity."""
+
+    def __init__(self, duration: float, entity: int):
+        super().__init__(duration)
+        self.entity = entity
+        self.created_at = time.time()
 
 
 class StatusEffects:
@@ -41,7 +42,7 @@ class StatusEffects:
         self._status_by_type = {
             Ignited: [],
             CrusaderCommanderEmpowered: [],
-            CrusaderBlackKnightDebuffed: [],
+            Fleeing: [],
         }
         self.application_time: Dict[StatusEffect, float] = {}
 
@@ -65,8 +66,9 @@ class StatusEffects:
             active_effects.append(strongest_ignited)
         if self._status_by_type[CrusaderCommanderEmpowered]:
             active_effects.append(self._status_by_type[CrusaderCommanderEmpowered][0])
-        if self._status_by_type[CrusaderBlackKnightDebuffed]:
-            active_effects.append(self._status_by_type[CrusaderBlackKnightDebuffed][0])
+        if self._status_by_type[Fleeing]:
+            newest_fleeing = max(self._status_by_type[Fleeing], key=lambda e: e.created_at)
+            active_effects.append(newest_fleeing)
         return active_effects
 
 

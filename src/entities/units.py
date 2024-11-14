@@ -15,7 +15,8 @@ from components.aura import Aura
 from components.position import Position
 from components.animation import AnimationState, AnimationType
 from components.sprite_sheet import SpriteSheet
-from components.status_effect import CrusaderBlackKnightDebuffed, CrusaderCommanderEmpowered, Ignited, StatusEffects
+from components.status_effect import CrusaderCommanderEmpowered, Fleeing, Ignited, StatusEffects
+from components.unique import Unique
 from target_strategy import ByDistance, ByMaxHealth, ByMissingHealth, TargetStrategy
 from components.destination import Destination
 from components.team import Team, TeamType
@@ -557,6 +558,7 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
         movement_speed=CRUSADER_BLACK_KNIGHT_MOVEMENT_SPEED,
         health=CRUSADER_BLACK_KNIGHT_HP,
     )
+    esper.add_component(entity, Unique(key="BLACK KNIGHT"))
     targetting_strategy = TargetStrategy(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
@@ -611,18 +613,25 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
                             on_kill_effects=[
                                 CreatesTemporaryAura(
                                     radius=CRUSADER_BLACK_KNIGHT_AURA_RADIUS,
-                                    duration=5,
+                                    duration=CRUSADER_BLACK_KNIGHT_AURA_DURATION,
                                     effects=[
-                                        Damages(damage=100, recipient=Recipient.TARGET)
+                                        AppliesStatusEffect(
+                                            status_effect=Fleeing(
+                                                duration=CRUSADER_BLACK_KNIGHT_AURA_FLEE_DURATION,
+                                                entity=entity
+                                            ),
+                                            recipient=Recipient.TARGET
+                                        )
                                     ],
-                                    color=(255, 0, 0),
+                                    color=(52, 21, 57),
                                     period=DEFAULT_AURA_PERIOD,
                                     unit_condition=All([
                                         Alive(),
                                         NotEntity(entity=entity),
                                     ]),
                                     recipient=Recipient.OWNER,
-                                    remove_on_death=True
+                                    remove_on_death=True,
+                                    unique_key=f"BLACK KNIGHT {entity} AURA"
                                 )
                             ]
                         )
