@@ -29,7 +29,7 @@ from components.orientation import Orientation, FacingDirection
 from effects import AppliesStatusEffect, CreatesAoE, CreatesAttachedVisual, CreatesProjectile, CreatesTemporaryAura, Damages, Heals, Recipient
 from unit_condition import (
     All, Alive, HealthBelowPercent, MinimumDistanceFromEntity, Never, NotEntity, OnTeam,
-    MaximumDistanceFromEntity, MaximumAngleFromEntity
+    MaximumDistanceFromEntity
 )
 from visuals import Visual
 
@@ -257,12 +257,8 @@ def create_core_duelist(x: int, y: int, team: TeamType) -> int:
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=CORE_DUELIST_ATTACK_RANGE,
-                                    y_bias=2
+                                    y_bias=5
                                 ),
-                                MaximumAngleFromEntity(
-                                    entity=entity,
-                                    maximum_angle=math.pi/16
-                                )
                             ])
                         )
                     ],
@@ -273,12 +269,8 @@ def create_core_duelist(x: int, y: int, team: TeamType) -> int:
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=CORE_DUELIST_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
-                                    y_bias=2
+                                    y_bias=5
                                 ),
-                                MaximumAngleFromEntity(
-                                    entity=entity,
-                                    maximum_angle=math.pi/12
-                                )
                             ])
                         )
                     ],
@@ -340,12 +332,8 @@ def create_core_horseman(x: int, y: int, team: TeamType) -> int:
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=CORE_HORSEMAN_ATTACK_RANGE,
-                                    y_bias=2
+                                    y_bias=5
                                 ),
-                                MaximumAngleFromEntity(
-                                    entity=entity,
-                                    maximum_angle=math.pi/12
-                                )
                             ])
                         )
                     ],
@@ -355,12 +343,8 @@ def create_core_horseman(x: int, y: int, team: TeamType) -> int:
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=CORE_HORSEMAN_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
-                                    y_bias=2
+                                    y_bias=5
                                 ),
-                                MaximumAngleFromEntity(
-                                    entity=entity,
-                                    maximum_angle=math.pi/12
-                                )
                             ])
                         )
                     ],
@@ -507,12 +491,8 @@ def create_core_swordsman(x: int, y: int, team: TeamType) -> int:
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=CORE_SWORDSMAN_ATTACK_RANGE,
-                                    y_bias=2
+                                    y_bias=3
                                 ),
-                                MaximumAngleFromEntity(
-                                    entity=entity,
-                                    maximum_angle=math.pi/12
-                                )
                             ])
                         )
                     ],
@@ -522,12 +502,8 @@ def create_core_swordsman(x: int, y: int, team: TeamType) -> int:
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=CORE_SWORDSMAN_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
-                                    y_bias=2
+                                    y_bias=3
                                 ),
-                                MaximumAngleFromEntity(
-                                    entity=entity,
-                                    maximum_angle=math.pi/12
-                                )
                             ])
                         )
                     ],
@@ -582,12 +558,8 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=CRUSADER_BLACK_KNIGHT_ATTACK_RANGE,
-                                    y_bias=2
+                                    y_bias=5
                                 ),
-                                MaximumAngleFromEntity(
-                                    entity=entity,
-                                    maximum_angle=math.pi/12
-                                )
                             ])
                         )
                     ],
@@ -597,12 +569,8 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=CRUSADER_BLACK_KNIGHT_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
-                                    y_bias=2
+                                    y_bias=5
                                 ),
-                                MaximumAngleFromEntity(
-                                    entity=entity,
-                                    maximum_angle=math.pi/12
-                                )
                             ])
                         )
                     ],
@@ -772,12 +740,8 @@ def create_crusader_commander(x: int, y: int, team: TeamType) -> int:
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=CRUSADER_COMMANDER_ATTACK_RANGE,
-                                    y_bias=2
+                                    y_bias=5
                                 ),
-                                MaximumAngleFromEntity(
-                                    entity=entity,
-                                    maximum_angle=math.pi/12
-                                )
                             ])
                         )
                     ],
@@ -787,12 +751,8 @@ def create_crusader_commander(x: int, y: int, team: TeamType) -> int:
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=CRUSADER_COMMANDER_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
-                                    y_bias=2
+                                    y_bias=5
                                 ),
-                                MaximumAngleFromEntity(
-                                    entity=entity,
-                                    maximum_angle=math.pi/12
-                                )
                             ])
                         )
                     ],
@@ -866,12 +826,8 @@ def create_crusader_defender(x: int, y: int, team: TeamType) -> int:
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=CRUSADER_DEFENDER_ATTACK_RANGE,
-                                    y_bias=2
+                                    y_bias=3
                                 ),
-                                MaximumAngleFromEntity(
-                                    entity=entity,
-                                    maximum_angle=math.pi/12
-                                )
                             ])
                         )
                     ],
@@ -881,12 +837,8 @@ def create_crusader_defender(x: int, y: int, team: TeamType) -> int:
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=CRUSADER_DEFENDER_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
-                                    y_bias=2
+                                    y_bias=3
                                 ),
-                                MaximumAngleFromEntity(
-                                    entity=entity,
-                                    maximum_angle=math.pi/12
-                                )
                             ])
                         )
                     ],
@@ -941,12 +893,8 @@ def create_crusader_gold_knight(x: int, y: int, team: TeamType) -> int:
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=CRUSADER_GOLD_KNIGHT_ATTACK_RANGE,
-                                    y_bias=2
+                                    y_bias=3
                                 ),
-                                MaximumAngleFromEntity(
-                                    entity=entity,
-                                    maximum_angle=math.pi/4
-                                )
                             ])
                         )
                     ],
@@ -1107,12 +1055,8 @@ def create_crusader_paladin(x: int, y: int, team: TeamType) -> int:
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=CRUSADER_PALADIN_ATTACK_RANGE,
-                                    y_bias=2
+                                    y_bias=5
                                 ),
-                                MaximumAngleFromEntity(
-                                    entity=entity,
-                                    maximum_angle=math.pi/12
-                                )
                             ])
                         )
                     ],
@@ -1122,12 +1066,8 @@ def create_crusader_paladin(x: int, y: int, team: TeamType) -> int:
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=CRUSADER_PALADIN_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
-                                    y_bias=2
+                                    y_bias=5
                                 ),
-                                MaximumAngleFromEntity(
-                                    entity=entity,
-                                    maximum_angle=math.pi/12
-                                )
                             ])
                         )
                     ],
@@ -1184,12 +1124,8 @@ def create_crusader_pikeman(x: int, y: int, team: TeamType) -> int:
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=CRUSADER_PIKEMAN_ATTACK_RANGE,
-                                    y_bias=2
+                                    y_bias=10
                                 ),
-                                MaximumAngleFromEntity(
-                                    entity=entity,
-                                    maximum_angle=math.pi/16
-                                )
                             ])
                         )
                     ],
@@ -1199,12 +1135,8 @@ def create_crusader_pikeman(x: int, y: int, team: TeamType) -> int:
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=CRUSADER_PIKEMAN_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
-                                    y_bias=2
+                                    y_bias=10
                                 ),
-                                MaximumAngleFromEntity(
-                                    entity=entity,
-                                    maximum_angle=math.pi/12
-                                )
                             ])
                         )
                     ],
@@ -1263,10 +1195,6 @@ def create_crusader_red_knight(x: int, y: int, team: TeamType) -> int:
                                     distance=CRUSADER_RED_KNIGHT_SKILL_RANGE,
                                     y_bias=2
                                 ),
-                                MaximumAngleFromEntity(
-                                    entity=entity,
-                                    maximum_angle=math.pi/3
-                                )
                             ])
                         ),
                         Cooldown(duration=CRUSADER_RED_KNIGHT_SKILL_COOLDOWN)
@@ -1303,7 +1231,7 @@ def create_crusader_red_knight(x: int, y: int, team: TeamType) -> int:
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=CRUSADER_RED_KNIGHT_ATTACK_RANGE,
-                                    y_bias=2
+                                    y_bias=3
                                 )
                             ])
                         )
@@ -1314,7 +1242,7 @@ def create_crusader_red_knight(x: int, y: int, team: TeamType) -> int:
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=CRUSADER_RED_KNIGHT_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
-                                    y_bias=2
+                                    y_bias=3
                                 )
                             ])
                         )
@@ -1375,12 +1303,8 @@ def create_werebear(x: int, y: int, team: TeamType) -> int:
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=WEREBEAR_ATTACK_RANGE,
-                                    y_bias=2
+                                    y_bias=3
                                 ),
-                                MaximumAngleFromEntity(
-                                    entity=entity,
-                                    maximum_angle=math.pi/12
-                                )
                             ])
                         )
                     ],
@@ -1390,12 +1314,8 @@ def create_werebear(x: int, y: int, team: TeamType) -> int:
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=WEREBEAR_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
-                                    y_bias=2
+                                    y_bias=3
                                 ),
-                                MaximumAngleFromEntity(
-                                    entity=entity,
-                                    maximum_angle=math.pi/12
-                                )
                             ])
                         )
                     ],
