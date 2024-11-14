@@ -17,6 +17,7 @@ starting_units = {
     UnitType.CRUSADER_RED_KNIGHT: 3,
     UnitType.CRUSADER_GOLD_KNIGHT: 3,
     UnitType.CRUSADER_COMMANDER: 1,
+    UnitType.CRUSADER_BLACK_KNIGHT: 3,
     # UnitType.CORE_MAGE: 2,
 }
 

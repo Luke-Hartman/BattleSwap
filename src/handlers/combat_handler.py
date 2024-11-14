@@ -65,15 +65,15 @@ class CombatHandler:
                 )
 
     def handle_aura_hit(self, event: AuraHitEvent):
-        owner_ent = event.entity
+        aura_ent = event.entity
         target_ent = event.target
-        aura = esper.component_for_entity(owner_ent, Aura)
+        aura = esper.component_for_entity(aura_ent, Aura)
         
         if aura.unit_condition.check(target_ent):
             for effect in aura.effects:
                 effect.apply(
-                    owner=owner_ent,
-                    parent=owner_ent,
+                    owner=aura.owner,
+                    parent=aura_ent,
                     target=target_ent
                 )
 

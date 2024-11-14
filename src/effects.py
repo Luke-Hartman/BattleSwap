@@ -10,6 +10,7 @@ from components.animation import AnimationState, AnimationType
 from components.aoe import AoE
 from components.armor import Armor
 from components.attached import Attached
+from components.aura import Aura
 from components.expiration import Expiration
 from components.health import Health
 from components.orientation import FacingDirection, Orientation
@@ -50,6 +51,9 @@ class Damages(Effect):
     recipient: Recipient
     """The recipient of the effect."""
 
+    on_kill_effects: Optional[List[Effect]] = None
+    """Effects to apply when the target is killed."""
+
     def apply(self, owner: Optional[int], parent: int, target: int) -> None:
         if self.recipient == Recipient.OWNER:
             assert owner is not None
@@ -63,6 +67,7 @@ class Damages(Effect):
         applied_gold_knight_empowered = False
         applied_black_knight_debuffed = False
         if owner and esper.entity_exists(owner):
+            print(esper.components_for_entity(owner))
             status_effects = esper.component_for_entity(owner, StatusEffects)
             for status_effect in status_effects.active_effects():
                 if isinstance(status_effect, CrusaderCommanderEmpowered) and not applied_gold_knight_empowered:
@@ -85,6 +90,9 @@ class Damages(Effect):
         recipient_health.current = max(recipient_health.current - damage, 0)
         if recipient_health.current == 0 and previous_health > 0:
             emit_event(KILLING_BLOW, event=KillingBlowEvent(recipient))
+            if self.on_kill_effects:
+                for effect in self.on_kill_effects:
+                    effect.apply(owner, parent, recipient)
 
 
 @dataclass
@@ -216,6 +224,57 @@ class CreatesProjectile(Effect):
 
 
 @dataclass
+class CreatesTemporaryAura(Effect):
+    """Effect creates a temporary aura attached to the target."""
+
+    radius: float
+    """The radius of the aura."""
+
+    duration: float
+    """The duration of the aura."""
+
+    effects: List[Effect]
+    """The effects of the aura."""
+
+    color: Tuple[int, int, int]
+    """The color of the aura."""
+
+    period: float
+    """The period of the aura."""
+
+    unit_condition: "UnitCondition"
+    """Condition that determines which units are affected by the aura."""
+
+    recipient: Recipient
+    """The recipient of the effect."""
+
+    remove_on_death: bool
+    """Whether the aura should be removed when the recipient dies."""
+
+    def apply(self, owner: Optional[int], parent: int, target: int) -> None:
+        if self.recipient == Recipient.OWNER:
+            recipient = owner
+        else:
+            recipient = target
+        entity = esper.create_entity()
+        esper.add_component(
+            entity,
+            Aura(
+                owner=owner,
+                radius=self.radius,
+                effects=self.effects,
+                color=self.color,
+                period=self.period,
+                unit_condition=self.unit_condition
+            )
+        )
+        esper.add_component(entity, Expiration(time_left=self.duration))
+        esper.add_component(entity, Attached(entity=recipient, remove_on_death=self.remove_on_death))
+        position = esper.component_for_entity(recipient, Position)
+        esper.add_component(entity, Position(x=position.x, y=position.y))
+
+
+@dataclass
 class AppliesStatusEffect(Effect):
     """Effect applies a status effect to the target."""
 
@@ -252,13 +311,16 @@ class CreatesAttachedVisual(Effect):
     scale: float
     """The scale of the effect."""
 
+    remove_on_death: bool
+    """Whether the effect should be removed when the target dies."""
+
     def apply(self, owner: Optional[int], parent: int, target: int) -> None:
         entity = esper.create_entity()
         position = esper.component_for_entity(target, Position)
         team = esper.component_for_entity(target, Team)
         esper.add_component(entity, Position(x=position.x, y=position.y))
         esper.add_component(entity, Team(type=team.type))
-        esper.add_component(entity, Attached(entity=target))
+        esper.add_component(entity, Attached(entity=target, remove_on_death=self.remove_on_death))
         esper.add_component(entity, create_visual_spritesheet(self.visual, self.animation_duration))
         esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
         esper.add_component(entity, Expiration(time_left=self.expiration_duration))

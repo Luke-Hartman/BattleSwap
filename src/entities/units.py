@@ -25,7 +25,7 @@ from components.unit_type import UnitType, UnitTypeComponent
 from components.velocity import Velocity
 from components.health import Health
 from components.orientation import Orientation, FacingDirection
-from effects import AppliesStatusEffect, CreatesAoE, CreatesAttachedVisual, CreatesProjectile, Damages, Heals, Recipient
+from effects import AppliesStatusEffect, CreatesAoE, CreatesAttachedVisual, CreatesProjectile, CreatesTemporaryAura, Damages, Heals, Recipient
 from unit_condition import (
     All, Alive, HealthBelowPercent, MinimumDistanceFromEntity, Never, NotEntity, OnTeam,
     MaximumDistanceFromEntity, MaximumAngleFromEntity
@@ -604,27 +604,31 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
                             ])
                         )
                     ],
-                    effects={2: [Damages(damage=CRUSADER_BLACK_KNIGHT_ATTACK_DAMAGE, recipient=Recipient.TARGET)]},
+                    effects={2: [
+                        Damages(
+                            damage=CRUSADER_BLACK_KNIGHT_ATTACK_DAMAGE,
+                            recipient=Recipient.TARGET,
+                            on_kill_effects=[
+                                CreatesTemporaryAura(
+                                    radius=CRUSADER_BLACK_KNIGHT_AURA_RADIUS,
+                                    duration=5,
+                                    effects=[
+                                        Damages(damage=100, recipient=Recipient.TARGET)
+                                    ],
+                                    color=(255, 0, 0),
+                                    period=DEFAULT_AURA_PERIOD,
+                                    unit_condition=All([
+                                        Alive(),
+                                        NotEntity(entity=entity),
+                                    ]),
+                                    recipient=Recipient.OWNER,
+                                    remove_on_death=True
+                                )
+                            ]
+                        )
+                    ]},
                 )
             ]
-        )
-    )
-    esper.add_component(
-        entity,
-        Aura(
-            radius=CRUSADER_BLACK_KNIGHT_AURA_RADIUS,
-            effects=[
-                AppliesStatusEffect(
-                    status_effect=CrusaderBlackKnightDebuffed(duration=DEFAULT_AURA_PERIOD),
-                    recipient=Recipient.TARGET
-                )
-            ],
-            color=(150, 0, 0),
-            period=DEFAULT_AURA_PERIOD,
-            unit_condition=All([
-                OnTeam(team=team.other()),
-                Alive()
-            ])
         )
     )
     esper.add_component(entity, SpriteSheet(
@@ -705,7 +709,8 @@ def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
                                 visual=Visual.Healing,
                                 animation_duration=1,
                                 expiration_duration=1,
-                                scale=1
+                                scale=1,
+                                remove_on_death=False,
                             )
                         ]
                     },
@@ -790,6 +795,7 @@ def create_crusader_commander(x: int, y: int, team: TeamType) -> int:
     esper.add_component(
         entity,
         Aura(
+            owner=entity,
             radius=CRUSADER_COMMANDER_AURA_RADIUS,
             effects=[
                 AppliesStatusEffect(

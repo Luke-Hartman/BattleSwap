@@ -11,6 +11,7 @@ if TYPE_CHECKING:
 @dataclass
 class Aura:
     """Aura component."""
+    owner: int
     radius: int
     effects: List["Effect"]
     color: Tuple[int, int, int]
