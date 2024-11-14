@@ -558,9 +558,9 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
         movement_speed=CRUSADER_BLACK_KNIGHT_MOVEMENT_SPEED,
         health=CRUSADER_BLACK_KNIGHT_HP,
     )
-    esper.add_component(entity, Unique(key="BLACK KNIGHT"))
     targetting_strategy = TargetStrategy(
         rankings=[
+            ByMaxHealth(ascending=True),
             ByDistance(entity=entity, y_bias=2, ascending=True),
         ],
         unit_condition=All([OnTeam(team=team.other()), Alive()])
