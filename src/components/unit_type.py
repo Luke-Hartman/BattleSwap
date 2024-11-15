@@ -1,24 +1,24 @@
 """Component for tracking unit types in the game."""
 
-from enum import Enum, auto
+from enum import Enum
 
-class UnitType(Enum):
+class UnitType(str, Enum):
     """Enum representing different types of units."""
-    CORE_SWORDSMAN = auto()
-    CORE_ARCHER = auto()
-    CORE_MAGE = auto()
-    CORE_HORSEMAN = auto()
-    WEREBEAR = auto()
-    CORE_DUELIST = auto()
-    CRUSADER_BLACK_KNIGHT = auto()
-    CRUSADER_CLERIC = auto()
-    CRUSADER_COMMANDER = auto()
-    CRUSADER_DEFENDER = auto()
-    CRUSADER_GOLD_KNIGHT = auto()
-    CRUSADER_LONGBOWMAN = auto()
-    CRUSADER_PALADIN = auto()
-    CRUSADER_PIKEMAN = auto()
-    CRUSADER_RED_KNIGHT = auto()
+    CORE_ARCHER = "CORE_ARCHER"
+    CORE_DUELIST = "CORE_DUELIST"
+    CORE_HORSEMAN = "CORE_HORSEMAN"
+    CORE_MAGE = "CORE_MAGE"
+    CORE_SWORDSMAN = "CORE_SWORDSMAN"
+    CRUSADER_BLACK_KNIGHT = "CRUSADER_BLACK_KNIGHT"
+    CRUSADER_CLERIC = "CRUSADER_CLERIC"
+    CRUSADER_COMMANDER = "CRUSADER_COMMANDER"
+    CRUSADER_DEFENDER = "CRUSADER_DEFENDER"
+    CRUSADER_GOLD_KNIGHT = "CRUSADER_GOLD_KNIGHT"
+    CRUSADER_LONGBOWMAN = "CRUSADER_LONGBOWMAN"
+    CRUSADER_PALADIN = "CRUSADER_PALADIN"
+    CRUSADER_PIKEMAN = "CRUSADER_PIKEMAN"
+    CRUSADER_RED_KNIGHT = "CRUSADER_RED_KNIGHT"
+    WEREBEAR = "WEREBEAR"
 
 class UnitTypeComponent:
     """Component that stores the type of a unit."""
