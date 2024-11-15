@@ -53,7 +53,8 @@ class SelectBattleScene(Scene):
                     unit_type=unit_type,
                     count=count,
                     interactive=False,
-                    manager=self.manager
+                    manager=self.manager,
+                    infinite=False,
                 )
                 x += icon_size + padding
 
@@ -75,11 +76,17 @@ class SelectBattleScene(Scene):
                     unit_type=unit_type,
                     count=count,
                     interactive=False,
-                    manager=self.manager
+                    manager=self.manager,
+                    infinite=False,
                 )
                 x += icon_size + padding
             
-        self.barracks = BarracksUI(self.manager, self.progress_manager.available_units(current_battle_id=None), interactive=False)
+        self.barracks = BarracksUI(
+            self.manager,
+            self.progress_manager.available_units(current_battle_id=None),
+            interactive=False,
+            developer_mode=False,
+        )
 
     def update(self, time_delta: float, events: list[pygame.event.Event]) -> bool:
         """Update the select battle scene."""

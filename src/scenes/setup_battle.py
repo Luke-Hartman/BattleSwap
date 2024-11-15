@@ -69,7 +69,12 @@ class SetupBattleScene(Scene):
         for unit_type, position in self.battle.enemies:
             create_unit(position[0], position[1], unit_type, TeamType.TEAM2)
 
-        self.barracks = BarracksUI(self.manager, self.progress_manager.available_units(current_battle_id=battle_id), interactive=True)
+        self.barracks = BarracksUI(
+            self.manager,
+            self.progress_manager.available_units(current_battle_id=battle_id),
+            interactive=True,
+            developer_mode=False,
+        )
         self.start_button = StartButton(self.manager)
         self.potential_solution = potential_solution
         if potential_solution is not None:

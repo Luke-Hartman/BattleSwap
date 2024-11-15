@@ -21,12 +21,13 @@ class UnitCount(UIButton):
         count: int,
         interactive: bool,
         manager: pygame_gui.UIManager,
+        infinite: bool,
         container: Optional[pygame_gui.core.UIContainer] = None,
     ):
         """Initialize the unit list item button."""
         super().__init__(
             relative_rect=pygame.Rect((x_pos, y_pos), (self.size, self.size)),
-            text=str(count),
+            text="inf" if infinite else str(count),
             manager=manager,
             container=container,
             object_id=ObjectID(class_id="@unit_count", object_id=unit_theme_ids[unit_type])
@@ -34,6 +35,7 @@ class UnitCount(UIButton):
         if not interactive:
             self.disable()
         self.unit_type = unit_type
+        self.infinite = infinite
 
 
 class BarracksUI(UIPanel):
@@ -44,6 +46,7 @@ class BarracksUI(UIPanel):
             manager: pygame_gui.UIManager,
             starting_units: Dict[UnitType, int],
             interactive: bool,
+            developer_mode: bool,
     ):
         """Initialize the barracks UI panel.
         
@@ -51,10 +54,16 @@ class BarracksUI(UIPanel):
             manager: The UI manager that will handle this component
             starting_units: Dictionary mapping unit types to their initial counts
             interactive: Whether the buttons are interactive
+            developer_mode: If True, all units are available with infinite count
         """
         self.manager = manager
         self._units = starting_units.copy()
         self.interactive = interactive
+        self.developer_mode = developer_mode
+        
+        # In developer mode, make all unit types available
+        if developer_mode:
+            self._units = {unit_type: float('inf') for unit_type in UnitType}
         
         side_padding = 75
         panel_width = pygame.display.Info().current_w - 2 * side_padding
@@ -119,7 +128,8 @@ class BarracksUI(UIPanel):
                     count=count,
                     interactive=self.interactive,
                     manager=self.manager,
-                    container=self.unit_container
+                    container=self.unit_container,
+                    infinite=self.developer_mode
                 )
                 self.unit_list_items.append(item)
                 x_position += item.size + padding // 2
