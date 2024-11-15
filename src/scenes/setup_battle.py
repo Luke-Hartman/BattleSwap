@@ -152,7 +152,7 @@ class SetupBattleScene(Scene):
             x = max(0, min(x, BATTLEFIELD_WIDTH // 2 - NO_MANS_LAND_WIDTH//2))
             y = max(0, min(y, BATTLEFIELD_HEIGHT))
             pos.x, pos.y = x, y
-        self.camera.handle_event(events)
+        self.camera.update(time_delta)
 
         self.screen.fill((0, 0, 0))
         draw_battlefield(self.screen, self.camera, include_no_mans_land=True)

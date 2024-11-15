@@ -49,13 +49,27 @@ class Camera:
     def height(self, value: int) -> None:
         self._rect.height = value
 
-    def handle_event(self, events: List[pygame.event.Event]) -> None:
+    def process_event(self, event: pygame.event.Event) -> bool:
         """
-        Handle camera movement based on input events.
+        Process a single event and return whether it was consumed.
 
         Args:
-            events: List of pygame events to process.
+            event: The pygame event to process.
+
+        Returns:
+            bool: True if the event was consumed, False otherwise.
         """
+        if event.type in [pygame.KEYDOWN, pygame.KEYUP] and event.key in [
+                pygame.K_LEFT, pygame.K_a,
+                pygame.K_RIGHT, pygame.K_d,
+                pygame.K_UP, pygame.K_w,
+                pygame.K_DOWN, pygame.K_s
+            ]:
+            return True
+        return False
+    
+    def update(self, time_delta: float) -> None:
+        """Update the camera position based on the pressed keys."""
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
             self.x -= self.speed
@@ -65,3 +79,4 @@ class Camera:
             self.y -= self.speed
         if keys[pygame.K_DOWN] or keys[pygame.K_s]:
             self.y += self.speed
+        return False

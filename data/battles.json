@@ -1,50 +1,178 @@
 [
-    {
-        "id": "crusaders_1",
-        "enemies": [
-            ["CRUSADER_DEFENDER", [1000, 500]],
-            ["CRUSADER_DEFENDER", [1000, 400]],
-            ["CRUSADER_DEFENDER", [1000, 300]],
-            ["CRUSADER_LONGBOWMAN", [1050, 650]],
-            ["CRUSADER_LONGBOWMAN", [1050, 150]]
-        ],
-        "dependencies": [],
-        "tip": ["TODO"]
-    },
-    {
-        "id": "crusaders_2",
-        "enemies": [
-            ["CRUSADER_PIKEMAN", [975, 500]],
-            ["CRUSADER_PIKEMAN", [975, 400]],
-            ["CRUSADER_PIKEMAN", [975, 300]],
-            ["CRUSADER_CLERIC", [1100, 475]],
-            ["CRUSADER_CLERIC", [1100, 325]]
-        ],
-        "dependencies": [],
-        "tip": ["TODO"]
-    },
-    {
-        "id": "crusaders_3",
-        "enemies": [
-            ["CRUSADER_PALADIN", [975, 600]],
-            ["CRUSADER_PALADIN", [975, 400]],
-            ["CRUSADER_PALADIN", [975, 200]]
-        ],
-        "dependencies": [],
-        "tip": ["blahg"]
-    },
-    {
-        "id": "crusaders_4",
-        "enemies": [
-            ["CRUSADER_DEFENDER", [975, 500]],
-            ["CRUSADER_DEFENDER", [975, 400]],
-            ["CRUSADER_DEFENDER", [975, 300]],
-            ["CRUSADER_PIKEMAN", [1025, 450]],
-            ["CRUSADER_PIKEMAN", [1025, 350]],
-            ["CRUSADER_LONGBOWMAN", [1075, 650]],
-            ["CRUSADER_LONGBOWMAN", [1075, 150]]
-        ],
-        "dependencies": [],
-        "tip": ["asdf"]
-    }
-] 
+  {
+    "id": "crusaders_1",
+    "enemies": [
+      [
+        "CRUSADER_DEFENDER",
+        [
+          1000,
+          500
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          1000,
+          400
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          1000,
+          300
+        ]
+      ],
+      [
+        "CRUSADER_LONGBOWMAN",
+        [
+          1050,
+          650
+        ]
+      ],
+      [
+        "CRUSADER_LONGBOWMAN",
+        [
+          1050,
+          150
+        ]
+      ]
+    ],
+    "dependencies": [],
+    "tip": [
+      "TODO"
+    ]
+  },
+  {
+    "id": "crusaders_2",
+    "enemies": [
+      [
+        "CRUSADER_PIKEMAN",
+        [
+          975,
+          500
+        ]
+      ],
+      [
+        "CRUSADER_PIKEMAN",
+        [
+          975,
+          400
+        ]
+      ],
+      [
+        "CRUSADER_PIKEMAN",
+        [
+          975,
+          300
+        ]
+      ],
+      [
+        "CRUSADER_CLERIC",
+        [
+          1100,
+          475
+        ]
+      ],
+      [
+        "CRUSADER_CLERIC",
+        [
+          1100,
+          325
+        ]
+      ]
+    ],
+    "dependencies": [],
+    "tip": [
+      "TODO"
+    ]
+  },
+  {
+    "id": "crusaders_3",
+    "enemies": [
+      [
+        "CRUSADER_PALADIN",
+        [
+          975,
+          600
+        ]
+      ],
+      [
+        "CRUSADER_PALADIN",
+        [
+          975,
+          400
+        ]
+      ],
+      [
+        "CRUSADER_PALADIN",
+        [
+          975,
+          200
+        ]
+      ]
+    ],
+    "dependencies": [],
+    "tip": [
+      "blahg"
+    ]
+  },
+  {
+    "id": "crusaders_4",
+    "enemies": [
+      [
+        "CRUSADER_DEFENDER",
+        [
+          975,
+          500
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          975,
+          400
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          975,
+          300
+        ]
+      ],
+      [
+        "CRUSADER_PIKEMAN",
+        [
+          1025,
+          450
+        ]
+      ],
+      [
+        "CRUSADER_PIKEMAN",
+        [
+          1025,
+          350
+        ]
+      ],
+      [
+        "CRUSADER_LONGBOWMAN",
+        [
+          1075,
+          650
+        ]
+      ],
+      [
+        "CRUSADER_LONGBOWMAN",
+        [
+          1075,
+          150
+        ]
+      ]
+    ],
+    "dependencies": [],
+    "tip": [
+      "asdf"
+    ]
+  }
+]

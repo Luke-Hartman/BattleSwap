@@ -41,12 +41,15 @@ def get_battle(battle_id: str) -> Battle:
             return battle
     raise ValueError(f"Battle with id {battle_id} not found")
 
-def _load_battles() -> List[Battle]:
+battles: List[Battle] = []
+
+def reload_battles() -> None:
     """Load battles from a JSON file."""
     file_path = Path(__file__).parent.parent / 'data' / 'battles.json'
     with open(file_path, 'r') as file:
         battles_data = json.load(file)
-        return [Battle.model_validate(battle) for battle in battles_data]
+        global battles
+        battles = [Battle.model_validate(battle) for battle in battles_data]
 
-battles: List[Battle] = _load_battles()
+reload_battles()
 

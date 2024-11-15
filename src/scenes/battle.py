@@ -155,7 +155,7 @@ class BattleScene(Scene):
             self.manager.process_events(event)
 
         self.check_victory()
-        self.camera.handle_event(events)
+        self.camera.update(time_delta)
         self.screen.fill((0, 0, 0))
         draw_battlefield(self.screen, self.camera, include_no_mans_land=True)
         esper.process(time_delta)

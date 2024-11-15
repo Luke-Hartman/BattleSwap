@@ -18,6 +18,7 @@ from ui_components.return_button import ReturnButton
 from ui_components.start_button import StartButton
 from scenes.events import RETURN_TO_SELECT_BATTLE, START_BATTLE
 from progress_manager import Solution
+from ui_components.save_battle_dialog import SaveBattleDialog
 
 
 class SandboxScene(Scene):
@@ -76,6 +77,18 @@ class SandboxScene(Scene):
             for unit_type, pos in enemy_placements:
                 create_unit(pos[0], pos[1], unit_type, TeamType.TEAM2)
 
+        # Add save battle button
+        self.save_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect(
+                (pygame.display.Info().current_w - 310, 10),
+                (100, 30)
+            ),
+            text='Save Battle',
+            manager=self.manager
+        )
+        
+        self.save_dialog: Optional[SaveBattleDialog] = None
+
     def update(self, time_delta: float, events: list[pygame.event.Event]) -> bool:
         """Update the sandbox scene."""
         for event in events:
@@ -83,7 +96,18 @@ class SandboxScene(Scene):
                 return False
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
-                    if event.ui_element == self.return_button:
+                    if event.ui_element == self.save_button:
+                        enemy_placements = [
+                            (unit_type.type, (pos.x, pos.y))
+                            for ent, (unit_type, team, pos) in esper.get_components(UnitTypeComponent, Team, Position)
+                            if team.type == TeamType.TEAM2
+                        ]
+                        self.save_dialog = SaveBattleDialog(
+                            self.manager,
+                            enemy_placements,
+                            self.on_save_dialog_complete
+                        )
+                    elif event.ui_element == self.return_button:
                         pygame.event.post(pygame.event.Event(RETURN_TO_SELECT_BATTLE))
                         esper.clear_database()
                         esper.remove_processor(RenderingProcessor)
@@ -97,6 +121,15 @@ class SandboxScene(Scene):
                         sandbox_solution = Solution("SANDBOX", unit_placements)
                         pygame.event.post(pygame.event.Event(START_BATTLE, potential_solution=sandbox_solution, sandbox_mode=True))
                         return True
+                    elif (self.save_dialog and 
+                          event.ui_element == self.save_dialog.save_button):
+                        self.save_dialog.save_battle()
+                        self.save_dialog.kill()
+                        self.save_dialog = None
+                    elif (self.save_dialog and 
+                          event.ui_element == self.save_dialog.cancel_button):
+                        self.save_dialog.kill()
+                        self.save_dialog = None
                     elif isinstance(event.ui_element, UnitCount):
                         self.create_unit_from_list(event.ui_element)
 
@@ -150,7 +183,9 @@ class SandboxScene(Scene):
             y = max(0, min(y, BATTLEFIELD_HEIGHT))
             pos.x, pos.y = x, y
 
-        self.camera.handle_event(events)
+        # Only update camera if no dialog is focused
+        if not self.manager.get_focus_set():
+            self.camera.update(time_delta)
 
         self.screen.fill((0, 0, 0))
         draw_battlefield(self.screen, self.camera, include_no_mans_land=True)
@@ -193,3 +228,7 @@ class SandboxScene(Scene):
         # Create a new unit of the same type and team
         entity = create_unit(0, 0, unit_type, team)
         self.selected_unit_id = entity
+
+    def on_save_dialog_complete(self) -> None:
+        """Callback for when the save dialog is completed."""
+        pass  # We might want to show a success message or refresh something in the future
