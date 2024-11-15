@@ -3,7 +3,6 @@ from typing import Optional, List, Tuple
 import esper
 import pygame
 import pygame_gui
-from components.orientation import FacingDirection, Orientation
 from components.position import Position
 from components.sprite_sheet import SpriteSheet
 from components.team import Team, TeamType
@@ -136,9 +135,10 @@ class SandboxScene(Scene):
             # Update team based on which side of the battlefield the mouse is on
             new_team = TeamType.TEAM1 if x < BATTLEFIELD_WIDTH // 2 else TeamType.TEAM2
             if team.type != new_team:
-                team.type = new_team
-                orientation = esper.component_for_entity(self.selected_unit_id, Orientation)
-                orientation.facing = FacingDirection.RIGHT if new_team == TeamType.TEAM1 else FacingDirection.LEFT
+                # Delete unit and recreate it with the new team
+                unit_type = esper.component_for_entity(self.selected_unit_id, UnitTypeComponent).type
+                esper.delete_entity(self.selected_unit_id, immediate=True)
+                self.selected_unit_id = create_unit(x, y, unit_type, new_team)
 
             
             # Constrain x based on current team
@@ -181,12 +181,7 @@ class SandboxScene(Scene):
 
     def create_unit_from_list(self, unit_list_item: UnitCount) -> None:
         """Create a unit from a barracks selection."""
-        # Create unit with initial team based on mouse position
-        mouse_pos = pygame.mouse.get_pos()
-        adjusted_x = mouse_pos[0] + self.camera.x
-        team_type = TeamType.TEAM1 if adjusted_x < BATTLEFIELD_WIDTH // 2 else TeamType.TEAM2
-        
-        entity = create_unit(0, 0, unit_list_item.unit_type, team_type)
+        entity = create_unit(0, 0, unit_list_item.unit_type, TeamType.TEAM1)
         self.selected_unit_id = entity
 
     def place_unit(self) -> None:
