@@ -46,7 +46,7 @@ class BarracksUI(UIPanel):
             manager: pygame_gui.UIManager,
             starting_units: Dict[UnitType, int],
             interactive: bool,
-            developer_mode: bool,
+            sandbox_mode: bool,
     ):
         """Initialize the barracks UI panel.
         
@@ -54,15 +54,15 @@ class BarracksUI(UIPanel):
             manager: The UI manager that will handle this component
             starting_units: Dictionary mapping unit types to their initial counts
             interactive: Whether the buttons are interactive
-            developer_mode: If True, all units are available with infinite count
+            sandbox_mode: If True, all units are available with infinite count
         """
         self.manager = manager
         self._units = starting_units.copy()
         self.interactive = interactive
-        self.developer_mode = developer_mode
+        self.sandbox_mode = sandbox_mode
         
-        # In developer mode, make all unit types available
-        if developer_mode:
+        # In sandbox mode, make all unit types available
+        if sandbox_mode:
             self._units = {unit_type: float('inf') for unit_type in UnitType}
         
         side_padding = 75
@@ -71,8 +71,11 @@ class BarracksUI(UIPanel):
         
         needs_scrollbar, panel_height = self._calculate_panel_dimensions()
         
+        # Position the panel at the bottom of the screen
+        y_position = pygame.display.Info().current_h - panel_height - 10
+        
         panel_rect = pygame.Rect(
-            (side_padding, pygame.display.Info().current_h - panel_height - 10),
+            (side_padding, y_position),
             (panel_width, panel_height)
         )
         
@@ -129,7 +132,7 @@ class BarracksUI(UIPanel):
                     interactive=self.interactive,
                     manager=self.manager,
                     container=self.unit_container,
-                    infinite=self.developer_mode
+                    infinite=self.sandbox_mode
                 )
                 self.unit_list_items.append(item)
                 x_position += item.size + padding // 2

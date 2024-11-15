@@ -6,7 +6,13 @@ from progress_manager import ProgressManager
 from scenes.select_battle import SelectBattleScene
 from scenes.setup_battle import SetupBattleScene
 from scenes.battle import BattleScene
-from scenes.events import SETUP_BATTLE_SCENE, START_BATTLE, RETURN_TO_SELECT_BATTLE
+from scenes.sandbox import SandboxScene
+from scenes.events import (
+    SETUP_BATTLE_SCENE,
+    START_BATTLE,
+    RETURN_TO_SELECT_BATTLE,
+    SANDBOX_SCENE,
+)
 
 class SceneManager:
     """Handles transitions between scenes and catches events for changing scenes."""
@@ -45,7 +51,8 @@ class SceneManager:
                     camera=self.camera,
                     manager=self.manager,
                     progress_manager=self.progress_manager,
-                    potential_solution=event.potential_solution
+                    potential_solution=event.potential_solution,
+                    sandbox_mode=getattr(event, 'sandbox_mode', False)
                 )
             elif event.type == RETURN_TO_SELECT_BATTLE:
                 self.manager.clear_and_reset()
@@ -53,6 +60,15 @@ class SceneManager:
                     screen=self.screen,
                     manager=self.manager,
                     progress_manager=self.progress_manager
+                )
+            elif event.type == SANDBOX_SCENE:
+                self.manager.clear_and_reset()
+                self.current_scene = SandboxScene(
+                    screen=self.screen,
+                    camera=self.camera,
+                    manager=self.manager,
+                    unit_placements=getattr(event, 'unit_placements', None),
+                    enemy_placements=getattr(event, 'enemy_placements', None),
                 )
         
         return self.current_scene.update(time_delta, events)

@@ -3,7 +3,7 @@ import pygame
 import battles
 from scenes.scene import Scene
 import pygame_gui
-from scenes.events import SETUP_BATTLE_SCENE
+from scenes.events import SETUP_BATTLE_SCENE, SANDBOX_SCENE
 from progress_manager import ProgressManager
 from ui_components.barracks_ui import BarracksUI, UnitCount
 from entities.units import unit_icon_surfaces
@@ -26,6 +26,15 @@ class SelectBattleScene(Scene):
         padding = 10
         icon_size = UnitCount.size
 
+        # Add sandbox button to the right side
+        sandbox_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect(
+                (pygame.display.Info().current_w - button_width - padding, padding),
+                (button_width, button_height)
+            ),
+            text="Sandbox Mode",
+            manager=self.manager
+        )
 
         for i, battle_id in enumerate(self.progress_manager.available_battles()):
             y_center = start_y + i * 84 + padding
@@ -85,7 +94,7 @@ class SelectBattleScene(Scene):
             self.manager,
             self.progress_manager.available_units(current_battle_id=None),
             interactive=False,
-            developer_mode=False,
+            sandbox_mode=False,
         )
 
     def update(self, time_delta: float, events: list[pygame.event.Event]) -> bool:
@@ -95,13 +104,16 @@ class SelectBattleScene(Scene):
                 return False
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
-                    pygame.event.post(
-                        pygame.event.Event(
-                            SETUP_BATTLE_SCENE,
-                            battle_id=event.ui_element.text,
-                            potential_solution=self.progress_manager.solutions.get(event.ui_element.text, None)
+                    if event.ui_element.text == "Sandbox Mode":
+                        pygame.event.post(pygame.event.Event(SANDBOX_SCENE))
+                    else:
+                        pygame.event.post(
+                            pygame.event.Event(
+                                SETUP_BATTLE_SCENE,
+                                battle_id=event.ui_element.text,
+                                potential_solution=self.progress_manager.solutions.get(event.ui_element.text, None)
+                            )
                         )
-                    )
             
             self.manager.process_events(event)
 

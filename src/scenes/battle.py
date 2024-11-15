@@ -17,22 +17,53 @@ from processors.status_effect_processor import StatusEffectProcessor
 from processors.targetting_processor import TargettingProcessor
 from processors.unique_processor import UniqueProcessor
 from scenes.scene import Scene
-from scenes.events import RETURN_TO_SELECT_BATTLE, SETUP_BATTLE_SCENE
+from scenes.events import RETURN_TO_SELECT_BATTLE, SETUP_BATTLE_SCENE, SANDBOX_SCENE
 from camera import Camera
 from ui_components.return_button import ReturnButton
 from progress_manager import ProgressManager, Solution
 from components.unit_state import State, UnitState
 from components.team import Team, TeamType
+from components.unit_type import UnitTypeComponent
+from components.position import Position
 
 class BattleScene(Scene):
     """The scene for the battle."""
 
-    def __init__(self, screen: pygame.Surface, camera: Camera, manager: pygame_gui.UIManager, progress_manager: ProgressManager, potential_solution: Solution):
+    def __init__(
+        self,
+        screen: pygame.Surface,
+        camera: Camera,
+        manager: pygame_gui.UIManager,
+        progress_manager: ProgressManager,
+        potential_solution: Solution,
+        sandbox_mode: bool = False,
+    ):
+        """Initialize the battle scene.
+        
+        Args:
+            screen: The pygame surface to render to.
+            camera: The camera object controlling the view.
+            manager: The pygame_gui UI manager.
+            progress_manager: The progress manager.
+            potential_solution: The solution being tested.
+            sandbox_mode: Whether this battle is in sandbox mode.
+        """
         self.screen = screen
         self.camera = camera
         self.manager = manager
         self.progress_manager = progress_manager
         self.potential_solution = potential_solution
+        self.sandbox_mode = sandbox_mode
+        
+        # Store initial enemy placements for sandbox mode
+        self.enemy_placements = None
+        if sandbox_mode:
+            self.enemy_placements = [
+                (unit_type.type, (pos.x, pos.y))
+                for ent, (unit_type, team, pos) in esper.get_components(UnitTypeComponent, Team, Position)
+                if team.type == TeamType.TEAM2
+            ]
+        
         unique_processor = UniqueProcessor()
         targetting_processor = TargettingProcessor()
         idle_processor = IdleProcessor()
@@ -71,10 +102,10 @@ class BattleScene(Scene):
 
     def check_victory(self) -> None:
         """Check if all enemy units are defeated and show victory button if they are."""
-        if self.victory_achieved:
+        if self.sandbox_mode or self.victory_achieved:
             return
 
-        # Check if any enemies are still alive
+        # Only check for victory in normal mode
         for ent, (unit_state, team) in esper.get_components(UnitState, Team):
             if team.type == TeamType.TEAM1:
                 continue
@@ -107,7 +138,18 @@ class BattleScene(Scene):
                         return True
                     elif event.ui_element == self.restart_button:
                         self._cleanup()
-                        pygame.event.post(pygame.event.Event(SETUP_BATTLE_SCENE, battle_id=self.potential_solution.battle_id, potential_solution=self.potential_solution))
+                        if self.sandbox_mode:
+                            pygame.event.post(pygame.event.Event(
+                                SANDBOX_SCENE,
+                                unit_placements=self.potential_solution.unit_placements,
+                                enemy_placements=self.enemy_placements
+                            ))
+                        else:
+                            pygame.event.post(pygame.event.Event(
+                                SETUP_BATTLE_SCENE,
+                                battle_id=self.potential_solution.battle_id,
+                                potential_solution=self.potential_solution
+                            ))
                         return True
             
             self.manager.process_events(event)
