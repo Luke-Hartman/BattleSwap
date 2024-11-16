@@ -74,27 +74,26 @@ class SelectBattleScene(Scene):
             
             x += button_width + padding
             solution = self.progress_manager.solutions.get(battle_id, None)
-            if solution is None:
-                continue
+            
+            # Show player's solution if it exists
+            if solution is not None:
+                unit_counts = defaultdict(int)
+                for unit_type, _ in solution.unit_placements:
+                    unit_counts[unit_type] += 1
+                for unit_type, count in unit_counts.items():
+                    UnitCount(
+                        x_pos=x - padding,
+                        y_pos=y_pos + button_height // 2 - icon_size // 2,
+                        unit_type=unit_type,
+                        count=count,
+                        interactive=False,
+                        manager=self.manager,
+                        container=content_panel,
+                        infinite=False,
+                    )
+                    x += icon_size + padding
 
-            # Add unit counts for player's solution
-            unit_counts = defaultdict(int)
-            for unit_type, _ in solution.unit_placements:
-                unit_counts[unit_type] += 1
-            for unit_type, count in unit_counts.items():
-                UnitCount(
-                    x_pos=x - padding,
-                    y_pos=y_pos + button_height // 2 - icon_size // 2,
-                    unit_type=unit_type,
-                    count=count,
-                    interactive=False,
-                    manager=self.manager,
-                    container=content_panel,
-                    infinite=False,
-                )
-                x += icon_size + padding
-
-            # Add swap icon
+            # Add swap icon and enemy units for both solved and unlocked battles
             swap_icon_size = 32
             pygame_gui.elements.UIImage(
                 relative_rect=pygame.Rect(
