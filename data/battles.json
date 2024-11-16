@@ -35,14 +35,14 @@
       [
         "CORE_HORSEMAN",
         [
-          600,
+          800,
           405
         ]
       ],
       [
         "CORE_HORSEMAN",
         [
-          600,
+          800,
           380
         ]
       ],
@@ -61,7 +61,7 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": ["Core_Level_1"],
     "tip": [
       "Swordsman vs. Cavalry"
     ]
@@ -112,7 +112,7 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": ["Core_Level_2"],
     "tip": [
       "Cavalry vs. Swordsman + Archer"
     ]
@@ -149,7 +149,7 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": ["Core_Level_3"],
     "tip": [
       "Duelists"
     ]
@@ -221,7 +221,7 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": ["Core_Level_4"],
     "tip": [
       "A balanced army"
     ]
@@ -265,7 +265,7 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": ["Core_Level_5"],
     "tip": [
       "TO DO"
     ]
@@ -309,7 +309,7 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": ["Crusaders_Level_1"],
     "tip": [
       "TO DO"
     ]
@@ -339,7 +339,7 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": ["Crusaders_Level_2"],
     "tip": [
       "TO DO"
     ]
@@ -397,7 +397,7 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": ["Crusaders_Level_3"],
     "tip": [
       "TO DO"
     ]
@@ -441,7 +441,7 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": ["Crusaders_Level_4"],
     "tip": [
       "One army to rule them all."
     ]
@@ -485,7 +485,7 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": ["LoTR"],
     "tip": [
       "Cavalry's here!"
     ]
@@ -571,7 +571,7 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": ["Reinforcements"],
     "tip": [
       "Do you require medical attention?"
     ]
@@ -608,7 +608,7 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": ["I need a medic!"],
     "tip": [
       "Meet the commander."
     ]
@@ -652,7 +652,7 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": ["Stronger Together"],
     "tip": [
       "He might be alone, but he's still dangerous."
     ]
@@ -682,7 +682,7 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": ["The Lone Swordsman?"],
     "tip": [
       "Are the 3 elite unit levels getting old?"
     ]
@@ -698,7 +698,7 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": ["The Meat Grinder"],
     "tip": [
       "This one might actually be impossible."
     ]
