@@ -12,19 +12,7 @@ from pydantic import BaseModel
 from entities.units import UnitType
 
 starting_units: Dict[UnitType, int] = {
-    UnitType.CORE_SWORDSMAN: 3,
-    UnitType.CORE_ARCHER: 3,
-    UnitType.CORE_HORSEMAN: 3,
-    # UnitType.CRUSADER_CLERIC: 2,
-    # UnitType.CRUSADER_DEFENDER: 3,
-    # UnitType.CRUSADER_LONGBOWMAN: 2,
-    # UnitType.CRUSADER_PIKEMAN: 3,
-    # UnitType.CRUSADER_PALADIN: 3,
-    UnitType.CRUSADER_RED_KNIGHT: 3,
-    UnitType.CRUSADER_GOLD_KNIGHT: 3,
-    UnitType.CRUSADER_COMMANDER: 1,
-    UnitType.CRUSADER_BLACK_KNIGHT: 3,
-    # UnitType.CORE_MAGE: 2,
+    UnitType.CORE_ARCHER: 5,
 }
 
 class Battle(BaseModel):

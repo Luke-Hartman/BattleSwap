@@ -1,6 +1,233 @@
 [
   {
-    "id": "crusaders_1",
+    "id": "Core_Level_1",
+    "enemies": [
+      [
+        "CORE_SWORDSMAN",
+        [
+          766,
+          378
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          696,
+          379
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          732,
+          379
+        ]
+      ]
+    ],
+    "dependencies": [],
+    "tip": [
+      "Archer vs. Swordsman"
+    ]
+  },
+  {
+    "id": "Core_Level_2",
+    "enemies": [
+      [
+        "CORE_HORSEMAN",
+        [
+          600,
+          405
+        ]
+      ],
+      [
+        "CORE_HORSEMAN",
+        [
+          600,
+          380
+        ]
+      ],
+      [
+        "CORE_HORSEMAN",
+        [
+          1270,
+          405
+        ]
+      ],
+      [
+        "CORE_HORSEMAN",
+        [
+          1270,
+          380
+        ]
+      ]
+    ],
+    "dependencies": [],
+    "tip": [
+      "Swordsman vs. Cavalry"
+    ]
+  },
+  {
+    "id": "Core_Level_3",
+    "enemies": [
+      [
+        "CORE_SWORDSMAN",
+        [
+          774,
+          85
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          1043,
+          692
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          1043,
+          738
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          1021,
+          66
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          778,
+          718
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          1024,
+          111
+        ]
+      ]
+    ],
+    "dependencies": [],
+    "tip": [
+      "Cavalry vs. Swordsman + Archer"
+    ]
+  },
+  {
+    "id": "Core_Level_4",
+    "enemies": [
+      [
+        "CORE_DUELIST",
+        [
+          725,
+          64
+        ]
+      ],
+      [
+        "CORE_DUELIST",
+        [
+          710,
+          39
+        ]
+      ],
+      [
+        "CORE_DUELIST",
+        [
+          704,
+          103
+        ]
+      ],
+      [
+        "CORE_HORSEMAN",
+        [
+          808,
+          700
+        ]
+      ]
+    ],
+    "dependencies": [],
+    "tip": [
+      "Duelists"
+    ]
+  },
+  {
+    "id": "Core_Level_5",
+    "enemies": [
+      [
+        "CORE_SWORDSMAN",
+        [
+          749,
+          370
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          748,
+          426
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          815,
+          391
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          849,
+          360
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          849,
+          423
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          718,
+          402
+        ]
+      ],
+      [
+        "CORE_HORSEMAN",
+        [
+          799,
+          499
+        ]
+      ],
+      [
+        "CORE_HORSEMAN",
+        [
+          796,
+          303
+        ]
+      ],
+      [
+        "CORE_HORSEMAN",
+        [
+          909,
+          386
+        ]
+      ]
+    ],
+    "dependencies": [],
+    "tip": [
+      "A balanced army"
+    ]
+  },
+  {
+    "id": "Crusaders_Level_1",
     "enemies": [
       [
         "CRUSADER_DEFENDER",
@@ -40,11 +267,11 @@
     ],
     "dependencies": [],
     "tip": [
-      "TODO"
+      "TO DO"
     ]
   },
   {
-    "id": "crusaders_2",
+    "id": "Crusaders_Level_2",
     "enemies": [
       [
         "CRUSADER_PIKEMAN",
@@ -84,11 +311,11 @@
     ],
     "dependencies": [],
     "tip": [
-      "TODO"
+      "TO DO"
     ]
   },
   {
-    "id": "crusaders_3",
+    "id": "Crusaders_Level_3",
     "enemies": [
       [
         "CRUSADER_PALADIN",
@@ -114,11 +341,11 @@
     ],
     "dependencies": [],
     "tip": [
-      "blahg"
+      "TO DO"
     ]
   },
   {
-    "id": "crusaders_4",
+    "id": "Crusaders_Level_4",
     "enemies": [
       [
         "CRUSADER_DEFENDER",
@@ -172,7 +399,308 @@
     ],
     "dependencies": [],
     "tip": [
-      "asdf"
+      "TO DO"
+    ]
+  },
+  {
+    "id": "LoTR",
+    "enemies": [
+      [
+        "CORE_ARCHER",
+        [
+          1029,
+          350
+        ]
+      ],
+      [
+        "CORE_DUELIST",
+        [
+          873,
+          350
+        ]
+      ],
+      [
+        "CORE_HORSEMAN",
+        [
+          895,
+          315
+        ]
+      ],
+      [
+        "CORE_MAGE",
+        [
+          953,
+          344
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          920,
+          379
+        ]
+      ]
+    ],
+    "dependencies": [],
+    "tip": [
+      "One army to rule them all."
+    ]
+  },
+  {
+    "id": "Reinforcements",
+    "enemies": [
+      [
+        "CRUSADER_GOLD_KNIGHT",
+        [
+          726,
+          91
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          689,
+          74
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          693,
+          107
+        ]
+      ],
+      [
+        "CORE_HORSEMAN",
+        [
+          1254,
+          364
+        ]
+      ],
+      [
+        "CORE_HORSEMAN",
+        [
+          1251,
+          404
+        ]
+      ]
+    ],
+    "dependencies": [],
+    "tip": [
+      "Cavalry's here!"
+    ]
+  },
+  {
+    "id": "I need a medic!",
+    "enemies": [
+      [
+        "CORE_SWORDSMAN",
+        [
+          765,
+          399
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          808,
+          352
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          858,
+          398
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          811,
+          441
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          811,
+          397
+        ]
+      ],
+      [
+        "CRUSADER_CLERIC",
+        [
+          1288,
+          348
+        ]
+      ],
+      [
+        "CRUSADER_CLERIC",
+        [
+          1250,
+          347
+        ]
+      ],
+      [
+        "CRUSADER_CLERIC",
+        [
+          1248,
+          435
+        ]
+      ],
+      [
+        "CRUSADER_CLERIC",
+        [
+          1284,
+          434
+        ]
+      ],
+      [
+        "CRUSADER_PALADIN",
+        [
+          1270,
+          779
+        ]
+      ],
+      [
+        "CRUSADER_PALADIN",
+        [
+          1282,
+          31
+        ]
+      ]
+    ],
+    "dependencies": [],
+    "tip": [
+      "Do you require medical attention?"
+    ]
+  },
+  {
+    "id": "Stronger Together",
+    "enemies": [
+      [
+        "CRUSADER_DEFENDER",
+        [
+          989,
+          362
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          964,
+          393
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          990,
+          420
+        ]
+      ],
+      [
+        "CRUSADER_COMMANDER",
+        [
+          1016,
+          388
+        ]
+      ]
+    ],
+    "dependencies": [],
+    "tip": [
+      "Meet the commander."
+    ]
+  },
+  {
+    "id": "The Lone Swordsman?",
+    "enemies": [
+      [
+        "CORE_SWORDSMAN",
+        [
+          931,
+          345
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          931,
+          345
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          931,
+          345
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          931,
+          345
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          931,
+          345
+        ]
+      ]
+    ],
+    "dependencies": [],
+    "tip": [
+      "He might be alone, but he's still dangerous."
+    ]
+  },
+  {
+    "id": "The Meat Grinder",
+    "enemies": [
+      [
+        "CRUSADER_GOLD_KNIGHT",
+        [
+          736,
+          355
+        ]
+      ],
+      [
+        "CRUSADER_GOLD_KNIGHT",
+        [
+          738,
+          430
+        ]
+      ],
+      [
+        "CRUSADER_GOLD_KNIGHT",
+        [
+          712,
+          393
+        ]
+      ]
+    ],
+    "dependencies": [],
+    "tip": [
+      "Are the 3 elite unit levels getting old?"
+    ]
+  },
+  {
+    "id": "Fear Him.",
+    "enemies": [
+      [
+        "CRUSADER_BLACK_KNIGHT",
+        [
+          901,
+          393
+        ]
+      ]
+    ],
+    "dependencies": [],
+    "tip": [
+      "This one might actually be impossible."
     ]
   }
 ]
