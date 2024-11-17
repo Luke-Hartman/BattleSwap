@@ -5,7 +5,7 @@ from typing import List, Tuple, Optional
 import pygame
 import pygame_gui
 from pygame_gui.elements import UIWindow, UITextEntryLine, UIButton, UITextEntryBox
-from battles import reload_battles, Battle
+from battles import _save_battles, get_battle, reload_battles, Battle, battles
 from components.unit_type import UnitType
 
 class SaveBattleDialog(UIWindow):
@@ -15,14 +15,14 @@ class SaveBattleDialog(UIWindow):
         self,
         manager: pygame_gui.UIManager,
         enemy_placements: List[Tuple[UnitType, Tuple[int, int]]],
-        existing_battle: Optional[Battle] = None
+        existing_battle_id: Optional[str] = None
     ):
         """Initialize the save battle dialog.
         
         Args:
             manager: The UI manager
             enemy_placements: List of enemy unit placements
-            existing_battle: Optional existing battle to edit
+            existing_battle_id: Optional existing battle to edit
         """
         window_size = (300, 370)
         window_pos = (
@@ -33,12 +33,12 @@ class SaveBattleDialog(UIWindow):
         super().__init__(
             rect=pygame.Rect(window_pos, window_size),
             manager=manager,
-            window_display_title="Edit Battle" if existing_battle else "Save Battle",
+            window_display_title="Edit Battle" if existing_battle_id else "Save Battle",
             object_id="#save_battle_dialog"
         )
         
         self.enemy_placements = enemy_placements
-        self.existing_battle = existing_battle
+        self.existing_battle_id = existing_battle_id
         
         # Battle ID input
         pygame_gui.elements.UILabel(
@@ -52,7 +52,7 @@ class SaveBattleDialog(UIWindow):
             relative_rect=pygame.Rect(10, 40, 280, 30),
             manager=manager,
             container=self,
-            initial_text=existing_battle.id if existing_battle else ""
+            initial_text=existing_battle_id if existing_battle_id else ""
         )
         
         # Tips input
@@ -63,7 +63,7 @@ class SaveBattleDialog(UIWindow):
             container=self
         )
         
-        initial_tips = '\n'.join(existing_battle.tip) if existing_battle else ""
+        initial_tips = '\n'.join(get_battle(existing_battle_id).tip) if existing_battle_id else ""
         self.tip_entry = UITextEntryBox(
             relative_rect=pygame.Rect(10, 110, 280, 180),
             manager=manager,
@@ -100,6 +100,12 @@ class SaveBattleDialog(UIWindow):
         if not tips:
             tips = [""]  # Ensure at least one empty tip if none provided
         
+        # Find an existing battle if there is one
+        try:
+            existing_battle = get_battle(battle_id)
+        except ValueError:
+            existing_battle = None
+
         # Create new battle data
         new_battle = {
             "id": battle_id,
@@ -108,29 +114,21 @@ class SaveBattleDialog(UIWindow):
                 for unit_type, position in self.enemy_placements
             ],
             "dependencies": (
-                self.existing_battle.dependencies if self.existing_battle 
+                existing_battle.dependencies if existing_battle
                 else []
             ),
             "tip": tips
         }
         
-        # Load existing battles
-        battles_path = Path(__file__).parent.parent.parent / 'data' / 'battles.json'
-        with open(battles_path, 'r') as f:
-            battles_data = json.load(f)
-        
-        # If editing, replace the battle in its original position
-        if self.existing_battle:
-            for i, battle in enumerate(battles_data):
-                if battle["id"] == self.existing_battle.id:
-                    battles_data[i] = new_battle
+        # If the battle already exists replace the battle in its original position
+        if existing_battle:
+            for i, battle in enumerate(battles):
+                if battle.id == self.existing_battle_id:
+                    battles[i] = Battle(**new_battle)
                     break
         else:
             # If new battle, append to the end
-            battles_data.append(new_battle)
+            battles.append(Battle(**new_battle))
         
         # Save updated battles
-        with open(battles_path, 'w') as f:
-            json.dump(battles_data, f, indent=2)
-        
-        reload_battles()
+        _save_battles()

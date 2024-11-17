@@ -1,6 +1,10 @@
+from typing import List, Tuple, Optional
 import esper
 import pygame
 import pygame_gui
+from battles import get_battle
+from components.unit_type import UnitType
+from entities.units import create_unit
 from processors.ability_processor import AbilityProcessor
 from processors.attached_processor import AttachedProcessor
 from processors.aura_processor import AuraProcessor
@@ -17,14 +21,12 @@ from processors.status_effect_processor import StatusEffectProcessor
 from processors.targetting_processor import TargettingProcessor
 from processors.unique_processor import UniqueProcessor
 from scenes.scene import Scene
-from scenes.events import SELECT_BATTLE_SCENE, SETUP_BATTLE_SCENE, SANDBOX_SCENE
+from scenes.events import SandboxSceneEvent, SelectBattleSceneEvent, SetupBattleSceneEvent
 from camera import Camera
 from ui_components.return_button import ReturnButton
 from progress_manager import ProgressManager, Solution
 from components.unit_state import State, UnitState
 from components.team import Team, TeamType
-from components.unit_type import UnitTypeComponent
-from components.position import Position
 
 class BattleScene(Scene):
     """The scene for the battle."""
@@ -35,8 +37,11 @@ class BattleScene(Scene):
         camera: Camera,
         manager: pygame_gui.UIManager,
         progress_manager: ProgressManager,
-        potential_solution: Solution,
+        ally_placements: List[Tuple[UnitType, Tuple[int, int]]],
+        enemy_placements: List[Tuple[UnitType, Tuple[int, int]]],
+        battle_id: Optional[str] = None,
         sandbox_mode: bool = False,
+        editor_scroll: float = 0.0
     ):
         """Initialize the battle scene.
         
@@ -45,25 +50,25 @@ class BattleScene(Scene):
             camera: The camera object controlling the view.
             manager: The pygame_gui UI manager.
             progress_manager: The progress manager.
-            potential_solution: The solution being tested.
+            ally_placements: The placements of the ally units.
+            enemy_placements: The placements of the enemy units.
+            battle_id: The id of the battle to load.
             sandbox_mode: Whether this battle is in sandbox mode.
+            editor_scroll: The scroll position of the battle editor.
         """
         self.screen = screen
         self.camera = camera
         self.manager = manager
         self.progress_manager = progress_manager
-        self.potential_solution = potential_solution
+        self.ally_placements = ally_placements
+        self.enemy_placements = enemy_placements
+        self.battle_id = battle_id
         self.sandbox_mode = sandbox_mode
-        
-        # Store initial enemy placements for sandbox mode
-        self.enemy_placements = None
-        if sandbox_mode:
-            self.enemy_placements = [
-                (unit_type.type, (pos.x, pos.y))
-                for ent, (unit_type, team, pos) in esper.get_components(UnitTypeComponent, Team, Position)
-                if team.type == TeamType.TEAM2
-            ]
-        
+        self.editor_scroll = editor_scroll
+        for unit_type, position in self.ally_placements:
+            create_unit(x=position[0], y=position[1], unit_type=unit_type, team=TeamType.TEAM1)
+        for unit_type, position in self.enemy_placements:
+            create_unit(x=position[0], y=position[1], unit_type=unit_type, team=TeamType.TEAM2)
         unique_processor = UniqueProcessor()
         targetting_processor = TargettingProcessor()
         idle_processor = IdleProcessor()
@@ -77,6 +82,11 @@ class BattleScene(Scene):
         attached_processor = AttachedProcessor()
         expiration_processor = ExpirationProcessor()
         status_effect_processor = StatusEffectProcessor()
+        animation_processor = AnimationProcessor()
+        rendering_processor = RenderingProcessor(
+            screen=self.screen,
+            camera=self.camera
+        )
         esper.add_processor(unique_processor)
         esper.add_processor(targetting_processor)
         esper.add_processor(idle_processor)
@@ -90,6 +100,8 @@ class BattleScene(Scene):
         esper.add_processor(attached_processor)
         esper.add_processor(expiration_processor)
         esper.add_processor(status_effect_processor)
+        esper.add_processor(animation_processor)
+        esper.add_processor(rendering_processor)
         self.return_button = ReturnButton(self.manager)
         self.restart_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((pygame.display.Info().current_w - 210, 10), (100, 30)),
@@ -128,28 +140,30 @@ class BattleScene(Scene):
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.return_button:
-                        self._cleanup()
-                        pygame.event.post(pygame.event.Event(SELECT_BATTLE_SCENE))
+                        pygame.event.post(SelectBattleSceneEvent().to_event())
                         return True
                     elif event.ui_element == self.victory_button:
-                        self.progress_manager.save_solution(self.potential_solution)
-                        self._cleanup()
-                        pygame.event.post(pygame.event.Event(SELECT_BATTLE_SCENE))
+                        self.progress_manager.save_solution(Solution(self.battle_id, self.ally_placements))
+                        pygame.event.post(SelectBattleSceneEvent().to_event())
                         return True
                     elif event.ui_element == self.restart_button:
-                        self._cleanup()
                         if self.sandbox_mode:
-                            pygame.event.post(pygame.event.Event(
-                                SANDBOX_SCENE,
-                                unit_placements=self.potential_solution.unit_placements,
-                                enemy_placements=self.enemy_placements
-                            ))
+                            pygame.event.post(
+                                SandboxSceneEvent(
+                                    ally_placements=self.ally_placements,
+                                    enemy_placements=self.enemy_placements,
+                                    battle_id=self.battle_id,
+                                    editor_scroll=self.editor_scroll
+                                ).to_event()
+                            )
                         else:
-                            pygame.event.post(pygame.event.Event(
-                                SETUP_BATTLE_SCENE,
-                                battle_id=self.potential_solution.battle_id,
-                                potential_solution=self.potential_solution
-                            ))
+                            pygame.event.post(
+                                SetupBattleSceneEvent(
+                                    ally_placements=self.ally_placements,
+                                    enemy_placements=self.enemy_placements,
+                                    battle_id=self.battle_id
+                                ).to_event()
+                            )
                         return True
             
             self.manager.process_events(event)
@@ -161,24 +175,4 @@ class BattleScene(Scene):
         esper.process(time_delta)
         self.manager.update(time_delta)
         self.manager.draw_ui(self.screen)
-        
         return True
-
-    def _cleanup(self) -> None:
-        """Clean up processors and entity database."""
-        esper.clear_database()
-        esper.remove_processor(UniqueProcessor)
-        esper.remove_processor(TargettingProcessor)
-        esper.remove_processor(IdleProcessor)
-        esper.remove_processor(FleeingProcessor)
-        esper.remove_processor(AbilityProcessor)
-        esper.remove_processor(PursuingProcessor)
-        esper.remove_processor(DeadProcessor)
-        esper.remove_processor(AuraProcessor)
-        esper.remove_processor(RenderingProcessor)
-        esper.remove_processor(AnimationProcessor)
-        esper.remove_processor(MovementProcessor)
-        esper.remove_processor(CollisionProcessor)
-        esper.remove_processor(AttachedProcessor)
-        esper.remove_processor(ExpirationProcessor)
-        esper.remove_processor(StatusEffectProcessor)

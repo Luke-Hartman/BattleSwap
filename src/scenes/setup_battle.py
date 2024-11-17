@@ -1,16 +1,16 @@
 """Setup battle scene for Battle Swap."""
-from typing import Tuple, Optional
+from typing import List, Tuple, Optional
 import esper
 import pygame
 import pygame_gui
 from components.position import Position
 from components.sprite_sheet import SpriteSheet
 from components.team import Team, TeamType
-from components.unit_type import UnitTypeComponent
+from components.unit_type import UnitType, UnitTypeComponent
 from processors.animation_processor import AnimationProcessor
 from processors.rendering_processor import RenderingProcessor, draw_battlefield
 from scenes.scene import Scene
-from scenes.events import SELECT_BATTLE_SCENE, BATTLE_SCENE
+from scenes.events import BattleSceneEvent, SelectBattleSceneEvent
 from CONSTANTS import BATTLEFIELD_HEIGHT, BATTLEFIELD_WIDTH, NO_MANS_LAND_WIDTH
 from camera import Camera
 from entities.units import TeamType, create_unit
@@ -36,7 +36,7 @@ class SetupBattleScene(Scene):
             manager: pygame_gui.UIManager,
             battle_id: str,
             progress_manager: ProgressManager,
-            potential_solution: Optional[Solution] = None
+            ally_placements: List[Tuple[UnitType, Tuple[int, int]]],
     ):
         """Initialize the setup battle scene.
         
@@ -46,7 +46,7 @@ class SetupBattleScene(Scene):
             manager: The pygame_gui manager for the scene.
             battle_id: The name of the battle to set up.
             progress_manager: The progress manager for the game.
-            potential_solution: The potential solution to the battle, if any.
+            ally_placements: List of starting ally placements.
         """
         self.screen = screen
         self.progress_manager = progress_manager
@@ -66,9 +66,6 @@ class SetupBattleScene(Scene):
         animation_processor = AnimationProcessor()
         esper.add_processor(animation_processor)
 
-        for unit_type, position in self.battle.enemies:
-            create_unit(position[0], position[1], unit_type, TeamType.TEAM2)
-
         self.barracks = BarracksUI(
             self.manager,
             self.progress_manager.available_units(current_battle_id=battle_id),
@@ -76,11 +73,12 @@ class SetupBattleScene(Scene):
             sandbox_mode=False,
         )
         self.start_button = StartButton(self.manager)
-        self.potential_solution = potential_solution
-        if potential_solution is not None:
-            for (unit_type, position) in potential_solution.unit_placements:
-                create_unit(position[0], position[1], unit_type, TeamType.TEAM1)
-                self.barracks.remove_unit(unit_type)
+        for (unit_type, position) in ally_placements:
+            create_unit(position[0], position[1], unit_type, TeamType.TEAM1)
+            self.barracks.remove_unit(unit_type)
+
+        for unit_type, position in self.battle.enemies:
+            create_unit(position[0], position[1], unit_type, TeamType.TEAM2)
 
         
         self.tip_box = TipBox(self.manager, self.battle)
@@ -106,17 +104,19 @@ class SetupBattleScene(Scene):
                         if self.selected_unit_id is not None:
                             self.return_unit_to_barracks(self.selected_unit_id)
                             self.selected_unit_id = None
-                        unit_placements = []
+                        ally_placements = []
                         for ent, (team, unit_type, pos) in esper.get_components(Team, UnitTypeComponent, Position):
                             if team.type == TeamType.TEAM1:
-                                unit_placements.append((unit_type.type, (pos.x, pos.y)))
-                        self.potential_solution = Solution(self.battle.id, unit_placements)
-                        pygame.event.post(pygame.event.Event(BATTLE_SCENE, potential_solution=self.potential_solution))
+                                ally_placements.append((unit_type.type, (pos.x, pos.y)))
+                        pygame.event.post(BattleSceneEvent(
+                            ally_placements=ally_placements,
+                            enemy_placements=self.battle.enemies,
+                            battle_id=self.battle.id,
+                            sandbox_mode=False,
+                            editor_scroll=None,
+                        ).to_event())
                     elif event.ui_element == self.return_button:
-                        pygame.event.post(pygame.event.Event(SELECT_BATTLE_SCENE))
-                        esper.clear_database()
-                        esper.remove_processor(RenderingProcessor)
-                        esper.remove_processor(AnimationProcessor)
+                        pygame.event.post(SelectBattleSceneEvent().to_event())
                         return True
                     elif isinstance(event.ui_element, UnitCount):
                         self.create_unit_from_list(event.ui_element)

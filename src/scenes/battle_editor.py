@@ -2,11 +2,11 @@ from collections import defaultdict
 import pygame
 import pygame_gui
 from scenes.scene import Scene
-from scenes.events import SELECT_BATTLE_SCENE, SANDBOX_SCENE
+from scenes.events import SandboxSceneEvent, SelectBattleSceneEvent
 from ui_components.barracks_ui import UnitCount
 from ui_components.save_battle_dialog import SaveBattleDialog
 import battles
-from typing import Dict, Optional
+from typing import Dict
 
 class BattleEditorScene(Scene):
     """Scene for editing and arranging battle levels."""
@@ -15,7 +15,7 @@ class BattleEditorScene(Scene):
         self,
         screen: pygame.Surface,
         manager: pygame_gui.UIManager,
-        scroll_position: float = 0.0
+        editor_scroll: float = 0.0
     ) -> None:
         self.screen = screen
         self.manager = manager
@@ -30,9 +30,9 @@ class BattleEditorScene(Scene):
         self.dependency_add_dropdowns: Dict[str, pygame_gui.elements.UIDropDownMenu] = {}
         self.edit_sandbox_buttons = {}
         screen.fill((0, 0, 0))
-        self.create_ui(scroll_position)
+        self.create_ui(editor_scroll)
     
-    def create_ui(self, scroll_percentage: float = 0.0) -> None:
+    def create_ui(self, editor_scroll: float = 0.0) -> None:
         padding = 5
         inner_padding = 5
         button_height = 30
@@ -311,7 +311,7 @@ class BattleEditorScene(Scene):
                 )
 
         # Set scroll position
-        scroll_container.vert_scroll_bar.start_percentage = scroll_percentage
+        scroll_container.vert_scroll_bar.start_percentage = editor_scroll
     
     def update(self, time_delta: float, events: list[pygame.event.Event]) -> bool:
         """Update the battle editor scene."""
@@ -322,7 +322,7 @@ class BattleEditorScene(Scene):
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element.text == "Return":
-                        pygame.event.post(pygame.event.Event(SELECT_BATTLE_SCENE))
+                        pygame.event.post(SelectBattleSceneEvent().to_event())
                     elif event.ui_element in self.edit_buttons.values():
                         battle_id = list(self.edit_buttons.keys())[list(self.edit_buttons.values()).index(event.ui_element)]
                         battle = battles.get_battle(battle_id)
@@ -330,7 +330,7 @@ class BattleEditorScene(Scene):
                         self.save_dialog = SaveBattleDialog(
                             self.manager,
                             battle.enemies,
-                            existing_battle=battle
+                            existing_battle_id=battle_id
                         )
                     # Handle order buttons
                     elif event.ui_element in self.top_buttons.values():
@@ -373,11 +373,14 @@ class BattleEditorScene(Scene):
                         ]
                         battle = battles.get_battle(battle_id)
                         scroll_percentage = self._get_scroll_percentage()
-                        pygame.event.post(pygame.event.Event(
-                            SANDBOX_SCENE,
-                            battle=battle,
-                            editor_scroll=scroll_percentage
-                        ))
+                        pygame.event.post(
+                            SandboxSceneEvent(
+                                ally_placements=[],
+                                enemy_placements=battle.enemies,
+                                battle_id=battle_id,
+                                editor_scroll=scroll_percentage
+                            ).to_event()
+                        )
                     # Handle save dialog buttons
                     elif hasattr(self, 'save_dialog') and self.save_dialog:
                         if event.ui_element == self.save_dialog.save_button:

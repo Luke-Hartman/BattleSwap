@@ -3,10 +3,9 @@ import pygame
 import battles
 from scenes.scene import Scene
 import pygame_gui
-from scenes.events import SETUP_BATTLE_SCENE, SANDBOX_SCENE, BATTLE_EDITOR_SCENE
+from scenes.events import BattleEditorSceneEvent, SandboxSceneEvent, SetupBattleSceneEvent
 from progress_manager import ProgressManager
 from ui_components.barracks_ui import BarracksUI, UnitCount
-from entities.units import unit_icon_surfaces
 
 battle_swap_icon = pygame.image.load("assets/icons/BattleSwapIcon.png")
 
@@ -147,16 +146,25 @@ class SelectBattleScene(Scene):
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element.text == "Sandbox Mode":
-                        pygame.event.post(pygame.event.Event(SANDBOX_SCENE))
+                        pygame.event.post(SandboxSceneEvent(
+                            ally_placements=[],
+                            enemy_placements=[],
+                            battle_id=None,
+                            editor_scroll=None,    
+                        ).to_event())
                     elif event.ui_element.text == "Battle Editor":
-                        pygame.event.post(pygame.event.Event(BATTLE_EDITOR_SCENE))
+                        pygame.event.post(BattleEditorSceneEvent(editor_scroll=0).to_event())
                     else:
+                        solution = self.progress_manager.solutions.get(event.ui_element.text, None)
+                        if solution is None:
+                            ally_placements = []
+                        else:
+                            ally_placements = solution.unit_placements
                         pygame.event.post(
-                            pygame.event.Event(
-                                SETUP_BATTLE_SCENE,
+                            SetupBattleSceneEvent(
                                 battle_id=event.ui_element.text,
-                                potential_solution=self.progress_manager.solutions.get(event.ui_element.text, None)
-                            )
+                                ally_placements=ally_placements
+                            ).to_event()
                         )
             
             self.manager.process_events(event)

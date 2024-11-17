@@ -98,6 +98,7 @@ def update_battle(updated_battle: Battle) -> None:
             battles[i] = updated_battle
             _save_battles()
             break
+    raise ValueError(f"Battle with id {updated_battle.id} not found")
 
 def delete_battle(battle_id: str) -> None:
     """Delete a battle from the list."""

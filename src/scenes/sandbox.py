@@ -16,10 +16,8 @@ from entities.units import create_unit
 from ui_components.barracks_ui import BarracksUI, UnitCount
 from ui_components.return_button import ReturnButton
 from ui_components.start_button import StartButton
-from scenes.events import SELECT_BATTLE_SCENE, BATTLE_SCENE, BATTLE_EDITOR_SCENE
-from progress_manager import Solution
+from scenes.events import BattleEditorSceneEvent, BattleSceneEvent, SelectBattleSceneEvent
 from ui_components.save_battle_dialog import SaveBattleDialog
-import battles
 
 
 class SandboxScene(Scene):
@@ -34,10 +32,10 @@ class SandboxScene(Scene):
         screen: pygame.Surface,
         camera: Camera,
         manager: pygame_gui.UIManager,
-        unit_placements: Optional[List[Tuple[UnitType, Tuple[int, int]]]] = None,
-        enemy_placements: Optional[List[Tuple[UnitType, Tuple[int, int]]]] = None,
-        editing_battle: Optional[battles.Battle] = None,
-        editor_scroll: float = 0.0,
+        ally_placements: Optional[List[Tuple[UnitType, Tuple[int, int]]]],
+        enemy_placements: Optional[List[Tuple[UnitType, Tuple[int, int]]]],
+        battle_id: Optional[str],
+        editor_scroll: float,
     ):
         """Initialize the sandbox scene.
         
@@ -45,9 +43,9 @@ class SandboxScene(Scene):
             screen: The pygame surface to render to.
             camera: The camera object controlling the view of the battlefield.
             manager: The pygame_gui manager for the scene.
-            unit_placements: Optional list of unit placements to restore
-            enemy_placements: Optional list of enemy placements to restore
-            editing_battle: Optional battle being edited from battle editor
+            ally_placements: List of starting ally placements
+            enemy_placements: List of starting enemy placements
+            battle_id: Optional battle id when saving.
             editor_scroll: Scroll position to return to in battle editor
         """
         self.screen = screen
@@ -74,8 +72,8 @@ class SandboxScene(Scene):
         )
 
         # Restore previous unit placements if provided
-        if unit_placements:
-            for unit_type, pos in unit_placements:
+        if ally_placements:
+            for unit_type, pos in ally_placements:
                 create_unit(pos[0], pos[1], unit_type, TeamType.TEAM1)
         
         if enemy_placements:
@@ -94,7 +92,9 @@ class SandboxScene(Scene):
         
         self.save_dialog: Optional[SaveBattleDialog] = None
 
-        self.editing_battle = editing_battle
+        self.ally_placements = ally_placements
+        self.enemy_placements = enemy_placements
+        self.battle_id = battle_id
         self.editor_scroll = editor_scroll
 
     def update(self, time_delta: float, events: list[pygame.event.Event]) -> bool:
@@ -112,28 +112,38 @@ class SandboxScene(Scene):
                         ]
                         self.save_dialog = SaveBattleDialog(
                             self.manager,
-                            enemy_placements,
-                            existing_battle=self.editing_battle
+                            enemy_placements=enemy_placements,
+                            existing_battle_id=self.battle_id
                         )
                     elif event.ui_element == self.return_button:
-                        if self.editing_battle:
-                            pygame.event.post(pygame.event.Event(
-                                BATTLE_EDITOR_SCENE,
-                                scroll_position=self.editor_scroll
-                            ))
+                        if self.battle_id:
+                            pygame.event.post(
+                                BattleEditorSceneEvent(
+                                    editor_scroll=self.editor_scroll
+                                ).to_event()
+                            )
                         else:
-                            pygame.event.post(pygame.event.Event(SELECT_BATTLE_SCENE))
-                        esper.clear_database()
-                        esper.remove_processor(RenderingProcessor)
-                        esper.remove_processor(AnimationProcessor)
+                            pygame.event.post(SelectBattleSceneEvent().to_event())
                         return True
                     elif event.ui_element == self.start_button:
-                        unit_placements = []
+                        ally_placements = []
                         for ent, (team, unit_type, pos) in esper.get_components(Team, UnitTypeComponent, Position):
                             if team.type == TeamType.TEAM1:
-                                unit_placements.append((unit_type.type, (pos.x, pos.y)))
-                        sandbox_solution = Solution("SANDBOX", unit_placements)
-                        pygame.event.post(pygame.event.Event(BATTLE_SCENE, potential_solution=sandbox_solution, sandbox_mode=True))
+                                ally_placements.append((unit_type.type, (pos.x, pos.y)))
+                        enemy_placements = [
+                            (unit_type.type, (pos.x, pos.y))
+                            for ent, (unit_type, team, pos) in esper.get_components(UnitTypeComponent, Team, Position)
+                            if team.type == TeamType.TEAM2
+                        ]
+                        pygame.event.post(
+                            BattleSceneEvent(
+                                ally_placements=ally_placements,
+                                enemy_placements=enemy_placements,
+                                battle_id=None,
+                                sandbox_mode=True,
+                                editor_scroll=self.editor_scroll
+                            ).to_event()
+                        )
                         return True
                     elif (self.save_dialog and 
                           event.ui_element == self.save_dialog.save_button):

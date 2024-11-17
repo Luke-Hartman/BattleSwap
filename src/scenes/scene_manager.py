@@ -1,3 +1,4 @@
+import esper
 import pygame
 import pygame_gui
 
@@ -8,11 +9,16 @@ from scenes.setup_battle import SetupBattleScene
 from scenes.battle import BattleScene
 from scenes.sandbox import SandboxScene
 from scenes.events import (
-    SETUP_BATTLE_SCENE,
-    BATTLE_SCENE,
-    SELECT_BATTLE_SCENE,
-    SANDBOX_SCENE,
-    BATTLE_EDITOR_SCENE,
+    BATTLE_EDITOR_SCENE_EVENT,
+    BATTLE_SCENE_EVENT,
+    SANDBOX_SCENE_EVENT,
+    SELECT_BATTLE_SCENE_EVENT,
+    SETUP_BATTLE_SCENE_EVENT,
+    BattleEditorSceneEvent,
+    BattleSceneEvent,
+    SandboxSceneEvent,
+    SelectBattleSceneEvent,
+    SetupBattleSceneEvent,
 )
 from scenes.battle_editor import BattleEditorScene
 
@@ -32,55 +38,69 @@ class SceneManager:
             manager=self.manager,
             progress_manager=self.progress_manager
         )
+    
+    def cleanup(self) -> None:
+        """Clean up the current scene."""
+        self.manager.clear_and_reset()
+        esper.clear_database()
+        for processor in esper._processors:
+            esper.remove_processor(type(processor))
 
     def update(self, time_delta: float, events: list[pygame.event.Event]) -> bool:
         """Update the current scene and handle scene transitions."""
         for event in events:
-            if event.type == SETUP_BATTLE_SCENE:
-                self.manager.clear_and_reset()
+            if event.type == SETUP_BATTLE_SCENE_EVENT:
+                validated_event = SetupBattleSceneEvent.model_validate(event.dict)
+                self.cleanup()
                 self.current_scene = SetupBattleScene(
                     screen=self.screen,
                     camera=self.camera,
                     manager=self.manager,
-                    battle_id=event.battle_id,
+                    battle_id=validated_event.battle_id,
                     progress_manager=self.progress_manager,
-                    potential_solution=event.potential_solution
+                    ally_placements=validated_event.ally_placements,
                 )
-            elif event.type == BATTLE_SCENE:
-                self.manager.clear_and_reset()
+            elif event.type == BATTLE_SCENE_EVENT:
+                validated_event = BattleSceneEvent.model_validate(event.dict)
+                self.cleanup()
                 self.current_scene = BattleScene(
                     screen=self.screen,
                     camera=self.camera,
                     manager=self.manager,
                     progress_manager=self.progress_manager,
-                    potential_solution=event.potential_solution,
-                    sandbox_mode=getattr(event, 'sandbox_mode', False)
+                    ally_placements=event.ally_placements,
+                    enemy_placements=validated_event.enemy_placements,
+                    battle_id=validated_event.battle_id,
+                    sandbox_mode=validated_event.sandbox_mode,
+                    editor_scroll=validated_event.editor_scroll
                 )
-            elif event.type == SELECT_BATTLE_SCENE:
-                self.manager.clear_and_reset()
+            elif event.type == SELECT_BATTLE_SCENE_EVENT:
+                validated_event = SelectBattleSceneEvent.model_validate(event.dict)
+                self.cleanup()
                 self.current_scene = SelectBattleScene(
                     screen=self.screen,
                     manager=self.manager,
                     progress_manager=self.progress_manager
                 )
-            elif event.type == SANDBOX_SCENE:
-                self.manager.clear_and_reset()
-                battle = getattr(event, 'battle', None)
+            elif event.type == SANDBOX_SCENE_EVENT:
+                validated_event = SandboxSceneEvent.model_validate(event.dict)
+                self.cleanup()
                 self.current_scene = SandboxScene(
                     screen=self.screen,
                     camera=self.camera,
                     manager=self.manager,
-                    unit_placements=getattr(event, 'unit_placements', None),
-                    enemy_placements=battle.enemies if battle else None,
-                    editing_battle=battle,
-                    editor_scroll=getattr(event, 'editor_scroll', 0.0)
+                    ally_placements=event.ally_placements,
+                    enemy_placements=event.enemy_placements,
+                    battle_id=validated_event.battle_id,
+                    editor_scroll=validated_event.editor_scroll
                 )
-            elif event.type == BATTLE_EDITOR_SCENE:
-                self.manager.clear_and_reset()
+            elif event.type == BATTLE_EDITOR_SCENE_EVENT:
+                validated_event = BattleEditorSceneEvent.model_validate(event.dict)
+                self.cleanup()
                 self.current_scene = BattleEditorScene(
                     screen=self.screen,
                     manager=self.manager,
-                    scroll_position=getattr(event, 'scroll_position', 0.0)
+                    editor_scroll=validated_event.editor_scroll
                 )
         
         return self.current_scene.update(time_delta, events)
