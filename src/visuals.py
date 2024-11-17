@@ -8,7 +8,7 @@ from typing import Optional, Tuple
 import pygame
 from enum import Enum, auto
 
-from CONSTANTS import GAME_SPEED, MINIFOLKS_SCALE, TINY_RPG_SCALE
+from CONSTANTS import MINIFOLKS_SCALE, TINY_RPG_SCALE
 from components.animation import AnimationType
 from components.sprite_sheet import SpriteSheet
 
@@ -56,7 +56,7 @@ def create_visual_spritesheet(visual: Visual, duration: Optional[float] = None, 
         )
     elif visual == Visual.Fireball:
         if duration is None:
-            duration = 0.2 / GAME_SPEED
+            duration = 0.2
         if scale is None:
             scale = TINY_RPG_SCALE
         if frames is not None:
@@ -73,7 +73,7 @@ def create_visual_spritesheet(visual: Visual, duration: Optional[float] = None, 
         )
     elif visual == Visual.Healing:
         if duration is None:
-            duration = 1.0 / GAME_SPEED
+            duration = 1.0
         if scale is None:
             scale = TINY_RPG_SCALE
         if frames is not None:
@@ -90,7 +90,7 @@ def create_visual_spritesheet(visual: Visual, duration: Optional[float] = None, 
         )
     elif visual == Visual.Explosion:
         if duration is None:
-            duration = 0.2 / GAME_SPEED
+            duration = 0.2
         if scale is None:
             scale = TINY_RPG_SCALE
         if frames is not None:
@@ -107,7 +107,7 @@ def create_visual_spritesheet(visual: Visual, duration: Optional[float] = None, 
         )
     elif visual == Visual.CrusaderRedKnightFireSlash:
         if duration is None:
-            duration = 0.2 / GAME_SPEED
+            duration = 0.2
         if scale is None:
             scale = TINY_RPG_SCALE
         if frames is not None:
@@ -124,7 +124,7 @@ def create_visual_spritesheet(visual: Visual, duration: Optional[float] = None, 
         )
     elif visual == Visual.CrusaderGoldKnightAttack:
         if duration is None:
-            duration = 0.2 / GAME_SPEED
+            duration = 0.2
         if scale is None:
             scale = TINY_RPG_SCALE
         if frames is None:
