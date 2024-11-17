@@ -6,6 +6,7 @@ from scenes.events import RETURN_TO_SELECT_BATTLE
 from ui_components.barracks_ui import UnitCount
 from ui_components.save_battle_dialog import SaveBattleDialog
 import battles
+from typing import Dict, Optional
 
 class BattleEditorScene(Scene):
     """Scene for editing and arranging battle levels."""
@@ -18,6 +19,7 @@ class BattleEditorScene(Scene):
         self.up_buttons = {}
         self.down_buttons = {}
         self.bottom_buttons = {}
+        self.move_after_dropdowns: Dict[str, pygame_gui.elements.UIDropDownMenu] = {}
         screen.fill((0, 0, 0))
         self.create_ui()
     
@@ -123,8 +125,8 @@ class BattleEditorScene(Scene):
                 x += UnitCount.size + inner_padding
             
             # Tips (right side) - adjusted to account for fixed unit section width
+            tip_width = 400
             tip_start_x = unit_section_width
-            tip_width = 500
             tip_box = pygame_gui.elements.UITextBox(
                 html_text='<br>'.join(battle.tip),
                 relative_rect=pygame.Rect(
@@ -183,6 +185,31 @@ class BattleEditorScene(Scene):
                 text="bottom",
                 manager=self.manager,
                 container=battle_panel
+            )
+
+            # Move after dropdown
+            dropdown_width = 150
+            dropdown_height = 25
+
+            # Calculate absolute position relative to content_panel
+            battle_panel_rect = battle_panel.get_relative_rect()
+            dropdown_x = battle_panel_rect.left + button_x + button_width + inner_padding
+            dropdown_y = battle_panel_rect.top + inner_padding
+
+            # Create list of battle options, excluding current battle
+            battle_options = ["-- Move after --"] + [
+                b.id for b in battles.battles if b.id != battle.id
+            ]
+
+            self.move_after_dropdowns[battle.id] = pygame_gui.elements.UIDropDownMenu(
+                options_list=battle_options,
+                starting_option="-- Move after --",
+                relative_rect=pygame.Rect(
+                    (dropdown_x, dropdown_y),
+                    (dropdown_width, dropdown_height)
+                ),
+                manager=self.manager,
+                container=content_panel
             )
 
         # Set scroll position
@@ -257,7 +284,18 @@ class BattleEditorScene(Scene):
                         elif event.ui_element == self.save_dialog.cancel_button:
                             self.save_dialog.kill()
                             self.save_dialog = None
-            
+                
+                elif event.user_type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED:
+                    # Find which dropdown was changed
+                    for battle_id, dropdown in self.move_after_dropdowns.items():
+                        if event.ui_element == dropdown and event.text != "-- Select --":
+                            target_battle_id = event.text
+                            scroll_percentage = self._get_scroll_percentage()
+                            battles.move_battle_after(battle_id, target_battle_id)
+                            self.manager.clear_and_reset()
+                            self.create_ui(scroll_percentage)
+                            break
+
             self.manager.process_events(event)
         
         self.manager.update(time_delta)

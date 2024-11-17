@@ -79,3 +79,15 @@ def _save_battles() -> None:
         json.dump(battles_data, file, indent=2)
     reload_battles()
 
+def move_battle_after(battle_id: str, target_battle_id: str) -> None:
+    """Move a battle to the position immediately after the target battle."""
+    battle = get_battle(battle_id)
+    target_index = next(i for i, b in enumerate(battles) if b.id == target_battle_id)
+    
+    # Remove the battle from its current position
+    battles.remove(battle)
+    
+    # Insert it after the target battle
+    battles.insert(target_index + 1, battle)
+    _save_battles()
+
