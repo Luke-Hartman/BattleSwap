@@ -1,11 +1,11 @@
 """Dialog for saving battles in sandbox mode."""
 import json
 from pathlib import Path
-from typing import List, Tuple, Callable
+from typing import List, Tuple, Optional
 import pygame
 import pygame_gui
 from pygame_gui.elements import UIWindow, UITextEntryLine, UIButton, UITextEntryBox
-from battles import reload_battles
+from battles import reload_battles, Battle
 from components.unit_type import UnitType
 
 class SaveBattleDialog(UIWindow):
@@ -15,9 +15,15 @@ class SaveBattleDialog(UIWindow):
         self,
         manager: pygame_gui.UIManager,
         enemy_placements: List[Tuple[UnitType, Tuple[int, int]]],
-        on_complete: Callable[[], None]
+        existing_battle: Optional[Battle] = None
     ):
-        """Initialize the save battle dialog."""
+        """Initialize the save battle dialog.
+        
+        Args:
+            manager: The UI manager
+            enemy_placements: List of enemy unit placements
+            existing_battle: Optional existing battle to edit
+        """
         window_size = (300, 370)
         window_pos = (
             pygame.display.Info().current_w // 2 - window_size[0] // 2,
@@ -27,12 +33,12 @@ class SaveBattleDialog(UIWindow):
         super().__init__(
             rect=pygame.Rect(window_pos, window_size),
             manager=manager,
-            window_display_title="Save Battle",
+            window_display_title="Edit Battle" if existing_battle else "Save Battle",
             object_id="#save_battle_dialog"
         )
         
         self.enemy_placements = enemy_placements
-        self.on_complete = on_complete
+        self.existing_battle = existing_battle
         
         # Battle ID input
         pygame_gui.elements.UILabel(
@@ -45,7 +51,8 @@ class SaveBattleDialog(UIWindow):
         self.battle_id_entry = UITextEntryLine(
             relative_rect=pygame.Rect(10, 40, 280, 30),
             manager=manager,
-            container=self
+            container=self,
+            initial_text=existing_battle.id if existing_battle else ""
         )
         
         # Tips input
@@ -56,11 +63,12 @@ class SaveBattleDialog(UIWindow):
             container=self
         )
         
+        initial_tips = '\n'.join(existing_battle.tip) if existing_battle else ""
         self.tip_entry = UITextEntryBox(
             relative_rect=pygame.Rect(10, 110, 280, 180),
             manager=manager,
             container=self,
-            initial_text=""
+            initial_text=initial_tips
         )
         
         # Save button
@@ -99,7 +107,10 @@ class SaveBattleDialog(UIWindow):
                 [unit_type, list(position)]  # Convert position tuple to list for JSON
                 for unit_type, position in self.enemy_placements
             ],
-            "dependencies": [],  # New battles start with no dependencies
+            "dependencies": (
+                self.existing_battle.dependencies if self.existing_battle 
+                else []
+            ),
             "tip": tips
         }
         
@@ -108,15 +119,18 @@ class SaveBattleDialog(UIWindow):
         with open(battles_path, 'r') as f:
             battles_data = json.load(f)
         
-        # Update or add new battle
-        for i, battle in enumerate(battles_data):
-            if battle["id"] == battle_id:
-                battles_data[i] = new_battle
-                break
+        # If editing, replace the battle in its original position
+        if self.existing_battle:
+            for i, battle in enumerate(battles_data):
+                if battle["id"] == self.existing_battle.id:
+                    battles_data[i] = new_battle
+                    break
         else:
+            # If new battle, append to the end
             battles_data.append(new_battle)
         
         # Save updated battles
         with open(battles_path, 'w') as f:
             json.dump(battles_data, f, indent=2)
+        
         reload_battles()

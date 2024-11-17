@@ -12,7 +12,9 @@ from scenes.events import (
     START_BATTLE,
     RETURN_TO_SELECT_BATTLE,
     SANDBOX_SCENE,
+    BATTLE_EDITOR_SCENE,
 )
+from scenes.battle_editor import BattleEditorScene
 
 class SceneManager:
     """Handles transitions between scenes and catches events for changing scenes."""
@@ -69,6 +71,12 @@ class SceneManager:
                     manager=self.manager,
                     unit_placements=getattr(event, 'unit_placements', None),
                     enemy_placements=getattr(event, 'enemy_placements', None),
+                )
+            elif event.type == BATTLE_EDITOR_SCENE:
+                self.manager.clear_and_reset()
+                self.current_scene = BattleEditorScene(
+                    screen=self.screen,
+                    manager=self.manager
                 )
         
         return self.current_scene.update(time_delta, events)

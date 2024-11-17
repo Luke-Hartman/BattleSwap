@@ -3,7 +3,7 @@ import pygame
 import battles
 from scenes.scene import Scene
 import pygame_gui
-from scenes.events import SETUP_BATTLE_SCENE, SANDBOX_SCENE
+from scenes.events import SETUP_BATTLE_SCENE, SANDBOX_SCENE, BATTLE_EDITOR_SCENE
 from progress_manager import ProgressManager
 from ui_components.barracks_ui import BarracksUI, UnitCount
 from entities.units import unit_icon_surfaces
@@ -25,7 +25,7 @@ class SelectBattleScene(Scene):
         padding = 10
         icon_size = UnitCount.size
         
-        # Add sandbox button to the right side (outside scroll container)
+        # Add sandbox and editor buttons to the right side
         sandbox_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(
                 (pygame.display.Info().current_w - button_width - padding, padding),
@@ -34,7 +34,16 @@ class SelectBattleScene(Scene):
             text="Sandbox Mode",
             manager=self.manager
         )
-
+        
+        editor_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect(
+                (pygame.display.Info().current_w - 2 * button_width - 2 * padding, padding),
+                (button_width, button_height)
+            ),
+            text="Battle Editor",
+            manager=self.manager
+        )
+        
         # Create scrollable container
         container_width = pygame.display.Info().current_w - 2 * padding
         container_height = pygame.display.Info().current_h - 225  # Leave space for other UI elements
@@ -139,6 +148,8 @@ class SelectBattleScene(Scene):
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element.text == "Sandbox Mode":
                         pygame.event.post(pygame.event.Event(SANDBOX_SCENE))
+                    elif event.ui_element.text == "Battle Editor":
+                        pygame.event.post(pygame.event.Event(BATTLE_EDITOR_SCENE))
                     else:
                         pygame.event.post(
                             pygame.event.Event(
