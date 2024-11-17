@@ -41,3 +41,41 @@ def reload_battles() -> None:
 
 reload_battles()
 
+def move_battle_to_top(battle_id: str) -> None:
+    """Move a battle to the top of the list."""
+    battle = get_battle(battle_id)
+    battles.remove(battle)
+    battles.insert(0, battle)
+    _save_battles()
+
+def move_battle_up(battle_id: str) -> None:
+    """Move a battle up one position."""
+    for i, battle in enumerate(battles):
+        if battle.id == battle_id and i > 0:
+            battles[i], battles[i-1] = battles[i-1], battles[i]
+            _save_battles()
+            break
+
+def move_battle_down(battle_id: str) -> None:
+    """Move a battle down one position."""
+    for i, battle in enumerate(battles):
+        if battle.id == battle_id and i < len(battles) - 1:
+            battles[i], battles[i+1] = battles[i+1], battles[i]
+            _save_battles()
+            break
+
+def move_battle_to_bottom(battle_id: str) -> None:
+    """Move a battle to the bottom of the list."""
+    battle = get_battle(battle_id)
+    battles.remove(battle)
+    battles.append(battle)
+    _save_battles()
+
+def _save_battles() -> None:
+    """Save the current battles list to the JSON file."""
+    file_path = Path(__file__).parent.parent / 'data' / 'battles.json'
+    battles_data = [battle.model_dump() for battle in battles]
+    with open(file_path, 'w') as file:
+        json.dump(battles_data, file, indent=2)
+    reload_battles()
+

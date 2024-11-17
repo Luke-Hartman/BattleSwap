@@ -4,7 +4,6 @@ import pygame_gui
 from scenes.scene import Scene
 from scenes.events import RETURN_TO_SELECT_BATTLE
 from ui_components.barracks_ui import UnitCount
-from ui_components.tip_box import TipBox
 from ui_components.save_battle_dialog import SaveBattleDialog
 import battles
 
@@ -15,6 +14,10 @@ class BattleEditorScene(Scene):
         self.screen = screen
         self.manager = manager
         self.edit_buttons = {}
+        self.top_buttons = {}
+        self.up_buttons = {}
+        self.down_buttons = {}
+        self.bottom_buttons = {}
         screen.fill((0, 0, 0))
         self.create_ui()
     
@@ -132,6 +135,56 @@ class BattleEditorScene(Scene):
                 container=battle_panel
             )
 
+            # Order buttons
+            button_width = 60
+            button_height = 20
+            button_x = tip_start_x + tip_width + inner_padding
+            button_spacing = 3
+
+            # Top button
+            self.top_buttons[battle.id] = pygame_gui.elements.UIButton(
+                relative_rect=pygame.Rect(
+                    (button_x, inner_padding),
+                    (button_width, button_height)
+                ),
+                text="top",
+                manager=self.manager,
+                container=battle_panel
+            )
+
+            # Up button
+            self.up_buttons[battle.id] = pygame_gui.elements.UIButton(
+                relative_rect=pygame.Rect(
+                    (button_x, inner_padding + button_height + button_spacing),
+                    (button_width, button_height)
+                ),
+                text="up",
+                manager=self.manager,
+                container=battle_panel
+            )
+
+            # Down button
+            self.down_buttons[battle.id] = pygame_gui.elements.UIButton(
+                relative_rect=pygame.Rect(
+                    (button_x, inner_padding + 2 * (button_height + button_spacing)),
+                    (button_width, button_height)
+                ),
+                text="down",
+                manager=self.manager,
+                container=battle_panel
+            )
+
+            # Bottom button
+            self.bottom_buttons[battle.id] = pygame_gui.elements.UIButton(
+                relative_rect=pygame.Rect(
+                    (button_x, inner_padding + 3 * (button_height + button_spacing)),
+                    (button_width, button_height)
+                ),
+                text="bottom",
+                manager=self.manager,
+                container=battle_panel
+            )
+
         # Set scroll position
         scroll_container.vert_scroll_bar.start_percentage = scroll_percentage
     
@@ -154,6 +207,31 @@ class BattleEditorScene(Scene):
                             battle.enemies,
                             existing_battle=battle
                         )
+                    # Handle order buttons
+                    elif event.ui_element in self.top_buttons.values():
+                        battle_id = list(self.top_buttons.keys())[list(self.top_buttons.values()).index(event.ui_element)]
+                        scroll_percentage = self._get_scroll_percentage()
+                        battles.move_battle_to_top(battle_id)
+                        self.manager.clear_and_reset()
+                        self.create_ui(scroll_percentage)
+                    elif event.ui_element in self.up_buttons.values():
+                        battle_id = list(self.up_buttons.keys())[list(self.up_buttons.values()).index(event.ui_element)]
+                        scroll_percentage = self._get_scroll_percentage()
+                        battles.move_battle_up(battle_id)
+                        self.manager.clear_and_reset()
+                        self.create_ui(scroll_percentage)
+                    elif event.ui_element in self.down_buttons.values():
+                        battle_id = list(self.down_buttons.keys())[list(self.down_buttons.values()).index(event.ui_element)]
+                        scroll_percentage = self._get_scroll_percentage()
+                        battles.move_battle_down(battle_id)
+                        self.manager.clear_and_reset()
+                        self.create_ui(scroll_percentage)
+                    elif event.ui_element in self.bottom_buttons.values():
+                        battle_id = list(self.bottom_buttons.keys())[list(self.bottom_buttons.values()).index(event.ui_element)]
+                        scroll_percentage = self._get_scroll_percentage()
+                        battles.move_battle_to_bottom(battle_id)
+                        self.manager.clear_and_reset()
+                        self.create_ui(scroll_percentage)
                     elif hasattr(self, 'save_dialog'):
                         if event.ui_element == self.save_dialog.save_button:
                             # Find the scroll container and get current position
@@ -185,3 +263,12 @@ class BattleEditorScene(Scene):
         self.manager.update(time_delta)
         self.manager.draw_ui(self.screen)
         return True
+
+    def _get_scroll_percentage(self) -> float:
+        """Get the current scroll position as a percentage."""
+        for element in self.manager.get_sprite_group():
+            if isinstance(element, pygame_gui.elements.UIScrollingContainer):
+                if element.vert_scroll_bar:
+                    return (element.vert_scroll_bar.scroll_position /
+                           element.vert_scroll_bar.scrollable_height)
+        return 0.0
