@@ -91,3 +91,11 @@ def move_battle_after(battle_id: str, target_battle_id: str) -> None:
     battles.insert(target_index + 1, battle)
     _save_battles()
 
+def update_battle(updated_battle: Battle) -> None:
+    """Update a battle in the list and save changes."""
+    for i, battle in enumerate(battles):
+        if battle.id == updated_battle.id:
+            battles[i] = updated_battle
+            _save_battles()
+            break
+

@@ -20,6 +20,9 @@ class BattleEditorScene(Scene):
         self.down_buttons = {}
         self.bottom_buttons = {}
         self.move_after_dropdowns: Dict[str, pygame_gui.elements.UIDropDownMenu] = {}
+        self.dependency_remove_buttons: Dict[str, Dict[str, pygame_gui.elements.UIButton]] = {}
+        self.dependency_add_dropdowns: Dict[str, pygame_gui.elements.UIDropDownMenu] = {}
+        self.dependency_add_buttons: Dict[str, pygame_gui.elements.UIButton] = {}
         screen.fill((0, 0, 0))
         self.create_ui()
     
@@ -125,7 +128,7 @@ class BattleEditorScene(Scene):
                 x += UnitCount.size + inner_padding
             
             # Tips (right side) - adjusted to account for fixed unit section width
-            tip_width = 400
+            tip_width = 300
             tip_start_x = unit_section_width
             tip_box = pygame_gui.elements.UITextBox(
                 html_text='<br>'.join(battle.tip),
@@ -212,6 +215,74 @@ class BattleEditorScene(Scene):
                 container=content_panel
             )
 
+            # Dependencies UI
+            dep_start_x = dropdown_x + dropdown_width + inner_padding
+            dep_y = inner_padding
+
+            # Display current dependencies with remove buttons
+            self.dependency_remove_buttons[battle.id] = {}
+            dep_label = pygame_gui.elements.UILabel(
+                relative_rect=pygame.Rect(
+                    (dep_start_x, dep_y),
+                    (100, 25)
+                ),
+                text="Dependencies:",
+                manager=self.manager,
+                container=battle_panel
+            )
+            
+            # Start dependencies to the right of the label
+            dep_x = dep_start_x + 105  # Move past the label
+            
+            # Display dependencies horizontally
+            for dep_battle_id in battle.dependencies:
+                # Create text box for battle ID with dynamic width
+                dep_text = pygame_gui.elements.UITextBox(
+                    html_text=dep_battle_id,
+                    relative_rect=pygame.Rect(
+                        (dep_x, dep_y),
+                        (-1, 30)  # Height fixed, width will be calculated
+                    ),
+                    manager=self.manager,
+                    container=battle_panel,
+                )
+                
+                # Position remove button right after the text box
+                remove_button = pygame_gui.elements.UIButton(
+                    relative_rect=pygame.Rect(
+                        (dep_x + dep_text.rect.width + 5, dep_y),
+                        (70, 25)
+                    ),
+                    text="Remove",
+                    manager=self.manager,
+                    container=battle_panel
+                )
+                self.dependency_remove_buttons[battle.id][dep_battle_id] = remove_button
+                
+                # Move right for next dependency, using actual width of elements
+                dep_x += dep_text.rect.width + 80  # 75 for button width + 5 padding
+
+            # Add dependency dropdown (position it below the dependencies)
+            add_dep_options = ["-- Add dependency --"] + [
+                b.id for b in battles.battles
+                if b.id != battle.id and b.id not in battle.dependencies
+            ]
+            if len(add_dep_options) > 1:  # Only show if there are battles to add
+                # Calculate absolute position relative to content_panel
+                dropdown_x = battle_panel_rect.left + dep_start_x
+                dropdown_y = battle_panel_rect.top + dep_y + 30  # Position below the dependencies
+
+                self.dependency_add_dropdowns[battle.id] = pygame_gui.elements.UIDropDownMenu(
+                    options_list=add_dep_options,
+                    starting_option="-- Add dependency --",
+                    relative_rect=pygame.Rect(
+                        (dropdown_x, dropdown_y),
+                        (185, 25)
+                    ),
+                    manager=self.manager,
+                    container=content_panel
+                )
+
         # Set scroll position
         scroll_container.vert_scroll_bar.start_percentage = scroll_percentage
     
@@ -285,15 +356,53 @@ class BattleEditorScene(Scene):
                             self.save_dialog.kill()
                             self.save_dialog = None
                 
+                    # Handle dependency remove buttons
+                    for battle_id, buttons in self.dependency_remove_buttons.items():
+                        for dep_battle_id, button in buttons.items():
+                            if event.ui_element == button:
+                                # Remove dependency
+                                battle = battles.get_battle(battle_id)
+                                battle.dependencies.remove(dep_battle_id)
+                                battles.update_battle(battle)
+                                scroll_percentage = self._get_scroll_percentage()
+                                # Refresh UI
+                                self.manager.clear_and_reset()
+                                self.create_ui(scroll_percentage)
+                                break
+
+                    # Handle dependency add dropdown
+                    for battle_id, dropdown in self.dependency_add_dropdowns.items():
+                        if event.ui_element == dropdown and event.text != "-- Add dependency --":
+                            battle = battles.get_battle(battle_id)
+                            if event.text not in battle.dependencies:
+                                battle.dependencies.append(event.text)
+                                battles.update_battle(battle)
+                                scroll_percentage = self._get_scroll_percentage()
+                                self.manager.clear_and_reset()
+                                self.create_ui(scroll_percentage)
+                            break
+
                 elif event.user_type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED:
-                    # Find which dropdown was changed
+                    # Handle move after dropdown
                     for battle_id, dropdown in self.move_after_dropdowns.items():
-                        if event.ui_element == dropdown and event.text != "-- Select --":
+                        if event.ui_element == dropdown and event.text != "-- Move after --":
                             target_battle_id = event.text
                             scroll_percentage = self._get_scroll_percentage()
                             battles.move_battle_after(battle_id, target_battle_id)
                             self.manager.clear_and_reset()
                             self.create_ui(scroll_percentage)
+                            break
+                    
+                    # Handle dependency add dropdown
+                    for battle_id, dropdown in self.dependency_add_dropdowns.items():
+                        if event.ui_element == dropdown and event.text != "-- Add dependency --":
+                            battle = battles.get_battle(battle_id)
+                            if event.text not in battle.dependencies:
+                                battle.dependencies.append(event.text)
+                                battles.update_battle(battle)
+                                scroll_percentage = self._get_scroll_percentage()
+                                self.manager.clear_and_reset()
+                                self.create_ui(scroll_percentage)
                             break
 
             self.manager.process_events(event)
