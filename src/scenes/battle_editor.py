@@ -19,10 +19,10 @@ class BattleEditorScene(Scene):
         self.up_buttons = {}
         self.down_buttons = {}
         self.bottom_buttons = {}
+        self.delete_buttons = {}
         self.move_after_dropdowns: Dict[str, pygame_gui.elements.UIDropDownMenu] = {}
         self.dependency_remove_buttons: Dict[str, Dict[str, pygame_gui.elements.UIButton]] = {}
         self.dependency_add_dropdowns: Dict[str, pygame_gui.elements.UIDropDownMenu] = {}
-        self.dependency_add_buttons: Dict[str, pygame_gui.elements.UIButton] = {}
         screen.fill((0, 0, 0))
         self.create_ui()
     
@@ -262,6 +262,18 @@ class BattleEditorScene(Scene):
                 # Move right for next dependency, using actual width of elements
                 dep_x += dep_text.rect.width + 80  # 75 for button width + 5 padding
 
+            # After dependencies section, add delete button at far right
+            delete_x = battle_panel_rect.right - 70
+            self.delete_buttons[battle.id] = pygame_gui.elements.UIButton(
+                relative_rect=pygame.Rect(
+                    (delete_x, inner_padding),
+                    (60, 25)
+                ),
+                text="Delete",
+                manager=self.manager,
+                container=battle_panel,
+            )
+
             # Add dependency dropdown (position it below the dependencies)
             add_dep_options = ["-- Add dependency --"] + [
                 b.id for b in battles.battles
@@ -381,6 +393,16 @@ class BattleEditorScene(Scene):
                                 self.manager.clear_and_reset()
                                 self.create_ui(scroll_percentage)
                             break
+
+                    # Handle delete buttons
+                    if event.ui_element in self.delete_buttons.values():
+                        battle_id = list(self.delete_buttons.keys())[
+                            list(self.delete_buttons.values()).index(event.ui_element)
+                        ]
+                        battles.delete_battle(battle_id)
+                        scroll_percentage = self._get_scroll_percentage()
+                        self.manager.clear_and_reset()
+                        self.create_ui(scroll_percentage)
 
                 elif event.user_type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED:
                     # Handle move after dropdown

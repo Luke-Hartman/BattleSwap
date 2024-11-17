@@ -99,3 +99,9 @@ def update_battle(updated_battle: Battle) -> None:
             _save_battles()
             break
 
+def delete_battle(battle_id: str) -> None:
+    """Delete a battle from the list."""
+    battle = get_battle(battle_id)
+    battles.remove(battle)
+    _save_battles()
+
