@@ -10,7 +10,7 @@ from components.unit_type import UnitTypeComponent
 from processors.animation_processor import AnimationProcessor
 from processors.rendering_processor import RenderingProcessor, draw_battlefield
 from scenes.scene import Scene
-from scenes.events import RETURN_TO_SELECT_BATTLE, START_BATTLE
+from scenes.events import SELECT_BATTLE_SCENE, BATTLE_SCENE
 from CONSTANTS import BATTLEFIELD_HEIGHT, BATTLEFIELD_WIDTH, NO_MANS_LAND_WIDTH
 from camera import Camera
 from entities.units import TeamType, create_unit
@@ -111,9 +111,9 @@ class SetupBattleScene(Scene):
                             if team.type == TeamType.TEAM1:
                                 unit_placements.append((unit_type.type, (pos.x, pos.y)))
                         self.potential_solution = Solution(self.battle.id, unit_placements)
-                        pygame.event.post(pygame.event.Event(START_BATTLE, potential_solution=self.potential_solution))
+                        pygame.event.post(pygame.event.Event(BATTLE_SCENE, potential_solution=self.potential_solution))
                     elif event.ui_element == self.return_button:
-                        pygame.event.post(pygame.event.Event(RETURN_TO_SELECT_BATTLE))
+                        pygame.event.post(pygame.event.Event(SELECT_BATTLE_SCENE))
                         esper.clear_database()
                         esper.remove_processor(RenderingProcessor)
                         esper.remove_processor(AnimationProcessor)

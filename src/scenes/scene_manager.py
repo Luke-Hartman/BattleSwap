@@ -9,8 +9,8 @@ from scenes.battle import BattleScene
 from scenes.sandbox import SandboxScene
 from scenes.events import (
     SETUP_BATTLE_SCENE,
-    START_BATTLE,
-    RETURN_TO_SELECT_BATTLE,
+    BATTLE_SCENE,
+    SELECT_BATTLE_SCENE,
     SANDBOX_SCENE,
     BATTLE_EDITOR_SCENE,
 )
@@ -46,7 +46,7 @@ class SceneManager:
                     progress_manager=self.progress_manager,
                     potential_solution=event.potential_solution
                 )
-            elif event.type == START_BATTLE:
+            elif event.type == BATTLE_SCENE:
                 self.manager.clear_and_reset()
                 self.current_scene = BattleScene(
                     screen=self.screen,
@@ -56,7 +56,7 @@ class SceneManager:
                     potential_solution=event.potential_solution,
                     sandbox_mode=getattr(event, 'sandbox_mode', False)
                 )
-            elif event.type == RETURN_TO_SELECT_BATTLE:
+            elif event.type == SELECT_BATTLE_SCENE:
                 self.manager.clear_and_reset()
                 self.current_scene = SelectBattleScene(
                     screen=self.screen,
@@ -65,18 +65,22 @@ class SceneManager:
                 )
             elif event.type == SANDBOX_SCENE:
                 self.manager.clear_and_reset()
+                battle = getattr(event, 'battle', None)
                 self.current_scene = SandboxScene(
                     screen=self.screen,
                     camera=self.camera,
                     manager=self.manager,
                     unit_placements=getattr(event, 'unit_placements', None),
-                    enemy_placements=getattr(event, 'enemy_placements', None),
+                    enemy_placements=battle.enemies if battle else None,
+                    editing_battle=battle,
+                    editor_scroll=getattr(event, 'editor_scroll', 0.0)
                 )
             elif event.type == BATTLE_EDITOR_SCENE:
                 self.manager.clear_and_reset()
                 self.current_scene = BattleEditorScene(
                     screen=self.screen,
-                    manager=self.manager
+                    manager=self.manager,
+                    scroll_position=getattr(event, 'scroll_position', 0.0)
                 )
         
         return self.current_scene.update(time_delta, events)

@@ -17,7 +17,7 @@ from processors.status_effect_processor import StatusEffectProcessor
 from processors.targetting_processor import TargettingProcessor
 from processors.unique_processor import UniqueProcessor
 from scenes.scene import Scene
-from scenes.events import RETURN_TO_SELECT_BATTLE, SETUP_BATTLE_SCENE, SANDBOX_SCENE
+from scenes.events import SELECT_BATTLE_SCENE, SETUP_BATTLE_SCENE, SANDBOX_SCENE
 from camera import Camera
 from ui_components.return_button import ReturnButton
 from progress_manager import ProgressManager, Solution
@@ -129,12 +129,12 @@ class BattleScene(Scene):
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.return_button:
                         self._cleanup()
-                        pygame.event.post(pygame.event.Event(RETURN_TO_SELECT_BATTLE))
+                        pygame.event.post(pygame.event.Event(SELECT_BATTLE_SCENE))
                         return True
                     elif event.ui_element == self.victory_button:
                         self.progress_manager.save_solution(self.potential_solution)
                         self._cleanup()
-                        pygame.event.post(pygame.event.Event(RETURN_TO_SELECT_BATTLE))
+                        pygame.event.post(pygame.event.Event(SELECT_BATTLE_SCENE))
                         return True
                     elif event.ui_element == self.restart_button:
                         self._cleanup()

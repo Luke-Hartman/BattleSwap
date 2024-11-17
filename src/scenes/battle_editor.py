@@ -2,7 +2,7 @@ from collections import defaultdict
 import pygame
 import pygame_gui
 from scenes.scene import Scene
-from scenes.events import RETURN_TO_SELECT_BATTLE
+from scenes.events import SELECT_BATTLE_SCENE, SANDBOX_SCENE
 from ui_components.barracks_ui import UnitCount
 from ui_components.save_battle_dialog import SaveBattleDialog
 import battles
@@ -11,7 +11,12 @@ from typing import Dict, Optional
 class BattleEditorScene(Scene):
     """Scene for editing and arranging battle levels."""
     
-    def __init__(self, screen: pygame.Surface, manager: pygame_gui.UIManager) -> None:
+    def __init__(
+        self,
+        screen: pygame.Surface,
+        manager: pygame_gui.UIManager,
+        scroll_position: float = 0.0
+    ) -> None:
         self.screen = screen
         self.manager = manager
         self.edit_buttons = {}
@@ -23,8 +28,9 @@ class BattleEditorScene(Scene):
         self.move_after_dropdowns: Dict[str, pygame_gui.elements.UIDropDownMenu] = {}
         self.dependency_remove_buttons: Dict[str, Dict[str, pygame_gui.elements.UIButton]] = {}
         self.dependency_add_dropdowns: Dict[str, pygame_gui.elements.UIDropDownMenu] = {}
+        self.edit_sandbox_buttons = {}
         screen.fill((0, 0, 0))
-        self.create_ui()
+        self.create_ui(scroll_position)
     
     def create_ui(self, scroll_percentage: float = 0.0) -> None:
         padding = 5
@@ -81,12 +87,11 @@ class BattleEditorScene(Scene):
             )
             
             panel_width = container_width - 40
-            
-            # Battle ID and Edit button side by side
+
             pygame_gui.elements.UILabel(
                 relative_rect=pygame.Rect(
                     (inner_padding, inner_padding),
-                    (unit_section_width - 50, 20)
+                    (unit_section_width - 160, 20)
                 ),
                 text=f"ID: {battle.id}",
                 manager=self.manager,
@@ -95,10 +100,20 @@ class BattleEditorScene(Scene):
             
             self.edit_buttons[battle.id] = pygame_gui.elements.UIButton(
                 relative_rect=pygame.Rect(
-                    (unit_section_width - 50, inner_padding),
+                    (unit_section_width - 150, inner_padding),
                     (50, 20)
                 ),
-                text=f"Edit",
+                text="Edit",
+                manager=self.manager,
+                container=battle_panel
+            )
+            
+            self.edit_sandbox_buttons[battle.id] = pygame_gui.elements.UIButton(
+                relative_rect=pygame.Rect(
+                    (unit_section_width - 90, inner_padding),
+                    (90, 20)
+                ),
+                text="Sandbox",
                 manager=self.manager,
                 container=battle_panel
             )
@@ -307,7 +322,7 @@ class BattleEditorScene(Scene):
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element.text == "Return":
-                        pygame.event.post(pygame.event.Event(RETURN_TO_SELECT_BATTLE))
+                        pygame.event.post(pygame.event.Event(SELECT_BATTLE_SCENE))
                     elif event.ui_element in self.edit_buttons.values():
                         battle_id = list(self.edit_buttons.keys())[list(self.edit_buttons.values()).index(event.ui_element)]
                         battle = battles.get_battle(battle_id)
@@ -342,60 +357,8 @@ class BattleEditorScene(Scene):
                         battles.move_battle_to_bottom(battle_id)
                         self.manager.clear_and_reset()
                         self.create_ui(scroll_percentage)
-                    elif hasattr(self, 'save_dialog'):
-                        if event.ui_element == self.save_dialog.save_button:
-                            # Find the scroll container and get current position
-                            scroll_container = None
-                            for element in self.manager.get_sprite_group():
-                                if isinstance(element, pygame_gui.elements.UIScrollingContainer):
-                                    scroll_container = element
-                                    break
-                            
-                            scroll_percentage = 0.0
-                            if scroll_container and scroll_container.vert_scroll_bar:
-                                scroll_percentage = (scroll_container.vert_scroll_bar.scroll_position /
-                                                  scroll_container.vert_scroll_bar.scrollable_height)
-                            
-                            self.save_dialog.save_battle()
-                            self.save_dialog.kill()
-                            self.save_dialog = None
-                            
-                            # Refresh UI with saved scroll position
-                            self.manager.clear_and_reset()
-                            self.create_ui(scroll_percentage)
-                            
-                        elif event.ui_element == self.save_dialog.cancel_button:
-                            self.save_dialog.kill()
-                            self.save_dialog = None
-                
-                    # Handle dependency remove buttons
-                    for battle_id, buttons in self.dependency_remove_buttons.items():
-                        for dep_battle_id, button in buttons.items():
-                            if event.ui_element == button:
-                                # Remove dependency
-                                battle = battles.get_battle(battle_id)
-                                battle.dependencies.remove(dep_battle_id)
-                                battles.update_battle(battle)
-                                scroll_percentage = self._get_scroll_percentage()
-                                # Refresh UI
-                                self.manager.clear_and_reset()
-                                self.create_ui(scroll_percentage)
-                                break
-
-                    # Handle dependency add dropdown
-                    for battle_id, dropdown in self.dependency_add_dropdowns.items():
-                        if event.ui_element == dropdown and event.text != "-- Add dependency --":
-                            battle = battles.get_battle(battle_id)
-                            if event.text not in battle.dependencies:
-                                battle.dependencies.append(event.text)
-                                battles.update_battle(battle)
-                                scroll_percentage = self._get_scroll_percentage()
-                                self.manager.clear_and_reset()
-                                self.create_ui(scroll_percentage)
-                            break
-
                     # Handle delete buttons
-                    if event.ui_element in self.delete_buttons.values():
+                    elif event.ui_element in self.delete_buttons.values():
                         battle_id = list(self.delete_buttons.keys())[
                             list(self.delete_buttons.values()).index(event.ui_element)
                         ]
@@ -403,6 +366,27 @@ class BattleEditorScene(Scene):
                         scroll_percentage = self._get_scroll_percentage()
                         self.manager.clear_and_reset()
                         self.create_ui(scroll_percentage)
+                    # Handle edit sandbox buttons
+                    elif event.ui_element in self.edit_sandbox_buttons.values():
+                        battle_id = list(self.edit_sandbox_buttons.keys())[
+                            list(self.edit_sandbox_buttons.values()).index(event.ui_element)
+                        ]
+                        battle = battles.get_battle(battle_id)
+                        scroll_percentage = self._get_scroll_percentage()
+                        pygame.event.post(pygame.event.Event(
+                            SANDBOX_SCENE,
+                            battle=battle,
+                            editor_scroll=scroll_percentage
+                        ))
+                    # Handle save dialog buttons
+                    elif hasattr(self, 'save_dialog') and self.save_dialog:
+                        if event.ui_element == self.save_dialog.save_button:
+                            self.save_dialog.save_battle()
+                            self.save_dialog.kill()
+                            self.save_dialog = None
+                        elif event.ui_element == self.save_dialog.cancel_button:
+                            self.save_dialog.kill()
+                            self.save_dialog = None
 
                 elif event.user_type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED:
                     # Handle move after dropdown
