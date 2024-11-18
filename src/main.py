@@ -48,7 +48,7 @@ progress_manager = ProgressManager()
 scene_manager = SceneManager(screen, camera, progress_manager)
 
 while running:
-    dt = clock.tick(60) / 1000.0  # Convert to seconds
+    clock.tick(60)
     events = pygame.event.get()
     # Escape key quits the game
     for event in events:
@@ -57,7 +57,7 @@ while running:
                 running = False
     if not running:
         break
-    running = scene_manager.update(dt, events)
+    running = scene_manager.update(1/60, events)
     pygame.display.flip()
 
 pygame.quit()
