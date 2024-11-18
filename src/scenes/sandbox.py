@@ -18,6 +18,7 @@ from ui_components.return_button import ReturnButton
 from ui_components.start_button import StartButton
 from scenes.events import BattleEditorSceneEvent, BattleSceneEvent, SelectBattleSceneEvent
 from ui_components.save_battle_dialog import SaveBattleDialog
+from ui_components.reload_constants_button import ReloadConstantsButton
 
 
 class SandboxScene(Scene):
@@ -96,6 +97,8 @@ class SandboxScene(Scene):
         self.enemy_placements = enemy_placements
         self.battle_id = battle_id
         self.editor_scroll = editor_scroll
+
+        self.reload_constants_button = ReloadConstantsButton(self.manager)
 
     def update(self, time_delta: float, events: list[pygame.event.Event]) -> bool:
         """Update the sandbox scene."""
@@ -180,6 +183,8 @@ class SandboxScene(Scene):
                         if clicked_on_unit is not None:
                             esper.delete_entity(clicked_on_unit, immediate=True)
 
+
+            self.reload_constants_button.handle_event(event)
             self.manager.process_events(event)
 
         if self.selected_unit_id is not None:

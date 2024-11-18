@@ -18,8 +18,9 @@ from battles import get_battle
 from ui_components.start_button import StartButton
 from ui_components.return_button import ReturnButton
 from ui_components.barracks_ui import BarracksUI, UnitCount
-from progress_manager import ProgressManager, Solution
+from progress_manager import ProgressManager
 from ui_components.tip_box import TipBox
+from ui_components.reload_constants_button import ReloadConstantsButton
 
 
 class SetupBattleScene(Scene):
@@ -82,6 +83,7 @@ class SetupBattleScene(Scene):
 
         
         self.tip_box = TipBox(self.manager, self.battle)
+        self.reload_constants_button = ReloadConstantsButton(self.manager)
 
     def update(self, time_delta: float, events: list[pygame.event.Event]) -> bool:
         """Update the setup battle scene.
@@ -142,6 +144,7 @@ class SetupBattleScene(Scene):
                         clicked_on_unit = self.click_on_unit(mouse_pos)
                         if clicked_on_unit is not None:
                             self.return_unit_to_barracks(clicked_on_unit)
+            self.reload_constants_button.handle_event(event)
             self.manager.process_events(event)
 
         if self.selected_unit_id is not None:

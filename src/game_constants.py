@@ -202,6 +202,9 @@ class GameConstants(BaseModel):
     WEREBEAR_ANIMATION_ATTACK_DURATION: float
     WEREBEAR_ANIMATION_DYING_DURATION: float
 
+    class Config:
+        frozen = False
+
 
 gc = None
 
@@ -209,6 +212,11 @@ def reload_game_constants() -> None:
     """Reload the game constants from the JSON file."""
     global gc
     with open(Path(__file__).parent.parent / "data" / "game_constants.json", "r") as file:
-        gc = GameConstants.model_validate_json(file.read())
+        new_gc = GameConstants.model_validate_json(file.read())
+        if gc is None:
+            gc = new_gc
+        else:
+            for field in gc.model_fields:
+                setattr(gc, field, getattr(new_gc, field))
 
 reload_game_constants()
