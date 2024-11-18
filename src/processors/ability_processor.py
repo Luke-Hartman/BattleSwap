@@ -1,6 +1,5 @@
 """Processor responsible for abilities."""
 
-import time
 import esper
 
 from components.ability import Abilities, Ability, Condition, Cooldown, HasTarget, SatisfiesUnitCondition
@@ -15,12 +14,14 @@ class AbilityProcessor(esper.Processor):
 
     def process(self, dt: float):
         for ent, (unit_state, abilities) in esper.get_components(UnitState, Abilities):
+            for ability in abilities.abilities:
+                ability.time_since_last_use += dt
             if unit_state.state in [State.IDLE, State.PURSUING]:
                 for i, ability in enumerate(abilities.abilities):
                     ability.target = ability.target_strategy.target
                     if not all(check_condition(ent, condition, ability) for condition in ability.trigger_conditions):
                         continue
-                    ability.last_used = time.time()
+                    ability.time_since_last_use = 0
                     emit_event(ABILITY_TRIGGERED, event=AbilityTriggeredEvent(ent, i))
                     break
             if unit_state.state == State.ABILITY1:
@@ -56,7 +57,7 @@ class AbilityProcessor(esper.Processor):
 def check_condition(entity: int, condition: Condition, ability: Ability) -> bool:
     """Check if the condition is met for the given ability."""
     if isinstance(condition, Cooldown):
-        if time.time() - ability.last_used < condition.duration:
+        if ability.time_since_last_use < condition.duration:
             return False
     elif isinstance(condition, HasTarget):
         if ability.target is None:

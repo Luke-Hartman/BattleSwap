@@ -1,6 +1,5 @@
 """Status effect component."""
 
-import time
 from typing import Dict, List
 
 from game_constants import gc
@@ -9,7 +8,7 @@ class StatusEffect:
     """A status effect."""
 
     def __init__(self, duration: float):
-        self.duration = duration
+        self.time_remaining = duration
 
 class CrusaderCommanderEmpowered(StatusEffect):
     """Status effect buffs damage."""
@@ -31,7 +30,6 @@ class Fleeing(StatusEffect):
     def __init__(self, duration: float, entity: int):
         super().__init__(duration)
         self.entity = entity
-        self.created_at = time.time()
 
 
 class StatusEffects:
@@ -49,17 +47,21 @@ class StatusEffects:
     def add(self, status_effect: StatusEffect) -> None:
         """Add a status effect to the unit."""
         self._status_by_type[type(status_effect)].append(status_effect)
-        self.application_time[status_effect] = time.time()
+    
+    def update(self, dt: float) -> None:
+        """Update the status effects."""
+        status_by_type = {}
+        for status_type, status_effects in self._status_by_type.items():
+            new_status_effects = []
+            for status_effect in status_effects:
+                status_effect.time_remaining -= dt
+                if status_effect.time_remaining > 0:
+                    new_status_effects.append(status_effect)
+            status_by_type[status_type] = new_status_effects
+        self._status_by_type = status_by_type
 
     def active_effects(self) -> List[StatusEffect]:
         """Get the active status effects."""
-        for status_effect_type, status_effects in self._status_by_type.items():
-            new_status_effects = []
-            current_time = time.time()
-            for status_effect in status_effects:
-                if current_time - self.application_time[status_effect] < status_effect.duration:
-                    new_status_effects.append(status_effect)
-            self._status_by_type[status_effect_type] = new_status_effects
         active_effects = []
         if self._status_by_type[Ignited]:
             strongest_ignited = max(self._status_by_type[Ignited], key=lambda e: e.dps)
@@ -67,8 +69,8 @@ class StatusEffects:
         if self._status_by_type[CrusaderCommanderEmpowered]:
             active_effects.append(self._status_by_type[CrusaderCommanderEmpowered][0])
         if self._status_by_type[Fleeing]:
-            newest_fleeing = max(self._status_by_type[Fleeing], key=lambda e: e.created_at)
-            active_effects.append(newest_fleeing)
+            longest_fleeing = max(self._status_by_type[Fleeing], key=lambda e: e.time_remaining)
+            active_effects.append(longest_fleeing)
         return active_effects
 
 

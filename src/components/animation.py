@@ -43,5 +43,5 @@ class AnimationState:
     current_frame: int = 0
     """The index of the current frame in the animation sequence."""
 
-    current_time: float = 0.0
-    """The current time elapsed in the animation cycle, in seconds."""
+    time_elapsed: float = 0.0
+    """The time elapsed since the animation began, in seconds."""

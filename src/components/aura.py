@@ -18,5 +18,6 @@ class Aura:
     period: float
     unit_condition: "UnitCondition"
     """Condition that determines which units are affected by the aura."""
-    last_triggered: float = field(default_factory=lambda: float("-inf"))
+    time_elapsed: float = 0
+    """Time since the aura was created."""
 

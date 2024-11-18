@@ -44,21 +44,22 @@ class AnimationProcessor(esper.Processor):
             if anim_state.type != new_anim_type:
                 anim_state.type = new_anim_type
                 anim_state.current_frame = 0
-                anim_state.current_time = 0
+                anim_state.time_elapsed = 0
+            else:
+                anim_state.time_elapsed += dt
 
             # Update the animation frame based on the current time
-            anim_state.current_time += dt
             total_duration = sprite_sheet.animation_durations[anim_state.type]
             frame_count = sprite_sheet.frames[anim_state.type]
             frame_duration = total_duration / frame_count
 
-            if anim_state.current_time >= frame_duration:
-                anim_state.current_time -= frame_duration
+            new_frame = int(anim_state.time_elapsed // frame_duration) % frame_count
+            if new_frame != anim_state.current_frame:
                 if anim_state.type == AnimationType.DYING and anim_state.current_frame == frame_count - 1:
                     # Stop the animation at the last frame for death animation
-                    anim_state.current_frame = frame_count - 1
+                    pass
                 else:
-                    anim_state.current_frame = (anim_state.current_frame + 1) % frame_count
+                    anim_state.current_frame = new_frame
 
                 # Check if ability is activated
                 index = None

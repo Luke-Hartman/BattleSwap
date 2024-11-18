@@ -87,7 +87,6 @@ class BattleScene(Scene):
             screen=self.screen,
             camera=self.camera
         )
-        esper.add_processor(unique_processor)
         esper.add_processor(targetting_processor)
         esper.add_processor(idle_processor)
         esper.add_processor(fleeing_processor)
@@ -101,6 +100,7 @@ class BattleScene(Scene):
         esper.add_processor(expiration_processor)
         esper.add_processor(status_effect_processor)
         esper.add_processor(animation_processor)
+        esper.add_processor(unique_processor)
         esper.add_processor(rendering_processor)
         self.return_button = ReturnButton(self.manager)
         self.restart_button = pygame_gui.elements.UIButton(

@@ -55,8 +55,8 @@ class Ability:
     the current target is locked in until the ability ends.
     """
 
-    last_used: float = float("-inf")
-    """The timestamp of when the ability was last used."""
+    time_since_last_use: float = float("inf")
+    """The time since the ability was last used."""
 
 @dataclass
 class Abilities:

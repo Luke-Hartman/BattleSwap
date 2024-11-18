@@ -11,6 +11,7 @@ class StatusEffectProcessor(esper.Processor):
 
     def process(self, dt: float):
         for ent, (status_effects,) in esper.get_components(StatusEffects):
+            status_effects.update(dt)
             for status_effect in status_effects.active_effects():
                 if isinstance(status_effect, Ignited):
                     damage = status_effect.dps * dt
