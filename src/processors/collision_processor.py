@@ -8,7 +8,7 @@ import esper
 import pygame
 import numpy as np
 from scipy.spatial import KDTree
-from CONSTANTS import BATTLEFIELD_WIDTH, BATTLEFIELD_HEIGHT
+from game_constants import gc
 from components.aoe import AoE
 from components.projectile import Projectile
 from components.sprite_sheet import SpriteSheet
@@ -20,7 +20,7 @@ class CollisionProcessor(esper.Processor):
     """Processor responsible for detecting collisions between projectiles and units of opposing teams."""
 
     def __init__(self):
-        self.battlefield_rect = pygame.Rect(0, 0, BATTLEFIELD_WIDTH, BATTLEFIELD_HEIGHT)
+        self.battlefield_rect = pygame.Rect(0, 0, gc.BATTLEFIELD_WIDTH, gc.BATTLEFIELD_HEIGHT)
 
     def process(self, dt: float):
         team1_projectiles = pygame.sprite.Group()

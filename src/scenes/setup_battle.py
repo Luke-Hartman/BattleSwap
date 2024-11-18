@@ -11,7 +11,7 @@ from processors.animation_processor import AnimationProcessor
 from processors.rendering_processor import RenderingProcessor, draw_battlefield
 from scenes.scene import Scene
 from scenes.events import BattleSceneEvent, SelectBattleSceneEvent
-from CONSTANTS import BATTLEFIELD_HEIGHT, BATTLEFIELD_WIDTH, NO_MANS_LAND_WIDTH
+from game_constants import gc
 from camera import Camera
 from entities.units import TeamType, create_unit
 from battles import get_battle
@@ -57,8 +57,8 @@ class SetupBattleScene(Scene):
         self.rendering_processor = RenderingProcessor(screen, self.camera)
 
         # Center the camera on the battlefield
-        self.camera.x = (BATTLEFIELD_WIDTH - pygame.display.Info().current_w) // 2
-        self.camera.y = (BATTLEFIELD_HEIGHT - pygame.display.Info().current_h) // 2
+        self.camera.x = (gc.BATTLEFIELD_WIDTH - pygame.display.Info().current_w) // 2
+        self.camera.y = (gc.BATTLEFIELD_HEIGHT - pygame.display.Info().current_h) // 2
         
         self.return_button = ReturnButton(self.manager)
         
@@ -149,8 +149,8 @@ class SetupBattleScene(Scene):
             mouse_pos = pygame.mouse.get_pos()
             adjusted_mouse_pos = (mouse_pos[0] + self.camera.x, mouse_pos[1] + self.camera.y)
             x, y = adjusted_mouse_pos
-            x = max(0, min(x, BATTLEFIELD_WIDTH // 2 - NO_MANS_LAND_WIDTH//2))
-            y = max(0, min(y, BATTLEFIELD_HEIGHT))
+            x = max(0, min(x, gc.BATTLEFIELD_WIDTH // 2 - gc.NO_MANS_LAND_WIDTH//2))
+            y = max(0, min(y, gc.BATTLEFIELD_HEIGHT))
             pos.x, pos.y = x, y
         self.camera.update(time_delta)
 

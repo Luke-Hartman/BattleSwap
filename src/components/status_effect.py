@@ -3,7 +3,7 @@
 import time
 from typing import Dict, List
 
-from CONSTANTS import CRUSADER_COMMANDER_EMPOWERED_DAMAGE_PERCENTAGE
+from game_constants import gc
 
 class StatusEffect:
     """A status effect."""
@@ -16,7 +16,7 @@ class CrusaderCommanderEmpowered(StatusEffect):
 
     def __init__(self, duration: float):
         super().__init__(duration)
-        self.damage_percentage = CRUSADER_COMMANDER_EMPOWERED_DAMAGE_PERCENTAGE
+        self.damage_percentage = gc.CRUSADER_COMMANDER_EMPOWERED_DAMAGE_PERCENTAGE
 
 class Ignited(StatusEffect):
     """Status effect that deals damage over time."""

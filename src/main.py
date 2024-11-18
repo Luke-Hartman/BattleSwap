@@ -6,10 +6,6 @@ and runs the main game loop.
 """
 
 import pygame
-from CONSTANTS import (
-    BATTLEFIELD_WIDTH, 
-    BATTLEFIELD_HEIGHT
-)
 from camera import Camera
 from entities.units import load_sprite_sheets
 from handlers.combat_handler import CombatHandler
@@ -17,7 +13,7 @@ from handlers.state_machine import StateMachine
 from progress_manager import ProgressManager
 from scenes.scene_manager import SceneManager
 from visuals import load_visual_sheets
-
+from game_constants import gc
 # Initialize Pygame
 pygame.init()
 
@@ -42,8 +38,8 @@ screen_width = pygame.display.Info().current_w
 screen_height = pygame.display.Info().current_h
 
 # Initialize camera centered on battlefield
-initial_camera_x = (BATTLEFIELD_WIDTH - screen_width) // 2
-initial_camera_y = (BATTLEFIELD_HEIGHT - screen_height) // 2
+initial_camera_x = (gc.BATTLEFIELD_WIDTH - screen_width) // 2
+initial_camera_y = (gc.BATTLEFIELD_HEIGHT - screen_height) // 2
 camera = Camera(screen_width, screen_height)
 camera.x = initial_camera_x
 camera.y = initial_camera_y

@@ -19,7 +19,7 @@ from components.unit_state import UnitState, State
 from components.orientation import Orientation, FacingDirection
 from components.velocity import Velocity
 from camera import Camera
-from CONSTANTS import BATTLEFIELD_WIDTH, BATTLEFIELD_HEIGHT, NO_MANS_LAND_WIDTH
+from game_constants import gc
 
 def draw_battlefield(screen: pygame.Surface, camera: Camera, include_no_mans_land: bool = False):
     """Draw the battlefield background."""
@@ -27,18 +27,18 @@ def draw_battlefield(screen: pygame.Surface, camera: Camera, include_no_mans_lan
     battlefield_rect = pygame.Rect(
         -camera.x,
         -camera.y,
-        BATTLEFIELD_WIDTH,
-        BATTLEFIELD_HEIGHT
+        gc.BATTLEFIELD_WIDTH,
+        gc.BATTLEFIELD_HEIGHT
     )
     pygame.draw.rect(screen, battlefield_color, battlefield_rect)
     if include_no_mans_land:
         pygame.draw.line(screen, (15, 50, 15), 
-                         (BATTLEFIELD_WIDTH // 2 - NO_MANS_LAND_WIDTH // 2 - camera.x, -camera.y), 
-                         (BATTLEFIELD_WIDTH // 2 - NO_MANS_LAND_WIDTH // 2 - camera.x, BATTLEFIELD_HEIGHT - camera.y), 
+                         (gc.BATTLEFIELD_WIDTH // 2 - gc.NO_MANS_LAND_WIDTH // 2 - camera.x, -camera.y), 
+                         (gc.BATTLEFIELD_WIDTH // 2 - gc.NO_MANS_LAND_WIDTH // 2 - camera.x, gc.BATTLEFIELD_HEIGHT - camera.y), 
                          2)
         pygame.draw.line(screen, (15, 50, 15), 
-                         (BATTLEFIELD_WIDTH // 2 + NO_MANS_LAND_WIDTH // 2 - camera.x, -camera.y), 
-                         (BATTLEFIELD_WIDTH // 2 + NO_MANS_LAND_WIDTH // 2 - camera.x, BATTLEFIELD_HEIGHT - camera.y), 
+                         (gc.BATTLEFIELD_WIDTH // 2 + gc.NO_MANS_LAND_WIDTH // 2 - camera.x, -camera.y), 
+                         (gc.BATTLEFIELD_WIDTH // 2 + gc.NO_MANS_LAND_WIDTH // 2 - camera.x, gc.BATTLEFIELD_HEIGHT - camera.y), 
                          2)
 
 class RenderingProcessor(esper.Processor):
@@ -49,7 +49,7 @@ class RenderingProcessor(esper.Processor):
     def __init__(self, screen: pygame.Surface, camera: Camera):
         self.screen = screen
         self.camera = camera
-        self.battlefield_rect = pygame.Rect(0, 0, BATTLEFIELD_WIDTH, BATTLEFIELD_HEIGHT)
+        self.battlefield_rect = pygame.Rect(0, 0, gc.BATTLEFIELD_WIDTH, gc.BATTLEFIELD_HEIGHT)
 
     def process(self, dt: float):
         # Draw all auras

@@ -5,11 +5,9 @@ from typing import List, Optional, Tuple
 
 import esper
 
-from CONSTANTS import TARGETTING_SWITCH_BIAS
 from components.health import Health
 from components.position import Position
-from components.team import Team
-from unit_condition import Alive, UnitCondition
+from unit_condition import UnitCondition
 
 class Ranking(ABC):
 

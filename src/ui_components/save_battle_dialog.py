@@ -1,11 +1,9 @@
 """Dialog for saving battles in sandbox mode."""
-import json
-from pathlib import Path
 from typing import List, Tuple, Optional
 import pygame
 import pygame_gui
 from pygame_gui.elements import UIWindow, UITextEntryLine, UIButton, UITextEntryBox
-from battles import _save_battles, get_battle, reload_battles, Battle, battles
+from battles import _save_battles, get_battle, Battle, battles
 from components.unit_type import UnitType
 
 class SaveBattleDialog(UIWindow):
@@ -124,7 +122,7 @@ class SaveBattleDialog(UIWindow):
         if existing_battle:
             for i, battle in enumerate(battles):
                 if battle.id == self.existing_battle_id:
-                    battles[i] = Battle(**new_battle)
+                    battles[i] = new_battle
                     break
         else:
             # If new battle, append to the end

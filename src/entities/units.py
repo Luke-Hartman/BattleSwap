@@ -8,7 +8,7 @@ import esper
 import pygame
 import os
 from typing import Dict
-from CONSTANTS import *
+from game_constants import gc
 from components.ability import Abilities, Ability, Cooldown, HasTarget, SatisfiesUnitCondition
 from components.armor import Armor
 from components.aura import Aura
@@ -154,8 +154,8 @@ def create_core_archer(x: int, y: int, team: TeamType) -> int:
         y=y,
         team=team,
         unit_type=UnitType.CORE_ARCHER,
-        movement_speed=CORE_ARCHER_MOVEMENT_SPEED,
-        health=CORE_ARCHER_HP,
+        movement_speed=gc.CORE_ARCHER_MOVEMENT_SPEED,
+        health=gc.CORE_ARCHER_HP,
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -179,7 +179,7 @@ def create_core_archer(x: int, y: int, team: TeamType) -> int:
                                 Alive(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=CORE_ARCHER_ATTACK_RANGE,
+                                    distance=gc.CORE_ARCHER_ATTACK_RANGE,
                                     y_bias=2
                                 )
                             ])
@@ -191,7 +191,7 @@ def create_core_archer(x: int, y: int, team: TeamType) -> int:
                                 Alive(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=CORE_ARCHER_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
+                                    distance=gc.CORE_ARCHER_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
                                     y_bias=2
                                 )
                             ])
@@ -200,10 +200,10 @@ def create_core_archer(x: int, y: int, team: TeamType) -> int:
                     effects={
                         7: [
                             CreatesProjectile(
-                                projectile_speed=CORE_ARCHER_PROJECTILE_SPEED,
-                                effects=[Damages(damage=CORE_ARCHER_ATTACK_DAMAGE, recipient=Recipient.TARGET)],
+                                projectile_speed=gc.CORE_ARCHER_PROJECTILE_SPEED,
+                                effects=[Damages(damage=gc.CORE_ARCHER_ATTACK_DAMAGE, recipient=Recipient.TARGET)],
                                 visual=Visual.Arrow,
-                                projectile_offset_x=5*MINIFOLKS_SCALE,
+                                projectile_offset_x=5*gc.MINIFOLKS_SCALE,
                                 projectile_offset_y=0,
                             )
                         ]
@@ -216,10 +216,15 @@ def create_core_archer(x: int, y: int, team: TeamType) -> int:
         surface=sprite_sheets[UnitType.CORE_ARCHER],
         frame_width=32,
         frame_height=32,
-        scale=MINIFOLKS_SCALE,
+        scale=gc.MINIFOLKS_SCALE,
         frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.ABILITY1: 11, AnimationType.DYING: 4},
         rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 3, AnimationType.DYING: 6},
-        animation_durations=CORE_ARCHER_ANIMATION_DURATIONS,
+        animation_durations={
+            AnimationType.IDLE: gc.CORE_ARCHER_ANIMATION_IDLE_DURATION,
+            AnimationType.WALKING: gc.CORE_ARCHER_ANIMATION_WALKING_DURATION,
+            AnimationType.ABILITY1: gc.CORE_ARCHER_ANIMATION_ATTACK_DURATION,
+            AnimationType.DYING: gc.CORE_ARCHER_ANIMATION_DYING_DURATION,
+        },
         sprite_center_offset=(0, -8),
     ))
     return entity
@@ -231,8 +236,8 @@ def create_core_duelist(x: int, y: int, team: TeamType) -> int:
         y=y,
         team=team,
         unit_type=UnitType.CORE_DUELIST,
-        movement_speed=CORE_DUELIST_MOVEMENT_SPEED,
-        health=CORE_DUELIST_HP,
+        movement_speed=gc.CORE_DUELIST_MOVEMENT_SPEED,
+        health=gc.CORE_DUELIST_HP,
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -242,7 +247,7 @@ def create_core_duelist(x: int, y: int, team: TeamType) -> int:
     )
     esper.add_component(
         entity,
-        Destination(target_strategy=targetting_strategy, x_offset=CORE_DUELIST_ATTACK_RANGE*2/3)
+        Destination(target_strategy=targetting_strategy, x_offset=gc.CORE_DUELIST_ATTACK_RANGE*2/3)
     )
     esper.add_component(
         entity,
@@ -256,7 +261,7 @@ def create_core_duelist(x: int, y: int, team: TeamType) -> int:
                                 Alive(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=CORE_DUELIST_ATTACK_RANGE,
+                                    distance=gc.CORE_DUELIST_ATTACK_RANGE,
                                     y_bias=5
                                 ),
                             ])
@@ -268,20 +273,20 @@ def create_core_duelist(x: int, y: int, team: TeamType) -> int:
                                 Alive(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=CORE_DUELIST_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
+                                    distance=gc.CORE_DUELIST_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
                                     y_bias=5
                                 ),
                             ])
                         )
                     ],
                     effects={
-                        5: [Damages(damage=CORE_DUELIST_ATTACK_DAMAGE/7, recipient=Recipient.TARGET)],
-                        6: [Damages(damage=CORE_DUELIST_ATTACK_DAMAGE/7, recipient=Recipient.TARGET)],
-                        7: [Damages(damage=CORE_DUELIST_ATTACK_DAMAGE/7, recipient=Recipient.TARGET)],
-                        8: [Damages(damage=CORE_DUELIST_ATTACK_DAMAGE/7, recipient=Recipient.TARGET)],
-                        9: [Damages(damage=CORE_DUELIST_ATTACK_DAMAGE/7, recipient=Recipient.TARGET)],
-                        10: [Damages(damage=CORE_DUELIST_ATTACK_DAMAGE/7, recipient=Recipient.TARGET)],
-                        11: [Damages(damage=CORE_DUELIST_ATTACK_DAMAGE/7, recipient=Recipient.TARGET)],
+                        5: [Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE/7, recipient=Recipient.TARGET)],
+                        6: [Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE/7, recipient=Recipient.TARGET)],
+                        7: [Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE/7, recipient=Recipient.TARGET)],
+                        8: [Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE/7, recipient=Recipient.TARGET)],
+                        9: [Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE/7, recipient=Recipient.TARGET)],
+                        10: [Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE/7, recipient=Recipient.TARGET)],
+                        11: [Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE/7, recipient=Recipient.TARGET)],
                     },
                 )
             ]
@@ -291,10 +296,15 @@ def create_core_duelist(x: int, y: int, team: TeamType) -> int:
         surface=sprite_sheets[UnitType.CORE_DUELIST],
         frame_width=100,
         frame_height=100,
-        scale=TINY_RPG_SCALE,
+        scale=gc.TINY_RPG_SCALE,
         frames={AnimationType.IDLE: 4, AnimationType.WALKING: 8, AnimationType.ABILITY1: 12, AnimationType.DYING: 4},
         rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 4, AnimationType.DYING: 6},
-        animation_durations=CORE_DUELIST_ANIMATION_DURATIONS,
+        animation_durations={
+            AnimationType.IDLE: gc.CORE_DUELIST_ANIMATION_IDLE_DURATION,
+            AnimationType.WALKING: gc.CORE_DUELIST_ANIMATION_WALKING_DURATION,
+            AnimationType.ABILITY1: gc.CORE_DUELIST_ANIMATION_ATTACK_DURATION,
+            AnimationType.DYING: gc.CORE_DUELIST_ANIMATION_DYING_DURATION,
+        },
         sprite_center_offset=(0, 0),
     ))
     return entity
@@ -306,8 +316,8 @@ def create_core_horseman(x: int, y: int, team: TeamType) -> int:
         y=y,
         team=team,
         unit_type=UnitType.CORE_HORSEMAN,
-        movement_speed=CORE_HORSEMAN_MOVEMENT_SPEED,
-        health=CORE_HORSEMAN_HP,
+        movement_speed=gc.CORE_HORSEMAN_MOVEMENT_SPEED,
+        health=gc.  CORE_HORSEMAN_HP,
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -317,7 +327,7 @@ def create_core_horseman(x: int, y: int, team: TeamType) -> int:
     )
     esper.add_component(
         entity,
-        Destination(target_strategy=targetting_strategy, x_offset=CORE_HORSEMAN_ATTACK_RANGE*2/3)
+        Destination(target_strategy=targetting_strategy, x_offset=gc.CORE_HORSEMAN_ATTACK_RANGE*2/3)
     )
     esper.add_component(
         entity,
@@ -331,7 +341,7 @@ def create_core_horseman(x: int, y: int, team: TeamType) -> int:
                                 Alive(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=CORE_HORSEMAN_ATTACK_RANGE,
+                                    distance=gc.CORE_HORSEMAN_ATTACK_RANGE,
                                     y_bias=5
                                 ),
                             ])
@@ -342,13 +352,13 @@ def create_core_horseman(x: int, y: int, team: TeamType) -> int:
                             unit_condition=All([
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=CORE_HORSEMAN_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
+                                    distance=gc.CORE_HORSEMAN_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
                                     y_bias=5
                                 ),
                             ])
                         )
                     ],
-                    effects={3: [Damages(damage=CORE_HORSEMAN_ATTACK_DAMAGE, recipient=Recipient.TARGET)]},
+                    effects={3: [Damages(damage=gc.CORE_HORSEMAN_ATTACK_DAMAGE, recipient=Recipient.TARGET)]},
                 )
             ]
         )
@@ -357,10 +367,15 @@ def create_core_horseman(x: int, y: int, team: TeamType) -> int:
         surface=sprite_sheets[UnitType.CORE_HORSEMAN],
         frame_width=32,
         frame_height=32,
-        scale=MINIFOLKS_SCALE,
+        scale=gc.MINIFOLKS_SCALE,
         frames={AnimationType.IDLE: 8, AnimationType.WALKING: 6, AnimationType.ABILITY1: 7, AnimationType.DYING: 6},
         rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 4, AnimationType.DYING: 6},
-        animation_durations=CORE_HORSEMAN_ANIMATION_DURATIONS,
+        animation_durations={
+            AnimationType.IDLE: gc.CORE_HORSEMAN_ANIMATION_IDLE_DURATION,
+            AnimationType.WALKING: gc.CORE_HORSEMAN_ANIMATION_WALKING_DURATION,
+            AnimationType.ABILITY1: gc.CORE_HORSEMAN_ANIMATION_ATTACK_DURATION,
+            AnimationType.DYING: gc.CORE_HORSEMAN_ANIMATION_DYING_DURATION,
+        },
         sprite_center_offset=(0, -8),
     ))
     return entity
@@ -372,8 +387,8 @@ def create_core_mage(x: int, y: int, team: TeamType) -> int:
         y=y,
         team=team,
         unit_type=UnitType.CORE_MAGE,
-        movement_speed=CORE_MAGE_MOVEMENT_SPEED,
-        health=CORE_MAGE_HP,
+        movement_speed=gc.CORE_MAGE_MOVEMENT_SPEED,
+        health=gc.CORE_MAGE_HP,
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -397,7 +412,7 @@ def create_core_mage(x: int, y: int, team: TeamType) -> int:
                                 Alive(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=CORE_MAGE_ATTACK_RANGE,
+                                    distance=gc.CORE_MAGE_ATTACK_RANGE,
                                     y_bias=2
                                 )
                             ])
@@ -408,7 +423,7 @@ def create_core_mage(x: int, y: int, team: TeamType) -> int:
                             unit_condition=All([
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=CORE_MAGE_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
+                                    distance=gc.CORE_MAGE_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
                                     y_bias=2
                                 )
                             ])
@@ -417,28 +432,28 @@ def create_core_mage(x: int, y: int, team: TeamType) -> int:
                     effects={
                         7: [
                             CreatesProjectile(
-                                projectile_speed=CORE_MAGE_PROJECTILE_SPEED,
+                                projectile_speed=gc.CORE_MAGE_PROJECTILE_SPEED,
                                 effects=[
                                     CreatesAoE(
                                         effects=[
-                                            Damages(damage=CORE_MAGE_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                                            Damages(damage=gc.CORE_MAGE_ATTACK_DAMAGE, recipient=Recipient.TARGET),
                                             AppliesStatusEffect(
                                                 status_effect=Ignited(
-                                                    dps=CORE_MAGE_IGNITE_DAMAGE/CORE_MAGE_IGNITE_DURATION,
-                                                    duration=CORE_MAGE_IGNITE_DURATION
+                                                    dps=gc.CORE_MAGE_IGNITE_DAMAGE/gc.CORE_MAGE_IGNITE_DURATION,
+                                                    duration=gc.CORE_MAGE_IGNITE_DURATION
                                                 ),
                                                 recipient=Recipient.TARGET
                                             ),
                                         ],
                                         visual=Visual.Explosion,
-                                        duration=CORE_MAGE_FIREBALL_AOE_DURATION,
-                                        scale=CORE_MAGE_FIREBALL_AOE_SCALE,
+                                        duration=gc.CORE_MAGE_FIREBALL_AOE_DURATION,
+                                        scale=gc.CORE_MAGE_FIREBALL_AOE_SCALE,
                                         unit_condition=Alive(),
                                     )
                                 ],
                                 visual=Visual.Fireball,
-                                projectile_offset_x=11*MINIFOLKS_SCALE,
-                                projectile_offset_y=-4*MINIFOLKS_SCALE,
+                                projectile_offset_x=11*gc.MINIFOLKS_SCALE,
+                                projectile_offset_y=-4*gc.MINIFOLKS_SCALE,
                             )
                         ]
                     }
@@ -450,10 +465,15 @@ def create_core_mage(x: int, y: int, team: TeamType) -> int:
         surface=sprite_sheets[UnitType.CORE_MAGE],
         frame_width=32,
         frame_height=32,
-        scale=MINIFOLKS_SCALE,
+        scale=gc.MINIFOLKS_SCALE,
         frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.ABILITY1: 11, AnimationType.DYING: 9},
         rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 3, AnimationType.DYING: 7},
-        animation_durations=CORE_MAGE_ANIMATION_DURATIONS,
+        animation_durations={
+            AnimationType.IDLE: gc.CORE_MAGE_ANIMATION_IDLE_DURATION,
+            AnimationType.WALKING: gc.CORE_MAGE_ANIMATION_WALKING_DURATION,
+            AnimationType.ABILITY1: gc.CORE_MAGE_ANIMATION_ATTACK_DURATION,
+            AnimationType.DYING: gc.CORE_MAGE_ANIMATION_DYING_DURATION,
+        },
         sprite_center_offset=(0, -8),
     ))
     return entity
@@ -465,8 +485,8 @@ def create_core_swordsman(x: int, y: int, team: TeamType) -> int:
         y=y,
         team=team,
         unit_type=UnitType.CORE_SWORDSMAN,
-        movement_speed=CORE_SWORDSMAN_MOVEMENT_SPEED,
-        health=CORE_SWORDSMAN_HP,
+        movement_speed=gc.CORE_SWORDSMAN_MOVEMENT_SPEED,
+        health=gc.CORE_SWORDSMAN_HP,
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -476,7 +496,7 @@ def create_core_swordsman(x: int, y: int, team: TeamType) -> int:
     )
     esper.add_component(
         entity,
-        Destination(target_strategy=targetting_strategy, x_offset=CORE_SWORDSMAN_ATTACK_RANGE*2/3)
+        Destination(target_strategy=targetting_strategy, x_offset=gc.CORE_SWORDSMAN_ATTACK_RANGE*2/3)
     )
     esper.add_component(
         entity,
@@ -490,7 +510,7 @@ def create_core_swordsman(x: int, y: int, team: TeamType) -> int:
                                 Alive(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=CORE_SWORDSMAN_ATTACK_RANGE,
+                                    distance=gc.CORE_SWORDSMAN_ATTACK_RANGE,
                                     y_bias=3
                                 ),
                             ])
@@ -501,13 +521,13 @@ def create_core_swordsman(x: int, y: int, team: TeamType) -> int:
                             unit_condition=All([
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=CORE_SWORDSMAN_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
+                                    distance=gc.CORE_SWORDSMAN_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
                                     y_bias=3
                                 ),
                             ])
                         )
                     ],
-                    effects={2: [Damages(damage=CORE_SWORDSMAN_ATTACK_DAMAGE, recipient=Recipient.TARGET)]},
+                    effects={2: [Damages(damage=gc.CORE_SWORDSMAN_ATTACK_DAMAGE, recipient=Recipient.TARGET)]},
                 )
             ]
         )
@@ -516,10 +536,15 @@ def create_core_swordsman(x: int, y: int, team: TeamType) -> int:
         surface=sprite_sheets[UnitType.CORE_SWORDSMAN],
         frame_width=32,
         frame_height=32,
-        scale=MINIFOLKS_SCALE,
+        scale=gc.MINIFOLKS_SCALE,
         frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.ABILITY1: 6, AnimationType.DYING: 4},
         rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 3, AnimationType.DYING: 5},
-        animation_durations=CORE_SWORDSMAN_ANIMATION_DURATIONS,
+        animation_durations={
+            AnimationType.IDLE: gc.CORE_SWORDSMAN_ANIMATION_IDLE_DURATION,
+            AnimationType.WALKING: gc.CORE_SWORDSMAN_ANIMATION_WALKING_DURATION,
+            AnimationType.ABILITY1: gc.CORE_SWORDSMAN_ANIMATION_ATTACK_DURATION,
+            AnimationType.DYING: gc.CORE_SWORDSMAN_ANIMATION_DYING_DURATION,
+        },
         sprite_center_offset=(0, -8),
     ))
     return entity
@@ -531,8 +556,8 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
         y=y,
         team=team,
         unit_type=UnitType.CRUSADER_BLACK_KNIGHT,
-        movement_speed=CRUSADER_BLACK_KNIGHT_MOVEMENT_SPEED,
-        health=CRUSADER_BLACK_KNIGHT_HP,
+        movement_speed=gc.CRUSADER_BLACK_KNIGHT_MOVEMENT_SPEED,
+        health=gc.CRUSADER_BLACK_KNIGHT_HP,
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -543,7 +568,7 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
     )
     esper.add_component(
         entity,
-        Destination(target_strategy=targetting_strategy, x_offset=CRUSADER_BLACK_KNIGHT_ATTACK_RANGE*2/3)
+        Destination(target_strategy=targetting_strategy, x_offset=gc.CRUSADER_BLACK_KNIGHT_ATTACK_RANGE*2/3)
     )
     esper.add_component(
         entity,
@@ -557,7 +582,7 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
                                 Alive(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=CRUSADER_BLACK_KNIGHT_ATTACK_RANGE,
+                                    distance=gc.CRUSADER_BLACK_KNIGHT_ATTACK_RANGE,
                                     y_bias=5
                                 ),
                             ])
@@ -568,7 +593,7 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
                             unit_condition=All([
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=CRUSADER_BLACK_KNIGHT_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
+                                    distance=gc.CRUSADER_BLACK_KNIGHT_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
                                     y_bias=5
                                 ),
                             ])
@@ -576,23 +601,23 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
                     ],
                     effects={2: [
                         Damages(
-                            damage=CRUSADER_BLACK_KNIGHT_ATTACK_DAMAGE,
+                            damage=gc.CRUSADER_BLACK_KNIGHT_ATTACK_DAMAGE,
                             recipient=Recipient.TARGET,
                             on_kill_effects=[
                                 CreatesTemporaryAura(
-                                    radius=CRUSADER_BLACK_KNIGHT_AURA_RADIUS,
-                                    duration=CRUSADER_BLACK_KNIGHT_AURA_DURATION,
+                                    radius=gc.CRUSADER_BLACK_KNIGHT_AURA_RADIUS,
+                                    duration=gc.CRUSADER_BLACK_KNIGHT_AURA_DURATION,
                                     effects=[
                                         AppliesStatusEffect(
                                             status_effect=Fleeing(
-                                                duration=CRUSADER_BLACK_KNIGHT_AURA_FLEE_DURATION,
+                                                duration=gc.CRUSADER_BLACK_KNIGHT_AURA_FLEE_DURATION,
                                                 entity=entity
                                             ),
                                             recipient=Recipient.TARGET
                                         )
                                     ],
                                     color=(52, 21, 57),
-                                    period=DEFAULT_AURA_PERIOD,
+                                    period=gc.DEFAULT_AURA_PERIOD,
                                     unit_condition=All([
                                         Alive(),
                                         NotEntity(entity=entity),
@@ -612,10 +637,15 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
         surface=sprite_sheets[UnitType.CRUSADER_BLACK_KNIGHT],
         frame_width=100,
         frame_height=100,
-        scale=TINY_RPG_SCALE,
+        scale=gc.TINY_RPG_SCALE,
         frames={AnimationType.IDLE: 6, AnimationType.WALKING: 8, AnimationType.ABILITY1: 6, AnimationType.DYING: 4},
         rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 3, AnimationType.DYING: 6},
-        animation_durations=CRUSADER_BLACK_KNIGHT_ANIMATION_DURATIONS,
+        animation_durations={
+            AnimationType.IDLE: gc.CRUSADER_BLACK_KNIGHT_ANIMATION_IDLE_DURATION,
+            AnimationType.WALKING: gc.CRUSADER_BLACK_KNIGHT_ANIMATION_WALKING_DURATION,
+            AnimationType.ABILITY1: gc.CRUSADER_BLACK_KNIGHT_ANIMATION_ATTACK_DURATION,
+            AnimationType.DYING: gc.CRUSADER_BLACK_KNIGHT_ANIMATION_DYING_DURATION,
+        },
         sprite_center_offset=(0, 0),
     ))
     return entity
@@ -627,8 +657,8 @@ def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
         y=y,
         team=team,
         unit_type=UnitType.CRUSADER_CLERIC,
-        movement_speed=CRUSADER_CLERIC_MOVEMENT_SPEED,
-        health=CRUSADER_CLERIC_HP,
+        movement_speed=gc.CRUSADER_CLERIC_MOVEMENT_SPEED,
+        health=gc.CRUSADER_CLERIC_HP,
     )
     esper.add_component(
         entity,
@@ -643,7 +673,7 @@ def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
                         OnTeam(team=team),
                         Alive(),
                         NotEntity(entity=entity),
-                        MinimumDistanceFromEntity(entity=entity, distance=CRUSADER_CLERIC_ATTACK_RANGE*2/3, y_bias=None)
+                        MinimumDistanceFromEntity(entity=entity, distance=gc.CRUSADER_CLERIC_ATTACK_RANGE*2/3, y_bias=None)
                     ]
                 )
             ),
@@ -668,7 +698,7 @@ def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
                                 Alive(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=CRUSADER_CLERIC_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
+                                    distance=gc.CRUSADER_CLERIC_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
                                     y_bias=2,
                                 )
                             ])
@@ -681,7 +711,7 @@ def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
                     ],
                     effects={
                         2: [
-                            Heals(amount=CRUSADER_CLERIC_HEALING, recipient=Recipient.TARGET),
+                            Heals(amount=gc.CRUSADER_CLERIC_HEALING, recipient=Recipient.TARGET),
                             CreatesAttachedVisual(
                                 visual=Visual.Healing,
                                 animation_duration=1,
@@ -699,10 +729,15 @@ def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
         surface=sprite_sheets[UnitType.CRUSADER_CLERIC],
         frame_width=100,
         frame_height=100,
-        scale=TINY_RPG_SCALE,
+        scale=gc.TINY_RPG_SCALE,
         frames={AnimationType.IDLE: 6, AnimationType.WALKING: 8, AnimationType.ABILITY1: 6, AnimationType.DYING: 4},
         rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 4, AnimationType.DYING: 7},
-        animation_durations=CRUSADER_CLERIC_ANIMATION_DURATIONS,
+        animation_durations={
+            AnimationType.IDLE: gc.CRUSADER_CLERIC_ANIMATION_IDLE_DURATION,
+            AnimationType.WALKING: gc.CRUSADER_CLERIC_ANIMATION_WALKING_DURATION,
+            AnimationType.ABILITY1: gc.CRUSADER_CLERIC_ANIMATION_ATTACK_DURATION,
+            AnimationType.DYING: gc.CRUSADER_CLERIC_ANIMATION_DYING_DURATION,
+        },
         sprite_center_offset=(0, 0),
     ))
     return entity
@@ -714,8 +749,8 @@ def create_crusader_commander(x: int, y: int, team: TeamType) -> int:
         y=y,
         team=team,
         unit_type=UnitType.CRUSADER_COMMANDER,
-        movement_speed=CRUSADER_COMMANDER_MOVEMENT_SPEED,
-        health=CRUSADER_COMMANDER_HP,
+        movement_speed=gc.CRUSADER_COMMANDER_MOVEMENT_SPEED,
+        health=gc.CRUSADER_COMMANDER_HP,
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -725,7 +760,7 @@ def create_crusader_commander(x: int, y: int, team: TeamType) -> int:
     )
     esper.add_component(
         entity,
-        Destination(target_strategy=targetting_strategy, x_offset=CRUSADER_COMMANDER_ATTACK_RANGE*2/3)
+        Destination(target_strategy=targetting_strategy, x_offset=gc.CRUSADER_COMMANDER_ATTACK_RANGE*2/3)
     )
     esper.add_component(
         entity,
@@ -739,7 +774,7 @@ def create_crusader_commander(x: int, y: int, team: TeamType) -> int:
                                 Alive(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=CRUSADER_COMMANDER_ATTACK_RANGE,
+                                    distance=gc.CRUSADER_COMMANDER_ATTACK_RANGE,
                                     y_bias=5
                                 ),
                             ])
@@ -750,13 +785,13 @@ def create_crusader_commander(x: int, y: int, team: TeamType) -> int:
                             unit_condition=All([
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=CRUSADER_COMMANDER_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
+                                    distance=gc.CRUSADER_COMMANDER_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
                                     y_bias=5
                                 ),
                             ])
                         )
                     ],
-                    effects={4: [Damages(damage=CRUSADER_COMMANDER_ATTACK_DAMAGE, recipient=Recipient.TARGET)]},
+                    effects={4: [Damages(damage=gc.CRUSADER_COMMANDER_ATTACK_DAMAGE, recipient=Recipient.TARGET)]},
                 )
             ]
         )
@@ -765,14 +800,14 @@ def create_crusader_commander(x: int, y: int, team: TeamType) -> int:
         entity,
         Aura(
             owner=entity,
-            radius=CRUSADER_COMMANDER_AURA_RADIUS,
+            radius=gc.CRUSADER_COMMANDER_AURA_RADIUS,
             effects=[
                 AppliesStatusEffect(
-                    status_effect=CrusaderCommanderEmpowered(duration=DEFAULT_AURA_PERIOD),
+                    status_effect=CrusaderCommanderEmpowered(duration=gc.DEFAULT_AURA_PERIOD),
                     recipient=Recipient.TARGET
                 )
             ],
-            period=DEFAULT_AURA_PERIOD,
+            period=gc.DEFAULT_AURA_PERIOD,
             unit_condition=All([
                 NotEntity(entity=entity),
                 OnTeam(team=team),
@@ -785,10 +820,15 @@ def create_crusader_commander(x: int, y: int, team: TeamType) -> int:
         surface=sprite_sheets[UnitType.CRUSADER_COMMANDER],
         frame_width=100,
         frame_height=100,
-        scale=TINY_RPG_SCALE,
+        scale=gc.TINY_RPG_SCALE,
         frames={AnimationType.IDLE: 6, AnimationType.WALKING: 8, AnimationType.ABILITY1: 7, AnimationType.DYING: 4},
         rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 4, AnimationType.DYING: 8},
-        animation_durations=CRUSADER_COMMANDER_ANIMATION_DURATIONS,
+        animation_durations={
+            AnimationType.IDLE: gc.CRUSADER_COMMANDER_ANIMATION_IDLE_DURATION,
+            AnimationType.WALKING: gc.CRUSADER_COMMANDER_ANIMATION_WALKING_DURATION,
+            AnimationType.ABILITY1: gc.CRUSADER_COMMANDER_ANIMATION_ATTACK_DURATION,
+            AnimationType.DYING: gc.CRUSADER_COMMANDER_ANIMATION_DYING_DURATION,
+        },
         sprite_center_offset=(0, 0),
     ))
     return entity
@@ -800,8 +840,8 @@ def create_crusader_defender(x: int, y: int, team: TeamType) -> int:
         y=y,
         team=team,
         unit_type=UnitType.CRUSADER_DEFENDER,
-        movement_speed=CRUSADER_DEFENDER_MOVEMENT_SPEED,
-        health=CRUSADER_DEFENDER_HP,
+        movement_speed=gc.CRUSADER_DEFENDER_MOVEMENT_SPEED,
+        health=gc.CRUSADER_DEFENDER_HP,
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -811,7 +851,7 @@ def create_crusader_defender(x: int, y: int, team: TeamType) -> int:
     )
     esper.add_component(
         entity,
-        Destination(target_strategy=targetting_strategy, x_offset=CRUSADER_DEFENDER_ATTACK_RANGE*2/3)
+        Destination(target_strategy=targetting_strategy, x_offset=gc.CRUSADER_DEFENDER_ATTACK_RANGE*2/3)
     )
     esper.add_component(
         entity,
@@ -825,7 +865,7 @@ def create_crusader_defender(x: int, y: int, team: TeamType) -> int:
                                 Alive(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=CRUSADER_DEFENDER_ATTACK_RANGE,
+                                    distance=gc.CRUSADER_DEFENDER_ATTACK_RANGE,
                                     y_bias=3
                                 ),
                             ])
@@ -836,26 +876,31 @@ def create_crusader_defender(x: int, y: int, team: TeamType) -> int:
                             unit_condition=All([
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=CRUSADER_DEFENDER_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
+                                    distance=gc.CRUSADER_DEFENDER_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
                                     y_bias=3
                                 ),
                             ])
                         )
                     ],
-                    effects={4: [Damages(damage=CRUSADER_DEFENDER_ATTACK_DAMAGE, recipient=Recipient.TARGET)]},
+                    effects={4: [Damages(damage=gc.CRUSADER_DEFENDER_ATTACK_DAMAGE, recipient=Recipient.TARGET)]},
                 )
             ]
         )
     )
-    esper.add_component(entity, Armor(flat_reduction=CRUSADER_DEFENDER_ARMOR_FLAT_REDUCTION, percent_reduction=CRUSADER_DEFENDER_ARMOR_PERCENT_REDUCTION))
+    esper.add_component(entity, Armor(flat_reduction=gc.CRUSADER_DEFENDER_ARMOR_FLAT_REDUCTION, percent_reduction=gc.CRUSADER_DEFENDER_ARMOR_PERCENT_REDUCTION))
     esper.add_component(entity, SpriteSheet(
         surface=sprite_sheets[UnitType.CRUSADER_DEFENDER],
         frame_width=32,
         frame_height=32,
-        scale=MINIFOLKS_SCALE,
+        scale=gc.MINIFOLKS_SCALE,
         frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.ABILITY1: 6, AnimationType.DYING: 4},
         rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 3, AnimationType.DYING: 6},
-        animation_durations=CRUSADER_DEFENDER_ANIMATION_DURATIONS,
+        animation_durations={
+            AnimationType.IDLE: gc.CRUSADER_DEFENDER_ANIMATION_IDLE_DURATION,
+            AnimationType.WALKING: gc.CRUSADER_DEFENDER_ANIMATION_WALKING_DURATION,
+            AnimationType.ABILITY1: gc.CRUSADER_DEFENDER_ANIMATION_ATTACK_DURATION,
+            AnimationType.DYING: gc.CRUSADER_DEFENDER_ANIMATION_DYING_DURATION,
+        },
         sprite_center_offset=(0, -8),
     ))
     return entity
@@ -867,8 +912,8 @@ def create_crusader_gold_knight(x: int, y: int, team: TeamType) -> int:
         y=y,
         team=team,
         unit_type=UnitType.CRUSADER_GOLD_KNIGHT,
-        movement_speed=CRUSADER_GOLD_KNIGHT_MOVEMENT_SPEED,
-        health=CRUSADER_GOLD_KNIGHT_HP,
+        movement_speed=gc.CRUSADER_GOLD_KNIGHT_MOVEMENT_SPEED,
+        health=gc.CRUSADER_GOLD_KNIGHT_HP,
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -878,7 +923,7 @@ def create_crusader_gold_knight(x: int, y: int, team: TeamType) -> int:
     )
     esper.add_component(
         entity,
-        Destination(target_strategy=targetting_strategy, x_offset=CRUSADER_GOLD_KNIGHT_ATTACK_RANGE*2/3)
+        Destination(target_strategy=targetting_strategy, x_offset=gc.CRUSADER_GOLD_KNIGHT_ATTACK_RANGE*2/3)
     )
     esper.add_component(
         entity,
@@ -892,7 +937,7 @@ def create_crusader_gold_knight(x: int, y: int, team: TeamType) -> int:
                                 Alive(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=CRUSADER_GOLD_KNIGHT_ATTACK_RANGE,
+                                    distance=gc.CRUSADER_GOLD_KNIGHT_ATTACK_RANGE,
                                     y_bias=3
                                 ),
                             ])
@@ -903,11 +948,11 @@ def create_crusader_gold_knight(x: int, y: int, team: TeamType) -> int:
                         0: [
                             CreatesAoE(
                                 effects=[
-                                    Damages(damage=CRUSADER_GOLD_KNIGHT_ATTACK_DAMAGE/4, recipient=Recipient.TARGET),
-                                    Heals(amount=CRUSADER_GOLD_KNIGHT_ATTACK_HEAL/4, recipient=Recipient.OWNER)
+                                    Damages(damage=gc.CRUSADER_GOLD_KNIGHT_ATTACK_DAMAGE/4, recipient=Recipient.TARGET),
+                                    Heals(amount=gc.CRUSADER_GOLD_KNIGHT_ATTACK_HEAL/4, recipient=Recipient.OWNER)
                                 ],
-                                duration=CRUSADER_GOLD_KNIGHT_ANIMATION_DURATIONS[AnimationType.ABILITY1],
-                                scale=TINY_RPG_SCALE,
+                                duration=gc.CRUSADER_GOLD_KNIGHT_ANIMATION_ATTACK_DURATION,
+                                scale=gc.TINY_RPG_SCALE,
                                 unit_condition=All([
                                     OnTeam(team=team.other()),
                                     Alive()
@@ -924,10 +969,15 @@ def create_crusader_gold_knight(x: int, y: int, team: TeamType) -> int:
         surface=sprite_sheets[UnitType.CRUSADER_GOLD_KNIGHT],
         frame_width=100,
         frame_height=100,
-        scale=TINY_RPG_SCALE,
+        scale=gc.TINY_RPG_SCALE,
         frames={AnimationType.IDLE: 6, AnimationType.WALKING: 8, AnimationType.ABILITY1: 4, AnimationType.DYING: 4},
         rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 6, AnimationType.DYING: 5},
-        animation_durations=CRUSADER_GOLD_KNIGHT_ANIMATION_DURATIONS,
+        animation_durations={
+            AnimationType.IDLE: gc.CRUSADER_GOLD_KNIGHT_ANIMATION_IDLE_DURATION,
+            AnimationType.WALKING: gc.CRUSADER_GOLD_KNIGHT_ANIMATION_WALKING_DURATION,
+            AnimationType.ABILITY1: gc.CRUSADER_GOLD_KNIGHT_ANIMATION_ATTACK_DURATION,
+            AnimationType.DYING: gc.CRUSADER_GOLD_KNIGHT_ANIMATION_DYING_DURATION,
+        },
         sprite_center_offset=(0, 0),
     ))
     return entity
@@ -939,8 +989,8 @@ def create_crusader_longbowman(x: int, y: int, team: TeamType) -> int:
         y=y,
         team=team,
         unit_type=UnitType.CRUSADER_LONGBOWMAN,
-        movement_speed=CRUSADER_LONGBOWMAN_MOVEMENT_SPEED,
-        health=CRUSADER_LONGBOWMAN_HP,
+        movement_speed=gc.CRUSADER_LONGBOWMAN_MOVEMENT_SPEED,
+        health=gc.CRUSADER_LONGBOWMAN_HP,
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -964,7 +1014,7 @@ def create_crusader_longbowman(x: int, y: int, team: TeamType) -> int:
                                 Alive(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=CRUSADER_LONGBOWMAN_ATTACK_RANGE,
+                                    distance=gc.CRUSADER_LONGBOWMAN_ATTACK_RANGE,
                                     y_bias=2
                                 )
                             ])
@@ -976,7 +1026,7 @@ def create_crusader_longbowman(x: int, y: int, team: TeamType) -> int:
                                 Alive(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=CRUSADER_LONGBOWMAN_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
+                                    distance=gc.CRUSADER_LONGBOWMAN_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
                                     y_bias=2
                                 )
                             ])
@@ -984,10 +1034,10 @@ def create_crusader_longbowman(x: int, y: int, team: TeamType) -> int:
                     ],
                     effects={6: [
                         CreatesProjectile(
-                            projectile_speed=CRUSADER_LONGBOWMAN_PROJECTILE_SPEED,
-                            effects=[Damages(damage=CRUSADER_LONGBOWMAN_ATTACK_DAMAGE, recipient=Recipient.TARGET)],
+                            projectile_speed=gc.CRUSADER_LONGBOWMAN_PROJECTILE_SPEED,
+                            effects=[Damages(damage=gc.CRUSADER_LONGBOWMAN_ATTACK_DAMAGE, recipient=Recipient.TARGET)],
                             visual=Visual.Arrow,
-                            projectile_offset_x=5*MINIFOLKS_SCALE,
+                            projectile_offset_x=5*gc.MINIFOLKS_SCALE,
                             projectile_offset_y=0
                         )
                     ]},
@@ -1001,10 +1051,15 @@ def create_crusader_longbowman(x: int, y: int, team: TeamType) -> int:
             surface=sprite_sheets[UnitType.CRUSADER_LONGBOWMAN],
             frame_width=100,
             frame_height=100,
-            scale=TINY_RPG_SCALE,
+            scale=gc.TINY_RPG_SCALE,
             frames={AnimationType.IDLE: 6, AnimationType.WALKING: 7, AnimationType.ABILITY1: 8, AnimationType.DYING: 4},
             rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 2, AnimationType.DYING: 5},
-            animation_durations=CRUSADER_LONGBOWMAN_ANIMATION_DURATIONS,
+            animation_durations={
+                AnimationType.IDLE: gc.CRUSADER_LONGBOWMAN_ANIMATION_IDLE_DURATION,
+                AnimationType.WALKING: gc.CRUSADER_LONGBOWMAN_ANIMATION_WALKING_DURATION,
+                AnimationType.ABILITY1: gc.CRUSADER_LONGBOWMAN_ANIMATION_ATTACK_DURATION,
+                AnimationType.DYING: gc.CRUSADER_LONGBOWMAN_ANIMATION_DYING_DURATION,
+            },
             sprite_center_offset=(0, 0),
         )
     )
@@ -1017,8 +1072,8 @@ def create_crusader_paladin(x: int, y: int, team: TeamType) -> int:
         y=y,
         team=team,
         unit_type=UnitType.CRUSADER_PALADIN,
-        movement_speed=CRUSADER_PALADIN_MOVEMENT_SPEED,
-        health=CRUSADER_PALADIN_HP,
+        movement_speed=gc.CRUSADER_PALADIN_MOVEMENT_SPEED,
+        health=gc.CRUSADER_PALADIN_HP,
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -1028,7 +1083,7 @@ def create_crusader_paladin(x: int, y: int, team: TeamType) -> int:
     )
     esper.add_component(
         entity,
-        Destination(target_strategy=targetting_strategy, x_offset=CRUSADER_PALADIN_ATTACK_RANGE*2/3)
+        Destination(target_strategy=targetting_strategy, x_offset=gc.CRUSADER_PALADIN_ATTACK_RANGE*2/3)
     )
     esper.add_component(
         entity,
@@ -1040,11 +1095,11 @@ def create_crusader_paladin(x: int, y: int, team: TeamType) -> int:
                         unit_condition=Never(),
                     ),
                     trigger_conditions=[
-                        Cooldown(duration=CRUSADER_PALADIN_SKILL_COOLDOWN),
-                        SatisfiesUnitCondition(unit_condition=HealthBelowPercent(percent=CRUSADER_PALADIN_SKILL_HEALTH_PERCENT_THRESHOLD))
+                        Cooldown(duration=gc.CRUSADER_PALADIN_SKILL_COOLDOWN),
+                        SatisfiesUnitCondition(unit_condition=HealthBelowPercent(percent=gc.CRUSADER_PALADIN_SKILL_HEALTH_PERCENT_THRESHOLD))
                     ],
                     persistent_conditions=[],
-                    effects={7: [Heals(amount=CRUSADER_PALADIN_SKILL_HEAL_PERCENT * CRUSADER_PALADIN_HP, recipient=Recipient.OWNER)]},
+                    effects={7: [Heals(amount=gc.CRUSADER_PALADIN_SKILL_HEAL_PERCENT * gc.CRUSADER_PALADIN_HP, recipient=Recipient.OWNER)]},
                 ),
                 Ability(
                     target_strategy=targetting_strategy,
@@ -1054,7 +1109,7 @@ def create_crusader_paladin(x: int, y: int, team: TeamType) -> int:
                                 Alive(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=CRUSADER_PALADIN_ATTACK_RANGE,
+                                    distance=gc.CRUSADER_PALADIN_ATTACK_RANGE,
                                     y_bias=5
                                 ),
                             ])
@@ -1065,13 +1120,13 @@ def create_crusader_paladin(x: int, y: int, team: TeamType) -> int:
                             unit_condition=All([
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=CRUSADER_PALADIN_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
+                                    distance=gc.CRUSADER_PALADIN_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
                                     y_bias=5
                                 ),
                             ])
                         )
                     ],
-                    effects={3: [Damages(damage=CRUSADER_PALADIN_ATTACK_DAMAGE, recipient=Recipient.TARGET)]},
+                    effects={3: [Damages(damage=gc.CRUSADER_PALADIN_ATTACK_DAMAGE, recipient=Recipient.TARGET)]},
                 )
             ]
         )
@@ -1082,10 +1137,16 @@ def create_crusader_paladin(x: int, y: int, team: TeamType) -> int:
             surface=sprite_sheets[UnitType.CRUSADER_PALADIN],
             frame_width=100,
             frame_height=100,
-            scale=TINY_RPG_SCALE,
+            scale=gc.TINY_RPG_SCALE,
             frames={AnimationType.IDLE: 6, AnimationType.WALKING: 8, AnimationType.ABILITY1: 13, AnimationType.ABILITY2: 6, AnimationType.DYING: 4},
             rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 7, AnimationType.ABILITY2: 3, AnimationType.DYING: 6},
-            animation_durations=CRUSADER_PALADIN_ANIMATION_DURATIONS,
+            animation_durations={
+                AnimationType.IDLE: gc.CRUSADER_PALADIN_ANIMATION_IDLE_DURATION,
+                AnimationType.WALKING: gc.CRUSADER_PALADIN_ANIMATION_WALKING_DURATION,
+                AnimationType.ABILITY1: gc.CRUSADER_PALADIN_ANIMATION_SKILL_DURATION,
+                AnimationType.ABILITY2: gc.CRUSADER_PALADIN_ANIMATION_ATTACK_DURATION,
+                AnimationType.DYING: gc.CRUSADER_PALADIN_ANIMATION_DYING_DURATION,
+            },
             sprite_center_offset=(0, 0),
         )
     )
@@ -1098,8 +1159,8 @@ def create_crusader_pikeman(x: int, y: int, team: TeamType) -> int:
         y=y,
         team=team,
         unit_type=UnitType.CRUSADER_PIKEMAN,
-        movement_speed=CRUSADER_PIKEMAN_MOVEMENT_SPEED,
-        health=CRUSADER_PIKEMAN_HP,
+        movement_speed=gc.CRUSADER_PIKEMAN_MOVEMENT_SPEED,
+        health=gc.CRUSADER_PIKEMAN_HP,
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -1109,7 +1170,7 @@ def create_crusader_pikeman(x: int, y: int, team: TeamType) -> int:
     )
     esper.add_component(
         entity,
-        Destination(target_strategy=targetting_strategy, x_offset=CRUSADER_PIKEMAN_ATTACK_RANGE*4/5)
+        Destination(target_strategy=targetting_strategy, x_offset=gc.CRUSADER_PIKEMAN_ATTACK_RANGE*4/5)
     )
     esper.add_component(
         entity,
@@ -1123,7 +1184,7 @@ def create_crusader_pikeman(x: int, y: int, team: TeamType) -> int:
                                 Alive(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=CRUSADER_PIKEMAN_ATTACK_RANGE,
+                                    distance=gc.CRUSADER_PIKEMAN_ATTACK_RANGE,
                                     y_bias=10
                                 ),
                             ])
@@ -1134,13 +1195,13 @@ def create_crusader_pikeman(x: int, y: int, team: TeamType) -> int:
                             unit_condition=All([
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=CRUSADER_PIKEMAN_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
+                                    distance=gc.CRUSADER_PIKEMAN_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
                                     y_bias=10
                                 ),
                             ])
                         )
                     ],
-                    effects={3: [Damages(damage=CRUSADER_PIKEMAN_ATTACK_DAMAGE, recipient=Recipient.TARGET)]},
+                    effects={3: [Damages(damage=gc.CRUSADER_PIKEMAN_ATTACK_DAMAGE, recipient=Recipient.TARGET)]},
                 )
             ]
         )
@@ -1151,10 +1212,15 @@ def create_crusader_pikeman(x: int, y: int, team: TeamType) -> int:
             surface=sprite_sheets[UnitType.CRUSADER_PIKEMAN],
             frame_width=100,
             frame_height=68,
-            scale=MINIFOLKS_SCALE,
+            scale=gc.MINIFOLKS_SCALE,
             frames={AnimationType.IDLE: 4, AnimationType.WALKING: 5, AnimationType.ABILITY1: 7, AnimationType.DYING: 7},
             rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 2, AnimationType.DYING: 3},
-            animation_durations=CRUSADER_PIKEMAN_ANIMATION_DURATIONS,
+            animation_durations={
+                AnimationType.IDLE: gc.CRUSADER_PIKEMAN_ANIMATION_IDLE_DURATION,
+                AnimationType.WALKING: gc.CRUSADER_PIKEMAN_ANIMATION_WALKING_DURATION,
+                AnimationType.ABILITY1: gc.CRUSADER_PIKEMAN_ANIMATION_ATTACK_DURATION,
+                AnimationType.DYING: gc.CRUSADER_PIKEMAN_ANIMATION_DYING_DURATION,
+            },
             sprite_center_offset=(24, -16),
         )
     )
@@ -1167,8 +1233,8 @@ def create_crusader_red_knight(x: int, y: int, team: TeamType) -> int:
         y=y,
         team=team,
         unit_type=UnitType.CRUSADER_RED_KNIGHT,
-        movement_speed=CRUSADER_RED_KNIGHT_MOVEMENT_SPEED,
-        health=CRUSADER_RED_KNIGHT_HP,
+        movement_speed=gc.CRUSADER_RED_KNIGHT_MOVEMENT_SPEED,
+        health=gc.CRUSADER_RED_KNIGHT_HP,
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -1178,7 +1244,7 @@ def create_crusader_red_knight(x: int, y: int, team: TeamType) -> int:
     )
     esper.add_component(
         entity,
-        Destination(target_strategy=targetting_strategy, x_offset=CRUSADER_RED_KNIGHT_ATTACK_RANGE*2/3)
+        Destination(target_strategy=targetting_strategy, x_offset=gc.CRUSADER_RED_KNIGHT_ATTACK_RANGE*2/3)
     )
     esper.add_component(
         entity,
@@ -1192,29 +1258,29 @@ def create_crusader_red_knight(x: int, y: int, team: TeamType) -> int:
                                 Alive(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=CRUSADER_RED_KNIGHT_SKILL_RANGE,
+                                    distance=gc.CRUSADER_RED_KNIGHT_SKILL_RANGE,
                                     y_bias=2
                                 ),
                             ])
                         ),
-                        Cooldown(duration=CRUSADER_RED_KNIGHT_SKILL_COOLDOWN)
+                        Cooldown(duration=gc.CRUSADER_RED_KNIGHT_SKILL_COOLDOWN)
                     ],
                     persistent_conditions=[],
                     effects={7: [
                         CreatesAoE(
                             effects=[
-                                Damages(damage=CRUSADER_RED_KNIGHT_SKILL_DAMAGE, recipient=Recipient.TARGET),
+                                Damages(damage=gc.CRUSADER_RED_KNIGHT_SKILL_DAMAGE, recipient=Recipient.TARGET),
                                 AppliesStatusEffect(
                                     status_effect=Ignited(
-                                        dps=CRUSADER_RED_KNIGHT_SKILL_IGNITE_DAMAGE/CRUSADER_RED_KNIGHT_SKILL_IGNITED_DURATION,
-                                        duration=CRUSADER_RED_KNIGHT_SKILL_IGNITED_DURATION
+                                        dps=gc.CRUSADER_RED_KNIGHT_SKILL_IGNITE_DAMAGE/gc.CRUSADER_RED_KNIGHT_SKILL_IGNITED_DURATION,
+                                        duration=gc.CRUSADER_RED_KNIGHT_SKILL_IGNITED_DURATION
                                     ),
                                     recipient=Recipient.TARGET
                                 )
                             ],
                             visual=Visual.CrusaderRedKnightFireSlash,
-                            duration=CRUSADER_RED_KNIGHT_SKILL_AOE_DURATION,
-                            scale=CRUSADER_RED_KNIGHT_SKILL_AOE_SCALE,
+                            duration=gc.CRUSADER_RED_KNIGHT_SKILL_AOE_DURATION,
+                            scale=gc.CRUSADER_RED_KNIGHT_SKILL_AOE_SCALE,
                             unit_condition=All([
                                 NotEntity(entity=entity),
                                 Alive()
@@ -1230,7 +1296,7 @@ def create_crusader_red_knight(x: int, y: int, team: TeamType) -> int:
                                 Alive(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=CRUSADER_RED_KNIGHT_ATTACK_RANGE,
+                                    distance=gc.CRUSADER_RED_KNIGHT_ATTACK_RANGE,
                                     y_bias=3
                                 )
                             ])
@@ -1241,15 +1307,15 @@ def create_crusader_red_knight(x: int, y: int, team: TeamType) -> int:
                             unit_condition=All([
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=CRUSADER_RED_KNIGHT_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
+                                    distance=gc.CRUSADER_RED_KNIGHT_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
                                     y_bias=3
                                 )
                             ])
                         )
                     ],
                     effects={
-                        3: [Damages(damage=CRUSADER_RED_KNIGHT_ATTACK_DAMAGE, recipient=Recipient.TARGET)],
-                        7: [Damages(damage=CRUSADER_RED_KNIGHT_ATTACK_DAMAGE, recipient=Recipient.TARGET)]
+                        3: [Damages(damage=gc.CRUSADER_RED_KNIGHT_ATTACK_DAMAGE, recipient=Recipient.TARGET)],
+                        7: [Damages(damage=gc.CRUSADER_RED_KNIGHT_ATTACK_DAMAGE, recipient=Recipient.TARGET)]
                     },
                 )
             ]
@@ -1261,10 +1327,16 @@ def create_crusader_red_knight(x: int, y: int, team: TeamType) -> int:
             surface=sprite_sheets[UnitType.CRUSADER_RED_KNIGHT],
             frame_width=100,
             frame_height=100,
-            scale=TINY_RPG_SCALE,
+            scale=gc.TINY_RPG_SCALE,
             frames={AnimationType.IDLE: 6, AnimationType.WALKING: 8, AnimationType.ABILITY1: 11, AnimationType.ABILITY2: 10, AnimationType.DYING: 4},
             rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 4, AnimationType.ABILITY2: 3, AnimationType.DYING: 7},
-            animation_durations=CRUSADER_RED_KNIGHT_ANIMATION_DURATIONS,
+            animation_durations={
+                AnimationType.IDLE: gc.CRUSADER_RED_KNIGHT_ANIMATION_IDLE_DURATION,
+                AnimationType.WALKING: gc.CRUSADER_RED_KNIGHT_ANIMATION_WALKING_DURATION,
+                AnimationType.ABILITY1: gc.CRUSADER_RED_KNIGHT_ANIMATION_SKILL_DURATION,
+                AnimationType.ABILITY2: gc.CRUSADER_RED_KNIGHT_ANIMATION_ATTACK_DURATION,
+                AnimationType.DYING: gc.CRUSADER_RED_KNIGHT_ANIMATION_DYING_DURATION,
+            },
             sprite_center_offset=(0, 0),
         )
     )
@@ -1277,8 +1349,8 @@ def create_werebear(x: int, y: int, team: TeamType) -> int:
         y=y,
         team=team,
         unit_type=UnitType.WEREBEAR,
-        movement_speed=WEREBEAR_MOVEMENT_SPEED,
-        health=WEREBEAR_HP,
+        movement_speed=gc.WEREBEAR_MOVEMENT_SPEED,
+        health=gc.WEREBEAR_HP,
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -1288,7 +1360,7 @@ def create_werebear(x: int, y: int, team: TeamType) -> int:
     )
     esper.add_component(
         entity,
-        Destination(target_strategy=targetting_strategy, x_offset=WEREBEAR_ATTACK_RANGE*2/3)
+        Destination(target_strategy=targetting_strategy, x_offset=gc.WEREBEAR_ATTACK_RANGE*2/3)
     )
     esper.add_component(
         entity,
@@ -1302,7 +1374,7 @@ def create_werebear(x: int, y: int, team: TeamType) -> int:
                                 Alive(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=WEREBEAR_ATTACK_RANGE,
+                                    distance=gc.WEREBEAR_ATTACK_RANGE,
                                     y_bias=3
                                 ),
                             ])
@@ -1313,13 +1385,13 @@ def create_werebear(x: int, y: int, team: TeamType) -> int:
                             unit_condition=All([
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=WEREBEAR_ATTACK_RANGE + TARGETTING_GRACE_DISTANCE,
+                                    distance=gc.WEREBEAR_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
                                     y_bias=3
                                 ),
                             ])
                         )
                     ],
-                    effects={5: [Damages(damage=WEREBEAR_ATTACK_DAMAGE, recipient=Recipient.TARGET)]},
+                    effects={5: [Damages(damage=gc.WEREBEAR_ATTACK_DAMAGE, recipient=Recipient.TARGET)]},
                 )
             ]
         )
@@ -1330,10 +1402,15 @@ def create_werebear(x: int, y: int, team: TeamType) -> int:
             surface=sprite_sheets[UnitType.WEREBEAR],
             frame_width=100,
             frame_height=100,
-            scale=TINY_RPG_SCALE,
+            scale=gc.TINY_RPG_SCALE,
             frames={AnimationType.IDLE: 6, AnimationType.WALKING: 7, AnimationType.ABILITY1: 8, AnimationType.DYING: 4},
             rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 2, AnimationType.DYING: 6},
-            animation_durations=WEREBEAR_ANIMATION_DURATIONS,
+            animation_durations={
+                AnimationType.IDLE: gc.WEREBEAR_ANIMATION_IDLE_DURATION,
+                AnimationType.WALKING: gc.WEREBEAR_ANIMATION_WALKING_DURATION,
+                AnimationType.ABILITY1: gc.WEREBEAR_ANIMATION_ATTACK_DURATION,
+                AnimationType.DYING: gc.WEREBEAR_ANIMATION_DYING_DURATION,
+            },
             sprite_center_offset=(0, 0),
         )
     )

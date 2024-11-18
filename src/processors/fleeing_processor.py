@@ -4,7 +4,7 @@ Fleeing units run away from a specific entity, and they ignore their destination
 """
 
 import esper
-from CONSTANTS import FLEEING_SPEED
+from game_constants import gc
 from components.movement import Movement
 from components.orientation import FacingDirection, Orientation
 from components.position import Position
@@ -38,6 +38,6 @@ class FleeingProcessor(esper.Processor):
                 dx = pos.x - afraid_of_pos.x
                 dy = pos.y - afraid_of_pos.y
                 distance = pos.distance(afraid_of_pos, y_bias=None)
-                velocity.x = dx / distance * FLEEING_SPEED
-                velocity.y = dy / distance * FLEEING_SPEED
+                velocity.x = dx / distance * gc.FLEEING_SPEED
+                velocity.y = dy / distance * gc.FLEEING_SPEED
                 orientation.facing = FacingDirection.LEFT if dx < 0 else FacingDirection.RIGHT

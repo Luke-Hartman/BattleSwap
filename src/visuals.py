@@ -8,10 +8,9 @@ from typing import Optional, Tuple
 import pygame
 from enum import Enum, auto
 
-from CONSTANTS import MINIFOLKS_SCALE, TINY_RPG_SCALE
 from components.animation import AnimationType
 from components.sprite_sheet import SpriteSheet
-
+from game_constants import gc
 class Visual(Enum):
     Arrow = auto()
     Fireball = auto()
@@ -41,7 +40,7 @@ def create_visual_spritesheet(visual: Visual, duration: Optional[float] = None, 
         if duration is None:
             duration = 1.0 # Doesn't matter for single frame
         if scale is None:
-            scale = MINIFOLKS_SCALE
+            scale = gc.MINIFOLKS_SCALE
         if frames is not None:
             raise NotImplementedError("Arrow visual cannot specify frames")
         return SpriteSheet(
@@ -58,7 +57,7 @@ def create_visual_spritesheet(visual: Visual, duration: Optional[float] = None, 
         if duration is None:
             duration = 0.2
         if scale is None:
-            scale = TINY_RPG_SCALE
+            scale = gc.TINY_RPG_SCALE
         if frames is not None:
             raise NotImplementedError("Fireball visual cannot specify frames")
         return SpriteSheet(
@@ -75,7 +74,7 @@ def create_visual_spritesheet(visual: Visual, duration: Optional[float] = None, 
         if duration is None:
             duration = 1.0
         if scale is None:
-            scale = TINY_RPG_SCALE
+            scale = gc.TINY_RPG_SCALE
         if frames is not None:
             raise NotImplementedError("Healing visual cannot specify frames")
         return SpriteSheet(
@@ -92,7 +91,7 @@ def create_visual_spritesheet(visual: Visual, duration: Optional[float] = None, 
         if duration is None:
             duration = 0.2
         if scale is None:
-            scale = TINY_RPG_SCALE
+            scale = gc.TINY_RPG_SCALE
         if frames is not None:
             raise NotImplementedError("Explosion visual cannot specify frames")
         return SpriteSheet(
@@ -109,7 +108,7 @@ def create_visual_spritesheet(visual: Visual, duration: Optional[float] = None, 
         if duration is None:
             duration = 0.2
         if scale is None:
-            scale = TINY_RPG_SCALE
+            scale = gc.TINY_RPG_SCALE
         if frames is not None:
             raise NotImplementedError("CrusaderRedKnightFireSlash visual cannot specify frames")
         return SpriteSheet(
@@ -126,7 +125,7 @@ def create_visual_spritesheet(visual: Visual, duration: Optional[float] = None, 
         if duration is None:
             duration = 0.2
         if scale is None:
-            scale = TINY_RPG_SCALE
+            scale = gc.TINY_RPG_SCALE
         if frames is None:
             frames = (0, 4)
         return SpriteSheet(

@@ -10,7 +10,7 @@ from components.unit_type import UnitType, UnitTypeComponent
 from processors.animation_processor import AnimationProcessor
 from processors.rendering_processor import RenderingProcessor, draw_battlefield
 from scenes.scene import Scene
-from CONSTANTS import BATTLEFIELD_HEIGHT, BATTLEFIELD_WIDTH, NO_MANS_LAND_WIDTH
+from game_constants import gc
 from camera import Camera
 from entities.units import create_unit
 from ui_components.barracks_ui import BarracksUI, UnitCount
@@ -55,8 +55,8 @@ class SandboxScene(Scene):
         self.rendering_processor = RenderingProcessor(screen, self.camera)
 
         # Center the camera on the battlefield
-        self.camera.x = (BATTLEFIELD_WIDTH - pygame.display.Info().current_w) // 2
-        self.camera.y = (BATTLEFIELD_HEIGHT - pygame.display.Info().current_h) // 2
+        self.camera.x = (gc.BATTLEFIELD_WIDTH - pygame.display.Info().current_w) // 2
+        self.camera.y = (gc.BATTLEFIELD_HEIGHT - pygame.display.Info().current_h) // 2
         
         self.return_button = ReturnButton(self.manager)
         self.start_button = StartButton(self.manager)
@@ -190,7 +190,7 @@ class SandboxScene(Scene):
             x, y = adjusted_mouse_pos
             
             # Update team based on which side of the battlefield the mouse is on
-            new_team = TeamType.TEAM1 if x < BATTLEFIELD_WIDTH // 2 else TeamType.TEAM2
+            new_team = TeamType.TEAM1 if x < gc.BATTLEFIELD_WIDTH // 2 else TeamType.TEAM2
             if team.type != new_team:
                 # Delete unit and recreate it with the new team
                 unit_type = esper.component_for_entity(self.selected_unit_id, UnitTypeComponent).type
@@ -200,11 +200,11 @@ class SandboxScene(Scene):
             
             # Constrain x based on current team
             if team.type == TeamType.TEAM1:
-                x = max(0, min(x, BATTLEFIELD_WIDTH // 2 - NO_MANS_LAND_WIDTH//2))
+                x = max(0, min(x, gc.BATTLEFIELD_WIDTH // 2 - gc.NO_MANS_LAND_WIDTH//2))
             else:
-                x = max(BATTLEFIELD_WIDTH // 2 + NO_MANS_LAND_WIDTH//2, min(x, BATTLEFIELD_WIDTH))
+                x = max(gc.BATTLEFIELD_WIDTH // 2 + gc.NO_MANS_LAND_WIDTH//2, min(x, gc.BATTLEFIELD_WIDTH))
             
-            y = max(0, min(y, BATTLEFIELD_HEIGHT))
+            y = max(0, min(y, gc.BATTLEFIELD_HEIGHT))
             pos.x, pos.y = x, y
 
         # Only update camera if no dialog is focused
