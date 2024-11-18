@@ -42,9 +42,15 @@ class SceneManager:
     def cleanup(self) -> None:
         """Clean up the current scene."""
         self.manager.clear_and_reset()
-        esper.clear_database()
-        for processor in esper._processors:
-            esper.remove_processor(type(processor))
+        if esper.current_world != "world2":
+            previous_world = esper.current_world
+            new_world = "world2"
+        else:
+            previous_world = "world2"
+            new_world = "world1"
+        esper.switch_world(new_world)
+        esper.delete_world(previous_world)
+            
 
     def update(self, time_delta: float, events: list[pygame.event.Event]) -> bool:
         """Update the current scene and handle scene transitions."""
