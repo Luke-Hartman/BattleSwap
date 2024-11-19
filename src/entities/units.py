@@ -8,6 +8,7 @@ import esper
 import pygame
 import os
 from typing import Dict
+from components.hitbox import Hitbox
 from game_constants import gc
 from components.ability import Abilities, Ability, Cooldown, HasTarget, SatisfiesUnitCondition
 from components.armor import Armor
@@ -130,6 +131,7 @@ def unit_base_entity(
         unit_type: UnitType,
         movement_speed: float,
         health: int,
+        hitbox: Hitbox
     ) -> int:
     """Create a unit entity with all components shared by all units."""
     entity = esper.create_entity()
@@ -145,6 +147,7 @@ def unit_base_entity(
     esper.add_component(entity, Orientation(
         facing=FacingDirection.RIGHT if team == TeamType.TEAM1 else FacingDirection.LEFT
     ))
+    esper.add_component(entity, hitbox)
     return entity
 
 def create_core_archer(x: int, y: int, team: TeamType) -> int:
@@ -156,6 +159,10 @@ def create_core_archer(x: int, y: int, team: TeamType) -> int:
         unit_type=UnitType.CORE_ARCHER,
         movement_speed=gc.CORE_ARCHER_MOVEMENT_SPEED,
         health=gc.CORE_ARCHER_HP,
+        hitbox=Hitbox(
+            width=16,
+            height=32,
+        )
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -238,6 +245,10 @@ def create_core_duelist(x: int, y: int, team: TeamType) -> int:
         unit_type=UnitType.CORE_DUELIST,
         movement_speed=gc.CORE_DUELIST_MOVEMENT_SPEED,
         health=gc.CORE_DUELIST_HP,
+        hitbox=Hitbox(
+            width=16,
+            height=32,
+        )
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -318,6 +329,10 @@ def create_core_horseman(x: int, y: int, team: TeamType) -> int:
         unit_type=UnitType.CORE_HORSEMAN,
         movement_speed=gc.CORE_HORSEMAN_MOVEMENT_SPEED,
         health=gc.  CORE_HORSEMAN_HP,
+        hitbox=Hitbox(
+            width=16,
+            height=32,
+        )
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -389,6 +404,10 @@ def create_core_mage(x: int, y: int, team: TeamType) -> int:
         unit_type=UnitType.CORE_MAGE,
         movement_speed=gc.CORE_MAGE_MOVEMENT_SPEED,
         health=gc.CORE_MAGE_HP,
+        hitbox=Hitbox(
+            width=16,
+            height=32,
+        )
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -487,6 +506,10 @@ def create_core_swordsman(x: int, y: int, team: TeamType) -> int:
         unit_type=UnitType.CORE_SWORDSMAN,
         movement_speed=gc.CORE_SWORDSMAN_MOVEMENT_SPEED,
         health=gc.CORE_SWORDSMAN_HP,
+        hitbox=Hitbox(
+            width=16,
+            height=32,
+        )
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -558,6 +581,10 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
         unit_type=UnitType.CRUSADER_BLACK_KNIGHT,
         movement_speed=gc.CRUSADER_BLACK_KNIGHT_MOVEMENT_SPEED,
         health=gc.CRUSADER_BLACK_KNIGHT_HP,
+        hitbox=Hitbox(
+            width=48,
+            height=48,
+        )
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -646,7 +673,7 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
             AnimationType.ABILITY1: gc.CRUSADER_BLACK_KNIGHT_ANIMATION_ATTACK_DURATION,
             AnimationType.DYING: gc.CRUSADER_BLACK_KNIGHT_ANIMATION_DYING_DURATION,
         },
-        sprite_center_offset=(0, 0),
+        sprite_center_offset=(-2, 4),
     ))
     return entity
 
@@ -659,6 +686,10 @@ def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
         unit_type=UnitType.CRUSADER_CLERIC,
         movement_speed=gc.CRUSADER_CLERIC_MOVEMENT_SPEED,
         health=gc.CRUSADER_CLERIC_HP,
+        hitbox=Hitbox(
+            width=16,
+            height=32,
+        )
     )
     esper.add_component(
         entity,
@@ -751,6 +782,10 @@ def create_crusader_commander(x: int, y: int, team: TeamType) -> int:
         unit_type=UnitType.CRUSADER_COMMANDER,
         movement_speed=gc.CRUSADER_COMMANDER_MOVEMENT_SPEED,
         health=gc.CRUSADER_COMMANDER_HP,
+        hitbox=Hitbox(
+            width=16,
+            height=32,
+        )
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -842,6 +877,10 @@ def create_crusader_defender(x: int, y: int, team: TeamType) -> int:
         unit_type=UnitType.CRUSADER_DEFENDER,
         movement_speed=gc.CRUSADER_DEFENDER_MOVEMENT_SPEED,
         health=gc.CRUSADER_DEFENDER_HP,
+        hitbox=Hitbox(
+            width=16,
+            height=32,
+        )
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -914,6 +953,10 @@ def create_crusader_gold_knight(x: int, y: int, team: TeamType) -> int:
         unit_type=UnitType.CRUSADER_GOLD_KNIGHT,
         movement_speed=gc.CRUSADER_GOLD_KNIGHT_MOVEMENT_SPEED,
         health=gc.CRUSADER_GOLD_KNIGHT_HP,
+        hitbox=Hitbox(
+            width=16,
+            height=32,
+        )
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -991,6 +1034,10 @@ def create_crusader_longbowman(x: int, y: int, team: TeamType) -> int:
         unit_type=UnitType.CRUSADER_LONGBOWMAN,
         movement_speed=gc.CRUSADER_LONGBOWMAN_MOVEMENT_SPEED,
         health=gc.CRUSADER_LONGBOWMAN_HP,
+        hitbox=Hitbox(
+            width=16,
+            height=32,
+        )
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -1074,6 +1121,10 @@ def create_crusader_paladin(x: int, y: int, team: TeamType) -> int:
         unit_type=UnitType.CRUSADER_PALADIN,
         movement_speed=gc.CRUSADER_PALADIN_MOVEMENT_SPEED,
         health=gc.CRUSADER_PALADIN_HP,
+        hitbox=Hitbox(
+            width=48,
+            height=48,
+        )
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -1147,7 +1198,7 @@ def create_crusader_paladin(x: int, y: int, team: TeamType) -> int:
                 AnimationType.ABILITY2: gc.CRUSADER_PALADIN_ANIMATION_ATTACK_DURATION,
                 AnimationType.DYING: gc.CRUSADER_PALADIN_ANIMATION_DYING_DURATION,
             },
-            sprite_center_offset=(0, 0),
+            sprite_center_offset=(-2, 4),
         )
     )
     return entity
@@ -1161,6 +1212,10 @@ def create_crusader_pikeman(x: int, y: int, team: TeamType) -> int:
         unit_type=UnitType.CRUSADER_PIKEMAN,
         movement_speed=gc.CRUSADER_PIKEMAN_MOVEMENT_SPEED,
         health=gc.CRUSADER_PIKEMAN_HP,
+        hitbox=Hitbox(
+            width=16,
+            height=32,
+        )
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -1235,6 +1290,10 @@ def create_crusader_red_knight(x: int, y: int, team: TeamType) -> int:
         unit_type=UnitType.CRUSADER_RED_KNIGHT,
         movement_speed=gc.CRUSADER_RED_KNIGHT_MOVEMENT_SPEED,
         health=gc.CRUSADER_RED_KNIGHT_HP,
+        hitbox=Hitbox(
+            width=16,
+            height=32,
+        )
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -1351,6 +1410,10 @@ def create_werebear(x: int, y: int, team: TeamType) -> int:
         unit_type=UnitType.WEREBEAR,
         movement_speed=gc.WEREBEAR_MOVEMENT_SPEED,
         health=gc.WEREBEAR_HP,
+        hitbox=Hitbox(
+            width=24,
+            height=40,
+        )
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -1411,7 +1474,7 @@ def create_werebear(x: int, y: int, team: TeamType) -> int:
                 AnimationType.ABILITY1: gc.WEREBEAR_ANIMATION_ATTACK_DURATION,
                 AnimationType.DYING: gc.WEREBEAR_ANIMATION_DYING_DURATION,
             },
-            sprite_center_offset=(0, 0),
+            sprite_center_offset=(-2, 1),
         )
     )
     return entity

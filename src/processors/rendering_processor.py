@@ -9,6 +9,7 @@ import esper
 import pygame
 import math
 from components.aura import Aura
+from components.hitbox import Hitbox
 from components.position import Position
 from components.animation import AnimationState
 from components.projectile import Projectile
@@ -90,13 +91,22 @@ class RenderingProcessor(esper.Processor):
                     x_offset = -x_offset
             
 
-            # Calculate the position to center the sprite on the unit's position
+            # Calculate the position to center the sprite on the entity's position
             sprite_sheet.rect.center = (
                 pos.x + x_offset,
                 pos.y + y_offset
             )
             render_pos = sprite_sheet.rect.move(-self.camera.x, -self.camera.y)
             self.screen.blit(sprite_sheet.image, render_pos)
+
+            # if esper.has_component(ent, Hitbox):
+            #     hitbox = esper.component_for_entity(ent, Hitbox)
+            #     pygame.draw.rect(
+            #         self.screen,
+            #         (255, 0, 0),
+            #         (pos.x + hitbox.x_offset - self.camera.x - hitbox.width / 2, pos.y + hitbox.y_offset - self.camera.y - hitbox.height / 2, hitbox.width, hitbox.height),
+            #         1
+            #     )
 
             # Draw health bar if entity has Health, Team, and UnitState components, is not dead, and health is not full
             if (
@@ -107,18 +117,19 @@ class RenderingProcessor(esper.Processor):
                 health = esper.component_for_entity(ent, Health)
                 team = esper.component_for_entity(ent, Team)
                 unit_state = esper.component_for_entity(ent, UnitState)
+                hitbox = esper.component_for_entity(ent, Hitbox)
                 if unit_state.state != State.DEAD and health.current < health.maximum:
-                    self.draw_health_bar(pos, sprite_sheet, health, team)
+                    self.draw_health_bar(pos, health, team, hitbox)
 
-    def draw_health_bar(self, pos: Position, sprite_sheet: SpriteSheet, health: Health, team: Team):
+    def draw_health_bar(self, pos: Position, health: Health, team: Team, hitbox: Hitbox):
         """Draw a health bar above the entity."""
         bar_width = 20
         bar_height = 5  # pixels
-        bar_y_offset = 16  # pixels above the unit's center
+        bar_y_offset = 8  # pixels above the unit's hitbox
 
         # Position the health bar above the hitbox
         bar_x = pos.x - bar_width // 2
-        bar_y = pos.y - bar_height - bar_y_offset
+        bar_y = pos.y - hitbox.height/2 - bar_height - bar_y_offset
 
         # Apply camera offset to health bar position
         bar_pos = pygame.Rect(bar_x - self.camera.x, bar_y - self.camera.y, bar_width, bar_height)
