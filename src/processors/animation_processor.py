@@ -10,6 +10,7 @@ from components.ability import Abilities
 from components.animation import AnimationState, AnimationType
 from components.sprite_sheet import SpriteSheet
 from components.unit_state import UnitState, State
+from components.velocity import Velocity
 from events import ABILITY_ACTIVATED, ABILITY_COMPLETED, AbilityActivatedEvent, AbilityCompletedEvent, emit_event
 
 class AnimationProcessor(esper.Processor):
@@ -40,6 +41,11 @@ class AnimationProcessor(esper.Processor):
                 State.ABILITY3: AnimationType.ABILITY3,
                 State.DEAD: AnimationType.DYING
             }[unit_state.state]
+
+            if unit_state.state == State.PURSUING:
+                velocity = esper.component_for_entity(ent, Velocity)
+                if velocity.x == 0 and velocity.y == 0:
+                    new_anim_type = AnimationType.IDLE
 
             if anim_state.type != new_anim_type:
                 anim_state.type = new_anim_type

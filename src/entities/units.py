@@ -673,11 +673,11 @@ def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
                         OnTeam(team=team),
                         Alive(),
                         NotEntity(entity=entity),
-                        MinimumDistanceFromEntity(entity=entity, distance=gc.CRUSADER_CLERIC_ATTACK_RANGE*2/3, y_bias=None)
                     ]
                 )
             ),
-            x_offset=0
+            x_offset=0,
+            min_distance=gc.CRUSADER_CLERIC_ATTACK_RANGE*2/3
         )
     )
     esper.add_component(

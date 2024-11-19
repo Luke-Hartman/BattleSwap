@@ -32,7 +32,7 @@ class PursuingProcessor(esper.Processor):
                 destination_dy = target_pos.y - pos.y
                 destination_distance = math.sqrt(destination_dx**2 + destination_dy**2)
 
-                if destination_distance < 1:
+                if destination_distance < destination.min_distance:
                     velocity.x = 0
                     velocity.y = 0
                 else:
