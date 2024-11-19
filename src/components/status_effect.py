@@ -1,35 +1,37 @@
 """Status effect component."""
 
-from typing import Dict, List
+from dataclasses import dataclass
+from typing import List
+import copy
 
 from game_constants import gc
 
+@dataclass
 class StatusEffect:
     """A status effect."""
 
-    def __init__(self, duration: float):
-        self.time_remaining = duration
+    time_remaining: float
+    """The time remaining for the status effect."""
 
+@dataclass
 class CrusaderCommanderEmpowered(StatusEffect):
     """Status effect buffs damage."""
 
-    def __init__(self, duration: float):
-        super().__init__(duration)
-        self.damage_percentage = gc.CRUSADER_COMMANDER_EMPOWERED_DAMAGE_PERCENTAGE
+    damage_percentage = gc.CRUSADER_COMMANDER_EMPOWERED_DAMAGE_PERCENTAGE
 
+@dataclass
 class Ignited(StatusEffect):
     """Status effect that deals damage over time."""
 
-    def __init__(self, dps: float, duration: float):
-        super().__init__(duration)
-        self.dps = dps
+    dps: float
+    """The damage per second dealt by the status effect."""
 
+@dataclass
 class Fleeing(StatusEffect):
     """Status effect that makes a unit flee from a specific entity."""
 
-    def __init__(self, duration: float, entity: int):
-        super().__init__(duration)
-        self.entity = entity
+    entity: int
+    """The entity to flee from."""
 
 
 class StatusEffects:
@@ -42,11 +44,10 @@ class StatusEffects:
             CrusaderCommanderEmpowered: [],
             Fleeing: [],
         }
-        self.application_time: Dict[StatusEffect, float] = {}
 
     def add(self, status_effect: StatusEffect) -> None:
         """Add a status effect to the unit."""
-        self._status_by_type[type(status_effect)].append(status_effect)
+        self._status_by_type[type(status_effect)].append(copy.copy(status_effect))
     
     def update(self, dt: float) -> None:
         """Update the status effects."""

@@ -17,7 +17,6 @@ from components.position import Position
 from components.animation import AnimationState, AnimationType
 from components.sprite_sheet import SpriteSheet
 from components.status_effect import CrusaderCommanderEmpowered, Fleeing, Ignited, StatusEffects
-from components.unique import Unique
 from target_strategy import ByDistance, ByMaxHealth, ByMissingHealth, TargetStrategy
 from components.destination import Destination
 from components.team import Team, TeamType
@@ -29,7 +28,7 @@ from components.health import Health
 from components.orientation import Orientation, FacingDirection
 from effects import AppliesStatusEffect, CreatesAoE, CreatesAttachedVisual, CreatesProjectile, CreatesTemporaryAura, Damages, Heals, Recipient
 from unit_condition import (
-    All, Alive, HealthBelowPercent, MinimumDistanceFromEntity, Never, NotEntity, OnTeam,
+    All, Alive, HealthBelowPercent, Never, NotEntity, OnTeam,
     MaximumDistanceFromEntity
 )
 from visuals import Visual
@@ -459,7 +458,7 @@ def create_core_mage(x: int, y: int, team: TeamType) -> int:
                                             AppliesStatusEffect(
                                                 status_effect=Ignited(
                                                     dps=gc.CORE_MAGE_IGNITE_DAMAGE/gc.CORE_MAGE_IGNITE_DURATION,
-                                                    duration=gc.CORE_MAGE_IGNITE_DURATION
+                                                    time_remaining=gc.CORE_MAGE_IGNITE_DURATION
                                                 ),
                                                 recipient=Recipient.TARGET
                                             ),
@@ -637,10 +636,18 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
                                     effects=[
                                         AppliesStatusEffect(
                                             status_effect=Fleeing(
-                                                duration=gc.CRUSADER_BLACK_KNIGHT_AURA_FLEE_DURATION,
+                                                time_remaining=gc.CRUSADER_BLACK_KNIGHT_AURA_FLEE_DURATION,
                                                 entity=entity
                                             ),
                                             recipient=Recipient.TARGET
+                                        ),
+                                        CreatesAttachedVisual(
+                                            visual=Visual.Fear,
+                                            animation_duration=0.3,
+                                            expiration_duration=gc.CRUSADER_BLACK_KNIGHT_AURA_FLEE_DURATION,
+                                            scale=gc.TINY_RPG_SCALE,
+                                            remove_on_death=True,
+                                            unique_key=lambda e: f"FLEE {e}"
                                         )
                                     ],
                                     color=(52, 21, 57),
@@ -838,7 +845,7 @@ def create_crusader_commander(x: int, y: int, team: TeamType) -> int:
             radius=gc.CRUSADER_COMMANDER_AURA_RADIUS,
             effects=[
                 AppliesStatusEffect(
-                    status_effect=CrusaderCommanderEmpowered(duration=gc.DEFAULT_AURA_PERIOD),
+                    status_effect=CrusaderCommanderEmpowered(time_remaining=gc.DEFAULT_AURA_PERIOD),
                     recipient=Recipient.TARGET
                 )
             ],
@@ -1332,7 +1339,7 @@ def create_crusader_red_knight(x: int, y: int, team: TeamType) -> int:
                                 AppliesStatusEffect(
                                     status_effect=Ignited(
                                         dps=gc.CRUSADER_RED_KNIGHT_SKILL_IGNITE_DAMAGE/gc.CRUSADER_RED_KNIGHT_SKILL_IGNITED_DURATION,
-                                        duration=gc.CRUSADER_RED_KNIGHT_SKILL_IGNITED_DURATION
+                                        time_remaining=gc.CRUSADER_RED_KNIGHT_SKILL_IGNITED_DURATION
                                     ),
                                     recipient=Recipient.TARGET
                                 )
