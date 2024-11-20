@@ -17,5 +17,5 @@ class AttachedProcessor(esper.Processor):
                 esper.delete_entity(ent, immediate=True)
             else:
                 attached_position = esper.component_for_entity(attached.entity, Position)
-                pos.x = attached_position.x
-                pos.y = attached_position.y
+                pos.x = attached_position.x + attached.offset[0]
+                pos.y = attached_position.y + attached.offset[1]

@@ -246,7 +246,7 @@ def create_core_duelist(x: int, y: int, team: TeamType) -> int:
         health=gc.CORE_DUELIST_HP,
         hitbox=Hitbox(
             width=16,
-            height=32,
+            height=36,
         )
     )
     targetting_strategy = TargetStrategy(
@@ -315,7 +315,7 @@ def create_core_duelist(x: int, y: int, team: TeamType) -> int:
             AnimationType.ABILITY1: gc.CORE_DUELIST_ANIMATION_ATTACK_DURATION,
             AnimationType.DYING: gc.CORE_DUELIST_ANIMATION_DYING_DURATION,
         },
-        sprite_center_offset=(0, 0),
+        sprite_center_offset=(0, 2),
     ))
     return entity
 
@@ -329,8 +329,8 @@ def create_core_horseman(x: int, y: int, team: TeamType) -> int:
         movement_speed=gc.CORE_HORSEMAN_MOVEMENT_SPEED,
         health=gc.  CORE_HORSEMAN_HP,
         hitbox=Hitbox(
-            width=16,
-            height=32,
+            width=32,
+            height=46,
         )
     )
     targetting_strategy = TargetStrategy(
@@ -390,7 +390,7 @@ def create_core_horseman(x: int, y: int, team: TeamType) -> int:
             AnimationType.ABILITY1: gc.CORE_HORSEMAN_ANIMATION_ATTACK_DURATION,
             AnimationType.DYING: gc.CORE_HORSEMAN_ANIMATION_DYING_DURATION,
         },
-        sprite_center_offset=(0, -8),
+        sprite_center_offset=(1, -6),
     ))
     return entity
 
@@ -404,8 +404,8 @@ def create_core_mage(x: int, y: int, team: TeamType) -> int:
         movement_speed=gc.CORE_MAGE_MOVEMENT_SPEED,
         health=gc.CORE_MAGE_HP,
         hitbox=Hitbox(
-            width=16,
-            height=32,
+            width=24,
+            height=36,
         )
     )
     targetting_strategy = TargetStrategy(
@@ -467,6 +467,7 @@ def create_core_mage(x: int, y: int, team: TeamType) -> int:
                                         duration=gc.CORE_MAGE_FIREBALL_AOE_DURATION,
                                         scale=gc.CORE_MAGE_FIREBALL_AOE_SCALE,
                                         unit_condition=Alive(),
+                                        location=Recipient.PARENT,
                                     )
                                 ],
                                 visual=Visual.Fireball,
@@ -581,8 +582,8 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
         movement_speed=gc.CRUSADER_BLACK_KNIGHT_MOVEMENT_SPEED,
         health=gc.CRUSADER_BLACK_KNIGHT_HP,
         hitbox=Hitbox(
-            width=48,
-            height=48,
+            width=50,
+            height=54,
         )
     )
     targetting_strategy = TargetStrategy(
@@ -630,13 +631,11 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
                             damage=gc.CRUSADER_BLACK_KNIGHT_ATTACK_DAMAGE,
                             recipient=Recipient.TARGET,
                             on_kill_effects=[
-                                CreatesTemporaryAura(
-                                    radius=gc.CRUSADER_BLACK_KNIGHT_AURA_RADIUS,
-                                    duration=gc.CRUSADER_BLACK_KNIGHT_AURA_DURATION,
+                                CreatesAoE(
                                     effects=[
                                         AppliesStatusEffect(
                                             status_effect=Fleeing(
-                                                time_remaining=gc.CRUSADER_BLACK_KNIGHT_AURA_FLEE_DURATION,
+                                                time_remaining=gc.CRUSADER_BLACK_KNIGHT_FLEE_DURATION,
                                                 entity=entity
                                             ),
                                             recipient=Recipient.TARGET
@@ -644,21 +643,19 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
                                         CreatesAttachedVisual(
                                             visual=Visual.Fear,
                                             animation_duration=0.3,
-                                            expiration_duration=gc.CRUSADER_BLACK_KNIGHT_AURA_FLEE_DURATION,
+                                            expiration_duration=gc.CRUSADER_BLACK_KNIGHT_FLEE_DURATION,
                                             scale=gc.TINY_RPG_SCALE,
                                             remove_on_death=True,
-                                            unique_key=lambda e: f"FLEE {e}"
+                                            unique_key=lambda e: f"FLEE {e}",
+                                            offset=lambda e: (0, -esper.component_for_entity(e, Hitbox).height/2),
+                                            layer=1
                                         )
                                     ],
-                                    color=(52, 21, 57),
-                                    period=gc.DEFAULT_AURA_PERIOD,
-                                    unit_condition=All([
-                                        Alive(),
-                                        NotEntity(entity=entity),
-                                    ]),
-                                    recipient=Recipient.OWNER,
-                                    remove_on_death=True,
-                                    unique_key=f"BLACK KNIGHT {entity} AURA"
+                                    duration=gc.CRUSADER_BLACK_KNIGHT_FEAR_AOE_DURATION,
+                                    scale=gc.CRUSADER_BLACK_KNIGHT_FEAR_AOE_SCALE,
+                                    unit_condition=All([Alive(), NotEntity(entity=entity)]),
+                                    visual=Visual.CrusaderBlackKnightFear,
+                                    location=Recipient.TARGET,
                                 )
                             ]
                         )
@@ -680,7 +677,7 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
             AnimationType.ABILITY1: gc.CRUSADER_BLACK_KNIGHT_ANIMATION_ATTACK_DURATION,
             AnimationType.DYING: gc.CRUSADER_BLACK_KNIGHT_ANIMATION_DYING_DURATION,
         },
-        sprite_center_offset=(-2, 4),
+        sprite_center_offset=(0, 7),
     ))
     return entity
 
@@ -695,7 +692,7 @@ def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
         health=gc.CRUSADER_CLERIC_HP,
         hitbox=Hitbox(
             width=16,
-            height=32,
+            height=36,
         )
     )
     esper.add_component(
@@ -776,7 +773,7 @@ def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
             AnimationType.ABILITY1: gc.CRUSADER_CLERIC_ANIMATION_ATTACK_DURATION,
             AnimationType.DYING: gc.CRUSADER_CLERIC_ANIMATION_DYING_DURATION,
         },
-        sprite_center_offset=(0, 0),
+        sprite_center_offset=(0, 2),
     ))
     return entity
 
@@ -791,7 +788,7 @@ def create_crusader_commander(x: int, y: int, team: TeamType) -> int:
         health=gc.CRUSADER_COMMANDER_HP,
         hitbox=Hitbox(
             width=16,
-            height=32,
+            height=36,
         )
     )
     targetting_strategy = TargetStrategy(
@@ -871,7 +868,7 @@ def create_crusader_commander(x: int, y: int, team: TeamType) -> int:
             AnimationType.ABILITY1: gc.CRUSADER_COMMANDER_ANIMATION_ATTACK_DURATION,
             AnimationType.DYING: gc.CRUSADER_COMMANDER_ANIMATION_DYING_DURATION,
         },
-        sprite_center_offset=(0, 0),
+        sprite_center_offset=(0, 2),
     ))
     return entity
 
@@ -962,7 +959,7 @@ def create_crusader_gold_knight(x: int, y: int, team: TeamType) -> int:
         health=gc.CRUSADER_GOLD_KNIGHT_HP,
         hitbox=Hitbox(
             width=16,
-            height=32,
+            height=38,
         )
     )
     targetting_strategy = TargetStrategy(
@@ -1008,6 +1005,7 @@ def create_crusader_gold_knight(x: int, y: int, team: TeamType) -> int:
                                     Alive()
                                 ]),
                                 visual=Visual.CrusaderGoldKnightAttack,
+                                location=Recipient.PARENT,
                             )
                         ]
                     },
@@ -1028,7 +1026,7 @@ def create_crusader_gold_knight(x: int, y: int, team: TeamType) -> int:
             AnimationType.ABILITY1: gc.CRUSADER_GOLD_KNIGHT_ANIMATION_ATTACK_DURATION,
             AnimationType.DYING: gc.CRUSADER_GOLD_KNIGHT_ANIMATION_DYING_DURATION,
         },
-        sprite_center_offset=(0, 0),
+        sprite_center_offset=(0, 2),
     ))
     return entity
 
@@ -1043,7 +1041,7 @@ def create_crusader_longbowman(x: int, y: int, team: TeamType) -> int:
         health=gc.CRUSADER_LONGBOWMAN_HP,
         hitbox=Hitbox(
             width=16,
-            height=32,
+            height=36,
         )
     )
     targetting_strategy = TargetStrategy(
@@ -1114,7 +1112,7 @@ def create_crusader_longbowman(x: int, y: int, team: TeamType) -> int:
                 AnimationType.ABILITY1: gc.CRUSADER_LONGBOWMAN_ANIMATION_ATTACK_DURATION,
                 AnimationType.DYING: gc.CRUSADER_LONGBOWMAN_ANIMATION_DYING_DURATION,
             },
-            sprite_center_offset=(0, 0),
+            sprite_center_offset=(0, 2),
         )
     )
     return entity
@@ -1129,8 +1127,8 @@ def create_crusader_paladin(x: int, y: int, team: TeamType) -> int:
         movement_speed=gc.CRUSADER_PALADIN_MOVEMENT_SPEED,
         health=gc.CRUSADER_PALADIN_HP,
         hitbox=Hitbox(
-            width=48,
-            height=48,
+            width=50,
+            height=54,
         )
     )
     targetting_strategy = TargetStrategy(
@@ -1205,7 +1203,7 @@ def create_crusader_paladin(x: int, y: int, team: TeamType) -> int:
                 AnimationType.ABILITY2: gc.CRUSADER_PALADIN_ANIMATION_ATTACK_DURATION,
                 AnimationType.DYING: gc.CRUSADER_PALADIN_ANIMATION_DYING_DURATION,
             },
-            sprite_center_offset=(-2, 4),
+            sprite_center_offset=(0, 7),
         )
     )
     return entity
@@ -1299,7 +1297,7 @@ def create_crusader_red_knight(x: int, y: int, team: TeamType) -> int:
         health=gc.CRUSADER_RED_KNIGHT_HP,
         hitbox=Hitbox(
             width=16,
-            height=32,
+            height=34,
         )
     )
     targetting_strategy = TargetStrategy(
@@ -1350,7 +1348,8 @@ def create_crusader_red_knight(x: int, y: int, team: TeamType) -> int:
                             unit_condition=All([
                                 NotEntity(entity=entity),
                                 Alive()
-                            ])
+                            ]),
+                            location=Recipient.PARENT
                         )
                     ]},
                 ),
@@ -1403,7 +1402,7 @@ def create_crusader_red_knight(x: int, y: int, team: TeamType) -> int:
                 AnimationType.ABILITY2: gc.CRUSADER_RED_KNIGHT_ANIMATION_ATTACK_DURATION,
                 AnimationType.DYING: gc.CRUSADER_RED_KNIGHT_ANIMATION_DYING_DURATION,
             },
-            sprite_center_offset=(0, 0),
+            sprite_center_offset=(0, 1),
         )
     )
     return entity

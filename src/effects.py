@@ -30,6 +30,8 @@ class Recipient(Enum):
 
     TARGET = auto()
     """The unit that is targetted/hit."""
+    PARENT = auto()
+    """The parent of the effect."""
     OWNER = auto()
     """The unit that owns the ability."""
 
@@ -59,9 +61,12 @@ class Damages(Effect):
         if self.recipient == Recipient.OWNER:
             assert owner is not None
             recipient = owner
-        else:
+        elif self.recipient == Recipient.PARENT:
+            recipient = parent
+        elif self.recipient == Recipient.TARGET:
             recipient = target
-            assert recipient is not None
+        else:
+            raise ValueError(f"Invalid recipient: {self.recipient}")
 
         # Apply buffs/debuffs from the owner to the damage
         damage = self.damage
@@ -104,8 +109,12 @@ class Heals(Effect):
     def apply(self, owner: Optional[int], parent: int, target: int) -> None:
         if self.recipient == Recipient.OWNER:
             recipient = owner
-        else:
+        elif self.recipient == Recipient.PARENT:
+            recipient = parent
+        elif self.recipient == Recipient.TARGET:
             recipient = target
+        else:
+            raise ValueError(f"Invalid recipient: {self.recipient}")
 
         recipient_health = esper.component_for_entity(recipient, Health)
         recipient_health.current = min(recipient_health.current + self.amount, recipient_health.maximum)
@@ -130,6 +139,9 @@ class CreatesAoE(Effect):
     visual: Visual
     """The visual of the AoE."""
 
+    location: Recipient
+    """The location of the AoE."""
+
     visual_frames: Optional[Tuple[int, int]] = None
     """The frames of the visual of the AoE."""
 
@@ -138,9 +150,17 @@ class CreatesAoE(Effect):
 
     def apply(self, owner: Optional[int], parent: int, target: int) -> None:
         entity = esper.create_entity()
-        position = esper.component_for_entity(parent, Position)
-        team = esper.component_for_entity(parent, Team)
-        orientation = esper.component_for_entity(parent, Orientation)
+        if self.location == Recipient.OWNER:
+            recipient = owner
+        elif self.location == Recipient.PARENT:
+            recipient = parent
+        elif self.location == Recipient.TARGET:
+            recipient = target
+        else:
+            raise ValueError(f"Invalid location: {self.location}")
+        position = esper.component_for_entity(recipient, Position)
+        team = esper.component_for_entity(recipient, Team)
+        orientation = esper.component_for_entity(recipient, Orientation)
         esper.add_component(entity, Position(x=position.x, y=position.y))
         esper.add_component(entity, Team(type=team.type))
         esper.add_component(entity, AoE(
@@ -253,8 +273,12 @@ class CreatesTemporaryAura(Effect):
     def apply(self, owner: Optional[int], parent: int, target: int) -> None:
         if self.recipient == Recipient.OWNER:
             recipient = owner
-        else:
+        elif self.recipient == Recipient.PARENT:
+            recipient = parent
+        elif self.recipient == Recipient.TARGET:
             recipient = target
+        else:
+            raise ValueError(f"Invalid recipient: {self.recipient}")
         entity = esper.create_entity()
         esper.add_component(
             entity,
@@ -288,6 +312,8 @@ class AppliesStatusEffect(Effect):
     def apply(self, owner: Optional[int], parent: int, target: int) -> None:
         if self.recipient == Recipient.OWNER:
             recipient = owner
+        elif self.recipient == Recipient.PARENT:
+            recipient = parent
         elif self.recipient == Recipient.TARGET:
             recipient = target
         else:
@@ -315,13 +341,33 @@ class CreatesAttachedVisual(Effect):
     remove_on_death: bool
     """Whether the effect should be removed when the target dies."""
 
+    unique_key: Optional[Callable[[int], str]] = None
+    """The key of the unique component to attach to the effect."""
+
+    offset: Optional[Callable[[int], Tuple[int, int]]] = None
+    """The offset of the effect from the target's position."""
+
+    layer: int = 0
+    """The layer of the effect."""
+
     def apply(self, owner: Optional[int], parent: int, target: int) -> None:
         entity = esper.create_entity()
         position = esper.component_for_entity(target, Position)
         team = esper.component_for_entity(target, Team)
-        esper.add_component(entity, Position(x=position.x, y=position.y))
+        if self.offset:
+            offset = self.offset(target)
+        else:
+            offset = (0, 0)
+        esper.add_component(entity, Position(x=position.x + offset[0], y=position.y + offset[1]))
         esper.add_component(entity, Team(type=team.type))
-        esper.add_component(entity, Attached(entity=target, remove_on_death=self.remove_on_death))
-        esper.add_component(entity, create_visual_spritesheet(self.visual, self.animation_duration))
+        esper.add_component(entity, Attached(entity=target, remove_on_death=self.remove_on_death, offset=offset))
+        esper.add_component(entity, create_visual_spritesheet(
+            visual=self.visual,
+            scale=self.scale,
+            duration=self.animation_duration,
+            layer=self.layer
+        ))
         esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
         esper.add_component(entity, Expiration(time_left=self.expiration_duration))
+        if self.unique_key:
+            esper.add_component(entity, Unique(key=self.unique_key(target)))

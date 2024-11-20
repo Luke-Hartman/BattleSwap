@@ -67,7 +67,7 @@ class RenderingProcessor(esper.Processor):
         entities = esper.get_components(Position, AnimationState, SpriteSheet)
         
         # Sort entities based on their y-coordinate (higher y-value means lower on screen)
-        sorted_entities = sorted(entities, key=lambda e: e[1][0].y)
+        sorted_entities = sorted(entities, key=lambda e: (e[1][2].layer, e[1][0].y))
         
         for ent, (pos, anim_state, sprite_sheet) in sorted_entities:
             sprite_sheet.update_frame(anim_state.type, anim_state.current_frame)
@@ -104,7 +104,7 @@ class RenderingProcessor(esper.Processor):
             #     pygame.draw.rect(
             #         self.screen,
             #         (255, 0, 0),
-            #         (pos.x + hitbox.x_offset - self.camera.x - hitbox.width / 2, pos.y + hitbox.y_offset - self.camera.y - hitbox.height / 2, hitbox.width, hitbox.height),
+            #         (pos.x - self.camera.x - hitbox.width / 2, pos.y - self.camera.y - hitbox.height / 2, hitbox.width, hitbox.height),
             #         1
             #     )
 

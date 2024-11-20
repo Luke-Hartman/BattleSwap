@@ -52,7 +52,7 @@ class CollisionProcessor(esper.Processor):
         
         # For all sprites, update their collision masks
         for sprite in [*team1_projectiles, *team2_projectiles, *team1_units, *team2_units, *aoe_sprites]:
-            sprite.mask = pygame.mask.from_surface(sprite.image)
+            sprite.mask = pygame.mask.from_surface(sprite.image, threshold=10)
 
         # Handle collisions between team1 projectiles and team2 units
         self.process_unit_projectile_collisions(team1_projectiles, team2_units, sprite_to_ent)
@@ -70,37 +70,22 @@ class CollisionProcessor(esper.Processor):
                 esper.delete_entity(sprite_to_ent[projectile])
 
     def check_sprite_group_collisions(self, group1: pygame.sprite.Group, group2: pygame.sprite.Group) -> list[tuple[pygame.sprite.Sprite, pygame.sprite.Sprite]]:
-        """Check collisions between two sprite groups using KDTree."""
+        """Check collisions between two sprite groups."""
         if not group1 or not group2:
             return []
-
-        # Create KDTree for group1
-        g1_positions = np.array([(s.rect.centerx, s.rect.centery) for s in group1])
-        g1_tree = KDTree(g1_positions)
-
-        # Create list of group2 positions and max dimensions
-        g2_positions = np.array([(s.rect.centerx, s.rect.centery) for s in group2])
-        g2_max_dims = np.array([((s.rect.width/2)**2 + (s.rect.height/2)**2)**0.5 for s in group2])
-
-        # Query KDTree for potential collisions
-        potential_collisions = g1_tree.query_ball_point(g2_positions, g2_max_dims)
-
-        collisions = []
-        for s2, s1_indices in zip(group2, potential_collisions):
-            for s1_index in s1_indices:
-                s1 = list(group1)[s1_index]
-                if pygame.sprite.collide_mask(s1, s2):
-                    collisions.append((s1, s2))
-
-        return collisions
+        collisions = pygame.sprite.groupcollide(groupa=group1, groupb=group2, dokilla=False, dokillb=False, collided=pygame.sprite.collide_mask)
+        collisions_list = []
+        for sprite, collided_sprites in collisions.items():
+            for collided_sprite in collided_sprites:
+                collisions_list.append((sprite, collided_sprite))
+        return collisions_list
 
     def check_hitbox_collision(self, attacker_sprite: pygame.sprite.Sprite, unit_sprite: pygame.sprite.Sprite, sprite_to_ent: dict) -> bool:
         """Check if any pixel of the attacker sprite overlaps with the unit's hitbox.
-        
+
         Args:
             attacker_sprite: The sprite doing the attacking (projectile or AoE)
             unit_sprite: The unit's sprite
-            hitbox: The unit's hitbox component
             sprite_to_ent: Dictionary mapping sprites to their entities
         """
         # Get the unit's sprite sheet component to access the center offset
@@ -119,7 +104,7 @@ class CollisionProcessor(esper.Processor):
         # Get all non-transparent pixels in the attacker's sprite
         mask = attacker_sprite.mask
         sprite_rect = attacker_sprite.rect
-        
+
         # For each non-transparent pixel in the sprite, check if it's in the hitbox
         offset_x = sprite_rect.x - hitbox_rect.x
         offset_y = sprite_rect.y - hitbox_rect.y
@@ -167,10 +152,8 @@ class CollisionProcessor(esper.Processor):
         """Handle collisions between AoEs and units."""
         collisions = self.check_sprite_group_collisions(aoe_sprites, u_sprites)
         for aoe_sprite, u_sprite in collisions:
-
             if not self.check_hitbox_collision(aoe_sprite, u_sprite, sprite_to_ent):
                 continue
-
             aoe_ent = sprite_to_ent[aoe_sprite]
             u_ent = sprite_to_ent[u_sprite]
             emit_event(AOE_HIT, event=AoEHitEvent(entity=aoe_ent, target=u_ent))

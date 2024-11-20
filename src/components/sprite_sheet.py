@@ -19,7 +19,8 @@ class SpriteSheet(pygame.sprite.Sprite):
         rows: Dict[AnimationType, int],
         animation_durations: Dict[AnimationType, float],
         sprite_center_offset: Tuple[int, int],
-        start_frames: Optional[Dict[AnimationType, int]] = None
+        start_frames: Optional[Dict[AnimationType, int]] = None,
+        layer: int = 0
     ):
         super().__init__()
         self.surface = surface
@@ -33,6 +34,7 @@ class SpriteSheet(pygame.sprite.Sprite):
         self.image = pygame.Surface((frame_width, frame_height), pygame.SRCALPHA)
         self.rect = self.image.get_rect()
         self.start_frames = start_frames
+        self.layer = layer
 
     def update_frame(self, animation_type: AnimationType, frame: int):
         """Update the sprite's image to the specified frame of the animation."""
