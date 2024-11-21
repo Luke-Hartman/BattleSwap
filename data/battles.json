@@ -29,7 +29,9 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": [
+      "Defeat the Swordsman!"
+    ],
     "tip": [
       "Cavalry move much faster than a swordsman, but deal less damage."
     ]
@@ -52,7 +54,9 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": [
+      "Defeat the Cavalry!"
+    ],
     "tip": [
       "The Cavalry's speed gives them the edge in battle against archers."
     ]
@@ -68,7 +72,9 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": [
+      "Defeat the Archers!"
+    ],
     "tip": [
       "Wizards shoot powerful fireballs that explode, damaging all nearby units. Spreading out your army can distract your foes."
     ]
@@ -119,7 +125,9 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": [
+      "Defeat the Wizard!"
+    ],
     "tip": [
       "Each time you finish a level, you swap the army you used for the army you beat. Also, in the case of a tie you still win!"
     ]
@@ -149,7 +157,9 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": [
+      "Behold the Wizard's Power!"
+    ],
     "tip": [
       "The placement of your units is critical to an efficient victory.",
       "This allows you to bring unused units into future levels!",
@@ -188,7 +198,9 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": [
+      "Line of Swordsman"
+    ],
     "tip": [
       "Take each one out quickly!"
     ]
@@ -239,7 +251,9 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": [
+      "Let's Ride!"
+    ],
     "tip": [
       "Should you divide to conquer?"
     ]
@@ -269,7 +283,9 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": [
+      "Two Squads"
+    ],
     "tip": [
       "Watch out for that cavalry!"
     ]
@@ -341,7 +357,9 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": [
+      "Double Duelists"
+    ],
     "tip": [
       "Do they even have a weakness?"
     ]
@@ -385,7 +403,9 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": [
+      "A Balanced Army"
+    ],
     "tip": [
       "Defenders are weak but take less damage due to their armor.",
       "Rangers are slow but deal severe damage."
@@ -430,7 +450,9 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": [
+      "Defenders and Rangers"
+    ],
     "tip": [
       "Pikeman are like swordsman with extra reach.",
       "Healers will restore the health of their damaged allies."
@@ -461,7 +483,9 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": [
+      "Pikeman and Healers"
+    ],
     "tip": [
       "Paladins have  high health and they can heal themselves,",
       "but they have low damage and are overwhelmed by groups."
@@ -499,7 +523,9 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": [
+      "Defeat the Paladin!"
+    ],
     "tip": [
       "Commanders are weak on their own, but they increase the damage of their allies."
     ]
@@ -529,7 +555,9 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": [
+      "Defeat the Commander"
+    ],
     "tip": [
       "Hint: Paladins are vulnerable on their own."
     ]
@@ -587,7 +615,9 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": [
+      "The Crusade"
+    ],
     "tip": [
       "Defenders and pikman are a powerful pairing."
     ]
@@ -624,7 +654,9 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": [
+      "Shield and Spear"
+    ],
     "tip": [
       "Gold Kights damage all units around them and heal a little with every hit.",
       "This makes them excellent against groups of melee units, but vulnerable to ranged or strong opponents."
@@ -669,7 +701,9 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": [
+      "Defeat the Gold Knight!"
+    ],
     "tip": [
       "Cavalry's here!"
     ]
@@ -755,7 +789,9 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": [
+      "Reinforcements"
+    ],
     "tip": [
       "Do you require medical attention?"
     ]
@@ -799,7 +835,9 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": [
+      "I need a medic!"
+    ],
     "tip": [
       "He might be alone, but he's still dangerous."
     ]
@@ -864,7 +902,9 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": [
+      "The Lone Swordsman?"
+    ],
     "tip": [
       "Stronger united!"
     ]
@@ -894,7 +934,9 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": [
+      "Strong Leadership"
+    ],
     "tip": [
       "Are the 3 elite unit levels getting old?"
     ]
@@ -910,7 +952,9 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": [
+      "The Meat Grinder"
+    ],
     "tip": [
       "The Black Knight scares away his foes with his cruel attacks."
     ]
