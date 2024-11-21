@@ -61,7 +61,9 @@
         ]
       ]
     ],
-    "dependencies": ["Core_Level_1"],
+    "dependencies": [
+      "Core_Level_1"
+    ],
     "tip": [
       "Swordsman vs. Cavalry"
     ]
@@ -112,7 +114,9 @@
         ]
       ]
     ],
-    "dependencies": ["Core_Level_2"],
+    "dependencies": [
+      "Core_Level_2"
+    ],
     "tip": [
       "Cavalry vs. Swordsman + Archer"
     ]
@@ -149,7 +153,9 @@
         ]
       ]
     ],
-    "dependencies": ["Core_Level_3"],
+    "dependencies": [
+      "Core_Level_3"
+    ],
     "tip": [
       "Duelists"
     ]
@@ -221,7 +227,9 @@
         ]
       ]
     ],
-    "dependencies": ["Core_Level_4"],
+    "dependencies": [
+      "Core_Level_4"
+    ],
     "tip": [
       "A balanced army"
     ]
@@ -265,7 +273,9 @@
         ]
       ]
     ],
-    "dependencies": ["Core_Level_5"],
+    "dependencies": [
+      "Core_Level_5"
+    ],
     "tip": [
       "TO DO"
     ]
@@ -309,9 +319,50 @@
         ]
       ]
     ],
-    "dependencies": ["Crusaders_Level_1"],
+    "dependencies": [
+      "Crusaders_Level_1"
+    ],
     "tip": [
       "TO DO"
+    ]
+  },
+  {
+    "id": "Stronger Together",
+    "enemies": [
+      [
+        "CRUSADER_DEFENDER",
+        [
+          989,
+          362
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          964,
+          393
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          990,
+          420
+        ]
+      ],
+      [
+        "CRUSADER_COMMANDER",
+        [
+          1016,
+          388
+        ]
+      ]
+    ],
+    "dependencies": [
+      "I need a medic!"
+    ],
+    "tip": [
+      "Meet the commander."
     ]
   },
   {
@@ -339,7 +390,9 @@
         ]
       ]
     ],
-    "dependencies": ["Crusaders_Level_2"],
+    "dependencies": [
+      "Crusaders_Level_2"
+    ],
     "tip": [
       "TO DO"
     ]
@@ -397,7 +450,9 @@
         ]
       ]
     ],
-    "dependencies": ["Crusaders_Level_3"],
+    "dependencies": [
+      "Crusaders_Level_3"
+    ],
     "tip": [
       "TO DO"
     ]
@@ -441,7 +496,9 @@
         ]
       ]
     ],
-    "dependencies": ["Crusaders_Level_4"],
+    "dependencies": [
+      "Crusaders_Level_4"
+    ],
     "tip": [
       "One army to rule them all."
     ]
@@ -485,7 +542,9 @@
         ]
       ]
     ],
-    "dependencies": ["LoTR"],
+    "dependencies": [
+      "LoTR"
+    ],
     "tip": [
       "Cavalry's here!"
     ]
@@ -571,46 +630,11 @@
         ]
       ]
     ],
-    "dependencies": ["Reinforcements"],
+    "dependencies": [
+      "Reinforcements"
+    ],
     "tip": [
       "Do you require medical attention?"
-    ]
-  },
-  {
-    "id": "Stronger Together",
-    "enemies": [
-      [
-        "CRUSADER_DEFENDER",
-        [
-          989,
-          362
-        ]
-      ],
-      [
-        "CRUSADER_DEFENDER",
-        [
-          964,
-          393
-        ]
-      ],
-      [
-        "CRUSADER_DEFENDER",
-        [
-          990,
-          420
-        ]
-      ],
-      [
-        "CRUSADER_COMMANDER",
-        [
-          1016,
-          388
-        ]
-      ]
-    ],
-    "dependencies": ["I need a medic!"],
-    "tip": [
-      "Meet the commander."
     ]
   },
   {
@@ -652,7 +676,9 @@
         ]
       ]
     ],
-    "dependencies": ["Stronger Together"],
+    "dependencies": [
+      "Stronger Together"
+    ],
     "tip": [
       "He might be alone, but he's still dangerous."
     ]
@@ -682,7 +708,9 @@
         ]
       ]
     ],
-    "dependencies": ["The Lone Swordsman?"],
+    "dependencies": [
+      "The Lone Swordsman?"
+    ],
     "tip": [
       "Are the 3 elite unit levels getting old?"
     ]
@@ -698,9 +726,46 @@
         ]
       ]
     ],
-    "dependencies": ["The Meat Grinder"],
+    "dependencies": [
+      "The Meat Grinder"
+    ],
     "tip": [
       "This one might actually be impossible."
+    ]
+  },
+  {
+    "id": "Tutorial: Defeat the Swordsman\r\n",
+    "enemies": [
+      [
+        "CORE_SWORDSMAN",
+        [
+          726,
+          395
+        ]
+      ]
+    ],
+    "dependencies": [],
+    "tip": [
+      "This swordsman is no match for you!",
+      "Your available units are displayed at the bottom of the screen.",
+      "Click on your unit, then click anywhere on the left side of the battlefield to place them.",
+      "When you are ready to battle, click start in the upper right corner."
+    ]
+  },
+  {
+    "id": "Tutorial: Defeat the Cavalry",
+    "enemies": [
+      [
+        "CORE_HORSEMAN",
+        [
+          1263,
+          384
+        ]
+      ]
+    ],
+    "dependencies": [],
+    "tip": [
+      "Cavalry move much faster than a swordsman, but deal less damage."
     ]
   }
 ]
