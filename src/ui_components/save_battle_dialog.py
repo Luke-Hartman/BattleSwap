@@ -92,12 +92,12 @@ class SaveBattleDialog(UIWindow):
         
         if not battle_id:
             return
-        
+
         # Split tips into lines, removing empty lines
         tips = [line.strip() for line in tips_text.split('\n') if line.strip()]
         if not tips:
             tips = [""]  # Ensure at least one empty tip if none provided
-        
+
         # Find an existing battle if there is one
         try:
             existing_battle = get_battle(battle_id)
@@ -122,7 +122,7 @@ class SaveBattleDialog(UIWindow):
         if existing_battle:
             for i, battle in enumerate(battles):
                 if battle.id == self.existing_battle_id:
-                    battles[i] = new_battle
+                    battles[i] = Battle(**new_battle)
                     break
         else:
             # If new battle, append to the end
