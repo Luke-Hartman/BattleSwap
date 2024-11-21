@@ -129,4 +129,4 @@ class SaveBattleDialog(UIWindow):
             battles.append(Battle(**new_battle))
         
         # Save updated battles
-        _save_battles()
+        _save_battles(battles)

@@ -387,10 +387,12 @@ class BattleEditorScene(Scene):
                             self.save_dialog.save_battle()
                             self.save_dialog.kill()
                             self.save_dialog = None
+                            scroll_percentage = self._get_scroll_percentage()
+                            self.manager.clear_and_reset()
+                            self.create_ui(scroll_percentage)
                         elif event.ui_element == self.save_dialog.cancel_button:
                             self.save_dialog.kill()
                             self.save_dialog = None
-
                 elif event.user_type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED:
                     # Handle move after dropdown
                     for battle_id, dropdown in self.move_after_dropdowns.items():
@@ -417,6 +419,7 @@ class BattleEditorScene(Scene):
             self.manager.process_events(event)
         
         self.manager.update(time_delta)
+        self.screen.fill((0, 0, 0))
         self.manager.draw_ui(self.screen)
         return True
 

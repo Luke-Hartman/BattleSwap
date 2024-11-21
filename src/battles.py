@@ -46,14 +46,14 @@ def move_battle_to_top(battle_id: str) -> None:
     battle = get_battle(battle_id)
     battles.remove(battle)
     battles.insert(0, battle)
-    _save_battles()
+    _save_battles(battles)
 
 def move_battle_up(battle_id: str) -> None:
     """Move a battle up one position."""
     for i, battle in enumerate(battles):
         if battle.id == battle_id and i > 0:
             battles[i], battles[i-1] = battles[i-1], battles[i]
-            _save_battles()
+            _save_battles(battles)
             break
 
 def move_battle_down(battle_id: str) -> None:
@@ -61,7 +61,7 @@ def move_battle_down(battle_id: str) -> None:
     for i, battle in enumerate(battles):
         if battle.id == battle_id and i < len(battles) - 1:
             battles[i], battles[i+1] = battles[i+1], battles[i]
-            _save_battles()
+            _save_battles(battles)
             break
 
 def move_battle_to_bottom(battle_id: str) -> None:
@@ -69,9 +69,9 @@ def move_battle_to_bottom(battle_id: str) -> None:
     battle = get_battle(battle_id)
     battles.remove(battle)
     battles.append(battle)
-    _save_battles()
+    _save_battles(battles)
 
-def _save_battles() -> None:
+def _save_battles(battles: List[Battle]) -> None:
     """Save the current battles list to the JSON file."""
     file_path = Path(__file__).parent.parent / 'data' / 'battles.json'
     battles_data = [battle.model_dump() for battle in battles]
@@ -89,14 +89,14 @@ def move_battle_after(battle_id: str, target_battle_id: str) -> None:
     
     # Insert it after the target battle
     battles.insert(target_index + 1, battle)
-    _save_battles()
+    _save_battles(battles)
 
 def update_battle(updated_battle: Battle) -> None:
     """Update a battle in the list and save changes."""
     for i, battle in enumerate(battles):
         if battle.id == updated_battle.id:
             battles[i] = updated_battle
-            _save_battles()
+            _save_battles(battles)
             break
     raise ValueError(f"Battle with id {updated_battle.id} not found")
 
@@ -104,5 +104,5 @@ def delete_battle(battle_id: str) -> None:
     """Delete a battle from the list."""
     battle = get_battle(battle_id)
     battles.remove(battle)
-    _save_battles()
+    _save_battles(battles)
 
