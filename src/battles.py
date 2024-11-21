@@ -12,7 +12,8 @@ from pydantic import BaseModel
 from entities.units import UnitType
 
 starting_units: Dict[UnitType, int] = {
-    UnitType.CORE_ARCHER: 5,
+    #UnitType.CORE_ARCHER: 5
+    UnitType.CORE_DUELIST: 1
 }
 
 class Battle(BaseModel):
