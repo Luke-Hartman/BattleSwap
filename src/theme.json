@@ -127,6 +127,11 @@
                 "path": "assets/icons/WerebearIcon.png"
             }
         }
+    },
+    "#tip_box": {
+        "misc": {
+            "text_horiz_alignment": "center"
+        }
     }
 }
     
