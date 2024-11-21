@@ -21,6 +21,7 @@ from ui_components.barracks_ui import BarracksUI, UnitCount
 from progress_manager import ProgressManager
 from ui_components.tip_box import TipBox
 from ui_components.reload_constants_button import ReloadConstantsButton
+from components.range_indicator import RangeIndicator
 
 
 class SetupBattleScene(Scene):
@@ -189,23 +190,36 @@ class SetupBattleScene(Scene):
                             candidate_unit_id = ent
                 except IndexError:
                     pass
+        if candidate_unit_id is not None:
+            range_indicator = esper.try_component(candidate_unit_id, RangeIndicator)
+            if range_indicator is not None:
+                range_indicator.enabled = True
         return candidate_unit_id
 
     def place_unit(self) -> None:
         """Place the currently selected unit on the battlefield."""
         assert self.selected_unit_id is not None
         unit_type = esper.component_for_entity(self.selected_unit_id, UnitTypeComponent).type
+        range_indicator = esper.try_component(self.selected_unit_id, RangeIndicator)
+        if range_indicator is not None:
+            range_indicator.enabled = False
         # if there are more available, continue to place them
         if self.barracks.units[unit_type] > 0:
             entity = create_unit(0, 0, unit_type, TeamType.TEAM1)
             self.barracks.remove_unit(unit_type)
             self.selected_unit_id = entity
+            range_indicator = esper.try_component(entity, RangeIndicator)
+            if range_indicator is not None:
+                range_indicator.enabled = True
         else:
             self.selected_unit_id = None
 
     def return_unit_to_barracks(self, unit_id: int) -> None:
         """Deselect the current unit and return it to the unit pool."""
         unit_type = esper.component_for_entity(unit_id, UnitTypeComponent).type
+        range_indicator = esper.try_component(unit_id, RangeIndicator)
+        if range_indicator is not None:
+            range_indicator.enabled = False
         esper.delete_entity(unit_id, immediate=True)
         self.barracks.add_unit(unit_type)
         self.selected_unit_id = None
@@ -215,3 +229,6 @@ class SetupBattleScene(Scene):
         entity = create_unit(0, 0, unit_list_item.unit_type, TeamType.TEAM1)
         self.barracks.remove_unit(unit_list_item.unit_type)
         self.selected_unit_id = entity
+        range_indicator = esper.try_component(entity, RangeIndicator)
+        if range_indicator is not None:
+            range_indicator.enabled = True

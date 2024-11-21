@@ -4,6 +4,7 @@ import esper
 import pygame
 import pygame_gui
 from components.position import Position
+from components.range_indicator import RangeIndicator
 from components.sprite_sheet import SpriteSheet
 from components.team import Team, TeamType
 from components.unit_type import UnitType, UnitTypeComponent
@@ -165,6 +166,10 @@ class SandboxScene(Scene):
                     mouse_pos = pygame.mouse.get_pos()
                     if self.selected_unit_id is None:
                         self.selected_unit_id = self.click_on_unit(mouse_pos)
+                        if self.selected_unit_id is not None:
+                            range_indicator = esper.try_component(self.selected_unit_id, RangeIndicator)
+                            if range_indicator is not None:
+                                range_indicator.enabled = True
                     else:
                         # Mouse must be within 25 pixels of the legal placement area to place the unit
                         grace_zone = 25
@@ -247,13 +252,23 @@ class SandboxScene(Scene):
         """Create a unit from a barracks selection."""
         entity = create_unit(0, 0, unit_list_item.unit_type, TeamType.TEAM1)
         self.selected_unit_id = entity
+        range_indicator = esper.try_component(entity, RangeIndicator)
+        if range_indicator is not None:
+            range_indicator.enabled = True
 
     def place_unit(self) -> None:
         """Place the currently selected unit on the battlefield."""
         assert self.selected_unit_id is not None
         unit_type = esper.component_for_entity(self.selected_unit_id, UnitTypeComponent).type
         team = esper.component_for_entity(self.selected_unit_id, Team).type
+        range_indicator = esper.try_component(self.selected_unit_id, RangeIndicator)
+        if range_indicator is not None:
+            range_indicator.enabled = False
         
         # Create a new unit of the same type and team
         entity = create_unit(0, 0, unit_type, team)
         self.selected_unit_id = entity
+        range_indicator = esper.try_component(entity, RangeIndicator)
+        if range_indicator is not None:
+            range_indicator.enabled = True
+

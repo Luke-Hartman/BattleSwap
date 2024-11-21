@@ -3,12 +3,12 @@
 This module contains functions for creating different types of units with their corresponding components.
 """
 
-import math
 import esper
 import pygame
 import os
 from typing import Dict
 from components.hitbox import Hitbox
+from components.range_indicator import RangeIndicator
 from game_constants import gc
 from components.ability import Abilities, Ability, Cooldown, HasTarget, SatisfiesUnitCondition
 from components.armor import Armor
@@ -172,6 +172,10 @@ def create_core_archer(x: int, y: int, team: TeamType) -> int:
     esper.add_component(
         entity,
         Destination(target_strategy=targetting_strategy, x_offset=0)
+    )
+    esper.add_component(
+        entity,
+        RangeIndicator(range=gc.CORE_ARCHER_ATTACK_RANGE)
     )
     esper.add_component(
         entity,
@@ -417,6 +421,10 @@ def create_core_mage(x: int, y: int, team: TeamType) -> int:
     esper.add_component(
         entity,
         Destination(target_strategy=targetting_strategy, x_offset=0)
+    )
+    esper.add_component(
+        entity,
+        RangeIndicator(range=gc.CORE_MAGE_ATTACK_RANGE)
     )
     esper.add_component(
         entity,
@@ -714,6 +722,10 @@ def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
             x_offset=0,
             min_distance=gc.CRUSADER_CLERIC_ATTACK_RANGE*2/3
         )
+    )
+    esper.add_component(
+        entity,
+        RangeIndicator(range=gc.CRUSADER_CLERIC_ATTACK_RANGE)
     )
     esper.add_component(
         entity,
@@ -1050,9 +1062,14 @@ def create_crusader_longbowman(x: int, y: int, team: TeamType) -> int:
         ],
         unit_condition=All([OnTeam(team=team.other()), Alive()])
     )
+
     esper.add_component(
         entity,
         Destination(target_strategy=targetting_strategy, x_offset=0)
+    )
+    esper.add_component(
+        entity,
+        RangeIndicator(range=gc.CRUSADER_LONGBOWMAN_ATTACK_RANGE)
     )
     esper.add_component(
         entity,

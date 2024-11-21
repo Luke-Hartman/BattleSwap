@@ -13,6 +13,7 @@ from components.hitbox import Hitbox
 from components.position import Position
 from components.animation import AnimationState
 from components.projectile import Projectile
+from components.range_indicator import RangeIndicator
 from components.sprite_sheet import SpriteSheet
 from components.team import Team, TeamType
 from components.health import Health
@@ -62,6 +63,14 @@ class RenderingProcessor(esper.Processor):
             # Outline
             pygame.draw.circle(self.screen, (*aura.color, 120), (position.x - self.camera.x, position.y - self.camera.y), aura.radius, 1)
             self.screen.blit(surface, (position.x - self.camera.x - aura.radius, position.y - self.camera.y - aura.radius))
+
+        # Draw range indicators
+        for ent, (range_indicator, position) in esper.get_components(RangeIndicator, Position):
+            if range_indicator.enabled:
+                # Draw filled circle with opacity
+                surface = pygame.Surface((range_indicator.range * 2, range_indicator.range * 2), pygame.SRCALPHA)
+                pygame.draw.circle(surface, (200, 200, 200, 120), (range_indicator.range, range_indicator.range), range_indicator.range, 1)
+                self.screen.blit(surface, (position.x - self.camera.x - range_indicator.range, position.y - self.camera.y - range_indicator.range))
 
         # Get all entities with necessary components
         entities = esper.get_components(Position, AnimationState, SpriteSheet)
