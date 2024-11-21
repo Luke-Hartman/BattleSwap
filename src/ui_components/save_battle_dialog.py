@@ -118,15 +118,22 @@ class SaveBattleDialog(UIWindow):
             "tip": tips
         }
         
-        # If the battle already exists replace the battle in its original position
-        if existing_battle:
+        if not self.existing_battle_id:
+            # If the battle already exists replace the battle in its original position
+            if existing_battle:
+                for i, battle in enumerate(battles):
+                    if battle.id == self.existing_battle_id:
+                        battles[i] = Battle(**new_battle)
+                        break
+            else:
+                # If new battle, append to the end
+                battles.append(Battle(**new_battle))
+        else:
+            # If editing existing battle, replace it
             for i, battle in enumerate(battles):
                 if battle.id == self.existing_battle_id:
                     battles[i] = Battle(**new_battle)
                     break
-        else:
-            # If new battle, append to the end
-            battles.append(Battle(**new_battle))
         
         # Save updated battles
         _save_battles(battles)
