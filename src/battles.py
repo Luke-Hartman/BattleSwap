@@ -92,13 +92,23 @@ def move_battle_after(battle_id: str, target_battle_id: str) -> None:
     battles.insert(target_index + 1, battle)
     _save_battles(battles)
 
+def depend_on_previous_battle(battle_id: str) -> None:
+    """Add a dependency to the previous battle."""
+    for i, battle in enumerate(battles):
+        if battle.id == battle_id:
+            assert i > 0
+            battle.dependencies.append(battles[i - 1].id)
+            _save_battles(battles)
+            return
+    raise ValueError(f"Battle with id {battle_id} not found")
+
 def update_battle(updated_battle: Battle) -> None:
     """Update a battle in the list and save changes."""
     for i, battle in enumerate(battles):
         if battle.id == updated_battle.id:
             battles[i] = updated_battle
             _save_battles(battles)
-            break
+            return
     raise ValueError(f"Battle with id {updated_battle.id} not found")
 
 def delete_battle(battle_id: str) -> None:

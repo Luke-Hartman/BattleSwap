@@ -29,6 +29,7 @@ class BattleEditorScene(Scene):
         self.dependency_remove_buttons: Dict[str, Dict[str, pygame_gui.elements.UIButton]] = {}
         self.dependency_add_dropdowns: Dict[str, pygame_gui.elements.UIDropDownMenu] = {}
         self.edit_sandbox_buttons = {}
+        self.depend_on_prev_buttons = {}
         screen.fill((0, 0, 0))
         self.create_ui(editor_scroll)
     
@@ -310,6 +311,18 @@ class BattleEditorScene(Scene):
                     container=content_panel
                 )
 
+                # Add "depend on prev" button if this isn't the first battle
+                if i > 0:
+                    self.depend_on_prev_buttons[battle.id] = pygame_gui.elements.UIButton(
+                        relative_rect=pygame.Rect(
+                            (dep_start_x + 190, dep_y + 30),
+                            (120, 25)
+                        ),
+                        text="depend on prev",
+                        manager=self.manager,
+                        container=battle_panel
+                    )
+
         # Set scroll position
         scroll_container.vert_scroll_bar.start_percentage = editor_scroll
     
@@ -393,6 +406,15 @@ class BattleEditorScene(Scene):
                         elif event.ui_element == self.save_dialog.cancel_button:
                             self.save_dialog.kill()
                             self.save_dialog = None
+                    # Add this section to handle the depend on prev button
+                    elif event.ui_element in self.depend_on_prev_buttons.values():
+                        battle_id = list(self.depend_on_prev_buttons.keys())[
+                            list(self.depend_on_prev_buttons.values()).index(event.ui_element)
+                        ]
+                        scroll_percentage = self._get_scroll_percentage()
+                        battles.depend_on_previous_battle(battle_id)
+                        self.manager.clear_and_reset()
+                        self.create_ui(scroll_percentage)
                 elif event.user_type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED:
                     # Handle move after dropdown
                     for battle_id, dropdown in self.move_after_dropdowns.items():
