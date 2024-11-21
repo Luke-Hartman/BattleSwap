@@ -29,7 +29,9 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": [
+      "Defeat the Swordsman!"
+    ],
     "tip": [
       "Cavalry move much faster than a swordsman, but deal less damage."
     ]
@@ -52,7 +54,9 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": [
+      "Defeat the Cavalry!"
+    ],
     "tip": [
       "The Cavalry's speed gives them the edge in battle against archers."
     ]
@@ -68,7 +72,9 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": [
+      "Defeat the Archers!"
+    ],
     "tip": [
       "Wizards shoot powerful fireballs that explode, damaging all nearby units. Spreading out your army can distract your foes."
     ]
@@ -119,7 +125,9 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": [
+      "Defeat the Wizard!"
+    ],
     "tip": [
       "Each time you finish a level, you swap the army you used for the army you beat. Also, in the case of a tie you still win!"
     ]
@@ -130,26 +138,28 @@
       [
         "CORE_SWORDSMAN",
         [
-          766,
-          378
+          924,
+          715
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          696,
-          379
+          913,
+          95
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          732,
-          379
+          916,
+          375
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": [
+      "Behold the Wizard's Power!"
+    ],
     "tip": [
       "The placement of your units is critical to an efficient victory.",
       "This allows you to bring unused units into future levels!",
@@ -157,7 +167,7 @@
     ]
   },
   {
-    "id": "Core_Level_2",
+    "id": "Let's Ride!",
     "enemies": [
       [
         "CORE_HORSEMAN",
@@ -189,20 +199,20 @@
       ]
     ],
     "dependencies": [
-      "Core_Level_1"
+      "Line of Swordsman"
     ],
     "tip": [
-      "Swordsman vs. Cavalry"
+      "Take each one out quickly!"
     ]
   },
   {
-    "id": "Core_Level_3",
+    "id": "Two Squads",
     "enemies": [
       [
         "CORE_SWORDSMAN",
         [
-          774,
-          85
+          910,
+          90
         ]
       ],
       [
@@ -229,8 +239,8 @@
       [
         "CORE_SWORDSMAN",
         [
-          778,
-          718
+          927,
+          724
         ]
       ],
       [
@@ -242,22 +252,15 @@
       ]
     ],
     "dependencies": [
-      "Core_Level_2"
+      "Let's Ride!"
     ],
     "tip": [
-      "Cavalry vs. Swordsman + Archer"
+      "Should you divide to conquer?"
     ]
   },
   {
-    "id": "Core_Level_4",
+    "id": "Double Duelists",
     "enemies": [
-      [
-        "CORE_DUELIST",
-        [
-          725,
-          64
-        ]
-      ],
       [
         "CORE_DUELIST",
         [
@@ -268,8 +271,8 @@
       [
         "CORE_DUELIST",
         [
-          704,
-          103
+          711,
+          102
         ]
       ],
       [
@@ -281,14 +284,14 @@
       ]
     ],
     "dependencies": [
-      "Core_Level_3"
+      "Two Squads"
     ],
     "tip": [
-      "Duelists"
+      "Watch out for that cavalry!"
     ]
   },
   {
-    "id": "Core_Level_5",
+    "id": "A Balanced Army",
     "enemies": [
       [
         "CORE_SWORDSMAN",
@@ -355,14 +358,14 @@
       ]
     ],
     "dependencies": [
-      "Core_Level_4"
+      "Double Duelists"
     ],
     "tip": [
-      "A balanced army"
+      "Do they even have a weakness?"
     ]
   },
   {
-    "id": "Crusaders_Level_1",
+    "id": "Defenders and Rangers",
     "enemies": [
       [
         "CRUSADER_DEFENDER",
@@ -401,14 +404,15 @@
       ]
     ],
     "dependencies": [
-      "Core_Level_5"
+      "A Balanced Army"
     ],
     "tip": [
-      "TO DO"
+      "Defenders are weak but take less damage due to their armor.",
+      "Rangers are slow but deal severe damage."
     ]
   },
   {
-    "id": "Crusaders_Level_2",
+    "id": "Pikeman and Healers",
     "enemies": [
       [
         "CRUSADER_PIKEMAN",
@@ -447,10 +451,11 @@
       ]
     ],
     "dependencies": [
-      "Crusaders_Level_1"
+      "Defenders and Rangers"
     ],
     "tip": [
-      "TO DO"
+      "Pikeman are like swordsman with extra reach.",
+      "Healers will restore the health of their damaged allies."
     ]
   },
   {
@@ -478,14 +483,16 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": [
+      "Pikeman and Healers"
+    ],
     "tip": [
       "Paladins have  high health and they can heal themselves,",
       "but they have low damage and are overwhelmed by groups."
     ]
   },
   {
-    "id": "Stronger Together",
+    "id": "Defeat the Commander",
     "enemies": [
       [
         "CRUSADER_DEFENDER",
@@ -517,14 +524,14 @@
       ]
     ],
     "dependencies": [
-      "I need a medic!"
+      "Defeat the Paladin!"
     ],
     "tip": [
-      "Meet the commander."
+      "Commanders are weak on their own, but they increase the damage of their allies."
     ]
   },
   {
-    "id": "Crusaders_Level_3",
+    "id": "The Crusade",
     "enemies": [
       [
         "CRUSADER_PALADIN",
@@ -549,14 +556,14 @@
       ]
     ],
     "dependencies": [
-      "Crusaders_Level_2"
+      "Defeat the Commander"
     ],
     "tip": [
-      "TO DO"
+      "Hint: Paladins are vulnerable on their own."
     ]
   },
   {
-    "id": "Crusaders_Level_4",
+    "id": "Shield and Spear",
     "enemies": [
       [
         "CRUSADER_DEFENDER",
@@ -596,23 +603,23 @@
       [
         "CRUSADER_LONGBOWMAN",
         [
-          1075,
-          650
+          1157,
+          550
         ]
       ],
       [
         "CRUSADER_LONGBOWMAN",
         [
-          1075,
-          150
+          1159,
+          249
         ]
       ]
     ],
     "dependencies": [
-      "Crusaders_Level_3"
+      "The Crusade"
     ],
     "tip": [
-      "TO DO"
+      "Defenders and pikman are a powerful pairing."
     ]
   },
   {
@@ -647,56 +654,12 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "dependencies": [
+      "Shield and Spear"
+    ],
     "tip": [
       "Gold Kights damage all units around them and heal a little with every hit.",
       "This makes them excellent against groups of melee units, but vulnerable to ranged or strong opponents."
-    ]
-  },
-  {
-    "id": "LoTR",
-    "enemies": [
-      [
-        "CORE_ARCHER",
-        [
-          1029,
-          350
-        ]
-      ],
-      [
-        "CORE_DUELIST",
-        [
-          873,
-          350
-        ]
-      ],
-      [
-        "CORE_HORSEMAN",
-        [
-          895,
-          315
-        ]
-      ],
-      [
-        "CORE_MAGE",
-        [
-          953,
-          344
-        ]
-      ],
-      [
-        "CORE_SWORDSMAN",
-        [
-          920,
-          379
-        ]
-      ]
-    ],
-    "dependencies": [
-      "Crusaders_Level_4"
-    ],
-    "tip": [
-      "One army to rule them all."
     ]
   },
   {
@@ -880,6 +843,71 @@
     ]
   },
   {
+    "id": "Strong Leadership",
+    "enemies": [
+      [
+        "CRUSADER_COMMANDER",
+        [
+          979,
+          343
+        ]
+      ],
+      [
+        "CRUSADER_COMMANDER",
+        [
+          980,
+          408
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          1056,
+          298
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          1061,
+          376
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          1065,
+          453
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          937,
+          302
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          945,
+          455
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          875,
+          376
+        ]
+      ]
+    ],
+    "dependencies": [],
+    "tip": [
+      "Stronger together!"
+    ]
+  },
+  {
     "id": "The Meat Grinder",
     "enemies": [
       [
@@ -926,7 +954,51 @@
       "The Meat Grinder"
     ],
     "tip": [
-      "This one might actually be impossible."
+      "The Black Knight scares away his foes with his cruel attacks."
+    ]
+  },
+  {
+    "id": "LoTR",
+    "enemies": [
+      [
+        "CORE_MAGE",
+        [
+          985,
+          377
+        ]
+      ],
+      [
+        "CORE_HORSEMAN",
+        [
+          1017,
+          342
+        ]
+      ],
+      [
+        "CRUSADER_LONGBOWMAN",
+        [
+          948,
+          346
+        ]
+      ],
+      [
+        "CORE_DUELIST",
+        [
+          917,
+          371
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          948,
+          396
+        ]
+      ]
+    ],
+    "dependencies": [],
+    "tip": [
+      "Now that's a fellowship!"
     ]
   }
 ]
