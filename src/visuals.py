@@ -72,7 +72,7 @@ def create_visual_spritesheet(
         if scale is None:
             scale = gc.TINY_RPG_SCALE
         if frames is None:
-            frames = (0, 4)
+            frames = (0, 6)
         return SpriteSheet(
             surface=visual_sheets[visual],
             frame_width=96,

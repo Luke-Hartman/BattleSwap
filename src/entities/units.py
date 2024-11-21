@@ -655,7 +655,7 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
                                     scale=gc.CRUSADER_BLACK_KNIGHT_FEAR_AOE_SCALE,
                                     unit_condition=All([Alive(), NotEntity(entity=entity)]),
                                     visual=Visual.CrusaderBlackKnightFear,
-                                    location=Recipient.TARGET,
+                                    location=Recipient.PARENT,
                                 )
                             ]
                         )

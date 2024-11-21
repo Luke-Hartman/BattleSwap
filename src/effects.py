@@ -171,7 +171,7 @@ class CreatesAoE(Effect):
         esper.add_component(entity, create_visual_spritesheet(
             visual=self.visual,
             scale=self.scale,
-            duration=self.duration,
+            duration=self.duration + 1/30,
             frames=self.visual_frames
         ))
         esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
