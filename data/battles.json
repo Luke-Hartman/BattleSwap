@@ -1,6 +1,131 @@
 [
   {
-    "id": "Core_Level_1",
+    "id": "Defeat the Swordsman!",
+    "enemies": [
+      [
+        "CORE_SWORDSMAN",
+        [
+          726,
+          395
+        ]
+      ]
+    ],
+    "dependencies": [],
+    "tip": [
+      "This swordsman is no match for you!",
+      "Your available units are displayed at the bottom of the screen.",
+      "Click on your unit, then click anywhere on the left side of the battlefield to place them.",
+      "When you are ready to battle, click start in the upper right corner."
+    ]
+  },
+  {
+    "id": "Defeat the Cavalry!",
+    "enemies": [
+      [
+        "CORE_HORSEMAN",
+        [
+          1263,
+          384
+        ]
+      ]
+    ],
+    "dependencies": [],
+    "tip": [
+      "Cavalry move much faster than a swordsman, but deal less damage."
+    ]
+  },
+  {
+    "id": "Defeat the Archers!",
+    "enemies": [
+      [
+        "CORE_ARCHER",
+        [
+          943,
+          620
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          944,
+          172
+        ]
+      ]
+    ],
+    "dependencies": [],
+    "tip": [
+      "The Cavalry's speed gives them the edge in battle against archers."
+    ]
+  },
+  {
+    "id": "Defeat the Wizard!",
+    "enemies": [
+      [
+        "CORE_MAGE",
+        [
+          979,
+          371
+        ]
+      ]
+    ],
+    "dependencies": [],
+    "tip": [
+      "Wizards shoot powerful fireballs that explode, damaging all nearby units. Spreading out your army can distract your foes."
+    ]
+  },
+  {
+    "id": "Behold the Wizard's Power!",
+    "enemies": [
+      [
+        "CORE_ARCHER",
+        [
+          792,
+          352
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          797,
+          397
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          833,
+          398
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          794,
+          375
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          830,
+          375
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          828,
+          352
+        ]
+      ]
+    ],
+    "dependencies": [],
+    "tip": [
+      "Each time you finish a level, you swap the army you used for the army you beat. Also, in the case of a tie you still win!"
+    ]
+  },
+  {
+    "id": "Line of Swordsman",
     "enemies": [
       [
         "CORE_SWORDSMAN",
@@ -26,7 +151,9 @@
     ],
     "dependencies": [],
     "tip": [
-      "Archer vs. Swordsman"
+      "The placement of your units is critical to an efficient victory.",
+      "This allows you to bring unused units into future levels!",
+      "Hint: Try saving one of your archers."
     ]
   },
   {
@@ -327,6 +454,37 @@
     ]
   },
   {
+    "id": "Defeat the Paladin!",
+    "enemies": [
+      [
+        "CORE_HORSEMAN",
+        [
+          978,
+          413
+        ]
+      ],
+      [
+        "CORE_HORSEMAN",
+        [
+          970,
+          339
+        ]
+      ],
+      [
+        "CRUSADER_PALADIN",
+        [
+          938,
+          374
+        ]
+      ]
+    ],
+    "dependencies": [],
+    "tip": [
+      "Paladins have  high health and they can heal themselves,",
+      "but they have low damage and are overwhelmed by groups."
+    ]
+  },
+  {
     "id": "Stronger Together",
     "enemies": [
       [
@@ -455,6 +613,44 @@
     ],
     "tip": [
       "TO DO"
+    ]
+  },
+  {
+    "id": "Defeat the Gold Knight!",
+    "enemies": [
+      [
+        "CRUSADER_GOLD_KNIGHT",
+        [
+          823,
+          398
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          940,
+          317
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          963,
+          392
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          935,
+          461
+        ]
+      ]
+    ],
+    "dependencies": [],
+    "tip": [
+      "Gold Kights damage all units around them and heal a little with every hit.",
+      "This makes them excellent against groups of melee units, but vulnerable to ranged or strong opponents."
     ]
   },
   {
@@ -731,200 +927,6 @@
     ],
     "tip": [
       "This one might actually be impossible."
-    ]
-  },
-  {
-    "id": "Defeat the Swordsman!",
-    "enemies": [
-      [
-        "CORE_SWORDSMAN",
-        [
-          726,
-          395
-        ]
-      ]
-    ],
-    "dependencies": [],
-    "tip": [
-      "This swordsman is no match for you!",
-      "Your available units are displayed at the bottom of the screen.",
-      "Click on your unit, then click anywhere on the left side of the battlefield to place them.",
-      "When you are ready to battle, click start in the upper right corner."
-    ]
-  },
-  {
-    "id": "Defeat the Cavalry!",
-    "enemies": [
-      [
-        "CORE_HORSEMAN",
-        [
-          1263,
-          384
-        ]
-      ]
-    ],
-    "dependencies": [],
-    "tip": [
-      "Cavalry move much faster than a swordsman, but deal less damage."
-    ]
-  },
-  {
-    "id": "Defeat the Archers!",
-    "enemies": [
-      [
-        "CORE_ARCHER",
-        [
-          943,
-          620
-        ]
-      ],
-      [
-        "CORE_ARCHER",
-        [
-          944,
-          172
-        ]
-      ]
-    ],
-    "dependencies": [],
-    "tip": [
-      "The Cavalry's speed gives them the edge in battle against archers."
-    ]
-  },
-  {
-    "id": "Defeat the Wizard!",
-    "enemies": [
-      [
-        "CORE_MAGE",
-        [
-          979,
-          371
-        ]
-      ]
-    ],
-    "dependencies": [],
-    "tip": [
-      "Wizards shoot powerful fireballs that explode, damaging all nearby units. Spreading out your army can distract your foes."
-    ]
-  },
-  {
-    "id": "Behold the Wizard's Power!",
-    "enemies": [
-      [
-        "CORE_ARCHER",
-        [
-          792,
-          352
-        ]
-      ],
-      [
-        "CORE_ARCHER",
-        [
-          797,
-          397
-        ]
-      ],
-      [
-        "CORE_ARCHER",
-        [
-          833,
-          398
-        ]
-      ],
-      [
-        "CORE_ARCHER",
-        [
-          794,
-          375
-        ]
-      ],
-      [
-        "CORE_ARCHER",
-        [
-          830,
-          375
-        ]
-      ],
-      [
-        "CORE_ARCHER",
-        [
-          828,
-          352
-        ]
-      ]
-    ],
-    "dependencies": [],
-    "tip": [
-      "Each time you finish a level, you swap the army you used for the army you beat. Also, in the case of a tie you still win!"
-    ]
-  },
-  {
-    "id": "Defeat the Paladin!",
-    "enemies": [
-      [
-        "CORE_HORSEMAN",
-        [
-          978,
-          413
-        ]
-      ],
-      [
-        "CORE_HORSEMAN",
-        [
-          970,
-          339
-        ]
-      ],
-      [
-        "CRUSADER_PALADIN",
-        [
-          938,
-          374
-        ]
-      ]
-    ],
-    "dependencies": [],
-    "tip": [
-      "Paladins have  high health and they can heal themselves,",
-      "but they have low damage and are overwhelmed by groups."
-    ]
-  },
-  {
-    "id": "Defeat the Gold Knight!",
-    "enemies": [
-      [
-        "CRUSADER_GOLD_KNIGHT",
-        [
-          823,
-          398
-        ]
-      ],
-      [
-        "CORE_ARCHER",
-        [
-          940,
-          317
-        ]
-      ],
-      [
-        "CORE_ARCHER",
-        [
-          963,
-          392
-        ]
-      ],
-      [
-        "CORE_ARCHER",
-        [
-          935,
-          461
-        ]
-      ]
-    ],
-    "dependencies": [],
-    "tip": [
-      "Gold Kights damage all units around them and heal a little with every hit.",
-      "This makes them excellent against groups of melee units, but vulnerable to ranged or strong opponents."
     ]
   }
 ]
