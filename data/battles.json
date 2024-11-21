@@ -129,7 +129,8 @@
       "Defeat the Wizard!"
     ],
     "tip": [
-      "Each time you finish a level, you swap the army you used for the army you beat. Also, in the case of a tie you still win!"
+      "Each time you finish a level, you swap the army you used for the army you beat!",
+      "Also, you win as long as all enemies are defeated, even if there are no survivors..."
     ]
   },
   {
@@ -162,7 +163,7 @@
     ],
     "tip": [
       "The placement of your units is critical to an efficient victory.",
-      "This allows you to bring unused units into future levels!",
+      "Any units you save can be used in future levels!",
       "Hint: Try saving one of your archers."
     ]
   },
@@ -199,10 +200,10 @@
       ]
     ],
     "dependencies": [
-      "Line of Swordsman"
+      "Line of Swordsmen"
     ],
     "tip": [
-      "Take each one out quickly!"
+      "Take the horsemen out before reinforcements arrive!"
     ]
   },
   {
@@ -255,7 +256,8 @@
       "Let's Ride!"
     ],
     "tip": [
-      "Should you divide to conquer?"
+      "Should you divide to conquer?",
+      "Hint: Try taking them out one at a time."
     ]
   },
   {
@@ -287,7 +289,8 @@
       "Two Squads"
     ],
     "tip": [
-      "Watch out for that cavalry!"
+      "Duelists deal very high damage, but are fragile and are vulnerable to archers.",
+      "When using duelists, try to keep them behind other units."
     ]
   },
   {
@@ -361,7 +364,10 @@
       "Double Duelists"
     ],
     "tip": [
-      "Do they even have a weakness?"
+      "You can also revisit previous levels to improve your solutions.",
+      "When you revisit a level, you can remove units from your previous solution and add something different.",
+      "By doing this, you can free up units for future levels.",
+      "This is great to try whenever you're stuck on a level!"
     ]
   },
   {
@@ -407,8 +413,8 @@
       "A Balanced Army"
     ],
     "tip": [
-      "Defenders are weak but take less damage due to their armor.",
-      "Rangers are slow but deal severe damage."
+      "Defenders are weak but take less damage due to their armor, and also move slowly.",
+      "Rangers are slow but deal high damage."
     ]
   },
   {
@@ -454,7 +460,7 @@
       "Defenders and Rangers"
     ],
     "tip": [
-      "Pikeman are like swordsman with extra reach.",
+      "Pikeman are like swordsman with extra reach at the cost of slower movement.",
       "Healers will restore the health of their damaged allies."
     ]
   },
@@ -559,7 +565,8 @@
       "Defeat the Commander"
     ],
     "tip": [
-      "Hint: Paladins are vulnerable on their own."
+      "Hint: Try taking them out one at a time.",
+      "If you need to, you can also revisit previous levels to improve your solutions."
     ]
   },
   {
@@ -619,7 +626,7 @@
       "The Crusade"
     ],
     "tip": [
-      "Defenders and pikman are a powerful pairing."
+      "Defenders and pikemen are a powerful pairing."
     ]
   },
   {
@@ -658,7 +665,7 @@
       "Shield and Spear"
     ],
     "tip": [
-      "Gold Kights damage all units around them and heal a little with every hit.",
+      "Gold Knights damage all enemy units around them and heal a little with every hit.",
       "This makes them excellent against groups of melee units, but vulnerable to ranged or strong opponents."
     ]
   },
@@ -793,7 +800,8 @@
       "Reinforcements"
     ],
     "tip": [
-      "Do you require medical attention?"
+      "Remember that you can also revisit previous levels to improve your solutions.",
+      "It would be great to have a duelist or two to overwhelm the enemy's healing."
     ]
   },
   {
@@ -839,7 +847,7 @@
       "I need a medic!"
     ],
     "tip": [
-      "He might be alone, but he's still dangerous."
+      "Or is he?"
     ]
   },
   {
@@ -906,7 +914,8 @@
       "The Lone Swordsman?"
     ],
     "tip": [
-      "Stronger united!"
+      "Stronger united!",
+      "Note that the commander aura does not stack."
     ]
   },
   {
@@ -938,7 +947,7 @@
       "Strong Leadership"
     ],
     "tip": [
-      "Are the 3 elite unit levels getting old?"
+      "Remember that gold knights deal damage to all enemy units around them and heal a little with every hit."
     ]
   },
   {
