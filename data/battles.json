@@ -134,7 +134,7 @@
     ]
   },
   {
-    "id": "Line of Swordsman",
+    "id": "Line of Swordsmen",
     "enemies": [
       [
         "CORE_SWORDSMAN",
@@ -418,7 +418,7 @@
     ]
   },
   {
-    "id": "Pikeman and Healers",
+    "id": "Pikemen and Healers",
     "enemies": [
       [
         "CRUSADER_PIKEMAN",
@@ -460,7 +460,7 @@
       "Defenders and Rangers"
     ],
     "tip": [
-      "Pikeman are like swordsman with extra reach at the cost of slower movement.",
+      "Pikemen are like swordsmen with extra reach at the cost of slower movement.",
       "Healers will restore the health of their damaged allies."
     ]
   },
@@ -490,7 +490,7 @@
       ]
     ],
     "dependencies": [
-      "Pikeman and Healers"
+      "Pikemen and Healers"
     ],
     "tip": [
       "Paladins have  high health and they can heal themselves,",
