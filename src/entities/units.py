@@ -190,7 +190,7 @@ def create_core_archer(x: int, y: int, team: TeamType) -> int:
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=gc.CORE_ARCHER_ATTACK_RANGE,
-                                    y_bias=2
+                                    y_bias=None
                                 )
                             ])
                         )
@@ -202,7 +202,7 @@ def create_core_archer(x: int, y: int, team: TeamType) -> int:
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=gc.CORE_ARCHER_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
-                                    y_bias=2
+                                    y_bias=None
                                 )
                             ])
                         )
@@ -439,7 +439,7 @@ def create_core_mage(x: int, y: int, team: TeamType) -> int:
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=gc.CORE_MAGE_ATTACK_RANGE,
-                                    y_bias=2
+                                    y_bias=None
                                 )
                             ])
                         )
@@ -450,7 +450,7 @@ def create_core_mage(x: int, y: int, team: TeamType) -> int:
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=gc.CORE_MAGE_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
-                                    y_bias=2
+                                    y_bias=None
                                 )
                             ])
                         )
@@ -745,8 +745,8 @@ def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
                                 Alive(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=gc.CRUSADER_CLERIC_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
-                                    y_bias=2,
+                                    distance=gc.CRUSADER_CLERIC_ATTACK_RANGE,
+                                    y_bias=None
                                 )
                             ])
                         )
@@ -1084,7 +1084,7 @@ def create_crusader_longbowman(x: int, y: int, team: TeamType) -> int:
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=gc.CRUSADER_LONGBOWMAN_ATTACK_RANGE,
-                                    y_bias=2
+                                    y_bias=None
                                 )
                             ])
                         )
@@ -1096,7 +1096,7 @@ def create_crusader_longbowman(x: int, y: int, team: TeamType) -> int:
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=gc.CRUSADER_LONGBOWMAN_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
-                                    y_bias=2
+                                    y_bias=None
                                 )
                             ])
                         )
