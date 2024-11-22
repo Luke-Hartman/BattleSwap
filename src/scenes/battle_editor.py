@@ -33,6 +33,12 @@ class BattleEditorScene(Scene):
         screen.fill((0, 0, 0))
         self.create_ui(editor_scroll)
     
+    def _rebuild_ui(self) -> None:
+        """Rebuild the UI."""
+        scroll_percentage = self._get_scroll_percentage()
+        self.manager.clear_and_reset()
+        self.create_ui(scroll_percentage)
+
     def create_ui(self, editor_scroll: float = 0.0) -> None:
         padding = 5
         inner_padding = 5
@@ -56,7 +62,7 @@ class BattleEditorScene(Scene):
 
         # Calculate total height needed
         panel_height = 100
-        total_height = len(battles.battles) * (panel_height + padding) + padding
+        total_height = len(battles.get_battles()) * (panel_height + padding) + padding
 
         # Explicitly set scrollable area dimensions
         scroll_container.set_scrollable_area_dimensions((container_width - 20, total_height))
@@ -73,7 +79,7 @@ class BattleEditorScene(Scene):
         unit_section_width = 5 * (UnitCount.size + inner_padding) + inner_padding
 
         # Add each battle's information
-        for i, battle in enumerate(battles.battles):
+        for i, battle in enumerate(battles.get_battles()):
             current_y = i * (panel_height + padding)
             
             # Create a container panel for this battle
@@ -217,7 +223,7 @@ class BattleEditorScene(Scene):
 
             # Create list of battle options, excluding current battle
             battle_options = ["-- Move after --"] + [
-                b.id for b in battles.battles if b.id != battle.id
+                b.id for b in battles.get_battles() if b.id != battle.id
             ]
 
             self.move_after_dropdowns[battle.id] = pygame_gui.elements.UIDropDownMenu(
@@ -292,7 +298,7 @@ class BattleEditorScene(Scene):
 
             # Add dependency dropdown (position it below the dependencies)
             add_dep_options = ["-- Add dependency --"] + [
-                b.id for b in battles.battles
+                b.id for b in battles.get_battles()
                 if b.id != battle.id and b.id not in battle.dependencies
             ]
             if len(add_dep_options) > 1:  # Only show if there are battles to add
@@ -348,37 +354,27 @@ class BattleEditorScene(Scene):
                     # Handle order buttons
                     elif event.ui_element in self.top_buttons.values():
                         battle_id = list(self.top_buttons.keys())[list(self.top_buttons.values()).index(event.ui_element)]
-                        scroll_percentage = self._get_scroll_percentage()
                         battles.move_battle_to_top(battle_id)
-                        self.manager.clear_and_reset()
-                        self.create_ui(scroll_percentage)
+                        self._rebuild_ui()
                     elif event.ui_element in self.up_buttons.values():
                         battle_id = list(self.up_buttons.keys())[list(self.up_buttons.values()).index(event.ui_element)]
-                        scroll_percentage = self._get_scroll_percentage()
                         battles.move_battle_up(battle_id)
-                        self.manager.clear_and_reset()
-                        self.create_ui(scroll_percentage)
+                        self._rebuild_ui()
                     elif event.ui_element in self.down_buttons.values():
                         battle_id = list(self.down_buttons.keys())[list(self.down_buttons.values()).index(event.ui_element)]
-                        scroll_percentage = self._get_scroll_percentage()
                         battles.move_battle_down(battle_id)
-                        self.manager.clear_and_reset()
-                        self.create_ui(scroll_percentage)
+                        self._rebuild_ui()
                     elif event.ui_element in self.bottom_buttons.values():
                         battle_id = list(self.bottom_buttons.keys())[list(self.bottom_buttons.values()).index(event.ui_element)]
-                        scroll_percentage = self._get_scroll_percentage()
                         battles.move_battle_to_bottom(battle_id)
-                        self.manager.clear_and_reset()
-                        self.create_ui(scroll_percentage)
+                        self._rebuild_ui()
                     # Handle delete buttons
                     elif event.ui_element in self.delete_buttons.values():
                         battle_id = list(self.delete_buttons.keys())[
                             list(self.delete_buttons.values()).index(event.ui_element)
                         ]
                         battles.delete_battle(battle_id)
-                        scroll_percentage = self._get_scroll_percentage()
-                        self.manager.clear_and_reset()
-                        self.create_ui(scroll_percentage)
+                        self._rebuild_ui()
                     # Handle edit sandbox buttons
                     elif event.ui_element in self.edit_sandbox_buttons.values():
                         battle_id = list(self.edit_sandbox_buttons.keys())[
@@ -400,9 +396,7 @@ class BattleEditorScene(Scene):
                             self.save_dialog.save_battle()
                             self.save_dialog.kill()
                             self.save_dialog = None
-                            scroll_percentage = self._get_scroll_percentage()
-                            self.manager.clear_and_reset()
-                            self.create_ui(scroll_percentage)
+                            self._rebuild_ui()
                         elif event.ui_element == self.save_dialog.cancel_button:
                             self.save_dialog.kill()
                             self.save_dialog = None
@@ -411,32 +405,39 @@ class BattleEditorScene(Scene):
                         battle_id = list(self.depend_on_prev_buttons.keys())[
                             list(self.depend_on_prev_buttons.values()).index(event.ui_element)
                         ]
-                        scroll_percentage = self._get_scroll_percentage()
                         battles.depend_on_previous_battle(battle_id)
-                        self.manager.clear_and_reset()
-                        self.create_ui(scroll_percentage)
+                        self._rebuild_ui()
+                    # Handle dependency remove buttons
+                    for battle_id, remove_buttons in self.dependency_remove_buttons.items():
+                        if event.ui_element in remove_buttons.values():
+                            dependency_id = list(remove_buttons.keys())[
+                                list(remove_buttons.values()).index(event.ui_element)
+                            ]
+                            previous_battle = battles.get_battle(battle_id)
+                            updated_battle = previous_battle.model_copy()
+                            updated_battle.dependencies.remove(dependency_id)
+                            battles.update_battle(previous_battle, updated_battle)
+                            self._rebuild_ui()
+                            break
                 elif event.user_type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED:
                     # Handle move after dropdown
                     for battle_id, dropdown in self.move_after_dropdowns.items():
                         if event.ui_element == dropdown and event.text != "-- Move after --":
                             target_battle_id = event.text
-                            scroll_percentage = self._get_scroll_percentage()
                             battles.move_battle_after(battle_id, target_battle_id)
-                            self.manager.clear_and_reset()
-                            self.create_ui(scroll_percentage)
+                            self._rebuild_ui()
                             break
                     
                     # Handle dependency add dropdown
                     for battle_id, dropdown in self.dependency_add_dropdowns.items():
                         if event.ui_element == dropdown and event.text != "-- Add dependency --":
-                            battle = battles.get_battle(battle_id)
-                            if event.text not in battle.dependencies:
-                                battle.dependencies.append(event.text)
-                                battles.update_battle(battle)
-                                scroll_percentage = self._get_scroll_percentage()
-                                self.manager.clear_and_reset()
-                                self.create_ui(scroll_percentage)
-                            break
+                            previous_battle = battles.get_battle(battle_id)
+                            if event.text not in previous_battle.dependencies:
+                                updated_battle = previous_battle.model_copy()
+                                updated_battle.dependencies.append(event.text)
+                                battles.update_battle(previous_battle, updated_battle)
+                                self._rebuild_ui()
+                                break
 
             self.manager.process_events(event)
         

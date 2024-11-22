@@ -3,7 +3,7 @@ from typing import List, Tuple, Optional
 import pygame
 import pygame_gui
 from pygame_gui.elements import UIWindow, UITextEntryLine, UIButton, UITextEntryBox
-from battles import _save_battles, get_battle, Battle, battles
+from battles import get_battle, Battle, add_battle, update_battle
 from components.unit_type import UnitType
 
 class SaveBattleDialog(UIWindow):
@@ -99,41 +99,23 @@ class SaveBattleDialog(UIWindow):
             tips = [""]  # Ensure at least one empty tip if none provided
 
         # Find an existing battle if there is one
-        try:
-            existing_battle = get_battle(battle_id)
-        except ValueError:
+        if self.existing_battle_id is not None:
+            existing_battle = get_battle(self.existing_battle_id)
+        else:
             existing_battle = None
 
         # Create new battle data
-        new_battle = {
-            "id": battle_id,
-            "enemies": [
+        new_battle = Battle(
+            id=battle_id,
+            enemies=[
                 [unit_type, list(position)]  # Convert position tuple to list for JSON
                 for unit_type, position in self.enemy_placements
             ],
-            "dependencies": (
-                existing_battle.dependencies if existing_battle
-                else []
-            ),
-            "tip": tips
-        }
+            dependencies=existing_battle.dependencies if existing_battle else [],
+            tip=tips
+        )
         
-        if not self.existing_battle_id:
-            # If the battle already exists replace the battle in its original position
-            if existing_battle:
-                for i, battle in enumerate(battles):
-                    if battle.id == self.existing_battle_id:
-                        battles[i] = Battle(**new_battle)
-                        break
-            else:
-                # If new battle, append to the end
-                battles.append(Battle(**new_battle))
+        if existing_battle is not None:
+            update_battle(existing_battle, new_battle)
         else:
-            # If editing existing battle, replace it
-            for i, battle in enumerate(battles):
-                if battle.id == self.existing_battle_id:
-                    battles[i] = Battle(**new_battle)
-                    break
-        
-        # Save updated battles
-        _save_battles(battles)
+            add_battle(new_battle)

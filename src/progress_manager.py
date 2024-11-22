@@ -21,7 +21,7 @@ class ProgressManager:
         """Get the available units for the player."""
         units = defaultdict(int)
         units.update(battles.starting_units)
-        for battle in battles.battles:
+        for battle in battles.get_battles():
             if battle.id in self.solutions:
                 for (unit_type, _) in battle.enemies:
                     units[unit_type] += 1
@@ -38,7 +38,7 @@ class ProgressManager:
         progress = True
         while progress:
             progress = False
-            for battle in battles.battles:
+            for battle in battles.get_battles():
                 if battle.id not in available_battles and all(dep in self.solutions for dep in battle.dependencies):
                     available_battles.append(battle.id)
                     progress = True
