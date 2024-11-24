@@ -9,7 +9,10 @@ from components.sprite_sheet import SpriteSheet
 from components.team import Team, TeamType
 from components.unit_type import UnitType, UnitTypeComponent
 from processors.animation_processor import AnimationProcessor
+from processors.orientation_processor import OrientationProcessor
+from processors.position_processor import PositionProcessor
 from processors.rendering_processor import RenderingProcessor, draw_battlefield
+from processors.rotation_processor import RotationProcessor
 from scenes.scene import Scene
 from game_constants import gc
 from camera import Camera
@@ -20,6 +23,7 @@ from ui_components.start_button import StartButton
 from scenes.events import BattleEditorSceneEvent, BattleSceneEvent, SelectBattleSceneEvent
 from ui_components.save_battle_dialog import SaveBattleDialog
 from ui_components.reload_constants_button import ReloadConstantsButton
+from auto_battle import BattleOutcome, get_unit_placements, simulate_battle
 
 
 class SandboxScene(Scene):
@@ -65,7 +69,9 @@ class SandboxScene(Scene):
         
         esper.add_processor(self.rendering_processor)
         esper.add_processor(AnimationProcessor())
-
+        esper.add_processor(PositionProcessor())
+        esper.add_processor(OrientationProcessor())
+        esper.add_processor(RotationProcessor())
         self.barracks = BarracksUI(
             self.manager,
             starting_units={},
@@ -100,6 +106,24 @@ class SandboxScene(Scene):
         self.editor_scroll = editor_scroll
 
         self.reload_constants_button = ReloadConstantsButton(self.manager)
+        self.simulate_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect(
+                (pygame.display.Info().current_w - 420, 10),
+                (100, 30)
+            ),
+            text='Simulate',
+            manager=self.manager
+        )
+
+        # Add results display box
+        self.results_box = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect(
+                (pygame.display.Info().current_w - 420, 50),  # Position below simulate button
+                (100, 30)
+            ),
+            text='',
+            manager=self.manager
+        )
 
     def update(self, time_delta: float, events: list[pygame.event.Event]) -> bool:
         """Update the sandbox scene."""
@@ -109,11 +133,7 @@ class SandboxScene(Scene):
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.save_button:
-                        enemy_placements = [
-                            (unit_type.type, (pos.x, pos.y))
-                            for ent, (unit_type, team, pos) in esper.get_components(UnitTypeComponent, Team, Position)
-                            if team.type == TeamType.TEAM2
-                        ]
+                        enemy_placements = get_unit_placements(TeamType.TEAM2)
                         self.save_dialog = SaveBattleDialog(
                             self.manager,
                             enemy_placements=enemy_placements,
@@ -130,19 +150,10 @@ class SandboxScene(Scene):
                             pygame.event.post(SelectBattleSceneEvent().to_event())
                         return True
                     elif event.ui_element == self.start_button:
-                        ally_placements = []
-                        for ent, (team, unit_type, pos) in esper.get_components(Team, UnitTypeComponent, Position):
-                            if team.type == TeamType.TEAM1:
-                                ally_placements.append((unit_type.type, (pos.x, pos.y)))
-                        enemy_placements = [
-                            (unit_type.type, (pos.x, pos.y))
-                            for ent, (unit_type, team, pos) in esper.get_components(UnitTypeComponent, Team, Position)
-                            if team.type == TeamType.TEAM2
-                        ]
                         pygame.event.post(
                             BattleSceneEvent(
-                                ally_placements=ally_placements,
-                                enemy_placements=enemy_placements,
+                                ally_placements=get_unit_placements(TeamType.TEAM1),
+                                enemy_placements=get_unit_placements(TeamType.TEAM2),
                                 battle_id=self.battle_id,
                                 sandbox_mode=True,
                                 editor_scroll=self.editor_scroll
@@ -160,6 +171,20 @@ class SandboxScene(Scene):
                         self.save_dialog = None
                     elif isinstance(event.ui_element, UnitCount):
                         self.create_unit_from_list(event.ui_element)
+                    elif event.ui_element == self.simulate_button:
+                        outcome = simulate_battle(
+                            ally_placements=get_unit_placements(TeamType.TEAM1),
+                            enemy_placements=get_unit_placements(TeamType.TEAM2),
+                            max_duration=60,  # 60 second timeout
+                        )
+                        
+                        # Update results box based on outcome
+                        if outcome == BattleOutcome.TEAM1_VICTORY:
+                            self.results_box.set_text('Team 1 Wins')
+                        elif outcome == BattleOutcome.TEAM2_VICTORY:
+                            self.results_box.set_text('Team 2 Wins')
+                        elif outcome == BattleOutcome.TIMEOUT:
+                            self.results_box.set_text('Timeout')
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:  # Left click

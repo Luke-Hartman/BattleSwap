@@ -10,8 +10,6 @@ from scenes.events import SandboxSceneEvent, SelectBattleSceneEvent, SetupBattle
 from camera import Camera
 from ui_components.return_button import ReturnButton
 from progress_manager import ProgressManager, Solution
-from components.unit_state import State, UnitState
-from components.team import Team, TeamType
 
 class BattleScene(Scene):
     """The scene for the battle."""

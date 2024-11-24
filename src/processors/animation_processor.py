@@ -3,6 +3,8 @@ Animation processor module for Battle Swap.
 
 This module contains the AnimationProcessor class, which is responsible for
 updating the current frame of entities with AnimationState components.
+
+Also triggers events based on frame changes.
 """
 
 import esper
@@ -15,7 +17,7 @@ from events import ABILITY_ACTIVATED, ABILITY_COMPLETED, AbilityActivatedEvent, 
 
 class AnimationProcessor(esper.Processor):
     """
-    Processor responsible for updating animation frames of entities.
+    Processor responsible for updating animation frames.
     """
 
     def process(self, dt: float):
@@ -26,7 +28,6 @@ class AnimationProcessor(esper.Processor):
             dt (float): Delta time since last frame, in seconds.
         """
         for ent, (anim_state, sprite_sheet) in esper.get_components(AnimationState, SpriteSheet):
-            # Update the animation type based on the unit state
             if esper.has_component(ent, UnitState):
                 unit_state = esper.component_for_entity(ent, UnitState)
             else:
@@ -82,3 +83,4 @@ class AnimationProcessor(esper.Processor):
                         emit_event(ABILITY_ACTIVATED, event=AbilityActivatedEvent(ent, index, anim_state.current_frame))
                     elif anim_state.current_frame == frame_count - 1:
                         emit_event(ABILITY_COMPLETED, event=AbilityCompletedEvent(ent, index))
+            sprite_sheet.update_frame(anim_state.type, anim_state.current_frame)

@@ -7,19 +7,14 @@ rendering entities with Position, AnimationState, SpriteSheet, and Team componen
 
 import esper
 import pygame
-import math
 from components.aura import Aura
 from components.hitbox import Hitbox
 from components.position import Position
-from components.animation import AnimationState
-from components.projectile import Projectile
 from components.range_indicator import RangeIndicator
 from components.sprite_sheet import SpriteSheet
 from components.team import Team, TeamType
 from components.health import Health
 from components.unit_state import UnitState, State
-from components.orientation import Orientation, FacingDirection
-from components.velocity import Velocity
 from camera import Camera
 from game_constants import gc
 
@@ -73,38 +68,12 @@ class RenderingProcessor(esper.Processor):
                 self.screen.blit(surface, (position.x - self.camera.x - range_indicator.range, position.y - self.camera.y - range_indicator.range))
 
         # Get all entities with necessary components
-        entities = esper.get_components(Position, AnimationState, SpriteSheet)
+        entities = esper.get_components(Position, SpriteSheet)
         
         # Sort entities based on their y-coordinate (higher y-value means lower on screen)
-        sorted_entities = sorted(entities, key=lambda e: (e[1][2].layer, e[1][0].y))
+        sorted_entities = sorted(entities, key=lambda e: (e[1][1].layer, e[1][0].y))
         
-        for ent, (pos, anim_state, sprite_sheet) in sorted_entities:
-            sprite_sheet.update_frame(anim_state.type, anim_state.current_frame)
-            x_offset = sprite_sheet.sprite_center_offset[0] * sprite_sheet.scale
-            y_offset = sprite_sheet.sprite_center_offset[1] * sprite_sheet.scale
-
-            if esper.has_component(ent, Projectile):
-                velocity = esper.component_for_entity(ent, Velocity)
-                angle = math.atan2(velocity.y, velocity.x)
-                # See https://stackoverflow.com/questions/4183208/how-do-i-rotate-an-image-around-its-center-using-pygame
-                rotated_image = pygame.transform.rotate(sprite_sheet.image, -math.degrees(angle))
-                new_rect = rotated_image.get_rect()
-                x_offset = x_offset * math.cos(angle) - y_offset * math.sin(angle)
-                y_offset = x_offset * math.sin(angle) + y_offset * math.cos(angle)
-                sprite_sheet.image = rotated_image
-                sprite_sheet.rect = new_rect
-            elif esper.has_component(ent, Orientation):
-                orientation = esper.component_for_entity(ent, Orientation)
-                if orientation.facing == FacingDirection.LEFT:
-                    sprite_sheet.image = pygame.transform.flip(sprite_sheet.image, True, False)
-                    x_offset = -x_offset
-            
-
-            # Calculate the position to center the sprite on the entity's position
-            sprite_sheet.rect.center = (
-                pos.x + x_offset,
-                pos.y + y_offset
-            )
+        for ent, (pos, sprite_sheet) in sorted_entities:
             render_pos = sprite_sheet.rect.move(-self.camera.x, -self.camera.y)
             self.screen.blit(sprite_sheet.image, render_pos)
 

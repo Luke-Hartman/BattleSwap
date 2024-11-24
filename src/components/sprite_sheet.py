@@ -30,6 +30,7 @@ class SpriteSheet(pygame.sprite.Sprite):
         self.frames = frames
         self.rows = rows
         self.animation_durations = animation_durations
+        self._original_sprite_center_offset = sprite_center_offset
         self.sprite_center_offset = sprite_center_offset
         self.image = pygame.Surface((frame_width, frame_height), pygame.SRCALPHA)
         self.rect = self.image.get_rect()
@@ -52,3 +53,11 @@ class SpriteSheet(pygame.sprite.Sprite):
         if self.scale != 1:
             self.image = pygame.transform.scale(self.image, (self.frame_width * self.scale, self.frame_height * self.scale))
         self.rect = self.image.get_rect()
+        self.sprite_center_offset = (
+            self._original_sprite_center_offset[0] * self.scale,
+            self._original_sprite_center_offset[1] * self.scale
+        )
+        self.rect.center = (
+            self.rect.centerx + self.sprite_center_offset[0],
+            self.rect.centery + self.sprite_center_offset[1]
+        )

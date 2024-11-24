@@ -3,12 +3,16 @@ from typing import List, Tuple, Optional
 import esper
 import pygame
 import pygame_gui
+from auto_battle import get_unit_placements
 from components.position import Position
 from components.sprite_sheet import SpriteSheet
 from components.team import Team, TeamType
 from components.unit_type import UnitType, UnitTypeComponent
 from processors.animation_processor import AnimationProcessor
+from processors.orientation_processor import OrientationProcessor
+from processors.position_processor import PositionProcessor
 from processors.rendering_processor import RenderingProcessor, draw_battlefield
+from processors.rotation_processor import RotationProcessor
 from scenes.scene import Scene
 from scenes.events import BattleSceneEvent, SelectBattleSceneEvent
 from game_constants import gc
@@ -65,8 +69,10 @@ class SetupBattleScene(Scene):
         self.return_button = ReturnButton(self.manager)
         
         esper.add_processor(self.rendering_processor)
-        animation_processor = AnimationProcessor()
-        esper.add_processor(animation_processor)
+        esper.add_processor(AnimationProcessor())
+        esper.add_processor(PositionProcessor())
+        esper.add_processor(OrientationProcessor())
+        esper.add_processor(RotationProcessor())
 
         self.barracks = BarracksUI(
             self.manager,
@@ -107,10 +113,7 @@ class SetupBattleScene(Scene):
                         if self.selected_unit_id is not None:
                             self.return_unit_to_barracks(self.selected_unit_id)
                             self.selected_unit_id = None
-                        ally_placements = []
-                        for ent, (team, unit_type, pos) in esper.get_components(Team, UnitTypeComponent, Position):
-                            if team.type == TeamType.TEAM1:
-                                ally_placements.append((unit_type.type, (pos.x, pos.y)))
+                        ally_placements = get_unit_placements(TeamType.TEAM1)
                         pygame.event.post(BattleSceneEvent(
                             ally_placements=ally_placements,
                             enemy_placements=self.battle.enemies,

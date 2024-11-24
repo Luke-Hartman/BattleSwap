@@ -6,6 +6,7 @@ from typing import Callable, List, Optional, Tuple
 
 import esper
 
+from components.angle import Angle
 from components.animation import AnimationState, AnimationType
 from components.aoe import AoE
 from components.armor import Armor
@@ -160,7 +161,7 @@ class CreatesAoE(Effect):
             raise ValueError(f"Invalid location: {self.location}")
         position = esper.component_for_entity(recipient, Position)
         team = esper.component_for_entity(recipient, Team)
-        orientation = esper.component_for_entity(recipient, Orientation)
+        orientation = esper.try_component(recipient, Orientation)
         esper.add_component(entity, Position(x=position.x, y=position.y))
         esper.add_component(entity, Team(type=team.type))
         esper.add_component(entity, AoE(
@@ -176,7 +177,8 @@ class CreatesAoE(Effect):
         ))
         esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
         esper.add_component(entity, Expiration(time_left=self.duration))
-        esper.add_component(entity, Orientation(facing=orientation.facing))
+        if orientation is not None:
+            esper.add_component(entity, Orientation(facing=orientation.facing))
         if self.on_create:
             self.on_create(entity)
 
@@ -227,12 +229,13 @@ class CreatesProjectile(Effect):
         else:
             velocity_x = self.projectile_speed
             velocity_y = 0
+        angle = math.atan2(dy, dx)
 
         esper.add_component(entity, Position(x=projectile_x, y=projectile_y))
         esper.add_component(entity, Velocity(x=velocity_x, y=velocity_y))
+        esper.add_component(entity, Angle(angle=angle))
         esper.add_component(entity, Team(type=parent_team.type))
         esper.add_component(entity, Projectile(effects=self.effects, owner=owner))
-        esper.add_component(entity, Orientation(facing=FacingDirection.LEFT if dx < 0 else FacingDirection.RIGHT))
         esper.add_component(entity, create_visual_spritesheet(self.visual))
         esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
         if self.on_create:
