@@ -159,6 +159,9 @@ class SetupBattleScene(Scene):
             x = max(0, min(x, gc.BATTLEFIELD_WIDTH // 2 - gc.NO_MANS_LAND_WIDTH//2))
             y = max(0, min(y, gc.BATTLEFIELD_HEIGHT))
             pos.x, pos.y = x, y
+            range_indicator = esper.try_component(self.selected_unit_id, RangeIndicator)
+            if range_indicator is not None:
+                range_indicator.enabled = True
         self.camera.update(time_delta)
 
         self.screen.fill((0, 0, 0))
@@ -193,10 +196,6 @@ class SetupBattleScene(Scene):
                             candidate_unit_id = ent
                 except IndexError:
                     pass
-        if candidate_unit_id is not None:
-            range_indicator = esper.try_component(candidate_unit_id, RangeIndicator)
-            if range_indicator is not None:
-                range_indicator.enabled = True
         return candidate_unit_id
 
     def place_unit(self) -> None:
@@ -211,18 +210,12 @@ class SetupBattleScene(Scene):
             entity = create_unit(0, 0, unit_type, TeamType.TEAM1)
             self.barracks.remove_unit(unit_type)
             self.selected_unit_id = entity
-            range_indicator = esper.try_component(entity, RangeIndicator)
-            if range_indicator is not None:
-                range_indicator.enabled = True
         else:
             self.selected_unit_id = None
 
     def return_unit_to_barracks(self, unit_id: int) -> None:
         """Deselect the current unit and return it to the unit pool."""
         unit_type = esper.component_for_entity(unit_id, UnitTypeComponent).type
-        range_indicator = esper.try_component(unit_id, RangeIndicator)
-        if range_indicator is not None:
-            range_indicator.enabled = False
         esper.delete_entity(unit_id, immediate=True)
         self.barracks.add_unit(unit_type)
         self.selected_unit_id = None
@@ -232,6 +225,3 @@ class SetupBattleScene(Scene):
         entity = create_unit(0, 0, unit_list_item.unit_type, TeamType.TEAM1)
         self.barracks.remove_unit(unit_list_item.unit_type)
         self.selected_unit_id = entity
-        range_indicator = esper.try_component(entity, RangeIndicator)
-        if range_indicator is not None:
-            range_indicator.enabled = True

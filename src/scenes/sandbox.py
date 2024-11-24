@@ -191,10 +191,6 @@ class SandboxScene(Scene):
                     mouse_pos = pygame.mouse.get_pos()
                     if self.selected_unit_id is None:
                         self.selected_unit_id = self.click_on_unit(mouse_pos)
-                        if self.selected_unit_id is not None:
-                            range_indicator = esper.try_component(self.selected_unit_id, RangeIndicator)
-                            if range_indicator is not None:
-                                range_indicator.enabled = True
                     else:
                         # Mouse must be within 25 pixels of the legal placement area to place the unit
                         grace_zone = 25
@@ -242,6 +238,11 @@ class SandboxScene(Scene):
             y = max(0, min(y, gc.BATTLEFIELD_HEIGHT))
             pos.x, pos.y = x, y
 
+            # Update range indicator
+            range_indicator = esper.try_component(self.selected_unit_id, RangeIndicator)
+            if range_indicator:
+                range_indicator.enabled = True
+
         # Only update camera if no dialog is focused
         if not self.manager.get_focus_set():
             self.camera.update(time_delta)
@@ -277,9 +278,6 @@ class SandboxScene(Scene):
         """Create a unit from a barracks selection."""
         entity = create_unit(0, 0, unit_list_item.unit_type, TeamType.TEAM1)
         self.selected_unit_id = entity
-        range_indicator = esper.try_component(entity, RangeIndicator)
-        if range_indicator is not None:
-            range_indicator.enabled = True
 
     def place_unit(self) -> None:
         """Place the currently selected unit on the battlefield."""
@@ -287,13 +285,10 @@ class SandboxScene(Scene):
         unit_type = esper.component_for_entity(self.selected_unit_id, UnitTypeComponent).type
         team = esper.component_for_entity(self.selected_unit_id, Team).type
         range_indicator = esper.try_component(self.selected_unit_id, RangeIndicator)
-        if range_indicator is not None:
+        if range_indicator:
             range_indicator.enabled = False
         
         # Create a new unit of the same type and team
         entity = create_unit(0, 0, unit_type, team)
         self.selected_unit_id = entity
-        range_indicator = esper.try_component(entity, RangeIndicator)
-        if range_indicator is not None:
-            range_indicator.enabled = True
 
