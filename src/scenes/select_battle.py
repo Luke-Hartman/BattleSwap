@@ -25,7 +25,7 @@ class SelectBattleScene(Scene):
         icon_size = UnitCount.size
         
         # Add sandbox and editor buttons to the right side
-        sandbox_button = pygame_gui.elements.UIButton(
+        self.sandbox_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(
                 (pygame.display.Info().current_w - button_width - padding, padding),
                 (button_width, button_height)
@@ -34,7 +34,7 @@ class SelectBattleScene(Scene):
             manager=self.manager
         )
         
-        editor_button = pygame_gui.elements.UIButton(
+        self.editor_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(
                 (pygame.display.Info().current_w - 2 * button_width - 2 * padding, padding),
                 (button_width, button_height)
@@ -65,12 +65,13 @@ class SelectBattleScene(Scene):
             object_id="#content_panel"
         )
 
+        self.battle_buttons = []
         for i, battle_id in enumerate(self.progress_manager.available_battles()):
             y_pos = i * (button_height + padding) + padding
             x = pygame.display.Info().current_w // 2 - button_width // 2
             
-            # Create battle button
-            pygame_gui.elements.UIButton(
+            # Create battle button and store reference
+            battle_button = pygame_gui.elements.UIButton(
                 relative_rect=pygame.Rect(
                     (x - padding, y_pos),
                     (button_width, button_height)
@@ -79,6 +80,7 @@ class SelectBattleScene(Scene):
                 manager=self.manager,
                 container=content_panel
             )
+            self.battle_buttons.append(battle_button)
             
             x += button_width + padding
             solution = self.progress_manager.solutions.get(battle_id, None)
@@ -145,28 +147,26 @@ class SelectBattleScene(Scene):
                 return False
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
-                    if event.ui_element.text == "Sandbox Mode":
+                    if event.ui_element == self.sandbox_button:
                         pygame.event.post(SandboxSceneEvent(
                             ally_placements=[],
                             enemy_placements=[],
                             battle_id=None,
                             editor_scroll=None,    
                         ).to_event())
-                    elif event.ui_element.text == "Battle Editor":
+                    elif event.ui_element == self.editor_button:
                         pygame.event.post(BattleEditorSceneEvent(editor_scroll=0).to_event())
-                    else:
-                        solution = self.progress_manager.solutions.get(event.ui_element.text, None)
-                        if solution is None:
-                            ally_placements = []
-                        else:
-                            ally_placements = solution.unit_placements
+                    elif event.ui_element in self.battle_buttons:
+                        battle_id = event.ui_element.text
+                        solution = self.progress_manager.solutions.get(battle_id, None)
+                        ally_placements = solution.unit_placements if solution else []
                         pygame.event.post(
                             SetupBattleSceneEvent(
-                                battle_id=event.ui_element.text,
+                                battle_id=battle_id,
                                 ally_placements=ally_placements
                             ).to_event()
                         )
-            
+        
             self.manager.process_events(event)
 
         self.manager.update(time_delta)
