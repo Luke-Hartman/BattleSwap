@@ -143,7 +143,7 @@ class SandboxScene(Scene):
                             BattleSceneEvent(
                                 ally_placements=ally_placements,
                                 enemy_placements=enemy_placements,
-                                battle_id=None,
+                                battle_id=self.battle_id,
                                 sandbox_mode=True,
                                 editor_scroll=self.editor_scroll
                             ).to_event()
