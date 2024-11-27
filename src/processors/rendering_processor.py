@@ -18,8 +18,15 @@ from components.unit_state import UnitState, State
 from camera import Camera
 from game_constants import gc
 
-def draw_battlefield(screen: pygame.Surface, camera: Camera, include_no_mans_land: bool = False):
-    """Draw the battlefield background."""
+def draw_battlefield(screen: pygame.Surface, camera: Camera, include_no_mans_land: bool = False, show_grid: bool = False):
+    """Draw the battlefield background.
+    
+    Args:
+        screen: The pygame surface to render to
+        camera: The camera controlling the view
+        include_no_mans_land: Whether to draw no man's land boundaries
+        show_grid: Whether to draw the grid
+    """
     battlefield_color = (34, 100, 34)
     battlefield_rect = pygame.Rect(
         -camera.x,
@@ -28,6 +35,47 @@ def draw_battlefield(screen: pygame.Surface, camera: Camera, include_no_mans_lan
         gc.BATTLEFIELD_HEIGHT
     )
     pygame.draw.rect(screen, battlefield_color, battlefield_rect)
+
+    if show_grid:
+        MAJOR_GRID_SIZE = gc.GRID_SIZE * gc.MAJOR_GRID_INTERVAL
+
+        # Calculate offset to center a major grid intersection in the middle of battlefield
+        center_x = gc.BATTLEFIELD_WIDTH // 2
+        center_y = gc.BATTLEFIELD_HEIGHT // 2
+        offset_x = center_x % MAJOR_GRID_SIZE
+        offset_y = center_y % MAJOR_GRID_SIZE
+
+        # Create a transparent surface for the grid
+        grid_surface = pygame.Surface(
+            (gc.BATTLEFIELD_WIDTH, gc.BATTLEFIELD_HEIGHT), 
+            pygame.SRCALPHA
+        )
+
+        # Draw vertical lines
+        for x in range(0, gc.BATTLEFIELD_WIDTH + gc.GRID_SIZE, gc.GRID_SIZE):
+            if (x - offset_x) % MAJOR_GRID_SIZE == 0:
+                # Major grid lines - 50% transparent white
+                pygame.draw.line(grid_surface, (255, 255, 255, 128), 
+                               (x, 0), (x, gc.BATTLEFIELD_HEIGHT), 1)
+            else:
+                # Minor grid lines - 80% transparent white
+                pygame.draw.line(grid_surface, (255, 255, 255, 51), 
+                               (x, 0), (x, gc.BATTLEFIELD_HEIGHT), 1)
+
+        # Draw horizontal lines
+        for y in range(0, gc.BATTLEFIELD_HEIGHT + gc.GRID_SIZE, gc.GRID_SIZE):
+            if (y - offset_y) % MAJOR_GRID_SIZE == 0:
+                # Major grid lines - 50% transparent white
+                pygame.draw.line(grid_surface, (255, 255, 255, 128), 
+                               (0, y), (gc.BATTLEFIELD_WIDTH, y), 1)
+            else:
+                # Minor grid lines - 80% transparent white
+                pygame.draw.line(grid_surface, (255, 255, 255, 51), 
+                               (0, y), (gc.BATTLEFIELD_WIDTH, y), 1)
+
+        # Draw the grid surface with camera offset
+        screen.blit(grid_surface, (-camera.x, -camera.y))
+
     if include_no_mans_land:
         pygame.draw.line(screen, (15, 50, 15), 
                          (gc.BATTLEFIELD_WIDTH // 2 - gc.NO_MANS_LAND_WIDTH // 2 - camera.x, -camera.y), 
@@ -73,18 +121,32 @@ class RenderingProcessor(esper.Processor):
         # Sort entities based on their y-coordinate (higher y-value means lower on screen)
         sorted_entities = sorted(entities, key=lambda e: (e[1][1].layer, e[1][0].y))
         
+        keys = pygame.key.get_pressed()
+        show_grid = keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]
+        
         for ent, (pos, sprite_sheet) in sorted_entities:
             render_pos = sprite_sheet.rect.move(-self.camera.x, -self.camera.y)
             self.screen.blit(sprite_sheet.image, render_pos)
 
-            # if esper.has_component(ent, Hitbox):
-            #     hitbox = esper.component_for_entity(ent, Hitbox)
-            #     pygame.draw.rect(
-            #         self.screen,
-            #         (255, 0, 0),
-            #         (pos.x - self.camera.x - hitbox.width / 2, pos.y - self.camera.y - hitbox.height / 2, hitbox.width, hitbox.height),
-            #         1
-            #     )
+            # Draw hitbox and center point when shift is held
+            if show_grid and esper.has_component(ent, Hitbox):
+                hitbox = esper.component_for_entity(ent, Hitbox)
+                
+                # Draw hitbox rectangle
+                # hitbox_rect = pygame.Rect(
+                #     pos.x - hitbox.width / 2 - self.camera.x,
+                #     pos.y - hitbox.height / 2 - self.camera.y,
+                #     hitbox.width,
+                #     hitbox.height
+                # )
+                # pygame.draw.rect(self.screen, (255, 255, 255, 128), hitbox_rect, 1)
+                
+                # Draw center point
+                center_point = (
+                    int(pos.x - self.camera.x),
+                    int(pos.y - self.camera.y)
+                )
+                pygame.draw.circle(self.screen, (255, 255, 255), center_point, 3)
 
             # Draw health bar if entity has Health, Team, and UnitState components, is not dead, and health is not full
             if (

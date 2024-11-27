@@ -224,7 +224,6 @@ class SandboxScene(Scene):
                 esper.delete_entity(self.selected_unit_id, immediate=True)
                 self.selected_unit_id = create_unit(x, y, unit_type, new_team)
 
-            
             # Constrain x based on current team
             if team.type == TeamType.TEAM1:
                 x = max(0, min(x, gc.BATTLEFIELD_WIDTH // 2 - gc.NO_MANS_LAND_WIDTH//2))
@@ -232,6 +231,13 @@ class SandboxScene(Scene):
                 x = max(gc.BATTLEFIELD_WIDTH // 2 + gc.NO_MANS_LAND_WIDTH//2, min(x, gc.BATTLEFIELD_WIDTH))
             
             y = max(0, min(y, gc.BATTLEFIELD_HEIGHT))
+
+            # Snap to grid if shift is held
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]:
+                x = round(x / gc.GRID_SIZE) * gc.GRID_SIZE
+                y = round(y / gc.GRID_SIZE) * gc.GRID_SIZE
+
             pos.x, pos.y = x, y
 
             # Update range indicator
@@ -244,7 +250,9 @@ class SandboxScene(Scene):
             self.camera.update(time_delta)
 
         self.screen.fill((0, 0, 0))
-        draw_battlefield(self.screen, self.camera, include_no_mans_land=True)
+        keys = pygame.key.get_pressed()
+        show_grid = keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]
+        draw_battlefield(self.screen, self.camera, include_no_mans_land=True, show_grid=show_grid)
         esper.process(time_delta)
         self.manager.update(time_delta)
         self.manager.draw_ui(self.screen)

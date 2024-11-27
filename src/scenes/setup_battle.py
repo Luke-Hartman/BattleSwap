@@ -158,6 +158,13 @@ class SetupBattleScene(Scene):
             x, y = adjusted_mouse_pos
             x = max(0, min(x, gc.BATTLEFIELD_WIDTH // 2 - gc.NO_MANS_LAND_WIDTH//2))
             y = max(0, min(y, gc.BATTLEFIELD_HEIGHT))
+
+            # Snap to grid if shift is held
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]:
+                x = round(x / gc.GRID_SIZE) * gc.GRID_SIZE
+                y = round(y / gc.GRID_SIZE) * gc.GRID_SIZE
+
             pos.x, pos.y = x, y
             range_indicator = esper.try_component(self.selected_unit_id, RangeIndicator)
             if range_indicator is not None:
@@ -165,7 +172,9 @@ class SetupBattleScene(Scene):
         self.camera.update(time_delta)
 
         self.screen.fill((0, 0, 0))
-        draw_battlefield(self.screen, self.camera, include_no_mans_land=True)
+        keys = pygame.key.get_pressed()
+        show_grid = keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]
+        draw_battlefield(self.screen, self.camera, include_no_mans_land=True, show_grid=show_grid)
         esper.process(time_delta)
         self.manager.update(time_delta)
         self.manager.draw_ui(self.screen)

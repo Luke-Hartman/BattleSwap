@@ -13,6 +13,8 @@ class GameConstants(BaseModel):
     NO_MANS_LAND_WIDTH: int
     BATTLEFIELD_WIDTH: int
     BATTLEFIELD_HEIGHT: int
+    GRID_SIZE: int
+    MAJOR_GRID_INTERVAL: int  # Number of grid cells between major grid lines
     
     MINIFOLKS_SCALE: float
     TINY_RPG_SCALE: float
