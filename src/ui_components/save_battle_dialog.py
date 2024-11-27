@@ -92,6 +92,9 @@ class SaveBattleDialog:
             battles.update_battle(battles.get_battle(battle_id), battle)
         else:
             battles.add_battle(battle)
+            if self.existing_battle_id:
+                battles.delete_battle(self.existing_battle_id)
+
 
     def kill(self) -> None:
         """Remove the dialog."""
