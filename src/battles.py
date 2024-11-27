@@ -5,23 +5,24 @@ This module defines the Battle model and loads battle data from a JSON file.
 
 import json
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from pydantic import BaseModel
 
 from entities.units import UnitType
 
 starting_units: Dict[UnitType, int] = {
-    #UnitType.CORE_ARCHER: 5
     UnitType.CORE_DUELIST: 1
 }
 
 class Battle(BaseModel):
-    """Data model for a battle."""
+    """A battle configuration."""
     id: str
     enemies: List[Tuple[UnitType, Tuple[int, int]]]
-    dependencies: List[str]
+    allies: Optional[List[Tuple[UnitType, Tuple[int, int]]]]
     tip: List[str]
+    dependencies: List[str]
+    is_test: bool
 
 def get_battle(battle_id: str) -> Battle:
     """Retrieve a battle by its ID."""
@@ -41,6 +42,15 @@ def _validate_battles(battles: List[Battle]) -> None:
     for battle in battles:
         for dependency in battle.dependencies:
             assert any(dep.id == dependency for dep in battles)
+    # all names are unique
+    if len(battles) != len(set(battle.id for battle in battles)):
+        duplicates = [id for id in set(battle.id for battle in battles) if list(battle.id for battle in battles).count(id) > 1]
+        raise ValueError(f"Duplicate battle ids: {duplicates}")
+    # battles do not have allies unless they are tests
+    for battle in battles:
+        if not battle.is_test and battle.allies is not None:
+            raise ValueError(f"Battle {battle.id} has allies but is not a test")
+
 
 def reload_battles() -> None:
     """Load battles from a JSON file."""

@@ -11,6 +11,8 @@ BATTLE_SCENE_EVENT = pygame.event.custom_type()
 SANDBOX_SCENE_EVENT = pygame.event.custom_type()
 SELECT_BATTLE_SCENE_EVENT = pygame.event.custom_type()
 BATTLE_EDITOR_SCENE_EVENT = pygame.event.custom_type()
+TEST_EDITOR_SCENE_EVENT = pygame.event.custom_type()
+PREVIOUS_SCENE_EVENT = pygame.event.custom_type()
 
 class PyGameEvent(BaseModel):
     """Base class for pygame events."""
@@ -72,3 +74,18 @@ class BattleEditorSceneEvent(PyGameEvent):
     @property
     def _type(self) -> int:
         return BATTLE_EDITOR_SCENE_EVENT
+
+class TestEditorSceneEvent(BaseModel):
+    """Event for switching to the test editor scene."""
+    editor_scroll: float
+    
+    def to_event(self) -> pygame.event.Event:
+        """Convert to pygame event."""
+        return pygame.event.Event(TEST_EDITOR_SCENE_EVENT, self.model_dump())
+
+class PreviousSceneEvent(PyGameEvent):
+    """Event for returning to the previous scene."""
+
+    @property
+    def _type(self) -> int:
+        return PREVIOUS_SCENE_EVENT

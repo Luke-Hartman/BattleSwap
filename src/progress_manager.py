@@ -39,7 +39,11 @@ class ProgressManager:
         while progress:
             progress = False
             for battle in battles.get_battles():
-                if battle.id not in available_battles and all(dep in self.solutions for dep in battle.dependencies):
+                if (
+                    battle.id not in available_battles
+                    and not battle.is_test
+                    and all(dep in self.solutions for dep in battle.dependencies)
+                ):
                     available_battles.append(battle.id)
                     progress = True
         return available_battles

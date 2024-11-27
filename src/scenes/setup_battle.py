@@ -14,7 +14,7 @@ from processors.position_processor import PositionProcessor
 from processors.rendering_processor import RenderingProcessor, draw_battlefield
 from processors.rotation_processor import RotationProcessor
 from scenes.scene import Scene
-from scenes.events import BattleSceneEvent, SelectBattleSceneEvent
+from scenes.events import BattleSceneEvent, PreviousSceneEvent
 from game_constants import gc
 from camera import Camera
 from entities.units import TeamType, create_unit
@@ -122,7 +122,7 @@ class SetupBattleScene(Scene):
                             editor_scroll=None,
                         ).to_event())
                     elif event.ui_element == self.return_button:
-                        pygame.event.post(SelectBattleSceneEvent().to_event())
+                        pygame.event.post(PreviousSceneEvent().to_event())
                         return True
                     elif isinstance(event.ui_element, UnitCount):
                         self.create_unit_from_list(event.ui_element)

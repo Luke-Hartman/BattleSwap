@@ -10,13 +10,15 @@
         ]
       ]
     ],
-    "dependencies": [],
+    "allies": null,
     "tip": [
       "This swordsman is no match for you!",
       "Your available units are displayed at the bottom of the screen.",
       "Click on your unit, then click anywhere on the left side of the battlefield to place them.",
       "When you are ready to battle, click start in the upper right corner."
-    ]
+    ],
+    "dependencies": [],
+    "is_test": false
   },
   {
     "id": "Defeat the Cavalry!",
@@ -29,12 +31,12 @@
         ]
       ]
     ],
-    "dependencies": [
-      "Defeat the Swordsman!"
-    ],
+    "allies": null,
     "tip": [
       "Cavalry move much faster than a swordsman, but deal less damage."
-    ]
+    ],
+    "dependencies": [],
+    "is_test": false
   },
   {
     "id": "Defeat the Archers!",
@@ -54,12 +56,12 @@
         ]
       ]
     ],
-    "dependencies": [
-      "Defeat the Cavalry!"
-    ],
+    "allies": null,
     "tip": [
       "The Cavalry's speed gives them the edge in battle against archers."
-    ]
+    ],
+    "dependencies": [],
+    "is_test": false
   },
   {
     "id": "Defeat the Wizard!",
@@ -72,12 +74,12 @@
         ]
       ]
     ],
-    "dependencies": [
-      "Defeat the Archers!"
-    ],
+    "allies": null,
     "tip": [
       "Wizards shoot powerful fireballs that explode, damaging all nearby units. Spreading out your army can distract your foes."
-    ]
+    ],
+    "dependencies": [],
+    "is_test": false
   },
   {
     "id": "Behold the Wizard's Power!",
@@ -125,13 +127,13 @@
         ]
       ]
     ],
-    "dependencies": [
-      "Defeat the Wizard!"
-    ],
+    "allies": null,
     "tip": [
       "Each time you finish a level, you swap the army you used for the army you beat!",
       "Also, you win as long as all enemies are defeated, even if there are no survivors..."
-    ]
+    ],
+    "dependencies": [],
+    "is_test": false
   },
   {
     "id": "Line of Swordsmen",
@@ -158,14 +160,14 @@
         ]
       ]
     ],
-    "dependencies": [
-      "Behold the Wizard's Power!"
-    ],
+    "allies": null,
     "tip": [
       "The placement of your units is critical to an efficient victory.",
       "Any units you save can be used in future levels!",
       "Hint: Try saving one of your archers."
-    ]
+    ],
+    "dependencies": [],
+    "is_test": false
   },
   {
     "id": "Let's Ride!",
@@ -199,12 +201,12 @@
         ]
       ]
     ],
-    "dependencies": [
-      "Line of Swordsmen"
-    ],
+    "allies": null,
     "tip": [
       "Take the horsemen out before reinforcements arrive!"
-    ]
+    ],
+    "dependencies": [],
+    "is_test": false
   },
   {
     "id": "Two Squads",
@@ -252,13 +254,13 @@
         ]
       ]
     ],
-    "dependencies": [
-      "Let's Ride!"
-    ],
+    "allies": null,
     "tip": [
       "Should you divide to conquer?",
       "Hint: Try taking them out one at a time."
-    ]
+    ],
+    "dependencies": [],
+    "is_test": false
   },
   {
     "id": "Double Duelists",
@@ -285,13 +287,13 @@
         ]
       ]
     ],
-    "dependencies": [
-      "Two Squads"
-    ],
+    "allies": null,
     "tip": [
       "Duelists deal very high damage, but are fragile and are vulnerable to archers.",
       "When using duelists, try to keep them behind other units."
-    ]
+    ],
+    "dependencies": [],
+    "is_test": false
   },
   {
     "id": "A Balanced Army",
@@ -360,15 +362,15 @@
         ]
       ]
     ],
-    "dependencies": [
-      "Double Duelists"
-    ],
+    "allies": null,
     "tip": [
       "You can also revisit previous levels to improve your solutions.",
       "When you revisit a level, you can remove units from your previous solution and add something different.",
       "By doing this, you can free up units for future levels.",
       "This is great to try whenever you're stuck on a level!"
-    ]
+    ],
+    "dependencies": [],
+    "is_test": false
   },
   {
     "id": "Defenders and Rangers",
@@ -409,13 +411,13 @@
         ]
       ]
     ],
-    "dependencies": [
-      "A Balanced Army"
-    ],
+    "allies": null,
     "tip": [
       "Defenders are weak but take less damage due to their armor, and also move slowly.",
       "Rangers are slow but deal high damage."
-    ]
+    ],
+    "dependencies": [],
+    "is_test": false
   },
   {
     "id": "Pikemen and Healers",
@@ -456,13 +458,13 @@
         ]
       ]
     ],
-    "dependencies": [
-      "Defenders and Rangers"
-    ],
+    "allies": null,
     "tip": [
       "Pikemen are like swordsmen with extra reach at the cost of slower movement.",
       "Healers will restore the health of their damaged allies."
-    ]
+    ],
+    "dependencies": [],
+    "is_test": false
   },
   {
     "id": "Defeat the Paladin!",
@@ -489,13 +491,13 @@
         ]
       ]
     ],
-    "dependencies": [
-      "Pikemen and Healers"
-    ],
+    "allies": null,
     "tip": [
       "Paladins have  high health and they can heal themselves,",
       "but they have low damage and are overwhelmed by groups."
-    ]
+    ],
+    "dependencies": [],
+    "is_test": false
   },
   {
     "id": "Defeat the Commander",
@@ -529,12 +531,12 @@
         ]
       ]
     ],
-    "dependencies": [
-      "Defeat the Paladin!"
-    ],
+    "allies": null,
     "tip": [
       "Commanders are weak on their own, but they increase the damage of their allies."
-    ]
+    ],
+    "dependencies": [],
+    "is_test": false
   },
   {
     "id": "The Crusade",
@@ -561,13 +563,13 @@
         ]
       ]
     ],
-    "dependencies": [
-      "Defeat the Commander"
-    ],
+    "allies": null,
     "tip": [
       "Hint: Try taking them out one at a time.",
       "If you need to, you can also revisit previous levels to improve your solutions."
-    ]
+    ],
+    "dependencies": [],
+    "is_test": false
   },
   {
     "id": "Shield and Spear",
@@ -622,12 +624,12 @@
         ]
       ]
     ],
-    "dependencies": [
-      "The Crusade"
-    ],
+    "allies": null,
     "tip": [
       "Defenders and pikemen are a powerful pairing."
-    ]
+    ],
+    "dependencies": [],
+    "is_test": false
   },
   {
     "id": "Defeat the Gold Knight!",
@@ -661,13 +663,13 @@
         ]
       ]
     ],
-    "dependencies": [
-      "Shield and Spear"
-    ],
+    "allies": null,
     "tip": [
       "Gold Knights damage all enemy units around them and heal a little with every hit.",
       "This makes them excellent against groups of melee units, but vulnerable to ranged or strong opponents."
-    ]
+    ],
+    "dependencies": [],
+    "is_test": false
   },
   {
     "id": "Reinforcements",
@@ -708,12 +710,12 @@
         ]
       ]
     ],
-    "dependencies": [
-      "Defeat the Gold Knight!"
-    ],
+    "allies": null,
     "tip": [
       "Cavalry's here!"
-    ]
+    ],
+    "dependencies": [],
+    "is_test": false
   },
   {
     "id": "I need a medic!",
@@ -796,13 +798,13 @@
         ]
       ]
     ],
-    "dependencies": [
-      "Reinforcements"
-    ],
+    "allies": null,
     "tip": [
       "Remember that you can also revisit previous levels to improve your solutions.",
       "It would be great to have a duelist or two to overwhelm the enemy's healing."
-    ]
+    ],
+    "dependencies": [],
+    "is_test": false
   },
   {
     "id": "The Lone Swordsman?",
@@ -843,12 +845,12 @@
         ]
       ]
     ],
-    "dependencies": [
-      "I need a medic!"
-    ],
+    "allies": null,
     "tip": [
       "Or is he?"
-    ]
+    ],
+    "dependencies": [],
+    "is_test": false
   },
   {
     "id": "Strong Leadership",
@@ -910,13 +912,13 @@
         ]
       ]
     ],
-    "dependencies": [
-      "The Lone Swordsman?"
-    ],
+    "allies": null,
     "tip": [
       "Stronger united!",
       "Note that the commander aura does not stack."
-    ]
+    ],
+    "dependencies": [],
+    "is_test": false
   },
   {
     "id": "The Meat Grinder",
@@ -943,12 +945,12 @@
         ]
       ]
     ],
-    "dependencies": [
-      "Strong Leadership"
-    ],
+    "allies": null,
     "tip": [
       "Remember that gold knights deal damage to all enemy units around them and heal a little with every hit."
-    ]
+    ],
+    "dependencies": [],
+    "is_test": false
   },
   {
     "id": "Fear Him.",
@@ -961,11 +963,77 @@
         ]
       ]
     ],
-    "dependencies": [
-      "The Meat Grinder"
-    ],
+    "allies": null,
     "tip": [
       "The Black Knight scares away his foes with his cruel attacks."
-    ]
+    ],
+    "dependencies": [],
+    "is_test": false
+  },
+  {
+    "id": "awefwew",
+    "enemies": [
+      [
+        "CRUSADER_GOLD_KNIGHT",
+        [
+          869,
+          196
+        ]
+      ]
+    ],
+    "allies": [
+      [
+        "CRUSADER_LONGBOWMAN",
+        [
+          272,
+          285
+        ]
+      ]
+    ],
+    "tip": [
+      "TODOs"
+    ],
+    "dependencies": [],
+    "is_test": true
+  },
+  {
+    "id": "sdfee",
+    "enemies": [
+      [
+        "CORE_ARCHER",
+        [
+          800,
+          309
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          893,
+          449
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          818,
+          557
+        ]
+      ]
+    ],
+    "allies": [
+      [
+        "CRUSADER_PALADIN",
+        [
+          612,
+          295
+        ]
+      ]
+    ],
+    "tip": [
+      "TODO"
+    ],
+    "dependencies": [],
+    "is_test": true
   }
 ]

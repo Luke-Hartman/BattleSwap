@@ -3,7 +3,7 @@ import pygame
 import battles
 from scenes.scene import Scene
 import pygame_gui
-from scenes.events import BattleEditorSceneEvent, SandboxSceneEvent, SetupBattleSceneEvent
+from scenes.events import BattleEditorSceneEvent, SandboxSceneEvent, SetupBattleSceneEvent, TestEditorSceneEvent
 from progress_manager import ProgressManager
 from ui_components.barracks_ui import BarracksUI, UnitCount
 
@@ -24,7 +24,7 @@ class SelectBattleScene(Scene):
         padding = 10
         icon_size = UnitCount.size
         
-        # Add sandbox and editor buttons to the right side
+        # Add sandbox, editor and test editor buttons to the right side
         self.sandbox_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(
                 (pygame.display.Info().current_w - button_width - padding, padding),
@@ -40,6 +40,15 @@ class SelectBattleScene(Scene):
                 (button_width, button_height)
             ),
             text="Battle Editor",
+            manager=self.manager
+        )
+
+        self.test_editor_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect(
+                (pygame.display.Info().current_w - 3 * button_width - 3 * padding, padding),
+                (button_width, button_height)
+            ),
+            text="Test Editor",
             manager=self.manager
         )
         
@@ -156,6 +165,8 @@ class SelectBattleScene(Scene):
                         ).to_event())
                     elif event.ui_element == self.editor_button:
                         pygame.event.post(BattleEditorSceneEvent(editor_scroll=0).to_event())
+                    elif event.ui_element == self.test_editor_button:
+                        pygame.event.post(TestEditorSceneEvent(editor_scroll=0).to_event())
                     elif event.ui_element in self.battle_buttons:
                         battle_id = event.ui_element.text
                         solution = self.progress_manager.solutions.get(battle_id, None)

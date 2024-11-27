@@ -20,7 +20,7 @@ from entities.units import create_unit
 from ui_components.barracks_ui import BarracksUI, UnitCount
 from ui_components.return_button import ReturnButton
 from ui_components.start_button import StartButton
-from scenes.events import BattleEditorSceneEvent, BattleSceneEvent, SelectBattleSceneEvent
+from scenes.events import BattleSceneEvent, PreviousSceneEvent
 from ui_components.save_battle_dialog import SaveBattleDialog
 from ui_components.reload_constants_button import ReloadConstantsButton
 from auto_battle import BattleOutcome, get_unit_placements, simulate_battle
@@ -134,20 +134,15 @@ class SandboxScene(Scene):
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.save_button:
                         enemy_placements = get_unit_placements(TeamType.TEAM2)
+                        ally_placements = get_unit_placements(TeamType.TEAM1)
                         self.save_dialog = SaveBattleDialog(
                             self.manager,
+                            ally_placements=ally_placements,
                             enemy_placements=enemy_placements,
-                            existing_battle_id=self.battle_id
+                            existing_battle_id=self.battle_id,
                         )
                     elif event.ui_element == self.return_button:
-                        if self.battle_id:
-                            pygame.event.post(
-                                BattleEditorSceneEvent(
-                                    editor_scroll=self.editor_scroll
-                                ).to_event()
-                            )
-                        else:
-                            pygame.event.post(SelectBattleSceneEvent().to_event())
+                        pygame.event.post(PreviousSceneEvent().to_event())
                         return True
                     elif event.ui_element == self.start_button:
                         pygame.event.post(
@@ -161,8 +156,13 @@ class SandboxScene(Scene):
                         )
                         return True
                     elif (self.save_dialog and 
-                          event.ui_element == self.save_dialog.save_button):
-                        self.save_dialog.save_battle()
+                          event.ui_element == self.save_dialog.save_battle_button):
+                        self.save_dialog.save_battle(is_test=False)
+                        self.save_dialog.kill()
+                        self.save_dialog = None
+                    elif (self.save_dialog and 
+                          event.ui_element == self.save_dialog.save_test_button):
+                        self.save_dialog.save_battle(is_test=True)
                         self.save_dialog.kill()
                         self.save_dialog = None
                     elif (self.save_dialog and 

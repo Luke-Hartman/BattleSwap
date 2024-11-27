@@ -60,9 +60,12 @@ class BattleEditorScene(Scene):
             allow_scroll_x=False,
         )
 
+        # Get all non-test battles
+        battles_list = [b for b in battles.get_battles() if not b.is_test]
+
         # Calculate total height needed
         panel_height = 100
-        total_height = len(battles.get_battles()) * (panel_height + padding) + padding
+        total_height = len(battles_list) * (panel_height + padding) + padding
 
         # Explicitly set scrollable area dimensions
         scroll_container.set_scrollable_area_dimensions((container_width - 20, total_height))
@@ -79,7 +82,7 @@ class BattleEditorScene(Scene):
         unit_section_width = 5 * (UnitCount.size + inner_padding) + inner_padding
 
         # Add each battle's information
-        for i, battle in enumerate(battles.get_battles()):
+        for i, battle in enumerate(battles_list):
             current_y = i * (panel_height + padding)
             
             # Create a container panel for this battle
@@ -223,7 +226,7 @@ class BattleEditorScene(Scene):
 
             # Create list of battle options, excluding current battle
             battle_options = ["-- Move after --"] + [
-                b.id for b in battles.get_battles() if b.id != battle.id
+                b.id for b in battles_list if b.id != battle.id
             ]
 
             self.move_after_dropdowns[battle.id] = pygame_gui.elements.UIDropDownMenu(
@@ -298,7 +301,7 @@ class BattleEditorScene(Scene):
 
             # Add dependency dropdown (position it below the dependencies)
             add_dep_options = ["-- Add dependency --"] + [
-                b.id for b in battles.get_battles()
+                b.id for b in battles_list
                 if b.id != battle.id and b.id not in battle.dependencies
             ]
             if len(add_dep_options) > 1:  # Only show if there are battles to add
@@ -348,8 +351,9 @@ class BattleEditorScene(Scene):
                         
                         self.save_dialog = SaveBattleDialog(
                             self.manager,
+                            battle.allies,
                             battle.enemies,
-                            existing_battle_id=battle_id
+                            existing_battle_id=battle_id,
                         )
                     # Handle order buttons
                     elif event.ui_element in self.top_buttons.values():
@@ -392,8 +396,13 @@ class BattleEditorScene(Scene):
                         )
                     # Handle save dialog buttons
                     elif hasattr(self, 'save_dialog') and self.save_dialog:
-                        if event.ui_element == self.save_dialog.save_button:
-                            self.save_dialog.save_battle()
+                        if event.ui_element == self.save_dialog.save_battle_button:
+                            self.save_dialog.save_battle(is_test=False)
+                            self.save_dialog.kill()
+                            self.save_dialog = None
+                            self._rebuild_ui()
+                        elif event.ui_element == self.save_dialog.save_test_button:
+                            self.save_dialog.save_battle(is_test=True)
                             self.save_dialog.kill()
                             self.save_dialog = None
                             self._rebuild_ui()

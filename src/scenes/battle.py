@@ -6,7 +6,7 @@ from auto_battle import AutoBattle, BattleOutcome
 from components.unit_type import UnitType
 from processors.rendering_processor import RenderingProcessor, draw_battlefield
 from scenes.scene import Scene
-from scenes.events import SandboxSceneEvent, SelectBattleSceneEvent, SetupBattleSceneEvent
+from scenes.events import PreviousSceneEvent, SandboxSceneEvent, SelectBattleSceneEvent, SetupBattleSceneEvent
 from camera import Camera
 from ui_components.return_button import ReturnButton
 from progress_manager import ProgressManager, Solution
@@ -75,7 +75,7 @@ class BattleScene(Scene):
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.return_button:
-                        pygame.event.post(SelectBattleSceneEvent().to_event())
+                        pygame.event.post(PreviousSceneEvent().to_event())
                         return True
                     elif event.ui_element == self.victory_button:
                         self.progress_manager.save_solution(Solution(self.battle_id, self.ally_placements))

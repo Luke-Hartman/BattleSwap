@@ -1,121 +1,98 @@
-"""Dialog for saving battles in sandbox mode."""
-from typing import List, Tuple, Optional
+"""Dialog for saving battles."""
 import pygame
 import pygame_gui
-from pygame_gui.elements import UIWindow, UITextEntryLine, UIButton, UITextEntryBox
-from battles import get_battle, Battle, add_battle, update_battle
+from typing import List, Tuple, Optional, Protocol, Callable
 from components.unit_type import UnitType
+import battles
 
-class SaveBattleDialog(UIWindow):
-    """Dialog window for entering battle details when saving."""
-    
+class SaveBattleCallback(Protocol):
+    """Protocol for save battle callback function."""
+    def __call__(self) -> None: ...
+
+class SaveBattleDialog:
+    """Dialog for saving battles."""
+
     def __init__(
         self,
         manager: pygame_gui.UIManager,
+        ally_placements: Optional[List[Tuple[UnitType, Tuple[int, int]]]],
         enemy_placements: List[Tuple[UnitType, Tuple[int, int]]],
-        existing_battle_id: Optional[str] = None
+        existing_battle_id: Optional[str],
     ):
-        """Initialize the save battle dialog.
+        dialog_width = 300
+        dialog_height = 370
+        screen_width = pygame.display.Info().current_w
+        screen_height = pygame.display.Info().current_h
         
-        Args:
-            manager: The UI manager
-            enemy_placements: List of enemy unit placements
-            existing_battle_id: Optional existing battle to edit
-        """
-        window_size = (300, 370)
-        window_pos = (
-            pygame.display.Info().current_w // 2 - window_size[0] // 2,
-            pygame.display.Info().current_h // 2 - window_size[1] // 2
-        )
-        
-        super().__init__(
-            rect=pygame.Rect(window_pos, window_size),
+        self.dialog = pygame_gui.elements.UIWindow(
+            rect=pygame.Rect(
+                (screen_width - dialog_width) // 2,
+                (screen_height - dialog_height) // 2,
+                dialog_width,
+                dialog_height
+            ),
             manager=manager,
-            window_display_title="Edit Battle" if existing_battle_id else "Save Battle",
-            object_id="#save_battle_dialog"
+            window_display_title="Save Battle"
         )
-        
-        self.enemy_placements = enemy_placements
-        self.existing_battle_id = existing_battle_id
-        
-        # Battle ID input
-        pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect(10, 10, 280, 25),
-            text="Battle ID:",
+
+        self.id_entry = pygame_gui.elements.UITextEntryLine(
+            relative_rect=pygame.Rect(10, 10, dialog_width - 20, 30),
             manager=manager,
-            container=self
-        )
-        
-        self.battle_id_entry = UITextEntryLine(
-            relative_rect=pygame.Rect(10, 40, 280, 30),
-            manager=manager,
-            container=self,
+            container=self.dialog,
             initial_text=existing_battle_id if existing_battle_id else ""
         )
-        
-        # Tips input
-        pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect(10, 80, 280, 25),
-            text="Tips:",
+
+        self.tip_entry = pygame_gui.elements.UITextEntryBox(
+            relative_rect=pygame.Rect(10, 50, dialog_width - 20, 200),
             manager=manager,
-            container=self
+            container=self.dialog,
+            initial_text="\n".join(battles.get_battle(existing_battle_id).tip) if existing_battle_id else "TODO"
         )
-        
-        initial_tips = '\n'.join(get_battle(existing_battle_id).tip) if existing_battle_id else ""
-        self.tip_entry = UITextEntryBox(
-            relative_rect=pygame.Rect(10, 110, 280, 180),
+
+        button_width = (dialog_width - 40) // 3
+        self.save_battle_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect(10, 300, button_width, 30),
+            text="Save Battle",
             manager=manager,
-            container=self,
-            initial_text=initial_tips
+            container=self.dialog
         )
-        
-        # Save button
-        self.save_button = UIButton(
-            relative_rect=pygame.Rect(10, 300, 135, 30),
-            text="Save",
+
+        self.save_test_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect(20 + button_width, 300, button_width, 30),
+            text="Save Test",
             manager=manager,
-            container=self
+            container=self.dialog
         )
-        
-        # Cancel button
-        self.cancel_button = UIButton(
-            relative_rect=pygame.Rect(155, 300, 135, 30),
+
+        self.cancel_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect(30 + 2 * button_width, 300, button_width, 30),
             text="Cancel",
             manager=manager,
-            container=self
+            container=self.dialog
         )
 
-    def save_battle(self) -> None:
-        """Save the current enemy positions as a new battle."""
-        battle_id = self.battle_id_entry.get_text()
-        tips_text = self.tip_entry.get_text()
-        
-        if not battle_id:
-            return
+        self.enemy_placements = enemy_placements
+        self.ally_placements = ally_placements
+        self.existing_battle_id = existing_battle_id
 
-        # Split tips into lines, removing empty lines
-        tips = [line.strip() for line in tips_text.split('\n') if line.strip()]
-        if not tips:
-            tips = [""]  # Ensure at least one empty tip if none provided
+    def save_battle(self, is_test: bool) -> None:
+        """Save the battle with the current settings."""
+        battle_id = self.id_entry.get_text()
+        tip = self.tip_entry.get_text().split('\n') if self.tip_entry.get_text() else ["TODO"]
 
-        # Find an existing battle if there is one
-        if self.existing_battle_id is not None:
-            existing_battle = get_battle(self.existing_battle_id)
-        else:
-            existing_battle = None
-
-        # Create new battle data
-        new_battle = Battle(
+        battle = battles.Battle(
             id=battle_id,
-            enemies=[
-                [unit_type, list(position)]  # Convert position tuple to list for JSON
-                for unit_type, position in self.enemy_placements
-            ],
-            dependencies=existing_battle.dependencies if existing_battle else [],
-            tip=tips
+            enemies=self.enemy_placements,
+            allies=self.ally_placements if is_test else None,
+            tip=tip,
+            dependencies=[],
+            is_test=is_test
         )
-        
-        if existing_battle is not None:
-            update_battle(existing_battle, new_battle)
+        if self.existing_battle_id == battle_id:
+            battles.update_battle(battles.get_battle(battle_id), battle)
         else:
-            add_battle(new_battle)
+            battles.add_battle(battle)
+
+    def kill(self) -> None:
+        """Remove the dialog."""
+        self.dialog.kill()
