@@ -49,6 +49,13 @@ class TestEditorScene(Scene):
             manager=self.manager
         )
 
+        # New Sandbox button next to Return
+        pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((padding + 110, padding), (120, button_height)),
+            text="New Sandbox",
+            manager=self.manager
+        )
+
         # Run all button at top-right
         self.run_all_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(
@@ -264,6 +271,16 @@ class TestEditorScene(Scene):
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element.text == "Return":
                         pygame.event.post(SelectBattleSceneEvent().to_event())
+                    elif event.ui_element.text == "New Sandbox":
+                        scroll_percentage = self._get_scroll_percentage()
+                        pygame.event.post(
+                            SandboxSceneEvent(
+                                ally_placements=[],
+                                enemy_placements=[],
+                                battle_id=None,
+                                editor_scroll=scroll_percentage
+                            ).to_event()
+                        )
                     elif event.ui_element == self.run_all_button:
                         self._run_all_tests()
                     elif event.ui_element in self.run_buttons.values():

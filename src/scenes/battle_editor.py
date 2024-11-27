@@ -51,6 +51,13 @@ class BattleEditorScene(Scene):
             manager=self.manager
         )
         
+        # New Sandbox button next to Return
+        pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((padding + 110, padding), (120, button_height)),
+            text="New Sandbox",
+            manager=self.manager
+        )
+        
         # Create scrollable container
         container_width = pygame.display.Info().current_w - 2 * padding
         container_height = pygame.display.Info().current_h - 45
@@ -345,6 +352,16 @@ class BattleEditorScene(Scene):
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element.text == "Return":
                         pygame.event.post(SelectBattleSceneEvent().to_event())
+                    elif event.ui_element.text == "New Sandbox":
+                        scroll_percentage = self._get_scroll_percentage()
+                        pygame.event.post(
+                            SandboxSceneEvent(
+                                ally_placements=[],
+                                enemy_placements=[],
+                                battle_id=None,
+                                editor_scroll=scroll_percentage
+                            ).to_event()
+                        )
                     elif event.ui_element in self.edit_buttons.values():
                         battle_id = list(self.edit_buttons.keys())[list(self.edit_buttons.values()).index(event.ui_element)]
                         battle = battles.get_battle(battle_id)
