@@ -1,0 +1,14 @@
+#!/bin/bash
+
+echo "Running tests..."
+python src/tests.py
+
+# Store the exit code of the tests
+exit_code=$?
+
+if [ $exit_code -ne 0 ]; then
+    echo "Tests failed. Commit aborted."
+    exit 1
+fi
+
+exit 0 
