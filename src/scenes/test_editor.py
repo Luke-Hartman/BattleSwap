@@ -34,6 +34,7 @@ class TestEditorScene(Scene):
         self.delete_buttons = {}
         self.run_buttons = {}
         self.test_statuses = defaultdict(lambda: TestStatus.NOT_RUN)
+        self.show_only_failures = False
         screen.fill((0, 0, 0))
         self.create_ui(editor_scroll)
     
@@ -56,6 +57,16 @@ class TestEditorScene(Scene):
             manager=self.manager
         )
 
+        # Show failures toggle button
+        self.show_failures_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect(
+                (pygame.display.Info().current_w - 250, padding),
+                (130, button_height)
+            ),
+            text="Show All Tests" if self.show_only_failures else "Show Failures",
+            manager=self.manager
+        )
+
         # Run all button at top-right
         self.run_all_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(
@@ -75,8 +86,11 @@ class TestEditorScene(Scene):
             allow_scroll_x=False,
         )
 
-        # Get all test battles
+        # Filter test battles based on show_only_failures
         test_battles = [b for b in battles.get_battles() if b.is_test]
+        if self.show_only_failures:
+            test_battles = [b for b in test_battles 
+                           if self.test_statuses[b.id] in (TestStatus.FAILED, TestStatus.TIMEOUT)]
 
         # Calculate total height needed - match battle editor's panel height
         panel_height = 100  # Changed to match battle editor
@@ -333,6 +347,9 @@ class TestEditorScene(Scene):
                         elif event.ui_element == self.save_dialog.cancel_button:
                             self.save_dialog.kill()
                             self.save_dialog = None
+                    elif event.ui_element == self.show_failures_button:
+                        self.show_only_failures = not self.show_only_failures
+                        self._rebuild_ui()
 
             self.manager.process_events(event)
         
