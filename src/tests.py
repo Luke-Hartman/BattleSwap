@@ -1,66 +1,42 @@
 """Module for managing test battles."""
-from typing import List, Optional
-import json
 import os
-from battles import Battle
+import sys
+import pygame
+from auto_battle import simulate_battle, BattleOutcome
+from battles import get_battles
+from entities.units import load_sprite_sheets
+from handlers.combat_handler import CombatHandler
+from handlers.state_machine import StateMachine
+from visuals import load_visual_sheets
 
-# Cache for tests
-_tests: Optional[List[Battle]] = None
 
-def get_tests() -> List[Battle]:
-    """Get all available tests."""
-    global _tests
-    
-    if _tests is not None:
-        return _tests
-        
-    if not os.path.exists("data/tests.json"):
-        _tests = []
-        return []
-    
-    with open("data/tests.json", "r") as f:
-        data = json.load(f)
-    
-    _tests = [Battle(**test) for test in data["tests"]]
-    return _tests
+def run_tests() -> bool:
+    """Run all test battles and return True if all tests pass."""
+    os.environ['SDL_VIDEODRIVER'] = 'dummy'
 
-def get_test(test_id: str) -> Optional[Battle]:
-    """Get a specific test by ID."""
-    for test in get_tests():
-        if test.id == test_id:
-            return test
-    return None
+    pygame.init()
+    screen = pygame.display.set_mode((800, 600))
+    pygame.display.set_caption("Battle Swap")
+    load_sprite_sheets()
+    load_visual_sheets()
+    combat_handler = CombatHandler()
+    state_machine = StateMachine()
 
-def save_test(test: Battle) -> None:
-    """Save a test to the tests file."""
-    global _tests
-    tests = get_tests()
+    failed = []
+    for battle in get_battles():
+        if battle.is_test:
+            outcome = simulate_battle(battle.allies, battle.enemies, max_duration=60)
+            print(f"{battle.id}: {outcome}")
+            if outcome != BattleOutcome.TEAM1_VICTORY:
+                failed.append(battle.id)
     
-    # Update existing test or add new one
-    updated = False
-    for i, existing_test in enumerate(tests):
-        if existing_test.id == test.id:
-            tests[i] = test
-            updated = True
-            break
-    
-    if not updated:
-        tests.append(test)
-    
-    # Update cache
-    _tests = tests
-    
-    # Save to file
-    with open("data/tests.json", "w") as f:
-        json.dump({"tests": [t.model_dump() for t in tests]}, f, indent=4)
+    if failed:
+        print(f"Failed tests: {failed}", file=sys.stderr)
+        return False
+    return True
 
-def delete_test(test_id: str) -> None:
-    """Delete a test by ID."""
-    global _tests
-    tests = [t for t in get_tests() if t.id != test_id]
-    
-    # Update cache
-    _tests = tests
-    
-    with open("data/tests.json", "w") as f:
-        json.dump({"tests": [t.model_dump() for t in tests]}, f, indent=4) 
+
+if __name__ == "__main__":
+    success = run_tests()
+    sys.exit(0 if success else 1)
+
