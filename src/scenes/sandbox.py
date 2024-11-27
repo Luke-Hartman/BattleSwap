@@ -41,7 +41,6 @@ class SandboxScene(Scene):
         ally_placements: Optional[List[Tuple[UnitType, Tuple[int, int]]]],
         enemy_placements: Optional[List[Tuple[UnitType, Tuple[int, int]]]],
         battle_id: Optional[str],
-        editor_scroll: float,
     ):
         """Initialize the sandbox scene.
         
@@ -52,7 +51,6 @@ class SandboxScene(Scene):
             ally_placements: List of starting ally placements
             enemy_placements: List of starting enemy placements
             battle_id: Optional battle id when saving.
-            editor_scroll: Scroll position to return to in battle editor
         """
         self.screen = screen
         self.camera = camera
@@ -103,7 +101,6 @@ class SandboxScene(Scene):
         self.ally_placements = ally_placements
         self.enemy_placements = enemy_placements
         self.battle_id = battle_id
-        self.editor_scroll = editor_scroll
 
         self.reload_constants_button = ReloadConstantsButton(self.manager)
         self.simulate_button = pygame_gui.elements.UIButton(
@@ -151,7 +148,6 @@ class SandboxScene(Scene):
                                 enemy_placements=get_unit_placements(TeamType.TEAM2),
                                 battle_id=self.battle_id,
                                 sandbox_mode=True,
-                                editor_scroll=self.editor_scroll
                             ).to_event()
                         )
                         return True

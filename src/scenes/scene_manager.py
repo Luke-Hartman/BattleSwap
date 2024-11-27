@@ -125,7 +125,6 @@ class SceneManager:
                     enemy_placements=validated_event.enemy_placements,
                     battle_id=validated_event.battle_id,
                     sandbox_mode=validated_event.sandbox_mode,
-                    editor_scroll=validated_event.editor_scroll
                 )
             elif event.type == SELECT_BATTLE_SCENE_EVENT:
                 self.cleanup()
@@ -145,7 +144,6 @@ class SceneManager:
                     ally_placements=event.ally_placements,
                     enemy_placements=event.enemy_placements,
                     battle_id=validated_event.battle_id,
-                    editor_scroll=validated_event.editor_scroll
                 )
             elif event.type == BATTLE_EDITOR_SCENE_EVENT:
                 self.cleanup()
@@ -153,7 +151,6 @@ class SceneManager:
                 self.current_scene = BattleEditorScene(
                     screen=self.screen,
                     manager=self.manager,
-                    editor_scroll=validated_event.editor_scroll
                 )
             elif event.type == TEST_EDITOR_SCENE_EVENT:
                 self.cleanup()
@@ -161,7 +158,6 @@ class SceneManager:
                 self.current_scene = TestEditorScene(
                     screen=self.screen,
                     manager=self.manager,
-                    editor_scroll=validated_event.editor_scroll
                 )
         
         return self.current_scene.update(time_delta, events)

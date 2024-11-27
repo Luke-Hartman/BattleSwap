@@ -161,12 +161,11 @@ class SelectBattleScene(Scene):
                             ally_placements=[],
                             enemy_placements=[],
                             battle_id=None,
-                            editor_scroll=None,    
                         ).to_event())
                     elif event.ui_element == self.editor_button:
-                        pygame.event.post(BattleEditorSceneEvent(editor_scroll=0).to_event())
+                        pygame.event.post(BattleEditorSceneEvent().to_event())
                     elif event.ui_element == self.test_editor_button:
-                        pygame.event.post(TestEditorSceneEvent(editor_scroll=0).to_event())
+                        pygame.event.post(TestEditorSceneEvent().to_event())
                     elif event.ui_element in self.battle_buttons:
                         battle_id = event.ui_element.text
                         solution = self.progress_manager.solutions.get(battle_id, None)

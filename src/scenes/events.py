@@ -4,7 +4,7 @@ import pygame
 from typing import List, Optional, Tuple
 from abc import abstractmethod
 from components.unit_type import UnitType
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 SETUP_BATTLE_SCENE_EVENT = pygame.event.custom_type()
 BATTLE_SCENE_EVENT = pygame.event.custom_type()
@@ -41,7 +41,6 @@ class BattleSceneEvent(PyGameEvent):
     enemy_placements: List[Tuple[UnitType, Tuple[int, int]]]
     battle_id: Optional[str]
     sandbox_mode: bool
-    editor_scroll: Optional[float]
 
     @property
     def _type(self) -> int:
@@ -52,7 +51,6 @@ class SandboxSceneEvent(PyGameEvent):
     ally_placements: List[Tuple[UnitType, Tuple[int, int]]]
     enemy_placements: List[Tuple[UnitType, Tuple[int, int]]]
     battle_id: Optional[str]
-    editor_scroll: Optional[float]
 
     @property
     def _type(self) -> int:
@@ -69,7 +67,6 @@ class SelectBattleSceneEvent(PyGameEvent):
 
 class BattleEditorSceneEvent(PyGameEvent):
     """Event for starting the battle editor."""
-    editor_scroll: float
 
     @property
     def _type(self) -> int:
@@ -77,7 +74,6 @@ class BattleEditorSceneEvent(PyGameEvent):
 
 class TestEditorSceneEvent(BaseModel):
     """Event for switching to the test editor scene."""
-    editor_scroll: float
     
     def to_event(self) -> pygame.event.Event:
         """Convert to pygame event."""

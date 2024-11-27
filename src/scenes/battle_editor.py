@@ -353,13 +353,11 @@ class BattleEditorScene(Scene):
                     if event.ui_element.text == "Return":
                         pygame.event.post(SelectBattleSceneEvent().to_event())
                     elif event.ui_element.text == "New Sandbox":
-                        scroll_percentage = self._get_scroll_percentage()
                         pygame.event.post(
                             SandboxSceneEvent(
                                 ally_placements=[],
                                 enemy_placements=[],
                                 battle_id=None,
-                                editor_scroll=scroll_percentage
                             ).to_event()
                         )
                     elif event.ui_element in self.edit_buttons.values():
