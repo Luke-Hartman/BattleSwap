@@ -24,10 +24,12 @@ class SelectBattleScene(Scene):
         padding = 10
         icon_size = UnitCount.size
         
+        title_width = 300
+        title_height = 80
         pygame_gui.elements.UILabel(
             relative_rect=pygame.Rect(
-                (0, 0),
-                (pygame.display.Info().current_w, 80)
+                (pygame.display.Info().current_w/2 - title_width/2, 0),
+                (title_width, title_height)
             ),
             text="BattleSwap",
             manager=self.manager,
