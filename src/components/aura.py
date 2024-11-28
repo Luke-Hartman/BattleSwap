@@ -16,6 +16,8 @@ class Aura:
     effects: List["Effect"]
     color: Tuple[int, int, int]
     period: float
+    owner_condition: "UnitCondition"
+    """Condition that determines whether the aura is active."""
     unit_condition: "UnitCondition"
     """Condition that determines which units are affected by the aura."""
     time_elapsed: float = 0

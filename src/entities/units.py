@@ -26,7 +26,7 @@ from components.unit_type import UnitType, UnitTypeComponent
 from components.velocity import Velocity
 from components.health import Health
 from components.orientation import Orientation, FacingDirection
-from effects import AppliesStatusEffect, CreatesAoE, CreatesAttachedVisual, CreatesProjectile, CreatesTemporaryAura, Damages, Heals, Recipient
+from effects import AppliesStatusEffect, CreatesAoE, CreatesAttachedVisual, CreatesProjectile, Damages, Heals, Recipient
 from unit_condition import (
     All, Alive, HealthBelowPercent, Never, NotEntity, OnTeam,
     MaximumDistanceFromEntity
@@ -859,12 +859,13 @@ def create_crusader_commander(x: int, y: int, team: TeamType) -> int:
                 )
             ],
             period=gc.DEFAULT_AURA_PERIOD,
+            owner_condition=Alive(),
             unit_condition=All([
                 NotEntity(entity=entity),
                 OnTeam(team=team),
                 Alive()
             ]),
-            color=(255, 215, 0)
+            color=(255, 215, 0),
         )
     )
     esper.add_component(entity, SpriteSheet(

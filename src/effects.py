@@ -261,6 +261,9 @@ class CreatesTemporaryAura(Effect):
     period: float
     """The period of the aura."""
 
+    owner_condition: "UnitCondition"
+    """Condition that determines whether the aura is active."""
+
     unit_condition: "UnitCondition"
     """Condition that determines which units are affected by the aura."""
 
@@ -291,6 +294,7 @@ class CreatesTemporaryAura(Effect):
                 effects=self.effects,
                 color=self.color,
                 period=self.period,
+                owner_condition=self.owner_condition,
                 unit_condition=self.unit_condition
             )
         )

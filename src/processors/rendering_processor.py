@@ -99,13 +99,14 @@ class RenderingProcessor(esper.Processor):
     def process(self, dt: float):
         # Draw all auras
         for ent, (aura, position) in esper.get_components(Aura, Position):
-            # Draw filled circle with opacity
-            surface = pygame.Surface((aura.radius * 2, aura.radius * 2), pygame.SRCALPHA)
-            # Filling
-            pygame.draw.circle(surface, (*aura.color, 25), (aura.radius, aura.radius), aura.radius)
-            # Outline
-            pygame.draw.circle(self.screen, (*aura.color, 120), (position.x - self.camera.x, position.y - self.camera.y), aura.radius, 1)
-            self.screen.blit(surface, (position.x - self.camera.x - aura.radius, position.y - self.camera.y - aura.radius))
+            if aura.owner_condition.check(aura.owner):
+                # Draw filled circle with opacity
+                surface = pygame.Surface((aura.radius * 2, aura.radius * 2), pygame.SRCALPHA)
+                # Filling
+                pygame.draw.circle(surface, (*aura.color, 25), (aura.radius, aura.radius), aura.radius)
+                # Outline
+                pygame.draw.circle(self.screen, (*aura.color, 120), (position.x - self.camera.x, position.y - self.camera.y), aura.radius, 1)
+                self.screen.blit(surface, (position.x - self.camera.x - aura.radius, position.y - self.camera.y - aura.radius))
 
         # Draw range indicators
         for ent, (range_indicator, position) in esper.get_components(RangeIndicator, Position):
