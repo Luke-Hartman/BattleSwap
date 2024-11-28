@@ -9,6 +9,7 @@ import os
 from typing import Dict
 from components.hitbox import Hitbox
 from components.range_indicator import RangeIndicator
+from components.stats_card import StatsCard
 from game_constants import gc
 from components.ability import Abilities, Ability, Cooldown, HasTarget, SatisfiesUnitCondition
 from components.armor import Armor
@@ -237,6 +238,22 @@ def create_core_archer(x: int, y: int, team: TeamType) -> int:
         },
         sprite_center_offset=(0, -8),
     ))
+    esper.add_component(
+        entity,
+        StatsCard(
+            text=[
+                f"Name: Archer",
+                f"Faction: Core",
+                f"Health: {gc.CORE_ARCHER_HP}",
+                f"Attack: {gc.CORE_ARCHER_ATTACK_DAMAGE}",
+                f"DPS: {round(gc.CORE_ARCHER_ATTACK_DAMAGE/gc.CORE_ARCHER_ANIMATION_ATTACK_DURATION, 2)}",
+                f"Speed: {gc.CORE_ARCHER_MOVEMENT_SPEED}",
+                f"Range: {gc.CORE_ARCHER_ATTACK_RANGE}",
+                f"Projectile Speed: {gc.CORE_ARCHER_PROJECTILE_SPEED}",
+                f"AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
+            ]
+        )
+    )
     return entity
 
 def create_core_duelist(x: int, y: int, team: TeamType) -> int:
@@ -321,6 +338,21 @@ def create_core_duelist(x: int, y: int, team: TeamType) -> int:
         },
         sprite_center_offset=(0, 2),
     ))
+    esper.add_component(
+        entity,
+        StatsCard(
+            text=[
+                f"Name: Duelist",
+                f"Faction: Core",
+                f"Health: {gc.CORE_DUELIST_HP}",
+                f"Attack: {round(gc.CORE_DUELIST_ATTACK_DAMAGE/7, 2)} * 7",
+                f"DPS: {round(gc.CORE_DUELIST_ATTACK_DAMAGE/gc.CORE_DUELIST_ANIMATION_ATTACK_DURATION, 2)}",
+                f"Speed: {gc.CORE_DUELIST_MOVEMENT_SPEED}",
+                f"Range: {gc.CORE_DUELIST_ATTACK_RANGE}",
+                f"AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
+            ]
+        )
+    )
     return entity
 
 def create_core_horseman(x: int, y: int, team: TeamType) -> int:
@@ -396,6 +428,21 @@ def create_core_horseman(x: int, y: int, team: TeamType) -> int:
         },
         sprite_center_offset=(1, -6),
     ))
+    esper.add_component(
+        entity,
+        StatsCard(
+            text=[
+                f"Name: Horseman",
+                f"Faction: Core",
+                f"Health: {gc.CORE_HORSEMAN_HP}",
+                f"Attack: {gc.CORE_HORSEMAN_ATTACK_DAMAGE}",
+                f"DPS: {round(gc.CORE_HORSEMAN_ATTACK_DAMAGE/gc.CORE_HORSEMAN_ANIMATION_ATTACK_DURATION, 2)}",
+                f"Speed: {gc.CORE_HORSEMAN_MOVEMENT_SPEED}",
+                f"Range: {gc.CORE_HORSEMAN_ATTACK_RANGE}",
+                f"AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
+            ]
+        )
+    )
     return entity
 
 def create_core_mage(x: int, y: int, team: TeamType) -> int:
@@ -503,6 +550,23 @@ def create_core_mage(x: int, y: int, team: TeamType) -> int:
         },
         sprite_center_offset=(0, -8),
     ))
+    esper.add_component(
+        entity,
+        StatsCard(
+            text=[
+                f"Name: Mage",
+                f"Faction: Core",
+                f"Health: {gc.CORE_MAGE_HP}",
+                f"Attack: {gc.CORE_MAGE_ATTACK_DAMAGE}",
+                f"DPS: {round(gc.CORE_MAGE_ATTACK_DAMAGE/gc.CORE_MAGE_ANIMATION_ATTACK_DURATION, 2)}",
+                f"Speed: {gc.CORE_MAGE_MOVEMENT_SPEED}",
+                f"Range: {gc.CORE_MAGE_ATTACK_RANGE}",
+                f"Projectile Speed: {gc.CORE_MAGE_PROJECTILE_SPEED}",
+                f"Special: Fireball attack explodes, damaging all units in an AoE and igniting them for {gc.CORE_MAGE_IGNITE_DAMAGE} over {gc.CORE_MAGE_IGNITE_DURATION} seconds.",
+                f"AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
+            ]
+        )
+    )
     return entity
 
 def create_core_swordsman(x: int, y: int, team: TeamType) -> int:
@@ -578,6 +642,21 @@ def create_core_swordsman(x: int, y: int, team: TeamType) -> int:
         },
         sprite_center_offset=(0, -8),
     ))
+    esper.add_component(
+        entity,
+        StatsCard(
+            text=[
+                f"Name: Swordsman",
+                f"Faction: Core",
+                f"Health: {gc.CORE_SWORDSMAN_HP}",
+                f"Attack: {gc.CORE_SWORDSMAN_ATTACK_DAMAGE}",
+                f"DPS: {round(gc.CORE_SWORDSMAN_ATTACK_DAMAGE/gc.CORE_SWORDSMAN_ANIMATION_ATTACK_DURATION, 2)}",
+                f"Speed: {gc.CORE_SWORDSMAN_MOVEMENT_SPEED}",
+                f"Range: {gc.CORE_SWORDSMAN_ATTACK_RANGE}",
+                f"AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
+            ]
+        )
+    )
     return entity
 
 def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
@@ -687,6 +766,23 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
         },
         sprite_center_offset=(0, 7),
     ))
+    esper.add_component(
+        entity,
+        StatsCard(
+            text=[
+                f"Name: Black Knight",
+                f"Faction: Crusader",
+                f"Health: {gc.CRUSADER_BLACK_KNIGHT_HP}",
+                f"Attack: {gc.CRUSADER_BLACK_KNIGHT_ATTACK_DAMAGE}",
+                f"DPS: {round(gc.CRUSADER_BLACK_KNIGHT_ATTACK_DAMAGE/gc.CRUSADER_BLACK_KNIGHT_ANIMATION_ATTACK_DURATION, 2)}",
+                f"Speed: {gc.CRUSADER_BLACK_KNIGHT_MOVEMENT_SPEED}",
+                f"Range: {gc.CRUSADER_BLACK_KNIGHT_ATTACK_RANGE}",
+                f"Fear Duration: {gc.CRUSADER_BLACK_KNIGHT_FLEE_DURATION}",
+                f"Special: Killing blows inflict fear on all other units in an AoE around the black knight.",
+                f"AI: Targets the lowest health enemy, ties broken by distance.",
+            ]
+        )
+    )
     return entity
 
 def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
@@ -787,6 +883,21 @@ def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
         },
         sprite_center_offset=(0, 2),
     ))
+    esper.add_component(
+        entity,
+        StatsCard(
+            text=[
+                f"Name: Cleric",
+                f"Faction: Crusader",
+                f"Health: {gc.CRUSADER_CLERIC_HP}",
+                f"Healing: {gc.CRUSADER_CLERIC_HEALING}",
+                f"Healing DPS: {round(gc.CRUSADER_CLERIC_HEALING/gc.CRUSADER_CLERIC_ANIMATION_ATTACK_DURATION, 2)}",
+                f"Speed: {gc.CRUSADER_CLERIC_MOVEMENT_SPEED}",
+                f"Range: {gc.CRUSADER_CLERIC_ATTACK_RANGE}",
+                f"AI: Walks towards the ally with the highest health, but heals the ally with the lowest current health in range. Ally must be under 90% health.",
+            ]
+        )
+    )
     return entity
 
 def create_crusader_commander(x: int, y: int, team: TeamType) -> int:
@@ -883,6 +994,21 @@ def create_crusader_commander(x: int, y: int, team: TeamType) -> int:
         },
         sprite_center_offset=(0, 2),
     ))
+    esper.add_component(
+        entity,
+        StatsCard(
+            text=[
+                f"Name: Commander",
+                f"Faction: Crusader",
+                f"Health: {gc.CRUSADER_COMMANDER_HP}",
+                f"Attack: {gc.CRUSADER_COMMANDER_ATTACK_DAMAGE}",
+                f"DPS: {round(gc.CRUSADER_COMMANDER_ATTACK_DAMAGE/gc.CRUSADER_COMMANDER_ANIMATION_ATTACK_DURATION, 2)}",
+                f"Speed: {gc.CRUSADER_COMMANDER_MOVEMENT_SPEED}",
+                f"Range: {gc.CRUSADER_COMMANDER_ATTACK_RANGE}",
+                f"Special: Commanders have an aura which gives allied units {round(gc.CRUSADER_COMMANDER_EMPOWERED_DAMAGE_PERCENTAGE*100)}% increased damage (does not stack with itself).",
+            ]
+        )
+    )
     return entity
 
 def create_crusader_defender(x: int, y: int, team: TeamType) -> int:
@@ -959,6 +1085,22 @@ def create_crusader_defender(x: int, y: int, team: TeamType) -> int:
         },
         sprite_center_offset=(0, -8),
     ))
+    esper.add_component(
+        entity,
+        StatsCard(
+            text=[
+                f"Name: Defender",
+                f"Faction: Crusader",
+                f"Health: {gc.CRUSADER_DEFENDER_HP}",
+                f"Attack: {gc.CRUSADER_DEFENDER_ATTACK_DAMAGE}",
+                f"DPS: {round(gc.CRUSADER_DEFENDER_ATTACK_DAMAGE/gc.CRUSADER_DEFENDER_ANIMATION_ATTACK_DURATION, 2)}",
+                f"Speed: {gc.CRUSADER_DEFENDER_MOVEMENT_SPEED}",
+                f"Range: {gc.CRUSADER_DEFENDER_ATTACK_RANGE}",
+                f"AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
+                f"Special: Defenders have {gc.CRUSADER_DEFENDER_ARMOR_FLAT_REDUCTION}% flat armor (applied first), followed by {round(gc.CRUSADER_DEFENDER_ARMOR_PERCENT_REDUCTION*100)}% percent armor, reducing damage taken by up to {round(gc.MAX_ARMOR_DAMAGE_REDUCTION*100)}%.",
+            ]
+        )
+    )
     return entity
 
 def create_crusader_gold_knight(x: int, y: int, team: TeamType) -> int:
@@ -1008,8 +1150,8 @@ def create_crusader_gold_knight(x: int, y: int, team: TeamType) -> int:
                         0: [
                             CreatesAoE(
                                 effects=[
-                                    Damages(damage=gc.CRUSADER_GOLD_KNIGHT_ATTACK_DAMAGE/4, recipient=Recipient.TARGET),
-                                    Heals(amount=gc.CRUSADER_GOLD_KNIGHT_ATTACK_HEAL/4, recipient=Recipient.OWNER)
+                                    Damages(damage=gc.CRUSADER_GOLD_KNIGHT_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                                    Heals(amount=gc.CRUSADER_GOLD_KNIGHT_ATTACK_HEAL, recipient=Recipient.OWNER)
                                 ],
                                 duration=gc.CRUSADER_GOLD_KNIGHT_ANIMATION_ATTACK_DURATION,
                                 scale=gc.TINY_RPG_SCALE,
@@ -1041,6 +1183,22 @@ def create_crusader_gold_knight(x: int, y: int, team: TeamType) -> int:
         },
         sprite_center_offset=(0, 2),
     ))
+    esper.add_component(
+        entity,
+        StatsCard(
+            text=[
+                f"Name: Gold Knight",
+                f"Faction: Crusader",
+                f"Health: {gc.CRUSADER_GOLD_KNIGHT_HP}",
+                f"Attack: {gc.CRUSADER_GOLD_KNIGHT_ATTACK_DAMAGE}",
+                f"DPS: {round(gc.CRUSADER_GOLD_KNIGHT_ATTACK_DAMAGE/gc.CRUSADER_GOLD_KNIGHT_ANIMATION_ATTACK_DURATION, 2)}",
+                f"Speed: {gc.CRUSADER_GOLD_KNIGHT_MOVEMENT_SPEED}",
+                f"Range: {gc.CRUSADER_GOLD_KNIGHT_ATTACK_RANGE}",
+                f"AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
+                f"Special: Gold Knights hit all enemies in the radius of their attack, and heal for {gc.CRUSADER_GOLD_KNIGHT_ATTACK_HEAL} per enemy hit.",
+            ]
+        )
+    )
     return entity
 
 def create_crusader_longbowman(x: int, y: int, team: TeamType) -> int:
@@ -1131,6 +1289,21 @@ def create_crusader_longbowman(x: int, y: int, team: TeamType) -> int:
                 AnimationType.DYING: gc.CRUSADER_LONGBOWMAN_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(0, 2),
+        )
+    )
+    esper.add_component(
+        entity,
+        StatsCard(
+            text=[
+                f"Name: Longbowman",
+                f"Faction: Crusader",
+                f"Health: {gc.CRUSADER_LONGBOWMAN_HP}",
+                f"Attack: {gc.CRUSADER_LONGBOWMAN_ATTACK_DAMAGE}",
+                f"DPS: {round(gc.CRUSADER_LONGBOWMAN_ATTACK_DAMAGE/gc.CRUSADER_LONGBOWMAN_ANIMATION_ATTACK_DURATION, 2)}",
+                f"Speed: {gc.CRUSADER_LONGBOWMAN_MOVEMENT_SPEED}",
+                f"Range: {gc.CRUSADER_LONGBOWMAN_ATTACK_RANGE}",
+                f"AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
+            ]
         )
     )
     return entity
@@ -1224,6 +1397,22 @@ def create_crusader_paladin(x: int, y: int, team: TeamType) -> int:
             sprite_center_offset=(0, 7),
         )
     )
+    esper.add_component(
+        entity,
+        StatsCard(
+            text=[
+                f"Name: Paladin",
+                f"Faction: Crusader",
+                f"Health: {gc.CRUSADER_PALADIN_HP}",
+                f"Attack: {gc.CRUSADER_PALADIN_ATTACK_DAMAGE}",
+                f"DPS: {round(gc.CRUSADER_PALADIN_ATTACK_DAMAGE/gc.CRUSADER_PALADIN_ANIMATION_ATTACK_DURATION, 2)}",
+                f"Speed: {gc.CRUSADER_PALADIN_MOVEMENT_SPEED}",
+                f"Range: {gc.CRUSADER_PALADIN_ATTACK_RANGE}",
+                f"AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
+                f"Special: Heals self by {round(gc.CRUSADER_PALADIN_SKILL_HEAL_PERCENT*100)}% when their health is below {round(gc.CRUSADER_PALADIN_SKILL_HEALTH_PERCENT_THRESHOLD*100)}%, cooldown {gc.CRUSADER_PALADIN_SKILL_COOLDOWN}s. (Heal per second is at most {round(gc.CRUSADER_PALADIN_SKILL_HEAL_PERCENT * gc.CRUSADER_PALADIN_HP/gc.CRUSADER_PALADIN_SKILL_COOLDOWN, 2)} per second)",
+            ]
+        )
+    )
     return entity
 
 def create_crusader_pikeman(x: int, y: int, team: TeamType) -> int:
@@ -1300,6 +1489,21 @@ def create_crusader_pikeman(x: int, y: int, team: TeamType) -> int:
                 AnimationType.DYING: gc.CRUSADER_PIKEMAN_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(24, -16),
+        )
+    )
+    esper.add_component(
+        entity,
+        StatsCard(
+            text=[
+                f"Name: Pikeman",
+                f"Faction: Crusader",
+                f"Health: {gc.CRUSADER_PIKEMAN_HP}",
+                f"Attack: {gc.CRUSADER_PIKEMAN_ATTACK_DAMAGE}",
+                f"DPS: {round(gc.CRUSADER_PIKEMAN_ATTACK_DAMAGE/gc.CRUSADER_PIKEMAN_ANIMATION_ATTACK_DURATION, 2)}",
+                f"Speed: {gc.CRUSADER_PIKEMAN_MOVEMENT_SPEED}",
+                f"Range: {gc.CRUSADER_PIKEMAN_ATTACK_RANGE}",
+                f"AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
+            ]
         )
     )
     return entity
@@ -1423,6 +1627,22 @@ def create_crusader_red_knight(x: int, y: int, team: TeamType) -> int:
             sprite_center_offset=(0, 1),
         )
     )
+    esper.add_component(
+        entity,
+        StatsCard(
+            text=[
+                f"Name: Red Knight",
+                f"Faction: Crusader",
+                f"Health: {gc.CRUSADER_RED_KNIGHT_HP}",
+                f"Attack: {gc.CRUSADER_RED_KNIGHT_ATTACK_DAMAGE}",
+                f"DPS: {round(gc.CRUSADER_RED_KNIGHT_ATTACK_DAMAGE/gc.CRUSADER_RED_KNIGHT_ANIMATION_ATTACK_DURATION, 2)}",
+                f"Speed: {gc.CRUSADER_RED_KNIGHT_MOVEMENT_SPEED}",
+                f"Range: {gc.CRUSADER_RED_KNIGHT_ATTACK_RANGE}",
+                f"AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
+                f"Special: Creates an AoE of fire that hits enemies, dealing {gc.CRUSADER_RED_KNIGHT_SKILL_DAMAGE} damage and igniting for {gc.CRUSADER_RED_KNIGHT_SKILL_IGNITE_DAMAGE} over {gc.CRUSADER_RED_KNIGHT_SKILL_IGNITED_DURATION} seconds, cooldown {gc.CRUSADER_RED_KNIGHT_SKILL_COOLDOWN}s.",
+            ]
+        )
+    )
     return entity
 
 def create_werebear(x: int, y: int, team: TeamType) -> int:
@@ -1499,6 +1719,21 @@ def create_werebear(x: int, y: int, team: TeamType) -> int:
                 AnimationType.DYING: gc.WEREBEAR_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(-2, 1),
+        )
+    )
+    esper.add_component(
+        entity,
+        StatsCard(
+            text=[
+                f"Name: Werebear",
+                f"Faction: Cursed Forest",
+                f"Health: {gc.WEREBEAR_HP}",
+                f"Attack: {gc.WEREBEAR_ATTACK_DAMAGE}",
+                f"DPS: {round(gc.WEREBEAR_ATTACK_DAMAGE/gc.WEREBEAR_ANIMATION_ATTACK_DURATION, 2)}",
+                f"Speed: {gc.WEREBEAR_MOVEMENT_SPEED}",
+                f"Range: {gc.WEREBEAR_ATTACK_RANGE}",
+                f"AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
+            ]
         )
     )
     return entity

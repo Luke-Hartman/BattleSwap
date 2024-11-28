@@ -6,6 +6,7 @@ import pygame_gui
 from components.position import Position
 from components.range_indicator import RangeIndicator
 from components.sprite_sheet import SpriteSheet
+from components.stats_card import StatsCard
 from components.team import Team, TeamType
 from components.unit_type import UnitType, UnitTypeComponent
 from processors.animation_processor import AnimationProcessor
@@ -56,7 +57,7 @@ class SandboxScene(Scene):
         self.camera = camera
         self.manager = manager
         self.selected_unit_id: Optional[int] = None
-        self.rendering_processor = RenderingProcessor(screen, self.camera)
+        self.rendering_processor = RenderingProcessor(screen, self.camera, self.manager)
 
         # Center the camera on the battlefield
         self.camera.x = (gc.BATTLEFIELD_WIDTH - pygame.display.Info().current_w) // 2
@@ -186,7 +187,7 @@ class SandboxScene(Scene):
                 if event.button == 1:  # Left click
                     mouse_pos = pygame.mouse.get_pos()
                     if self.selected_unit_id is None:
-                        self.selected_unit_id = self.click_on_unit(mouse_pos)
+                        self.selected_unit_id = self.get_hovered_unit(mouse_pos)
                     else:
                         # Mouse must be within 25 pixels of the legal placement area to place the unit
                         grace_zone = 25
@@ -201,7 +202,7 @@ class SandboxScene(Scene):
                         self.selected_unit_id = None
                     else:
                         mouse_pos = pygame.mouse.get_pos()
-                        clicked_on_unit = self.click_on_unit(mouse_pos)
+                        clicked_on_unit = self.get_hovered_unit(mouse_pos)
                         if clicked_on_unit is not None:
                             esper.delete_entity(clicked_on_unit, immediate=True)
 
@@ -245,6 +246,13 @@ class SandboxScene(Scene):
             if range_indicator:
                 range_indicator.enabled = True
 
+        # Update stats card for hovered unit
+        mouse_pos = pygame.mouse.get_pos()
+        hovered_unit = self.get_hovered_unit(mouse_pos)
+        if hovered_unit is not None:
+            stats_card = esper.component_for_entity(hovered_unit, StatsCard)
+            stats_card.active = True
+
         # Only update camera if no dialog is focused
         if self.save_dialog is None or not self.save_dialog.dialog.alive():
             self.camera.update(time_delta)
@@ -258,7 +266,7 @@ class SandboxScene(Scene):
         self.manager.draw_ui(self.screen)
         return True
 
-    def click_on_unit(self, mouse_pos: tuple[int, int]) -> Optional[int]:
+    def get_hovered_unit(self, mouse_pos: tuple[int, int]) -> Optional[int]:
         """Return the unit at the given mouse position."""
         adjusted_mouse_pos = (mouse_pos[0] + self.camera.x, mouse_pos[1] + self.camera.y)
         candidate_unit_id = None

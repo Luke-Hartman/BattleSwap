@@ -7,11 +7,13 @@ rendering entities with Position, AnimationState, SpriteSheet, and Team componen
 
 import esper
 import pygame
+import pygame_gui
 from components.aura import Aura
 from components.hitbox import Hitbox
 from components.position import Position
 from components.range_indicator import RangeIndicator
 from components.sprite_sheet import SpriteSheet
+from components.stats_card import StatsCard
 from components.team import Team, TeamType
 from components.health import Health
 from components.unit_state import UnitState, State
@@ -91,10 +93,12 @@ class RenderingProcessor(esper.Processor):
     Processor responsible for rendering entities.
     """
 
-    def __init__(self, screen: pygame.Surface, camera: Camera):
+    def __init__(self, screen: pygame.Surface, camera: Camera, manager: pygame_gui.UIManager):
         self.screen = screen
         self.camera = camera
         self.battlefield_rect = pygame.Rect(0, 0, gc.BATTLEFIELD_WIDTH, gc.BATTLEFIELD_HEIGHT)
+        self.manager = manager
+        self.stats_card_ui = None
 
     def process(self, dt: float):
         # Draw all auras
@@ -161,6 +165,22 @@ class RenderingProcessor(esper.Processor):
                 hitbox = esper.component_for_entity(ent, Hitbox)
                 if unit_state.state != State.DEAD and health.current < health.maximum:
                     self.draw_health_bar(pos, health, team, hitbox)
+        
+        # Draw stats card if active
+        if self.stats_card_ui is not None:
+            self.stats_card_ui.kill()
+        for ent, (stats_card,) in esper.get_components(StatsCard):
+            if stats_card.active:
+                text = "\n".join(stats_card.text)
+                # Use Pygame GUI to draw the text in the bottom right corner of the screen, above the barracks
+                self.stats_card_ui = pygame_gui.elements.UITextBox(
+                    relative_rect=pygame.Rect(0, 0, 300, -1),
+                    html_text=text,
+                    wrap_to_height=True,
+                    manager=self.manager
+                )
+                self.stats_card_ui.rect.midright = (self.screen.get_width() - 10, self.screen.get_height()/2)
+                stats_card.active = False
 
     def draw_health_bar(self, pos: Position, health: Health, team: Team, hitbox: Hitbox):
         """Draw a health bar above the entity."""

@@ -26,6 +26,7 @@ from progress_manager import ProgressManager
 from ui_components.tip_box import TipBox
 from ui_components.reload_constants_button import ReloadConstantsButton
 from components.range_indicator import RangeIndicator
+from components.stats_card import StatsCard
 
 
 class SetupBattleScene(Scene):
@@ -60,7 +61,6 @@ class SetupBattleScene(Scene):
         self.battle = get_battle(battle_id)
         self.manager = manager
         self.selected_unit_id: Optional[int] = None
-        self.rendering_processor = RenderingProcessor(screen, self.camera)
 
         # Center the camera on the battlefield
         self.camera.x = (gc.BATTLEFIELD_WIDTH - pygame.display.Info().current_w) // 2
@@ -68,7 +68,7 @@ class SetupBattleScene(Scene):
         
         self.return_button = ReturnButton(self.manager)
         
-        esper.add_processor(self.rendering_processor)
+        esper.add_processor(RenderingProcessor(screen, self.camera, self.manager))
         esper.add_processor(AnimationProcessor())
         esper.add_processor(PositionProcessor())
         esper.add_processor(OrientationProcessor())
@@ -131,7 +131,7 @@ class SetupBattleScene(Scene):
                 if event.button == 1:  # Left click
                     mouse_pos = pygame.mouse.get_pos()
                     if self.selected_unit_id is None:
-                        self.selected_unit_id = self.click_on_unit(mouse_pos)
+                        self.selected_unit_id = self.get_hovered_unit(mouse_pos)
                     else:
                         # Mouse must be within 25 pixels of the legal placement area to place the unit
                         grace_zone = 25
@@ -145,7 +145,7 @@ class SetupBattleScene(Scene):
                         self.return_unit_to_barracks(self.selected_unit_id)
                     else:
                         mouse_pos = pygame.mouse.get_pos()
-                        clicked_on_unit = self.click_on_unit(mouse_pos)
+                        clicked_on_unit = self.get_hovered_unit(mouse_pos)
                         if clicked_on_unit is not None:
                             self.return_unit_to_barracks(clicked_on_unit)
             self.reload_constants_button.handle_event(event)
@@ -169,6 +169,14 @@ class SetupBattleScene(Scene):
             range_indicator = esper.try_component(self.selected_unit_id, RangeIndicator)
             if range_indicator is not None:
                 range_indicator.enabled = True
+
+        # Update stats card for hovered unit
+        mouse_pos = pygame.mouse.get_pos()
+        hovered_unit = self.get_hovered_unit(mouse_pos)
+        if hovered_unit is not None:
+            stats_card = esper.component_for_entity(hovered_unit, StatsCard)
+            stats_card.active = True
+
         self.camera.update(time_delta)
 
         self.screen.fill((0, 0, 0))
@@ -179,33 +187,6 @@ class SetupBattleScene(Scene):
         self.manager.update(time_delta)
         self.manager.draw_ui(self.screen)
         return True
-
-    def click_on_unit(self, mouse_pos: Tuple[int, int]) -> Optional[int]:
-        """Return the unit from team 1 at the given mouse position.
-        
-        Finds the topmost unit (highest y-value) at the clicked position and makes it
-        the currently selected unit for movement.
-
-        Args:
-            mouse_pos: The (x, y) screen coordinates where the mouse was clicked.
-        """
-        adjusted_mouse_pos = (mouse_pos[0] + self.camera.x, mouse_pos[1] + self.camera.y)
-        candidate_unit_id = None
-        highest_y = -float('inf')
-        for ent, (team, sprite, pos) in esper.get_components(Team, SpriteSheet, Position):
-            if team.type == TeamType.TEAM1 and sprite.rect.collidepoint(adjusted_mouse_pos):
-                relative_mouse_pos = (
-                    adjusted_mouse_pos[0] - sprite.rect.x,
-                    adjusted_mouse_pos[1] - sprite.rect.y
-                )
-                try:
-                    if sprite.image.get_at(relative_mouse_pos).a != 0:
-                        if pos.y > highest_y:
-                            highest_y = pos.y
-                            candidate_unit_id = ent
-                except IndexError:
-                    pass
-        return candidate_unit_id
 
     def place_unit(self) -> None:
         """Place the currently selected unit on the battlefield."""
@@ -234,3 +215,30 @@ class SetupBattleScene(Scene):
         entity = create_unit(0, 0, unit_list_item.unit_type, TeamType.TEAM1)
         self.barracks.remove_unit(unit_list_item.unit_type)
         self.selected_unit_id = entity
+
+    def get_hovered_unit(self, mouse_pos: Tuple[int, int]) -> Optional[int]:
+        """Return the unit at the given mouse position, for hover effects.
+        
+        Args:
+            mouse_pos: The (x, y) screen coordinates of the mouse.
+            
+        Returns:
+            Optional[int]: The entity ID of the hovered unit, or None if no unit is hovered.
+        """
+        adjusted_mouse_pos = (mouse_pos[0] + self.camera.x, mouse_pos[1] + self.camera.y)
+        candidate_unit_id = None
+        highest_y = -float('inf')
+        for ent, (team, sprite, pos) in esper.get_components(Team, SpriteSheet, Position):
+            if sprite.rect.collidepoint(adjusted_mouse_pos):
+                relative_mouse_pos = (
+                    adjusted_mouse_pos[0] - sprite.rect.x,
+                    adjusted_mouse_pos[1] - sprite.rect.y
+                )
+                try:
+                    if sprite.image.get_at(relative_mouse_pos).a != 0:
+                        if pos.y > highest_y:
+                            highest_y = pos.y
+                            candidate_unit_id = ent
+                except IndexError:
+                    pass
+        return candidate_unit_id

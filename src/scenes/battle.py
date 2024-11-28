@@ -55,7 +55,8 @@ class BattleScene(Scene):
         )
         rendering_processor = RenderingProcessor(
             screen=self.screen,
-            camera=self.camera
+            camera=self.camera,
+            manager=self.manager
         )
         esper.add_processor(rendering_processor)
         self.return_button = ReturnButton(self.manager)
