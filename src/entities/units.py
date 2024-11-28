@@ -1364,7 +1364,7 @@ def create_crusader_red_knight(x: int, y: int, team: TeamType) -> int:
                             duration=gc.CRUSADER_RED_KNIGHT_SKILL_AOE_DURATION,
                             scale=gc.CRUSADER_RED_KNIGHT_SKILL_AOE_SCALE,
                             unit_condition=All([
-                                NotEntity(entity=entity),
+                                OnTeam(team=team.other()),
                                 Alive()
                             ]),
                             location=Recipient.PARENT
