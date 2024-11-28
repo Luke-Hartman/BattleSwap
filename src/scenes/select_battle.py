@@ -155,12 +155,16 @@ class SelectBattleScene(Scene):
                 )
                 x += icon_size + padding
 
-        self.barracks = BarracksUI(
-            self.manager,
-            self.progress_manager.available_units(current_battle_id=None),
-            interactive=False,
-            sandbox_mode=False,
-        )
+        # Create barracks only if there are completed battles
+        if self.progress_manager.solutions:
+            self.barracks = BarracksUI(
+                self.manager,
+                self.progress_manager.available_units(current_battle_id=None),
+                interactive=False,
+                sandbox_mode=False,
+            )
+        else:
+            self.barracks = None
 
     def update(self, time_delta: float, events: list[pygame.event.Event]) -> bool:
         """Update the select battle scene."""
