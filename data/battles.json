@@ -1035,5 +1035,31 @@
     ],
     "dependencies": [],
     "is_test": true
+  },
+  {
+    "id": "Defeat the Swordsman! (test)",
+    "enemies": [
+      [
+        "CORE_SWORDSMAN",
+        [
+          725,
+          400
+        ]
+      ]
+    ],
+    "allies": [
+      [
+        "CORE_DUELIST",
+        [
+          361,
+          432
+        ]
+      ]
+    ],
+    "tip": [
+      "Test for Defeat the Swordsman!"
+    ],
+    "dependencies": [],
+    "is_test": true
   }
 ]

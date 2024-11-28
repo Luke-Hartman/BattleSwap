@@ -42,48 +42,14 @@ class TestEditorScene(Scene):
         padding = 5
         inner_padding = 5
         button_height = 30
+        top_panel_height = 40
         
-        # Return button at top-left
-        pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((padding, padding), (100, button_height)),
-            text="Return",
-            manager=self.manager
-        )
-
-        # New Sandbox button next to Return
-        pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((padding + 110, padding), (120, button_height)),
-            text="New Sandbox",
-            manager=self.manager
-        )
-
-        # Show failures toggle button
-        self.show_failures_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(
-                (pygame.display.Info().current_w - 250, padding),
-                (130, button_height)
-            ),
-            text="Show All Tests" if self.show_only_failures else "Show Failures",
-            manager=self.manager
-        )
-
-        # Run all button at top-right
-        self.run_all_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(
-                (pygame.display.Info().current_w - 110, padding),
-                (100, button_height)
-            ),
-            text="Run All",
-            manager=self.manager
-        )
-        
-        # Create scrollable container
+        # Create scrollable container for the entire content
         container_width = pygame.display.Info().current_w - 2 * padding
-        container_height = pygame.display.Info().current_h - 45
-        scroll_container = pygame_gui.elements.UIScrollingContainer(
-            relative_rect=pygame.Rect((padding, 40), (container_width, container_height)),
-            manager=self.manager,
-            allow_scroll_x=False,
+        container_height = pygame.display.Info().current_h - padding
+        self.scroll_container = pygame_gui.elements.UIScrollingContainer(
+            relative_rect=pygame.Rect((padding, 0), (container_width, container_height)),
+            manager=self.manager
         )
 
         # Filter test battles based on show_only_failures
@@ -94,17 +60,63 @@ class TestEditorScene(Scene):
 
         # Calculate total height needed - match battle editor's panel height
         panel_height = 100  # Changed to match battle editor
-        total_height = len(test_battles) * (panel_height + padding) + padding
+        total_height = len(test_battles) * (panel_height + padding) + top_panel_height + padding
 
         # Explicitly set scrollable area dimensions
-        scroll_container.set_scrollable_area_dimensions((container_width - 20, total_height))
+        self.scroll_container.set_scrollable_area_dimensions((container_width - 20, total_height))
 
         # Create a panel inside the scroll container to hold all content
         content_panel = pygame_gui.elements.UIPanel(
             relative_rect=pygame.Rect((0, 0), (container_width - 20, total_height)),
             manager=self.manager,
-            container=scroll_container,
+            container=self.scroll_container,
             object_id="#content_panel"
+        )
+
+        # Top row buttons
+        pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((padding, padding), (100, button_height)),
+            text="Return",
+            manager=self.manager,
+            container=content_panel
+        )
+
+        pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((padding + 110, padding), (120, button_height)),
+            text="New Sandbox",
+            manager=self.manager,
+            container=content_panel
+        )
+
+        # Battle selection dropdown - showing non-test battles
+        non_test_battles = [b for b in battles.get_battles() if not b.is_test]
+        battle_options = ["Create test from..."] + [f"{b.id}" for b in non_test_battles]
+        self.battle_dropdown = pygame_gui.elements.UIDropDownMenu(
+            options_list=battle_options,
+            starting_option=battle_options[0],
+            relative_rect=pygame.Rect((padding + 240, padding), (200, button_height)),
+            manager=self.manager,
+            container=content_panel
+        )
+
+        self.show_failures_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect(
+                (pygame.display.Info().current_w - 270, padding),
+                (130, button_height)
+            ),
+            text="Show All Tests" if self.show_only_failures else "Show Failures",
+            manager=self.manager,
+            container=content_panel
+        )
+
+        self.run_all_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect(
+                (pygame.display.Info().current_w - 130, padding),
+                (100, button_height)
+            ),
+            text="Run All",
+            manager=self.manager,
+            container=content_panel
         )
 
         # Calculate space needed for 5 units plus padding
@@ -112,7 +124,7 @@ class TestEditorScene(Scene):
 
         # Add each test's information
         for i, test in enumerate(test_battles):
-            current_y = i * (panel_height + padding)
+            current_y = i * (panel_height + padding) + top_panel_height + padding
             
             # Create a container panel for this test
             test_panel = pygame_gui.elements.UIPanel(
@@ -211,7 +223,7 @@ class TestEditorScene(Scene):
             # Delete button - same position as battle editor
             self.delete_buttons[test.id] = pygame_gui.elements.UIButton(
                 relative_rect=pygame.Rect(
-                    (container_width - 100, inner_padding),
+                    (panel_width - 60 - inner_padding, inner_padding),
                     (60, 25)
                 ),
                 text="Delete",
@@ -273,7 +285,7 @@ class TestEditorScene(Scene):
                 x += UnitCount.size + inner_padding
 
         # Set scroll position
-        scroll_container.vert_scroll_bar.start_percentage = editor_scroll
+        self.scroll_container.vert_scroll_bar.start_percentage = editor_scroll
 
     def update(self, time_delta: float, events: list[pygame.event.Event]) -> bool:
         """Update the test editor scene."""
@@ -293,45 +305,47 @@ class TestEditorScene(Scene):
                                 battle_id=None,
                             ).to_event()
                         )
-                    elif event.ui_element == self.run_all_button:
-                        self._run_all_tests()
-                    elif event.ui_element in self.run_buttons.values():
-                        test_id = list(self.run_buttons.keys())[
-                            list(self.run_buttons.values()).index(event.ui_element)
-                        ]
-                        self._run_test(test_id)
                     elif event.ui_element in self.edit_buttons.values():
                         battle_id = list(self.edit_buttons.keys())[
                             list(self.edit_buttons.values()).index(event.ui_element)
                         ]
-                        test = battles.get_battle(battle_id)
+                        battle = battles.get_battle(battle_id)
                         
                         self.save_dialog = SaveBattleDialog(
                             self.manager,
-                            ally_placements=test.allies,
-                            enemy_placements=test.enemies,
+                            battle.allies,
+                            battle.enemies,
                             existing_battle_id=battle_id,
                         )
                     elif event.ui_element in self.sandbox_buttons.values():
-                        test_id = list(self.sandbox_buttons.keys())[
+                        battle_id = list(self.sandbox_buttons.keys())[
                             list(self.sandbox_buttons.values()).index(event.ui_element)
                         ]
-                        test = battles.get_battle(test_id)
-                        if test:
-                            scroll_percentage = self._get_scroll_percentage()
-                            pygame.event.post(
-                                SandboxSceneEvent(
-                                    ally_placements=test.allies if test.allies else [],
-                                    enemy_placements=test.enemies,
-                                    battle_id=test_id,
-                                    editor_scroll=scroll_percentage
-                                ).to_event()
-                            )
+                        battle = battles.get_battle(battle_id)
+                        scroll_percentage = self._get_scroll_percentage()
+                        pygame.event.post(
+                            SandboxSceneEvent(
+                                ally_placements=[],
+                                enemy_placements=battle.enemies,
+                                battle_id=battle_id,
+                                editor_scroll=scroll_percentage
+                            ).to_event()
+                        )
                     elif event.ui_element in self.delete_buttons.values():
-                        test_id = list(self.delete_buttons.keys())[
+                        battle_id = list(self.delete_buttons.keys())[
                             list(self.delete_buttons.values()).index(event.ui_element)
                         ]
-                        battles.delete_battle(test_id)
+                        battles.delete_battle(battle_id)
+                        self._rebuild_ui()
+                    elif event.ui_element in self.run_buttons.values():
+                        battle_id = list(self.run_buttons.keys())[
+                            list(self.run_buttons.values()).index(event.ui_element)
+                        ]
+                        self._run_test(battle_id)
+                    elif event.ui_element == self.run_all_button:
+                        self._run_all_tests()
+                    elif event.ui_element == self.show_failures_button:
+                        self.show_only_failures = not self.show_only_failures
                         self._rebuild_ui()
                     elif hasattr(self, 'save_dialog') and self.save_dialog:
                         if event.ui_element == self.save_dialog.save_battle_button:
@@ -347,10 +361,15 @@ class TestEditorScene(Scene):
                         elif event.ui_element == self.save_dialog.cancel_button:
                             self.save_dialog.kill()
                             self.save_dialog = None
-                    elif event.ui_element == self.show_failures_button:
-                        self.show_only_failures = not self.show_only_failures
+                elif event.user_type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED:
+                    if event.ui_element == self.battle_dropdown and event.text != "Create test from...":
+                        battle = battles.get_battle(event.text).model_copy()
+                        battle.tip = ["Test for " + battle.id]
+                        battle.id = battle.id + " (test)"
+                        battle.is_test = True
+                        battles.add_battle(battle)
+                        self.battle_dropdown.selected_option = "Create test from..."
                         self._rebuild_ui()
-
             self.manager.process_events(event)
         
         self.manager.update(time_delta)
