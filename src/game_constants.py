@@ -24,6 +24,7 @@ class GameConstants(BaseModel):
     TARGETTING_GRACE_DISTANCE: float
     DEFAULT_AURA_PERIOD: float
     FLEEING_SPEED: float
+    MAX_ARMOR_DAMAGE_REDUCTION: float
     
     # Core Units
     # Archer
