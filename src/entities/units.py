@@ -27,7 +27,7 @@ from components.unit_type import UnitType, UnitTypeComponent
 from components.velocity import Velocity
 from components.health import Health
 from components.orientation import Orientation, FacingDirection
-from effects import AppliesStatusEffect, CreatesAoE, CreatesAttachedVisual, CreatesProjectile, Damages, Heals, Recipient
+from effects import AppliesStatusEffect, CreatesAoE, CreatesAttachedVisual, CreatesProjectile, Damages, Heals, PlaySound, Recipient
 from unit_condition import (
     All, Alive, HealthBelowPercent, Never, NotEntity, OnTeam,
     MaximumDistanceFromEntity
@@ -216,7 +216,8 @@ def create_core_archer(x: int, y: int, team: TeamType) -> int:
                                 visual=Visual.Arrow,
                                 projectile_offset_x=5*gc.MINIFOLKS_SCALE,
                                 projectile_offset_y=0,
-                            )
+                            ),
+                            PlaySound(filename="arrow_fired_from_bow.wav", volume=0.25),
                         ]
                     },
                 )

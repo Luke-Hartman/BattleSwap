@@ -15,13 +15,14 @@ from components.aura import Aura
 from components.dying import Dying
 from components.expiration import Expiration
 from components.health import Health
-from components.orientation import FacingDirection, Orientation
+from components.orientation import Orientation
 from components.position import Position
 from components.projectile import Projectile
 from components.status_effect import CrusaderCommanderEmpowered, StatusEffect, StatusEffects
 from components.team import Team
 from components.unique import Unique
 from components.velocity import Velocity
+from events import PLAY_SOUND, PlaySoundEvent, emit_event
 from visuals import Visual, create_visual_spritesheet
 from unit_condition import UnitCondition
 
@@ -378,3 +379,17 @@ class CreatesAttachedVisual(Effect):
         esper.add_component(entity, Expiration(time_left=self.expiration_duration))
         if self.unique_key:
             esper.add_component(entity, Unique(key=self.unique_key(target)))
+
+
+@dataclass
+class PlaySound(Effect):
+    """Effect plays a sound."""
+
+    filename: str
+    """The name of the sound file to play."""
+
+    volume: float = 1.0
+    """The volume of the sound to play."""
+
+    def apply(self, owner: Optional[int], parent: int, target: int) -> None:
+        emit_event(PLAY_SOUND, event=PlaySoundEvent(filename=self.filename, volume=self.volume))

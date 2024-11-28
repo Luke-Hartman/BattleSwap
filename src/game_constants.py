@@ -9,6 +9,10 @@ from pathlib import Path
 from pydantic import BaseModel
 
 class GameConstants(BaseModel):
+    # User configurable settings
+    SOUND_VOLUME: float
+    MUSIC_VOLUME: float
+
     # Basic Settings
     NO_MANS_LAND_WIDTH: int
     BATTLEFIELD_WIDTH: int

@@ -9,6 +9,7 @@ import pygame
 from camera import Camera
 from entities.units import load_sprite_sheets
 from handlers.combat_handler import CombatHandler
+from handlers.sound_handler import SoundHandler
 from handlers.state_machine import StateMachine
 from progress_manager import ProgressManager
 from scenes.scene_manager import SceneManager
@@ -28,6 +29,7 @@ load_visual_sheets()
 
 combat_handler = CombatHandler()
 state_machine = StateMachine()
+sound_handler = SoundHandler()
 
 # Main game loop
 running = True

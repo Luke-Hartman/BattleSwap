@@ -78,6 +78,12 @@ class DeathEvent:
     entity: int
 
 @dataclass
+class PlaySoundEvent:
+    """Event triggered to play a sound."""
+    filename: str
+    volume: float = 1.0
+
+@dataclass
 class ProjectileHitEvent:
     """Event triggered when a projectile hits a target."""
     entity: int
@@ -101,6 +107,7 @@ DESTINATION_TARGET_ACQUIRED = 'destination_target_acquired'
 DESTINATION_TARGET_LOST = 'destination_target_lost'
 FLEEING_STARTED = 'fleeing_started'
 FLEEING_EXPIRED = 'fleeing_expired'
+PLAY_SOUND = 'play_sound'
 PROJECTILE_HIT = 'projectile_hit'
 STATE_CHANGED = 'state_changed'
 
