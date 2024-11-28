@@ -12,6 +12,7 @@ from components.aoe import AoE
 from components.armor import Armor
 from components.attached import Attached
 from components.aura import Aura
+from components.dying import Dying
 from components.expiration import Expiration
 from components.health import Health
 from components.orientation import FacingDirection, Orientation
@@ -21,7 +22,6 @@ from components.status_effect import CrusaderCommanderEmpowered, StatusEffect, S
 from components.team import Team
 from components.unique import Unique
 from components.velocity import Velocity
-from events import KILLING_BLOW, KillingBlowEvent, emit_event
 from visuals import Visual, create_visual_spritesheet
 from unit_condition import UnitCondition
 
@@ -91,7 +91,7 @@ class Damages(Effect):
         previous_health = recipient_health.current
         recipient_health.current = max(recipient_health.current - damage, 0)
         if recipient_health.current == 0 and previous_health > 0:
-            emit_event(KILLING_BLOW, event=KillingBlowEvent(recipient))
+            esper.add_component(recipient, Dying())
             if self.on_kill_effects:
                 for effect in self.on_kill_effects:
                     effect.apply(owner, parent, recipient)

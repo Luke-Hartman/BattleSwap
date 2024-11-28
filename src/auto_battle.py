@@ -14,6 +14,7 @@ from processors.attached_processor import AttachedProcessor
 from processors.aura_processor import AuraProcessor
 from processors.collision_processor import CollisionProcessor
 from processors.dead_processor import DeadProcessor
+from processors.dying_processor import DyingProcessor
 from processors.expiration_processor import ExpirationProcessor
 from processors.fleeing_processor import FleeingProcessor
 from processors.idle_processor import IdleProcessor
@@ -69,6 +70,7 @@ class AutoBattle:
         orientation_processor = OrientationProcessor()
         position_processor = PositionProcessor()
         rotation_processor = RotationProcessor()
+        dying_processor = DyingProcessor()
         esper.add_processor(targetting_processor)
         esper.add_processor(idle_processor)
         esper.add_processor(fleeing_processor)
@@ -86,6 +88,7 @@ class AutoBattle:
         esper.add_processor(orientation_processor)
         esper.add_processor(rotation_processor)
         esper.add_processor(unique_processor)
+        esper.add_processor(dying_processor)
         self.remaining_time = max_duration
         self.battle_outcome = None
 

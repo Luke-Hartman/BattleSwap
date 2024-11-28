@@ -1,10 +1,9 @@
 """Processor for status effects."""
 
+from components.dying import Dying
 from components.health import Health
 from components.status_effect import CrusaderCommanderEmpowered, Fleeing, Ignited, StatusEffects
 import esper
-
-from events import KILLING_BLOW, KillingBlowEvent, emit_event
 
 class StatusEffectProcessor(esper.Processor):
     """Processor for status effects."""
@@ -18,7 +17,7 @@ class StatusEffectProcessor(esper.Processor):
                     health = esper.component_for_entity(ent, Health)
                     health.current = max(health.current - damage, 0)
                     if health.current == 0:
-                        emit_event(KILLING_BLOW, event=KillingBlowEvent(entity=ent))
+                        esper.add_component(ent, Dying())
                 elif isinstance(status_effect, CrusaderCommanderEmpowered):
                     # Handled in the damage effect
                     pass

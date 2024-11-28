@@ -73,8 +73,8 @@ class FleeingExpiredEvent:
     entity: int
 
 @dataclass
-class KillingBlowEvent:
-    """Event triggered when a unit's health reaches 0."""
+class DeathEvent:
+    """Event triggered when a unit dies."""
     entity: int
 
 @dataclass
@@ -96,11 +96,11 @@ ABILITY_INTERRUPTED = 'ability_interrupted'
 ABILITY_TRIGGERED = 'ability_triggered'
 AOE_HIT = 'aoe_hit'
 AURA_HIT = 'aura_hit'
+DEATH = 'death'
 DESTINATION_TARGET_ACQUIRED = 'destination_target_acquired'
 DESTINATION_TARGET_LOST = 'destination_target_lost'
 FLEEING_STARTED = 'fleeing_started'
 FLEEING_EXPIRED = 'fleeing_expired'
-KILLING_BLOW = 'killing_blow'
 PROJECTILE_HIT = 'projectile_hit'
 STATE_CHANGED = 'state_changed'
 
