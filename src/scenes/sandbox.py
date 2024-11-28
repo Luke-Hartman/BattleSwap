@@ -246,7 +246,7 @@ class SandboxScene(Scene):
                 range_indicator.enabled = True
 
         # Only update camera if no dialog is focused
-        if not self.manager.get_focus_set():
+        if self.save_dialog is None or not self.save_dialog.dialog.alive():
             self.camera.update(time_delta)
 
         self.screen.fill((0, 0, 0))
