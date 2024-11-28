@@ -24,6 +24,19 @@ class SelectBattleScene(Scene):
         padding = 10
         icon_size = UnitCount.size
         
+        pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect(
+                (0, 0),
+                (pygame.display.Info().current_w, 80)
+            ),
+            text="BattleSwap",
+            manager=self.manager,
+            object_id=pygame_gui.core.ObjectID(
+                class_id="@title_label",
+                object_id="#title_label"
+            )
+        )
+        
         # Add sandbox, editor and test editor buttons to the right side
         self.sandbox_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(

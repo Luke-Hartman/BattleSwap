@@ -1,6 +1,10 @@
 {
-    "@unit_count":
-    {
+    "@title_label": {
+        "font": {
+            "size": "48"
+        }
+    },
+    "@unit_count": {
         "colours": {
             "normal_bg": "#45494e",
             "hovered_bg": "#35393e",
