@@ -18,7 +18,8 @@
       "When you are ready to battle, click start in the upper right corner."
     ],
     "dependencies": [],
-    "is_test": false
+    "is_test": false,
+    "tip_voice_filename": "defeat_the_swordsman.wav"
   },
   {
     "id": "Defeat the Cavalry!",
@@ -36,7 +37,8 @@
       "Cavalry move much faster than a swordsman, but deal less damage."
     ],
     "dependencies": [],
-    "is_test": false
+    "is_test": false,
+    "tip_voice_filename": null
   },
   {
     "id": "Defeat the Archers!",
@@ -61,7 +63,8 @@
       "The Cavalry's speed gives them the edge in battle against archers."
     ],
     "dependencies": [],
-    "is_test": false
+    "is_test": false,
+    "tip_voice_filename": null
   },
   {
     "id": "Defeat the Wizard!",
@@ -79,7 +82,8 @@
       "Wizards shoot powerful fireballs that explode, damaging all nearby units. Spreading out your army can distract your foes."
     ],
     "dependencies": [],
-    "is_test": false
+    "is_test": false,
+    "tip_voice_filename": null
   },
   {
     "id": "Behold the Wizard's Power!",
@@ -133,7 +137,8 @@
       "Also, you win as long as all enemies are defeated, even if there are no survivors..."
     ],
     "dependencies": [],
-    "is_test": false
+    "is_test": false,
+    "tip_voice_filename": null
   },
   {
     "id": "Line of Swordsmen",
@@ -167,7 +172,8 @@
       "Hint: Try saving one of your archers."
     ],
     "dependencies": [],
-    "is_test": false
+    "is_test": false,
+    "tip_voice_filename": null
   },
   {
     "id": "Let's Ride!",
@@ -206,7 +212,8 @@
       "Take the horsemen out before reinforcements arrive!"
     ],
     "dependencies": [],
-    "is_test": false
+    "is_test": false,
+    "tip_voice_filename": null
   },
   {
     "id": "Two Squads",
@@ -260,7 +267,8 @@
       "Hint: Try taking them out one at a time."
     ],
     "dependencies": [],
-    "is_test": false
+    "is_test": false,
+    "tip_voice_filename": null
   },
   {
     "id": "Double Duelists",
@@ -293,7 +301,8 @@
       "When using duelists, try to keep them behind other units."
     ],
     "dependencies": [],
-    "is_test": false
+    "is_test": false,
+    "tip_voice_filename": null
   },
   {
     "id": "A Balanced Army",
@@ -370,7 +379,8 @@
       "This is great to try whenever you're stuck on a level!"
     ],
     "dependencies": [],
-    "is_test": false
+    "is_test": false,
+    "tip_voice_filename": null
   },
   {
     "id": "Defenders and Rangers",
@@ -417,7 +427,8 @@
       "Rangers are slow but deal high damage."
     ],
     "dependencies": [],
-    "is_test": false
+    "is_test": false,
+    "tip_voice_filename": null
   },
   {
     "id": "Pikemen and Healers",
@@ -464,7 +475,8 @@
       "Healers will restore the health of their damaged allies."
     ],
     "dependencies": [],
-    "is_test": false
+    "is_test": false,
+    "tip_voice_filename": null
   },
   {
     "id": "Defeat the Paladin!",
@@ -497,7 +509,8 @@
       "but they have low damage and are overwhelmed by groups."
     ],
     "dependencies": [],
-    "is_test": false
+    "is_test": false,
+    "tip_voice_filename": null
   },
   {
     "id": "Defeat the Commander",
@@ -536,7 +549,8 @@
       "Commanders are weak on their own, but they increase the damage of their allies."
     ],
     "dependencies": [],
-    "is_test": false
+    "is_test": false,
+    "tip_voice_filename": null
   },
   {
     "id": "The Crusade",
@@ -569,7 +583,8 @@
       "If you need to, you can also revisit previous levels to improve your solutions."
     ],
     "dependencies": [],
-    "is_test": false
+    "is_test": false,
+    "tip_voice_filename": null
   },
   {
     "id": "Shield and Spear",
@@ -629,7 +644,8 @@
       "Defenders and pikemen are a powerful pairing."
     ],
     "dependencies": [],
-    "is_test": false
+    "is_test": false,
+    "tip_voice_filename": null
   },
   {
     "id": "Defeat the Gold Knight!",
@@ -669,7 +685,8 @@
       "This makes them excellent against groups of melee units, but vulnerable to ranged or strong opponents."
     ],
     "dependencies": [],
-    "is_test": false
+    "is_test": false,
+    "tip_voice_filename": null
   },
   {
     "id": "Reinforcements",
@@ -715,7 +732,8 @@
       "Cavalry's here!"
     ],
     "dependencies": [],
-    "is_test": false
+    "is_test": false,
+    "tip_voice_filename": null
   },
   {
     "id": "I need a medic!",
@@ -804,7 +822,8 @@
       "It would be great to have a duelist or two to overwhelm the enemy's healing."
     ],
     "dependencies": [],
-    "is_test": false
+    "is_test": false,
+    "tip_voice_filename": null
   },
   {
     "id": "The Lone Swordsman?",
@@ -850,7 +869,8 @@
       "Or is he?"
     ],
     "dependencies": [],
-    "is_test": false
+    "is_test": false,
+    "tip_voice_filename": null
   },
   {
     "id": "Strong Leadership",
@@ -918,7 +938,8 @@
       "Note that the commander aura does not stack."
     ],
     "dependencies": [],
-    "is_test": false
+    "is_test": false,
+    "tip_voice_filename": null
   },
   {
     "id": "The Meat Grinder",
@@ -950,7 +971,8 @@
       "Remember that gold knights deal damage to all enemy units around them and heal a little with every hit."
     ],
     "dependencies": [],
-    "is_test": false
+    "is_test": false,
+    "tip_voice_filename": null
   },
   {
     "id": "Fear Him.",
@@ -968,7 +990,8 @@
       "The Black Knight scares away his foes with his cruel attacks."
     ],
     "dependencies": [],
-    "is_test": false
+    "is_test": false,
+    "tip_voice_filename": null
   },
   {
     "id": "awefwew",
@@ -994,7 +1017,8 @@
       "TODOs"
     ],
     "dependencies": [],
-    "is_test": true
+    "is_test": true,
+    "tip_voice_filename": null
   },
   {
     "id": "sdfee",
@@ -1034,7 +1058,8 @@
       "TODO"
     ],
     "dependencies": [],
-    "is_test": true
+    "is_test": true,
+    "tip_voice_filename": null
   },
   {
     "id": "Defeat the Swordsman! (test)",
@@ -1060,6 +1085,7 @@
       "Test for Defeat the Swordsman!"
     ],
     "dependencies": [],
-    "is_test": true
+    "is_test": true,
+    "tip_voice_filename": null
   }
 ]

@@ -47,7 +47,7 @@ camera.x = initial_camera_x
 camera.y = initial_camera_y
 
 progress_manager = ProgressManager()
-scene_manager = SceneManager(screen, camera, progress_manager)
+scene_manager = SceneManager(screen, camera, progress_manager, sound_handler)
 
 while running:
     clock.tick(60)

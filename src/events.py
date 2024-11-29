@@ -78,10 +78,18 @@ class DeathEvent:
     entity: int
 
 @dataclass
+class SoundEffect:
+    """A sound effect to play."""
+
+    filename: str
+    """The name of the sound file to play."""
+
+    volume: float
+    """The volume of the sound to play."""
+@dataclass
 class PlaySoundEvent:
     """Event triggered to play a sound."""
-    filename: str
-    volume: float = 1.0
+    sound_effect: SoundEffect
 
 @dataclass
 class ProjectileHitEvent:

@@ -2,6 +2,7 @@ from abc import abstractmethod
 from dataclasses import dataclass
 from enum import Enum, auto
 import math
+import random
 from typing import Callable, List, Optional, Tuple
 
 import esper
@@ -23,6 +24,7 @@ from components.team import Team
 from components.unique import Unique
 from components.velocity import Velocity
 from events import PLAY_SOUND, PlaySoundEvent, emit_event
+from handlers.sound_handler import SoundEffect
 from visuals import Visual, create_visual_spritesheet
 from unit_condition import UnitCondition
 
@@ -385,11 +387,12 @@ class CreatesAttachedVisual(Effect):
 class PlaySound(Effect):
     """Effect plays a sound."""
 
-    filename: str
-    """The name of the sound file to play."""
-
-    volume: float = 1.0
-    """The volume of the sound to play."""
+    sound_effects: List[Tuple[SoundEffect, float]]
+    """The sound effects to play and the weight for each sound effect to be chosen."""
 
     def apply(self, owner: Optional[int], parent: int, target: int) -> None:
-        emit_event(PLAY_SOUND, event=PlaySoundEvent(filename=self.filename, volume=self.volume))
+        sound_effect = random.choices(
+            [sound_effect for sound_effect, _ in self.sound_effects],
+            weights=[weight for _, weight in self.sound_effects]
+        )[0]
+        emit_event(PLAY_SOUND, event=PlaySoundEvent(sound_effect=sound_effect))

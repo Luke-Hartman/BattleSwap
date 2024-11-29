@@ -33,6 +33,7 @@ from unit_condition import (
     MaximumDistanceFromEntity
 )
 from visuals import Visual
+from events import SoundEffect
 
 unit_theme_ids: Dict[UnitType, str] = {
     UnitType.CORE_ARCHER: "#core_archer_icon", 
@@ -217,7 +218,11 @@ def create_core_archer(x: int, y: int, team: TeamType) -> int:
                                 projectile_offset_x=5*gc.MINIFOLKS_SCALE,
                                 projectile_offset_y=0,
                             ),
-                            PlaySound(filename="arrow_fired_from_bow.wav", volume=0.25),
+                            PlaySound(
+                                sound_effects=[
+                                    (SoundEffect(filename="arrow_fired_from_bow.wav", volume=0.25), 1.0),
+                                ]
+                            )
                         ]
                     },
                 )
@@ -281,6 +286,10 @@ def create_core_duelist(x: int, y: int, team: TeamType) -> int:
         entity,
         Destination(target_strategy=targetting_strategy, x_offset=gc.CORE_DUELIST_ATTACK_RANGE*2/3)
     )
+    sound_effects = [
+        (SoundEffect(filename=f"quick_sword_thrust{i}.wav", volume=0.75), 1.0)
+        for i in range(1, 6)
+    ]
     esper.add_component(
         entity,
         Abilities(
@@ -312,13 +321,34 @@ def create_core_duelist(x: int, y: int, team: TeamType) -> int:
                         )
                     ],
                     effects={
-                        5: [Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE/7, recipient=Recipient.TARGET)],
-                        6: [Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE/7, recipient=Recipient.TARGET)],
-                        7: [Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE/7, recipient=Recipient.TARGET)],
-                        8: [Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE/7, recipient=Recipient.TARGET)],
-                        9: [Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE/7, recipient=Recipient.TARGET)],
-                        10: [Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE/7, recipient=Recipient.TARGET)],
-                        11: [Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE/7, recipient=Recipient.TARGET)],
+                        5: [
+                            Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE/7, recipient=Recipient.TARGET),
+                            PlaySound(sound_effects),
+                        ],
+                        6: [
+                            Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE/7, recipient=Recipient.TARGET),
+                            PlaySound(sound_effects),
+                        ],
+                        7: [
+                            Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE/7, recipient=Recipient.TARGET),
+                            PlaySound(sound_effects),
+                        ],
+                        8: [
+                            Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE/7, recipient=Recipient.TARGET),
+                            PlaySound(sound_effects),
+                        ],
+                        9: [
+                            Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE/7, recipient=Recipient.TARGET),
+                            PlaySound(sound_effects),
+                        ],
+                        10: [
+                            Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE/7, recipient=Recipient.TARGET),
+                            PlaySound(sound_effects),
+                        ],
+                        11: [
+                            Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE/7, recipient=Recipient.TARGET),
+                            PlaySound(sound_effects),
+                        ],
                     },
                 )
             ]

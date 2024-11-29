@@ -2,7 +2,7 @@ from typing import Dict
 import pygame
 import os
 from pydispatch import dispatcher
-from events import PLAY_SOUND, PlaySoundEvent
+from events import PLAY_SOUND, PlaySoundEvent, SoundEffect
 from game_constants import gc
 
 class SoundHandler:
@@ -25,9 +25,14 @@ class SoundHandler:
     
     def handle_play_sound(self, event: PlaySoundEvent) -> None:
         """Play a sound effect by name."""
-        if event.filename in self.sounds:
-            sound = self.sounds[event.filename]
-            sound.set_volume(event.volume * gc.SOUND_VOLUME)
+        if event.sound_effect.filename in self.sounds:
+            sound = self.sounds[event.sound_effect.filename]
+            sound.set_volume(event.sound_effect.volume * gc.SOUND_VOLUME)
             sound.play()
         else:
-            raise ValueError(f"Sound effect {event.sound_name} not found")
+            raise ValueError(f"Sound effect {event.sound_effect.filename} not found")
+
+    def stop_all_sounds(self) -> None:
+        """Stop all currently playing sound effects."""
+        for sound in self.sounds.values():
+            sound.fadeout(1000)

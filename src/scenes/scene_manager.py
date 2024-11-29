@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import Optional, Any
 
 from camera import Camera
+from handlers.sound_handler import SoundHandler
 from progress_manager import ProgressManager
 from scenes.select_battle import SelectBattleScene
 from scenes.setup_battle import SetupBattleScene
@@ -37,7 +38,13 @@ class SceneState:
 class SceneManager:
     """Handles transitions between scenes and catches events for changing scenes."""
 
-    def __init__(self, screen: pygame.Surface, camera: Camera, progress_manager: ProgressManager):
+    def __init__(
+            self, 
+            screen: pygame.Surface, 
+            camera: Camera, 
+            progress_manager: ProgressManager, 
+            sound_handler: SoundHandler
+    ):
         self.screen = screen
         self.camera = camera
         self.progress_manager = progress_manager
@@ -51,7 +58,7 @@ class SceneManager:
             progress_manager=self.progress_manager
         )
         self.previous_scene_state: Optional[SceneState] = None
-    
+        self.sound_handler = sound_handler
     def cleanup(self) -> None:
         """Clean up the current scene and save its state."""
         # Save current scene state, but don't save SetupBattleScene
@@ -91,6 +98,9 @@ class SceneManager:
             new_world = "world1"
         esper.switch_world(new_world)
         esper.delete_world(previous_world)
+
+        # Stop all sounds
+        self.sound_handler.stop_all_sounds()
             
     def update(self, time_delta: float, events: list[pygame.event.Event]) -> bool:
         """Update the current scene and handle scene transitions."""
