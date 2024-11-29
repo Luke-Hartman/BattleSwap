@@ -1,6 +1,7 @@
 {
     "SOUND_VOLUME": 0.5,
     "MUSIC_VOLUME": 0.5,
+    "VOICE_VOLUME": 0.5,
 
     "NO_MANS_LAND_WIDTH": 50,
     "BATTLEFIELD_WIDTH": 1300,

@@ -29,7 +29,7 @@ class TestEditorScene(Scene):
         editor_scroll: float = 0.0
     ) -> None:
         emit_event(CHANGE_MUSIC, event=ChangeMusicEvent(
-            music_filename="Main Theme.wav",
+            filename="Main Theme.wav",
         ))
         self.screen = screen
         self.manager = manager

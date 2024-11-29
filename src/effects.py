@@ -23,7 +23,7 @@ from components.status_effect import CrusaderCommanderEmpowered, StatusEffect, S
 from components.team import Team
 from components.unique import Unique
 from components.velocity import Velocity
-from events import PLAY_SOUND, PlaySoundEvent, SoundEffect, emit_event
+from events import PLAY_SOUND, PlaySoundEvent, emit_event
 from visuals import Visual, create_visual_spritesheet
 from unit_condition import UnitCondition
 
@@ -381,6 +381,15 @@ class CreatesAttachedVisual(Effect):
         if self.unique_key:
             esper.add_component(entity, Unique(key=self.unique_key(target)))
 
+@dataclass
+class SoundEffect:
+    """A sound effect."""
+
+    filename: str
+    """The filename of the sound effect."""
+
+    volume: float
+    """The volume of the sound effect."""
 
 @dataclass
 class PlaySound(Effect):
@@ -394,4 +403,4 @@ class PlaySound(Effect):
             [sound_effect for sound_effect, _ in self.sound_effects],
             weights=[weight for _, weight in self.sound_effects]
         )[0]
-        emit_event(PLAY_SOUND, event=PlaySoundEvent(sound_effect=sound_effect))
+        emit_event(PLAY_SOUND, event=PlaySoundEvent(filename=sound_effect.filename, volume=sound_effect.volume))

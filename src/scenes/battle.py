@@ -41,7 +41,7 @@ class BattleScene(Scene):
             editor_scroll: The scroll position of the battle editor.
         """
         emit_event(CHANGE_MUSIC, event=ChangeMusicEvent(
-            music_filename="Battle Theme.wav",
+            filename="Battle Theme.wav",
         ))
         self.screen = screen
         self.camera = camera

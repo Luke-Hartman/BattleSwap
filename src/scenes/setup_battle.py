@@ -8,7 +8,7 @@ from components.position import Position
 from components.sprite_sheet import SpriteSheet
 from components.team import Team, TeamType
 from components.unit_type import UnitType, UnitTypeComponent
-from events import PLAY_SOUND, PlaySoundEvent, SoundEffect, emit_event, CHANGE_MUSIC, ChangeMusicEvent
+from events import emit_event, CHANGE_MUSIC, ChangeMusicEvent, PLAY_VOICE, PlayVoiceEvent
 from processors.animation_processor import AnimationProcessor
 from processors.orientation_processor import OrientationProcessor
 from processors.position_processor import PositionProcessor
@@ -59,7 +59,7 @@ class SetupBattleScene(Scene):
             play_tip_sound: Whether to play the tip sound.  
         """
         emit_event(CHANGE_MUSIC, event=ChangeMusicEvent(
-            music_filename="Main Theme.wav",
+            filename="Main Theme.wav",
         ))
         self.screen = screen
         self.progress_manager = progress_manager
@@ -98,8 +98,9 @@ class SetupBattleScene(Scene):
         self.tip_box = TipBox(self.manager, self.battle)
         self.reload_constants_button = ReloadConstantsButton(self.manager)
         if self.battle.tip_voice_filename is not None and play_tip_sound:
-            emit_event(PLAY_SOUND, event=PlaySoundEvent(
-                sound_effect=SoundEffect(filename=self.battle.tip_voice_filename, volume=0.25),
+            emit_event(PLAY_VOICE, event=PlayVoiceEvent(
+                filename=self.battle.tip_voice_filename,
+                force=True,
             ))
 
     def update(self, time_delta: float, events: list[pygame.event.Event]) -> bool:

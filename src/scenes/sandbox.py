@@ -55,7 +55,7 @@ class SandboxScene(Scene):
             battle_id: Optional battle id when saving.
         """
         emit_event(CHANGE_MUSIC, event=ChangeMusicEvent(
-            music_filename="Main Theme.wav",
+            filename="Main Theme.wav",
         ))
         self.screen = screen
         self.camera = camera

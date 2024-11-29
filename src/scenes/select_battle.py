@@ -15,7 +15,7 @@ class SelectBattleScene(Scene):
 
     def __init__(self, screen: pygame.Surface, manager: pygame_gui.UIManager, progress_manager: ProgressManager):
         emit_event(CHANGE_MUSIC, event=ChangeMusicEvent(
-            music_filename="Main Theme.wav",
+            filename="Main Theme.wav",
         ))
         self.screen = screen
         self.progress_manager = progress_manager

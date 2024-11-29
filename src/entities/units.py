@@ -27,13 +27,12 @@ from components.unit_type import UnitType, UnitTypeComponent
 from components.velocity import Velocity
 from components.health import Health
 from components.orientation import Orientation, FacingDirection
-from effects import AppliesStatusEffect, CreatesAoE, CreatesAttachedVisual, CreatesProjectile, Damages, Heals, PlaySound, Recipient
+from effects import AppliesStatusEffect, CreatesAoE, CreatesAttachedVisual, CreatesProjectile, Damages, Heals, PlaySound, Recipient, SoundEffect
 from unit_condition import (
     All, Alive, HealthBelowPercent, Never, NotEntity, OnTeam,
     MaximumDistanceFromEntity
 )
 from visuals import Visual
-from events import SoundEffect
 
 unit_theme_ids: Dict[UnitType, str] = {
     UnitType.CORE_ARCHER: "#core_archer_icon", 

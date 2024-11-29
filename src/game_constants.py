@@ -12,6 +12,7 @@ class GameConstants(BaseModel):
     # User configurable settings
     SOUND_VOLUME: float
     MUSIC_VOLUME: float
+    VOICE_VOLUME: float
 
     # Basic Settings
     NO_MANS_LAND_WIDTH: int

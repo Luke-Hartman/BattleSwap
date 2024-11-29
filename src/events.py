@@ -54,7 +54,7 @@ class AuraHitEvent:
 @dataclass
 class ChangeMusicEvent:
     """Event triggered to change the music."""
-    music_filename: str
+    filename: str
     """The name of the music file to play."""
 
 @dataclass
@@ -84,19 +84,17 @@ class DeathEvent:
     entity: int
 
 @dataclass
-class SoundEffect:
-    """A sound effect to play."""
-
-    filename: str
-    """The name of the sound file to play."""
-
-    volume: float
-    """The volume of the sound to play."""
-
-@dataclass
 class PlaySoundEvent:
     """Event triggered to play a sound."""
-    sound_effect: SoundEffect
+    filename: str
+    volume: float
+
+@dataclass
+class PlayVoiceEvent:
+    """Event triggered to play a voice line."""
+    filename: str
+    force: bool
+    """Whether to force the voice to play even if another voice is already playing."""
 
 @dataclass
 class ProjectileHitEvent:
@@ -128,6 +126,7 @@ DESTINATION_TARGET_LOST = 'destination_target_lost'
 FLEEING_STARTED = 'fleeing_started'
 FLEEING_EXPIRED = 'fleeing_expired'
 PLAY_SOUND = 'play_sound'
+PLAY_VOICE = 'play_voice'
 PROJECTILE_HIT = 'projectile_hit'
 STATE_CHANGED = 'state_changed'
 STOP_ALL_SOUNDS = 'stop_all_sounds'
