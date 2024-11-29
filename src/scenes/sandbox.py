@@ -9,6 +9,7 @@ from components.sprite_sheet import SpriteSheet
 from components.stats_card import StatsCard
 from components.team import Team, TeamType
 from components.unit_type import UnitType, UnitTypeComponent
+from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event
 from processors.animation_processor import AnimationProcessor
 from processors.orientation_processor import OrientationProcessor
 from processors.position_processor import PositionProcessor
@@ -53,6 +54,9 @@ class SandboxScene(Scene):
             enemy_placements: List of starting enemy placements
             battle_id: Optional battle id when saving.
         """
+        emit_event(CHANGE_MUSIC, event=ChangeMusicEvent(
+            music_filename="Main Theme.wav",
+        ))
         self.screen = screen
         self.camera = camera
         self.manager = manager

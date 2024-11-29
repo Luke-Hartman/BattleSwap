@@ -23,8 +23,7 @@ from components.status_effect import CrusaderCommanderEmpowered, StatusEffect, S
 from components.team import Team
 from components.unique import Unique
 from components.velocity import Velocity
-from events import PLAY_SOUND, PlaySoundEvent, emit_event
-from handlers.sound_handler import SoundEffect
+from events import PLAY_SOUND, PlaySoundEvent, SoundEffect, emit_event
 from visuals import Visual, create_visual_spritesheet
 from unit_condition import UnitCondition
 

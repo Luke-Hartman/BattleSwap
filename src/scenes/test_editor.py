@@ -5,6 +5,7 @@ import pygame
 import pygame_gui
 from scenes.scene import Scene
 from scenes.events import SandboxSceneEvent, SelectBattleSceneEvent
+from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event
 from ui_components.barracks_ui import UnitCount
 import battles
 from auto_battle import simulate_battle, BattleOutcome
@@ -27,6 +28,9 @@ class TestEditorScene(Scene):
         manager: pygame_gui.UIManager,
         editor_scroll: float = 0.0
     ) -> None:
+        emit_event(CHANGE_MUSIC, event=ChangeMusicEvent(
+            music_filename="Main Theme.wav",
+        ))
         self.screen = screen
         self.manager = manager
         self.edit_buttons = {}

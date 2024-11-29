@@ -8,7 +8,7 @@ from components.position import Position
 from components.sprite_sheet import SpriteSheet
 from components.team import Team, TeamType
 from components.unit_type import UnitType, UnitTypeComponent
-from events import PLAY_SOUND, PlaySoundEvent, SoundEffect, emit_event
+from events import PLAY_SOUND, PlaySoundEvent, SoundEffect, emit_event, CHANGE_MUSIC, ChangeMusicEvent
 from processors.animation_processor import AnimationProcessor
 from processors.orientation_processor import OrientationProcessor
 from processors.position_processor import PositionProcessor
@@ -58,6 +58,9 @@ class SetupBattleScene(Scene):
             ally_placements: List of starting ally placements.
             play_tip_sound: Whether to play the tip sound.  
         """
+        emit_event(CHANGE_MUSIC, event=ChangeMusicEvent(
+            music_filename="Main Theme.wav",
+        ))
         self.screen = screen
         self.progress_manager = progress_manager
         self.camera = camera

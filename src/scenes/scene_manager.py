@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import Optional, Any
 
 from camera import Camera
+from events import STOP_ALL_SOUNDS, StopAllSoundsEvent, emit_event
 from handlers.sound_handler import SoundHandler
 from progress_manager import ProgressManager
 from scenes.select_battle import SelectBattleScene
@@ -99,8 +100,7 @@ class SceneManager:
         esper.switch_world(new_world)
         esper.delete_world(previous_world)
 
-        # Stop all sounds
-        self.sound_handler.stop_all_sounds()
+        emit_event(STOP_ALL_SOUNDS, event=StopAllSoundsEvent())
             
     def update(self, time_delta: float, events: list[pygame.event.Event]) -> bool:
         """Update the current scene and handle scene transitions."""

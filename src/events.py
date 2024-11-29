@@ -52,6 +52,12 @@ class AuraHitEvent:
     target: int
 
 @dataclass
+class ChangeMusicEvent:
+    """Event triggered to change the music."""
+    music_filename: str
+    """The name of the music file to play."""
+
+@dataclass
 class DestinationTargetAcquiredEvent:
     """Event triggered when a unit identifies a destination."""
     entity: int
@@ -86,6 +92,7 @@ class SoundEffect:
 
     volume: float
     """The volume of the sound to play."""
+
 @dataclass
 class PlaySoundEvent:
     """Event triggered to play a sound."""
@@ -103,6 +110,10 @@ class StateChangedEvent:
     entity: int
     new_state: State
 
+@dataclass
+class StopAllSoundsEvent:
+    """Event triggered to stop all sounds."""
+
 # Define signal names for each event
 ABILITY_ACTIVATED = 'ability_activated'
 ABILITY_COMPLETED = 'ability_completed'
@@ -110,6 +121,7 @@ ABILITY_INTERRUPTED = 'ability_interrupted'
 ABILITY_TRIGGERED = 'ability_triggered'
 AOE_HIT = 'aoe_hit'
 AURA_HIT = 'aura_hit'
+CHANGE_MUSIC = 'change_music'
 DEATH = 'death'
 DESTINATION_TARGET_ACQUIRED = 'destination_target_acquired'
 DESTINATION_TARGET_LOST = 'destination_target_lost'
@@ -118,6 +130,7 @@ FLEEING_EXPIRED = 'fleeing_expired'
 PLAY_SOUND = 'play_sound'
 PROJECTILE_HIT = 'projectile_hit'
 STATE_CHANGED = 'state_changed'
+STOP_ALL_SOUNDS = 'stop_all_sounds'
 
 def emit_event(event_type, **kwargs):
     """Emit an event using pydispatch."""

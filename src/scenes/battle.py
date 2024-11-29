@@ -4,6 +4,7 @@ import pygame
 import pygame_gui
 from auto_battle import AutoBattle, BattleOutcome
 from components.unit_type import UnitType
+from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event
 from processors.rendering_processor import RenderingProcessor, draw_battlefield
 from scenes.scene import Scene
 from scenes.events import PreviousSceneEvent, SandboxSceneEvent, SelectBattleSceneEvent, SetupBattleSceneEvent
@@ -39,6 +40,9 @@ class BattleScene(Scene):
             sandbox_mode: Whether this battle is in sandbox mode.
             editor_scroll: The scroll position of the battle editor.
         """
+        emit_event(CHANGE_MUSIC, event=ChangeMusicEvent(
+            music_filename="Battle Theme.wav",
+        ))
         self.screen = screen
         self.camera = camera
         self.manager = manager

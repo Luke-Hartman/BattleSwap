@@ -3,6 +3,7 @@ import pygame
 import battles
 from scenes.scene import Scene
 import pygame_gui
+from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event
 from scenes.events import BattleEditorSceneEvent, SandboxSceneEvent, SetupBattleSceneEvent, TestEditorSceneEvent
 from progress_manager import ProgressManager
 from ui_components.barracks_ui import BarracksUI, UnitCount
@@ -13,6 +14,9 @@ class SelectBattleScene(Scene):
     """The scene for selecting a battle."""
 
     def __init__(self, screen: pygame.Surface, manager: pygame_gui.UIManager, progress_manager: ProgressManager):
+        emit_event(CHANGE_MUSIC, event=ChangeMusicEvent(
+            music_filename="Main Theme.wav",
+        ))
         self.screen = screen
         self.progress_manager = progress_manager
         self.manager = manager
