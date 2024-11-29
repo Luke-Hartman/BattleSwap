@@ -97,7 +97,8 @@ class BattleScene(Scene):
                                 SetupBattleSceneEvent(
                                     ally_placements=self.ally_placements,
                                     enemy_placements=self.enemy_placements,
-                                    battle_id=self.battle_id
+                                    battle_id=self.battle_id,
+                                    play_tip_sound=False
                                 ).to_event()
                             )
                         return True

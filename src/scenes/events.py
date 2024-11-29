@@ -30,6 +30,7 @@ class SetupBattleSceneEvent(PyGameEvent):
     """Event for setting up a battle."""
     ally_placements: List[Tuple[UnitType, Tuple[int, int]]]
     battle_id: str
+    play_tip_sound: bool
 
     @property
     def _type(self) -> int:

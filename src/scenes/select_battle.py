@@ -192,7 +192,8 @@ class SelectBattleScene(Scene):
                         pygame.event.post(
                             SetupBattleSceneEvent(
                                 battle_id=battle_id,
-                                ally_placements=ally_placements
+                                ally_placements=ally_placements,
+                                play_tip_sound=True if solution is None else False
                             ).to_event()
                         )
         

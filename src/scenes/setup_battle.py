@@ -45,6 +45,7 @@ class SetupBattleScene(Scene):
             battle_id: str,
             progress_manager: ProgressManager,
             ally_placements: List[Tuple[UnitType, Tuple[int, int]]],
+            play_tip_sound: bool,
     ):
         """Initialize the setup battle scene.
         
@@ -55,6 +56,7 @@ class SetupBattleScene(Scene):
             battle_id: The name of the battle to set up.
             progress_manager: The progress manager for the game.
             ally_placements: List of starting ally placements.
+            play_tip_sound: Whether to play the tip sound.  
         """
         self.screen = screen
         self.progress_manager = progress_manager
@@ -92,7 +94,7 @@ class SetupBattleScene(Scene):
         
         self.tip_box = TipBox(self.manager, self.battle)
         self.reload_constants_button = ReloadConstantsButton(self.manager)
-        if self.battle.tip_voice_filename is not None:
+        if self.battle.tip_voice_filename is not None and play_tip_sound:
             emit_event(PLAY_SOUND, event=PlaySoundEvent(
                 sound_effect=SoundEffect(filename=self.battle.tip_voice_filename, volume=0.25),
             ))

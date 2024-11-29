@@ -122,6 +122,7 @@ class SceneManager:
                     battle_id=validated_event.battle_id,
                     progress_manager=self.progress_manager,
                     ally_placements=validated_event.ally_placements,
+                    play_tip_sound=validated_event.play_tip_sound,
                 )
             elif event.type == BATTLE_SCENE_EVENT:
                 validated_event = BattleSceneEvent.model_validate(event.dict)
