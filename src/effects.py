@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from enum import Enum, auto
 import math
 import random
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, List, Optional, Tuple, Union
 
 import esper
 
@@ -395,12 +395,15 @@ class SoundEffect:
 class PlaySound(Effect):
     """Effect plays a sound."""
 
-    sound_effects: List[Tuple[SoundEffect, float]]
+    sound_effects: Union[SoundEffect, List[Tuple[SoundEffect, float]]]
     """The sound effects to play and the weight for each sound effect to be chosen."""
 
     def apply(self, owner: Optional[int], parent: int, target: int) -> None:
-        sound_effect = random.choices(
-            [sound_effect for sound_effect, _ in self.sound_effects],
-            weights=[weight for _, weight in self.sound_effects]
-        )[0]
+        if isinstance(self.sound_effects, SoundEffect):
+            sound_effect = self.sound_effects
+        else:
+            sound_effect = random.choices(
+                [sound_effect for sound_effect, _ in self.sound_effects],
+                weights=[weight for _, weight in self.sound_effects]
+            )[0]
         emit_event(PLAY_SOUND, event=PlaySoundEvent(filename=sound_effect.filename, volume=sound_effect.volume))

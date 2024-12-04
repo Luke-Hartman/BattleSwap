@@ -212,7 +212,10 @@ def create_core_archer(x: int, y: int, team: TeamType) -> int:
                         7: [
                             CreatesProjectile(
                                 projectile_speed=gc.CORE_ARCHER_PROJECTILE_SPEED,
-                                effects=[Damages(damage=gc.CORE_ARCHER_ATTACK_DAMAGE, recipient=Recipient.TARGET)],
+                                effects=[
+                                    Damages(damage=gc.CORE_ARCHER_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                                    PlaySound(SoundEffect(filename="arrow_hitting_flesh.wav", volume=0.50)),
+                                ],
                                 visual=Visual.Arrow,
                                 projectile_offset_x=5*gc.MINIFOLKS_SCALE,
                                 projectile_offset_y=0,
@@ -1293,11 +1296,15 @@ def create_crusader_longbowman(x: int, y: int, team: TeamType) -> int:
                     effects={6: [
                         CreatesProjectile(
                             projectile_speed=gc.CRUSADER_LONGBOWMAN_PROJECTILE_SPEED,
-                            effects=[Damages(damage=gc.CRUSADER_LONGBOWMAN_ATTACK_DAMAGE, recipient=Recipient.TARGET)],
+                            effects=[
+                                Damages(damage=gc.CRUSADER_LONGBOWMAN_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                                PlaySound(SoundEffect(filename="arrow_hitting_flesh.wav", volume=0.50)),
+                            ],
                             visual=Visual.Arrow,
                             projectile_offset_x=5*gc.MINIFOLKS_SCALE,
                             projectile_offset_y=0
-                        )
+                        ),
+                        PlaySound(SoundEffect(filename="arrow_fired_from_longbow.wav", volume=0.50)),
                     ]},
                 )
             ]
