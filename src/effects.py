@@ -86,6 +86,9 @@ class Damages(Effect):
         recipient_armor = esper.try_component(recipient, Armor)
         if recipient_armor:
             damage = recipient_armor.calculate_damage_after_armor(damage)
+            emit_event(PLAY_SOUND, event=PlaySoundEvent(filename=f"sword_hitting_armor{random.randint(1, 4)}.wav", volume=0.50))
+        else:
+            emit_event(PLAY_SOUND, event=PlaySoundEvent(filename="arrow_hitting_flesh.wav", volume=0.50))
         if recipient_health is None:
             raise AssertionError("Recipient has no health component")
 
