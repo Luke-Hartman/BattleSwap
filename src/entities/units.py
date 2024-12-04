@@ -794,7 +794,8 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
                                     unit_condition=All([Alive(), NotEntity(entity=entity)]),
                                     visual=Visual.CrusaderBlackKnightFear,
                                     location=Recipient.PARENT,
-                                )
+                                ),
+                                PlaySound(SoundEffect(filename="black_knight_screech.wav", volume=0.50)),
                             ]
                         ),
                         PlaySound([
