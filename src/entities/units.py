@@ -1226,7 +1226,8 @@ def create_crusader_gold_knight(x: int, y: int, team: TeamType) -> int:
                                 ]),
                                 visual=Visual.CrusaderGoldKnightAttack,
                                 location=Recipient.PARENT,
-                            )
+                            ),
+                            PlaySound(SoundEffect(filename="deep_swoosh.wav", volume=0.50)),
                         ]
                     },
                 )
