@@ -441,7 +441,12 @@ def create_core_horseman(x: int, y: int, team: TeamType) -> int:
                             ])
                         )
                     ],
-                    effects={3: [Damages(damage=gc.CORE_HORSEMAN_ATTACK_DAMAGE, recipient=Recipient.TARGET)]},
+                    effects={3: [
+                        Damages(damage=gc.CORE_HORSEMAN_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                        PlaySound([
+                            (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
+                        ]),
+                    ]},
                 )
             ]
         )
@@ -662,7 +667,13 @@ def create_core_swordsman(x: int, y: int, team: TeamType) -> int:
                             ])
                         )
                     ],
-                    effects={2: [Damages(damage=gc.CORE_SWORDSMAN_ATTACK_DAMAGE, recipient=Recipient.TARGET)]},
+                    effects={2: [
+                            Damages(damage=gc.CORE_SWORDSMAN_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                            PlaySound([
+                                (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
+                            ]),
+                        ]
+                    },
                 )
             ]
         )
@@ -785,7 +796,10 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
                                     location=Recipient.PARENT,
                                 )
                             ]
-                        )
+                        ),
+                        PlaySound([
+                            (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
+                        ]),
                     ]},
                 )
             ]
@@ -993,7 +1007,12 @@ def create_crusader_commander(x: int, y: int, team: TeamType) -> int:
                             ])
                         )
                     ],
-                    effects={4: [Damages(damage=gc.CRUSADER_COMMANDER_ATTACK_DAMAGE, recipient=Recipient.TARGET)]},
+                    effects={4: [
+                        Damages(damage=gc.CRUSADER_COMMANDER_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                        PlaySound([
+                            (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
+                        ]),
+                    ]},
                 )
             ]
         )
@@ -1104,7 +1123,12 @@ def create_crusader_defender(x: int, y: int, team: TeamType) -> int:
                             ])
                         )
                     ],
-                    effects={4: [Damages(damage=gc.CRUSADER_DEFENDER_ATTACK_DAMAGE, recipient=Recipient.TARGET)]},
+                    effects={4: [
+                        Damages(damage=gc.CRUSADER_DEFENDER_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                        PlaySound([
+                            (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
+                        ]),
+                    ]},
                 )
             ]
         )
@@ -1417,7 +1441,12 @@ def create_crusader_paladin(x: int, y: int, team: TeamType) -> int:
                             ])
                         )
                     ],
-                    effects={3: [Damages(damage=gc.CRUSADER_PALADIN_ATTACK_DAMAGE, recipient=Recipient.TARGET)]},
+                    effects={3: [
+                        Damages(damage=gc.CRUSADER_PALADIN_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                        PlaySound([
+                            (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
+                        ]),
+                    ]},
                 )
             ]
         )
@@ -1512,7 +1541,12 @@ def create_crusader_pikeman(x: int, y: int, team: TeamType) -> int:
                             ])
                         )
                     ],
-                    effects={3: [Damages(damage=gc.CRUSADER_PIKEMAN_ATTACK_DAMAGE, recipient=Recipient.TARGET)]},
+                    effects={3: [
+                        Damages(damage=gc.CRUSADER_PIKEMAN_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                        PlaySound([
+                            (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
+                        ]),
+                    ]},
                 )
             ]
         )
@@ -1645,8 +1679,18 @@ def create_crusader_red_knight(x: int, y: int, team: TeamType) -> int:
                         )
                     ],
                     effects={
-                        3: [Damages(damage=gc.CRUSADER_RED_KNIGHT_ATTACK_DAMAGE, recipient=Recipient.TARGET)],
-                        7: [Damages(damage=gc.CRUSADER_RED_KNIGHT_ATTACK_DAMAGE, recipient=Recipient.TARGET)]
+                        3: [
+                            Damages(damage=gc.CRUSADER_RED_KNIGHT_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                            PlaySound([
+                                (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
+                            ]),
+                        ],
+                        7: [
+                            Damages(damage=gc.CRUSADER_RED_KNIGHT_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                            PlaySound([
+                                (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
+                            ]),
+                        ]
                     },
                 )
             ]
