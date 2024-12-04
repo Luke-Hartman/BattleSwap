@@ -61,7 +61,7 @@ class AnimationProcessor(esper.Processor):
             frame_duration = total_duration / frame_count
 
             new_frame = int(anim_state.time_elapsed // frame_duration) % frame_count
-            if new_frame != anim_state.current_frame:
+            if new_frame != anim_state.current_frame or anim_state.time_elapsed == 0:
                 if anim_state.type == AnimationType.DYING and anim_state.current_frame == frame_count - 1:
                     # Stop the animation at the last frame for death animation
                     pass

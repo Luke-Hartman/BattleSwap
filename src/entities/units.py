@@ -536,6 +536,12 @@ def create_core_mage(x: int, y: int, team: TeamType) -> int:
                         )
                     ],
                     effects={
+                        0: [
+                            PlaySound(SoundEffect(filename="fireball_channeling.wav", volume=0.50)),
+                        ],
+                        6: [
+                            PlaySound(SoundEffect(filename="fireball_creation.wav", volume=0.50)),
+                        ],
                         7: [
                             CreatesProjectile(
                                 projectile_speed=gc.CORE_MAGE_PROJECTILE_SPEED,
@@ -556,12 +562,13 @@ def create_core_mage(x: int, y: int, team: TeamType) -> int:
                                         scale=gc.CORE_MAGE_FIREBALL_AOE_SCALE,
                                         unit_condition=Alive(),
                                         location=Recipient.PARENT,
-                                    )
+                                    ),
+                                    PlaySound(SoundEffect(filename="fireball_impact.wav", volume=0.50)),
                                 ],
                                 visual=Visual.Fireball,
                                 projectile_offset_x=11*gc.MINIFOLKS_SCALE,
                                 projectile_offset_y=-4*gc.MINIFOLKS_SCALE,
-                            )
+                            ),
                         ]
                     }
                 )
