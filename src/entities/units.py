@@ -1416,7 +1416,14 @@ def create_crusader_paladin(x: int, y: int, team: TeamType) -> int:
                         SatisfiesUnitCondition(unit_condition=HealthBelowPercent(percent=gc.CRUSADER_PALADIN_SKILL_HEALTH_PERCENT_THRESHOLD))
                     ],
                     persistent_conditions=[],
-                    effects={7: [Heals(amount=gc.CRUSADER_PALADIN_SKILL_HEAL_PERCENT * gc.CRUSADER_PALADIN_HP, recipient=Recipient.OWNER)]},
+                    effects={
+                        0: [
+                            PlaySound(SoundEffect(filename="holy_healing_spell.wav", volume=0.50)),
+                        ],
+                        7: [
+                            Heals(amount=gc.CRUSADER_PALADIN_SKILL_HEAL_PERCENT * gc.CRUSADER_PALADIN_HP, recipient=Recipient.OWNER),
+                        ]
+                    },
                 ),
                 Ability(
                     target_strategy=targetting_strategy,
