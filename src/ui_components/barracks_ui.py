@@ -7,7 +7,6 @@ from pygame_gui.elements import UIPanel, UIScrollingContainer, UIButton
 
 from components.unit_type import UnitType
 from entities.units import unit_theme_ids
-from voice import play_intro
 
 class UnitCount(UIButton):
     """A custom UI button that displays a unit icon and its count."""
@@ -170,7 +169,6 @@ class BarracksUI(UIPanel):
         assert self._units[unit_type] > 0
         self._units[unit_type] -= 1
         self._rebuild()
-        play_intro(unit_type)
 
     @property
     def units(self) -> Dict[UnitType, int]:

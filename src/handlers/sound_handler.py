@@ -22,7 +22,9 @@ class SoundHandler:
         dispatcher.connect(self.handle_stop_all_sounds, signal=STOP_ALL_SOUNDS)
         dispatcher.connect(self.handle_change_music, signal=CHANGE_MUSIC)
         self._current_music: Optional[pygame.mixer.Sound] = None
-        self._voice_channel = pygame.mixer.Channel(1)
+        # Reserve one channel for voice
+        self._voice_channel = pygame.mixer.Channel(0)
+        pygame.mixer.set_reserved(1)
 
     def _load_sounds(self) -> None:
         """Load all sound effects from the assets directory."""
@@ -38,7 +40,7 @@ class SoundHandler:
         for filename in os.listdir(music_dir):
             if filename.endswith(".wav"):
                 path = os.path.join(music_dir, filename)
-                self.music[filename] = pygame.mixer.Sound(path)
+                self.music[filename] = pygame.mixer.music.load(path)
 
     def _load_voices(self) -> None:
         """Load all voice lines from the assets directory."""
@@ -59,13 +61,12 @@ class SoundHandler:
 
     def handle_play_voice(self, event: PlayVoiceEvent) -> None:
         """Play a voice line by name."""
-        # Only one voice can play at a time
         if self._voice_channel.get_busy() and not event.force:
             return
         if event.filename in self.voices:
             voice = self.voices[event.filename]
             voice.set_volume(gc.VOICE_VOLUME)
-            voice.play()
+            self._voice_channel.play(voice)
 
     def handle_stop_all_sounds(self, event: StopAllSoundsEvent) -> None:
         """Stop all currently playing sound effects."""

@@ -129,8 +129,6 @@ def simulate_battle(
     while outcome is None:
         esper.process(1/60)
         outcome = auto_battle.update(1/60)
-    for ent, (unit_state, unit_type, team) in esper.get_components(State, UnitTypeComponent, Team):
-        print(ent, unit_state, unit_type, team)
     esper.switch_world(previous_world)
     esper.delete_world("simulation")
     return outcome

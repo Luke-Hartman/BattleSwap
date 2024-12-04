@@ -6,7 +6,6 @@ from typing import Optional, Any
 
 from camera import Camera
 from events import STOP_ALL_SOUNDS, StopAllSoundsEvent, emit_event
-from handlers.sound_handler import SoundHandler
 from progress_manager import ProgressManager
 from scenes.select_battle import SelectBattleScene
 from scenes.setup_battle import SetupBattleScene
@@ -43,8 +42,7 @@ class SceneManager:
             self, 
             screen: pygame.Surface, 
             camera: Camera, 
-            progress_manager: ProgressManager, 
-            sound_handler: SoundHandler
+            progress_manager: ProgressManager
     ):
         self.screen = screen
         self.camera = camera
@@ -59,7 +57,7 @@ class SceneManager:
             progress_manager=self.progress_manager
         )
         self.previous_scene_state: Optional[SceneState] = None
-        self.sound_handler = sound_handler
+
     def cleanup(self) -> None:
         """Clean up the current scene and save its state."""
         # Save current scene state, but don't save SetupBattleScene

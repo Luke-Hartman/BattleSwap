@@ -33,4 +33,19 @@ introductions = VoiceOptions({
 })
 def play_intro(unit_type: UnitType) -> None:
     """Play the intro voice line for a unit."""
-    emit_event(PLAY_VOICE, event=PlayVoiceEvent(filename=introductions[unit_type], force=False))
+    try:
+        emit_event(PLAY_VOICE, event=PlayVoiceEvent(filename=introductions[unit_type], force=False))
+    except KeyError:
+        pass
+
+deaths = VoiceOptions({
+    UnitType.CORE_DUELIST: [
+        f"core_duelist_death{i + 1}.wav" for i in range(4)
+    ]
+})
+def play_death(unit_type: UnitType) -> None:
+    """Play the death voice line for a unit."""
+    try:
+        emit_event(PLAY_VOICE, event=PlayVoiceEvent(filename=deaths[unit_type], force=False))
+    except KeyError:
+        pass

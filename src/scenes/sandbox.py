@@ -26,6 +26,7 @@ from scenes.events import BattleSceneEvent, PreviousSceneEvent
 from ui_components.save_battle_dialog import SaveBattleDialog
 from ui_components.reload_constants_button import ReloadConstantsButton
 from auto_battle import BattleOutcome, get_unit_placements, simulate_battle
+from voice import play_intro
 
 
 class SandboxScene(Scene):
@@ -171,6 +172,7 @@ class SandboxScene(Scene):
                         self.save_dialog.kill()
                         self.save_dialog = None
                     elif isinstance(event.ui_element, UnitCount):
+                        play_intro(event.ui_element.unit_type)
                         self.create_unit_from_list(event.ui_element)
                     elif event.ui_element == self.simulate_button:
                         outcome = simulate_battle(

@@ -28,6 +28,7 @@ from ui_components.tip_box import TipBox
 from ui_components.reload_constants_button import ReloadConstantsButton
 from components.range_indicator import RangeIndicator
 from components.stats_card import StatsCard
+from voice import play_intro
 
 
 class SetupBattleScene(Scene):
@@ -136,6 +137,7 @@ class SetupBattleScene(Scene):
                         pygame.event.post(PreviousSceneEvent().to_event())
                         return True
                     elif isinstance(event.ui_element, UnitCount):
+                        play_intro(event.ui_element.unit_type)
                         self.create_unit_from_list(event.ui_element)
 
             if event.type == pygame.MOUSEBUTTONDOWN:
