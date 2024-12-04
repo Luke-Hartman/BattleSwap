@@ -16,7 +16,7 @@ from components.aura import Aura
 from components.dying import Dying
 from components.expiration import Expiration
 from components.health import Health
-from components.orientation import Orientation
+from components.orientation import FacingDirection, Orientation
 from components.position import Position
 from components.projectile import Projectile
 from components.status_effect import CrusaderCommanderEmpowered, StatusEffect, StatusEffects
@@ -232,10 +232,13 @@ class CreatesProjectile(Effect):
             velocity_x = self.projectile_speed
             velocity_y = 0
         angle = math.atan2(dy, dx)
+        if parent_orientation.facing == FacingDirection.LEFT:
+            angle = math.pi + angle
 
         esper.add_component(entity, Position(x=projectile_x, y=projectile_y))
         esper.add_component(entity, Velocity(x=velocity_x, y=velocity_y))
         esper.add_component(entity, Angle(angle=angle))
+        esper.add_component(entity, Orientation(facing=parent_orientation.facing))
         esper.add_component(entity, Team(type=parent_team.type))
         esper.add_component(entity, Projectile(effects=self.effects, owner=owner))
         esper.add_component(entity, create_visual_spritesheet(self.visual))
