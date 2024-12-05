@@ -81,11 +81,11 @@ class BattleScene(Scene):
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.return_button:
                         pygame.event.post(PreviousSceneEvent().to_event())
-                        return True
+                        return super().update(time_delta, events)
                     elif event.ui_element == self.victory_button:
                         self.progress_manager.save_solution(Solution(self.battle_id, self.ally_placements))
                         pygame.event.post(SelectBattleSceneEvent().to_event())
-                        return True
+                        return super().update(time_delta, events)
                     elif event.ui_element == self.restart_button:
                         if self.sandbox_mode:
                             pygame.event.post(
@@ -105,7 +105,7 @@ class BattleScene(Scene):
                                     play_tip_sound=False
                                 ).to_event()
                             )
-                        return True
+                        return super().update(time_delta, events)
             
             self.manager.process_events(event)
 
@@ -123,4 +123,4 @@ class BattleScene(Scene):
             )
         self.manager.update(time_delta)
         self.manager.draw_ui(self.screen)
-        return True
+        return super().update(time_delta, events)

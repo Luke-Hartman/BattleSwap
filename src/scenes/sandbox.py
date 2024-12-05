@@ -146,7 +146,7 @@ class SandboxScene(Scene):
                         )
                     elif event.ui_element == self.return_button:
                         pygame.event.post(PreviousSceneEvent().to_event())
-                        return True
+                        return super().update(time_delta, events)
                     elif event.ui_element == self.start_button:
                         pygame.event.post(
                             BattleSceneEvent(
@@ -156,7 +156,7 @@ class SandboxScene(Scene):
                                 sandbox_mode=True,
                             ).to_event()
                         )
-                        return True
+                        return super().update(time_delta, events)
                     elif (self.save_dialog and 
                           event.ui_element == self.save_dialog.save_battle_button):
                         self.save_dialog.save_battle(is_test=False)
@@ -270,7 +270,7 @@ class SandboxScene(Scene):
         esper.process(time_delta)
         self.manager.update(time_delta)
         self.manager.draw_ui(self.screen)
-        return True
+        return super().update(time_delta, events)
 
     def get_hovered_unit(self, mouse_pos: tuple[int, int]) -> Optional[int]:
         """Return the unit at the given mouse position."""

@@ -135,7 +135,7 @@ class SetupBattleScene(Scene):
                         ).to_event())
                     elif event.ui_element == self.return_button:
                         pygame.event.post(PreviousSceneEvent().to_event())
-                        return True
+                        return super().update(time_delta, events)
                     elif isinstance(event.ui_element, UnitCount):
                         play_intro(event.ui_element.unit_type)
                         self.create_unit_from_list(event.ui_element)
@@ -199,7 +199,7 @@ class SetupBattleScene(Scene):
         esper.process(time_delta)
         self.manager.update(time_delta)
         self.manager.draw_ui(self.screen)
-        return True
+        return super().update(time_delta, events)
 
     def place_unit(self) -> None:
         """Place the currently selected unit on the battlefield."""
