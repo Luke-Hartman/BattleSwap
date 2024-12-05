@@ -17,7 +17,7 @@ from components.aura import Aura
 from components.position import Position
 from components.animation import AnimationState, AnimationType
 from components.sprite_sheet import SpriteSheet
-from components.status_effect import CrusaderCommanderEmpowered, Fleeing, Ignited, StatusEffects
+from components.status_effect import CrusaderCommanderEmpowered, Fleeing, Healing, Ignited, StatusEffects
 from target_strategy import ByDistance, ByMaxHealth, ByMissingHealth, TargetStrategy
 from components.destination import Destination
 from components.team import Team, TeamType
@@ -908,14 +908,20 @@ def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
                     ],
                     effects={
                         2: [
-                            Heals(amount=gc.CRUSADER_CLERIC_HEALING, recipient=Recipient.TARGET),
+                            AppliesStatusEffect(
+                                status_effect=Healing(time_remaining=2, dps=gc.CRUSADER_CLERIC_HEALING/2),
+                                recipient=Recipient.TARGET
+                            ),
                             CreatesAttachedVisual(
                                 visual=Visual.Healing,
                                 animation_duration=1,
-                                expiration_duration=1,
-                                scale=1,
+                                expiration_duration=2,
+                                scale=2,
                                 remove_on_death=False,
-                            )
+                                random_starting_frame=True,
+                                layer=1,
+                            ),
+                            PlaySound(SoundEffect(filename="heal.wav", volume=0.50)),
                         ]
                     },
                 )

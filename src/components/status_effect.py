@@ -33,6 +33,12 @@ class Fleeing(StatusEffect):
     entity: int
     """The entity to flee from."""
 
+@dataclass
+class Healing(StatusEffect):
+    """Status effect that heals a unit."""
+
+    dps: float
+    """The amount of healing to apply per second."""
 
 class StatusEffects:
     """Component that stores the status effects of a unit."""
@@ -43,6 +49,7 @@ class StatusEffects:
             Ignited: [],
             CrusaderCommanderEmpowered: [],
             Fleeing: [],
+            Healing: [],
         }
 
     def add(self, status_effect: StatusEffect) -> None:
@@ -72,6 +79,7 @@ class StatusEffects:
         if self._status_by_type[Fleeing]:
             longest_fleeing = max(self._status_by_type[Fleeing], key=lambda e: e.time_remaining)
             active_effects.append(longest_fleeing)
+        active_effects.extend(self._status_by_type[Healing])
         return active_effects
 
 

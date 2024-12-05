@@ -362,6 +362,9 @@ class CreatesAttachedVisual(Effect):
     offset: Optional[Callable[[int], Tuple[int, int]]] = None
     """The offset of the effect from the target's position."""
 
+    random_starting_frame: bool = False
+    """Whether the effect should start on a random frame."""
+
     layer: int = 0
     """The layer of the effect."""
 
@@ -376,13 +379,18 @@ class CreatesAttachedVisual(Effect):
         esper.add_component(entity, Position(x=position.x + offset[0], y=position.y + offset[1]))
         esper.add_component(entity, Team(type=team.type))
         esper.add_component(entity, Attached(entity=target, remove_on_death=self.remove_on_death, offset=offset))
-        esper.add_component(entity, create_visual_spritesheet(
+        sprite_sheet = create_visual_spritesheet(
             visual=self.visual,
             scale=self.scale,
             duration=self.animation_duration,
             layer=self.layer
-        ))
-        esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
+        )
+        esper.add_component(entity, sprite_sheet)
+        if self.random_starting_frame:
+            time_elapsed = random.random() * self.animation_duration
+        else:
+            time_elapsed = 0
+        esper.add_component(entity, AnimationState(type=AnimationType.IDLE, time_elapsed=time_elapsed))
         esper.add_component(entity, Expiration(time_left=self.expiration_duration))
         if self.unique_key:
             esper.add_component(entity, Unique(key=self.unique_key(target)))
