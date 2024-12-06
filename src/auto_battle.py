@@ -20,6 +20,7 @@ from processors.fleeing_processor import FleeingProcessor
 from processors.idle_processor import IdleProcessor
 from processors.animation_processor import AnimationProcessor
 from processors.movement_processor import MovementProcessor
+from processors.nudge_processor import NudgeProcessor
 from processors.orientation_processor import OrientationProcessor
 from processors.position_processor import PositionProcessor
 from processors.pursuing_processor import PursuingProcessor
@@ -69,6 +70,7 @@ class AutoBattle:
         animation_processor = AnimationProcessor()
         orientation_processor = OrientationProcessor()
         position_processor = PositionProcessor()
+        nudge_processor = NudgeProcessor()
         rotation_processor = RotationProcessor()
         dying_processor = DyingProcessor()
         esper.add_processor(targetting_processor)
@@ -85,6 +87,7 @@ class AutoBattle:
         esper.add_processor(status_effect_processor)
         esper.add_processor(animation_processor)
         esper.add_processor(position_processor)
+        esper.add_processor(nudge_processor)
         esper.add_processor(orientation_processor)
         esper.add_processor(rotation_processor)
         esper.add_processor(unique_processor)
