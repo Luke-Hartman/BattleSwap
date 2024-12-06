@@ -8,7 +8,7 @@ from components.position import Position
 from components.sprite_sheet import SpriteSheet
 from components.team import Team, TeamType
 from components.unit_type import UnitType, UnitTypeComponent
-from events import emit_event, CHANGE_MUSIC, ChangeMusicEvent, PLAY_VOICE, PlayVoiceEvent
+from events import PLAY_SOUND, PlaySoundEvent, emit_event, CHANGE_MUSIC, ChangeMusicEvent, PLAY_VOICE, PlayVoiceEvent
 from processors.animation_processor import AnimationProcessor
 from processors.orientation_processor import OrientationProcessor
 from processors.position_processor import PositionProcessor
@@ -144,7 +144,12 @@ class SetupBattleScene(Scene):
                 if event.button == 1:  # Left click
                     mouse_pos = pygame.mouse.get_pos()
                     if self.selected_unit_id is None:
-                        self.selected_unit_id = self.get_hovered_unit(mouse_pos)
+                        self.selected_unit_id = self.get_hovered_unit(mouse_pos, TeamType.TEAM1)
+                        if self.selected_unit_id is not None:
+                            emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                                filename="unit_picked_up.wav",
+                                volume=0.5
+                            ))
                     else:
                         # Mouse must be within 25 pixels of the legal placement area to place the unit
                         grace_zone = 25
@@ -158,7 +163,7 @@ class SetupBattleScene(Scene):
                         self.return_unit_to_barracks(self.selected_unit_id)
                     else:
                         mouse_pos = pygame.mouse.get_pos()
-                        clicked_on_unit = self.get_hovered_unit(mouse_pos)
+                        clicked_on_unit = self.get_hovered_unit(mouse_pos, TeamType.TEAM1)
                         if clicked_on_unit is not None:
                             self.return_unit_to_barracks(clicked_on_unit)
             self.reload_constants_button.handle_event(event)
@@ -185,7 +190,7 @@ class SetupBattleScene(Scene):
 
         # Update stats card for hovered unit
         mouse_pos = pygame.mouse.get_pos()
-        hovered_unit = self.get_hovered_unit(mouse_pos)
+        hovered_unit = self.get_hovered_unit(mouse_pos, None)
         if hovered_unit is not None:
             stats_card = esper.component_for_entity(hovered_unit, StatsCard)
             stats_card.active = True
@@ -215,6 +220,10 @@ class SetupBattleScene(Scene):
             self.selected_unit_id = entity
         else:
             self.selected_unit_id = None
+        emit_event(PLAY_SOUND, event=PlaySoundEvent(
+            filename="unit_placed.wav",
+            volume=0.5
+        ))
 
     def return_unit_to_barracks(self, unit_id: int) -> None:
         """Deselect the current unit and return it to the unit pool."""
@@ -222,6 +231,10 @@ class SetupBattleScene(Scene):
         esper.delete_entity(unit_id, immediate=True)
         self.barracks.add_unit(unit_type)
         self.selected_unit_id = None
+        emit_event(PLAY_SOUND, event=PlaySoundEvent(
+            filename="unit_returned.wav",
+            volume=0.5
+        ))
 
     def create_unit_from_list(self, unit_list_item: UnitCount) -> None:
         """Create a unit from a unit list item and update the UI."""
@@ -229,7 +242,7 @@ class SetupBattleScene(Scene):
         self.barracks.remove_unit(unit_list_item.unit_type)
         self.selected_unit_id = entity
 
-    def get_hovered_unit(self, mouse_pos: Tuple[int, int]) -> Optional[int]:
+    def get_hovered_unit(self, mouse_pos: Tuple[int, int], required_team: Optional[TeamType]) -> Optional[int]:
         """Return the unit at the given mouse position, for hover effects.
         
         Args:
@@ -242,6 +255,8 @@ class SetupBattleScene(Scene):
         candidate_unit_id = None
         highest_y = -float('inf')
         for ent, (team, sprite, pos) in esper.get_components(Team, SpriteSheet, Position):
+            if required_team is not None and team.type != required_team:
+                continue
             if sprite.rect.collidepoint(adjusted_mouse_pos):
                 relative_mouse_pos = (
                     adjusted_mouse_pos[0] - sprite.rect.x,

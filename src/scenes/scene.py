@@ -23,4 +23,9 @@ class Scene(ABC):
                     filename="ui_click.wav",
                     volume=0.5
                 ))
+            if event.type == pygame_gui.UI_BUTTON_ON_HOVERED:
+                emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                    filename="ui_hover.wav",
+                    volume=0.5
+                ))
         return True

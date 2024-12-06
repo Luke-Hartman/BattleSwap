@@ -9,7 +9,7 @@ from components.sprite_sheet import SpriteSheet
 from components.stats_card import StatsCard
 from components.team import Team, TeamType
 from components.unit_type import UnitType, UnitTypeComponent
-from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event
+from events import CHANGE_MUSIC, PLAY_SOUND, ChangeMusicEvent, PlaySoundEvent, emit_event
 from processors.animation_processor import AnimationProcessor
 from processors.orientation_processor import OrientationProcessor
 from processors.position_processor import PositionProcessor
@@ -194,6 +194,11 @@ class SandboxScene(Scene):
                     mouse_pos = pygame.mouse.get_pos()
                     if self.selected_unit_id is None:
                         self.selected_unit_id = self.get_hovered_unit(mouse_pos)
+                        if self.selected_unit_id is not None:
+                            emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                                filename="unit_picked_up.wav",
+                                volume=0.5
+                            ))
                     else:
                         # Mouse must be within 25 pixels of the legal placement area to place the unit
                         grace_zone = 25
@@ -206,11 +211,19 @@ class SandboxScene(Scene):
                     if self.selected_unit_id is not None:
                         esper.delete_entity(self.selected_unit_id, immediate=True)
                         self.selected_unit_id = None
+                        emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                            filename="unit_returned.wav",
+                            volume=0.5
+                        ))
                     else:
                         mouse_pos = pygame.mouse.get_pos()
                         clicked_on_unit = self.get_hovered_unit(mouse_pos)
                         if clicked_on_unit is not None:
                             esper.delete_entity(clicked_on_unit, immediate=True)
+                            emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                                filename="unit_returned.wav",
+                                volume=0.5
+                            ))
 
 
             self.reload_constants_button.handle_event(event)
@@ -309,4 +322,8 @@ class SandboxScene(Scene):
         # Create a new unit of the same type and team
         entity = create_unit(0, 0, unit_type, team)
         self.selected_unit_id = entity
+        emit_event(PLAY_SOUND, event=PlaySoundEvent(
+            filename="unit_placed.wav",
+            volume=0.5
+        ))
 
