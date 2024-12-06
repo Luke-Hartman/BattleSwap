@@ -10,6 +10,7 @@ from typing import Dict
 from components.hitbox import Hitbox
 from components.range_indicator import RangeIndicator
 from components.stats_card import StatsCard
+from components.walk_effects import WalkEffects
 from game_constants import gc
 from components.ability import Abilities, Ability, Cooldown, HasTarget, SatisfiesUnitCondition
 from components.armor import Armor
@@ -261,6 +262,12 @@ def create_core_archer(x: int, y: int, team: TeamType) -> int:
             ]
         )
     )
+    esper.add_component(entity, WalkEffects({
+        frame: [PlaySound(sound_effects=[
+            (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+        ])]
+        for frame in [1, 4]
+    }))
     return entity
 
 def create_core_duelist(x: int, y: int, team: TeamType) -> int:
@@ -385,6 +392,12 @@ def create_core_duelist(x: int, y: int, team: TeamType) -> int:
             ]
         )
     )
+    esper.add_component(entity, WalkEffects({
+        frame: [PlaySound(sound_effects=[
+            (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+        ])]
+        for frame in [3, 7]
+    }))
     return entity
 
 def create_core_horseman(x: int, y: int, team: TeamType) -> int:
@@ -480,6 +493,12 @@ def create_core_horseman(x: int, y: int, team: TeamType) -> int:
             ]
         )
     )
+    esper.add_component(entity, WalkEffects({
+        frame: [PlaySound(sound_effects=[
+            (SoundEffect(filename=f"horse_footsteps_grass{i+1}.wav", volume=0.15), 1.0) for i in range(4)
+        ])]
+        for frame in [2]
+    }))
     return entity
 
 def create_core_mage(x: int, y: int, team: TeamType) -> int:
@@ -611,6 +630,12 @@ def create_core_mage(x: int, y: int, team: TeamType) -> int:
             ]
         )
     )
+    esper.add_component(entity, WalkEffects({
+        frame: [PlaySound(sound_effects=[
+            (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+        ])]
+        for frame in [1, 4]
+    }))
     return entity
 
 def create_core_swordsman(x: int, y: int, team: TeamType) -> int:
@@ -707,6 +732,12 @@ def create_core_swordsman(x: int, y: int, team: TeamType) -> int:
             ]
         )
     )
+    esper.add_component(entity, WalkEffects({
+        frame: [PlaySound(sound_effects=[
+            (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+        ])]
+        for frame in [2, 5]
+    }))
     return entity
 
 def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
@@ -837,6 +868,12 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
             ]
         )
     )
+    esper.add_component(entity, WalkEffects({
+        frame: [PlaySound(sound_effects=[
+            (SoundEffect(filename=f"horse_footsteps_grass{i+1}.wav", volume=0.15), 1.0) for i in range(4)
+        ])]
+        for frame in [3]
+    }))
     return entity
 
 def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
@@ -958,6 +995,12 @@ def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
             ]
         )
     )
+    esper.add_component(entity, WalkEffects({
+        frame: [PlaySound(sound_effects=[
+            (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+        ])]
+        for frame in [3, 7]
+    }))
     return entity
 
 def create_crusader_commander(x: int, y: int, team: TeamType) -> int:
@@ -1074,6 +1117,12 @@ def create_crusader_commander(x: int, y: int, team: TeamType) -> int:
             ]
         )
     )
+    esper.add_component(entity, WalkEffects({
+        frame: [PlaySound(sound_effects=[
+            (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+        ])]
+        for frame in [3, 7]
+    }))
     return entity
 
 def create_crusader_defender(x: int, y: int, team: TeamType) -> int:
@@ -1171,6 +1220,12 @@ def create_crusader_defender(x: int, y: int, team: TeamType) -> int:
             ]
         )
     )
+    esper.add_component(entity, WalkEffects({
+        frame: [PlaySound(sound_effects=[
+            (SoundEffect(filename=f"armored_grass_footstep{i+1}.wav", volume=0.25), 1.0) for i in range(5)
+        ])]
+        for frame in [3, 7]
+    }))
     return entity
 
 def create_crusader_gold_knight(x: int, y: int, team: TeamType) -> int:
@@ -1270,6 +1325,12 @@ def create_crusader_gold_knight(x: int, y: int, team: TeamType) -> int:
             ]
         )
     )
+    esper.add_component(entity, WalkEffects({
+        frame: [PlaySound(sound_effects=[
+            (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+        ])]
+        for frame in [3, 7]
+    }))
     return entity
 
 def create_crusader_longbowman(x: int, y: int, team: TeamType) -> int:
@@ -1380,6 +1441,12 @@ def create_crusader_longbowman(x: int, y: int, team: TeamType) -> int:
             ]
         )
     )
+    esper.add_component(entity, WalkEffects({
+        frame: [PlaySound(sound_effects=[
+            (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+        ])]
+        for frame in [3, 7]
+    }))
     return entity
 
 def create_crusader_paladin(x: int, y: int, team: TeamType) -> int:
@@ -1499,6 +1566,12 @@ def create_crusader_paladin(x: int, y: int, team: TeamType) -> int:
             ]
         )
     )
+    esper.add_component(entity, WalkEffects({
+        frame: [PlaySound(sound_effects=[
+            (SoundEffect(filename=f"horse_footsteps_grass{i+1}.wav", volume=0.15), 1.0) for i in range(4)
+        ])]
+        for frame in [3]
+    }))
     return entity
 
 def create_crusader_pikeman(x: int, y: int, team: TeamType) -> int:
@@ -1597,6 +1670,12 @@ def create_crusader_pikeman(x: int, y: int, team: TeamType) -> int:
             ]
         )
     )
+    esper.add_component(entity, WalkEffects({
+        frame: [PlaySound(sound_effects=[
+            (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+        ])]
+        for frame in [1, 4]
+    }))
     return entity
 
 def create_crusader_red_knight(x: int, y: int, team: TeamType) -> int:
@@ -1744,6 +1823,12 @@ def create_crusader_red_knight(x: int, y: int, team: TeamType) -> int:
             ]
         )
     )
+    esper.add_component(entity, WalkEffects({
+        frame: [PlaySound(sound_effects=[
+            (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+        ])]
+        for frame in [3, 7]
+    }))
     return entity
 
 def create_werebear(x: int, y: int, team: TeamType) -> int:

@@ -13,6 +13,7 @@ from components.animation import AnimationState, AnimationType
 from components.sprite_sheet import SpriteSheet
 from components.unit_state import UnitState, State
 from components.velocity import Velocity
+from components.walk_effects import WalkEffects
 from events import ABILITY_ACTIVATED, ABILITY_COMPLETED, AbilityActivatedEvent, AbilityCompletedEvent, emit_event
 
 class AnimationProcessor(esper.Processor):
@@ -83,4 +84,10 @@ class AnimationProcessor(esper.Processor):
                         emit_event(ABILITY_ACTIVATED, event=AbilityActivatedEvent(ent, index, anim_state.current_frame))
                     elif anim_state.current_frame == frame_count - 1:
                         emit_event(ABILITY_COMPLETED, event=AbilityCompletedEvent(ent, index))
+                elif anim_state.type == AnimationType.WALKING and esper.has_component(ent, WalkEffects):
+                    walk_effects = esper.component_for_entity(ent, WalkEffects)
+                    effects = walk_effects.effects.get(anim_state.current_frame, None)
+                    if effects:
+                        for effect in effects:
+                            effect.apply(ent, ent, ent)
             sprite_sheet.update_frame(anim_state.type, anim_state.current_frame)
