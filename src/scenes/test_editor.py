@@ -329,7 +329,7 @@ class TestEditorScene(Scene):
                         scroll_percentage = self._get_scroll_percentage()
                         pygame.event.post(
                             SandboxSceneEvent(
-                                ally_placements=[],
+                                ally_placements=battle.allies,
                                 enemy_placements=battle.enemies,
                                 battle_id=battle_id,
                                 editor_scroll=scroll_percentage
