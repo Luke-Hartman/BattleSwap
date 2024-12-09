@@ -1651,7 +1651,7 @@ def create_crusader_pikeman(x: int, y: int, team: TeamType) -> int:
                             unit_condition=All([
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=gc.CRUSADER_PIKEMAN_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    distance=gc.CRUSADER_PIKEMAN_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE*3,
                                     y_bias=10
                                 ),
                             ])
