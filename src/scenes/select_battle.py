@@ -7,8 +7,16 @@ from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event
 from scenes.events import BattleEditorSceneEvent, SandboxSceneEvent, SetupBattleSceneEvent, TestEditorSceneEvent
 from progress_manager import ProgressManager
 from ui_components.barracks_ui import BarracksUI, UnitCount
+from components.unit_type import UnitType
+from entities.units import unit_values
 
 battle_swap_icon = pygame.image.load("assets/icons/BattleSwapIcon.png")
+
+def calculate_net_value(solution_units: list[tuple[UnitType, tuple[int, int]]], enemy_units: list[tuple[UnitType, tuple[int, int]]]) -> int:
+    """Calculate the net value difference between solution and enemy units."""
+    solution_value = sum(unit_values[unit_type] for unit_type, _ in solution_units)
+    enemy_value = sum(unit_values[unit_type] for unit_type, _ in enemy_units)
+    return enemy_value - solution_value
 
 class SelectBattleScene(Scene):
     """The scene for selecting a battle."""
@@ -160,6 +168,29 @@ class SelectBattleScene(Scene):
                     infinite=False,
                 )
                 x += icon_size + padding
+
+            # Calculate and display net value
+            if solution is not None:
+                net_value = calculate_net_value(solution.unit_placements, battles.get_battle(battle_id).enemies)
+                value_object_id = (
+                    "#positive_value" if net_value > 0 
+                    else "#neutral_value" if net_value == 0 
+                    else "#negative_value"
+                )
+                pygame_gui.elements.UILabel(
+                    relative_rect=pygame.Rect(
+                        (x - padding, y_pos + button_height // 2 - 10),
+                        (50, 20)
+                    ),
+                    text=f"{net_value:+}",
+                    manager=self.manager,
+                    container=content_panel,
+                    object_id=pygame_gui.core.ObjectID(
+                        class_id="@value_label",
+                        object_id=value_object_id
+                    )
+                )
+                x += 50 + padding
 
         # Create barracks only if there are completed battles
         if self.progress_manager.solutions:
