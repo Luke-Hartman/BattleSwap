@@ -1292,5 +1292,122 @@
     "dependencies": [],
     "is_test": true,
     "tip_voice_filename": null
+  },
+  {
+    "id": "1Gold Knight, 2Defenders vs 7Swordsman",
+    "enemies": [
+      [
+        "CORE_SWORDSMAN",
+        [
+          790,
+          410
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          791,
+          384
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          825,
+          373
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          823,
+          397
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          823,
+          423
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          854,
+          383
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          853,
+          409
+        ]
+      ]
+    ],
+    "allies": [
+      [
+        "CRUSADER_DEFENDER",
+        [
+          605,
+          370
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          604,
+          421
+        ]
+      ],
+      [
+        "CRUSADER_GOLD_KNIGHT",
+        [
+          532,
+          397
+        ]
+      ]
+    ],
+    "tip": [
+      "TODO"
+    ],
+    "dependencies": [],
+    "is_test": true,
+    "tip_voice_filename": null
+  },
+  {
+    "id": "1Paladin vs 2Swordsman",
+    "enemies": [
+      [
+        "CORE_SWORDSMAN",
+        [
+          820,
+          397
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          820,
+          347
+        ]
+      ]
+    ],
+    "allies": [
+      [
+        "CRUSADER_PALADIN",
+        [
+          498,
+          363
+        ]
+      ]
+    ],
+    "tip": [
+      "TODO"
+    ],
+    "dependencies": [],
+    "is_test": true,
+    "tip_voice_filename": null
   }
 ]
