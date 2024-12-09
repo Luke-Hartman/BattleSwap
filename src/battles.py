@@ -23,7 +23,7 @@ class Battle(BaseModel):
     tip: List[str]
     dependencies: List[str]
     is_test: bool
-    tip_voice_filename: Optional[str]
+    tip_voice_filename: Optional[str] = None
 
 def get_battle(battle_id: str) -> Battle:
     """Retrieve a battle by its ID."""
