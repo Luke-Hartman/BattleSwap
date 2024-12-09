@@ -60,6 +60,24 @@ sprite_sheets: Dict[TeamType, Dict[UnitType, pygame.Surface]] = {
     TeamType.TEAM2: {}
 }
 
+unit_values: Dict[UnitType, int] = {
+    UnitType.CORE_ARCHER: 100,
+    UnitType.CORE_DUELIST: 100,
+    UnitType.CORE_HORSEMAN: 100,
+    UnitType.CORE_MAGE: 100,
+    UnitType.CORE_SWORDSMAN: 100,
+    UnitType.CRUSADER_BLACK_KNIGHT: 100,
+    UnitType.CRUSADER_CLERIC: 100,
+    UnitType.CRUSADER_COMMANDER: 100,
+    UnitType.CRUSADER_DEFENDER: 100,
+    UnitType.CRUSADER_GOLD_KNIGHT: 100,
+    UnitType.CRUSADER_LONGBOWMAN: 100,
+    UnitType.CRUSADER_PALADIN: 100,
+    UnitType.CRUSADER_PIKEMAN: 100,
+    UnitType.CRUSADER_RED_KNIGHT: 100,
+    UnitType.WEREBEAR: 100,
+}
+
 def load_sprite_sheets():
     """Load all sprite sheets and unit icons."""
     unit_filenames = {

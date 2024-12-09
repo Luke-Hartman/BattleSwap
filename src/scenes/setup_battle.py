@@ -121,6 +121,11 @@ class SetupBattleScene(Scene):
                 return False
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+                    for unit_count in self.barracks.unit_list_items:
+                        if event.ui_element == unit_count.button:
+                            play_intro(unit_count.unit_type)
+                            self.create_unit_from_list(unit_count)
+                            break
                     if event.ui_element == self.start_button:
                         if self.selected_unit_id is not None:
                             self.return_unit_to_barracks(self.selected_unit_id)
@@ -136,9 +141,6 @@ class SetupBattleScene(Scene):
                     elif event.ui_element == self.return_button:
                         pygame.event.post(PreviousSceneEvent().to_event())
                         return super().update(time_delta, events)
-                    elif isinstance(event.ui_element, UnitCount):
-                        play_intro(event.ui_element.unit_type)
-                        self.create_unit_from_list(event.ui_element)
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:  # Left click

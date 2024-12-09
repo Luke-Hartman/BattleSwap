@@ -20,11 +20,13 @@
         "misc": {
             "border_width": "1",
             "shadow_width": "2",
-            "shape": "rectangle",
+            "shape": "rectangle"
+        }
+    },
+    "@unit_count_text": {
+        "misc": {
             "text_horiz_alignment": "right",
-            "text_vert_alignment": "bottom",
-            "text_vert_alignment_padding": "0",
-            "text_horiz_alignment_padding": "0"
+            "text_horiz_alignment_padding": "3"
         }
     },
     "#core_archer_icon": {

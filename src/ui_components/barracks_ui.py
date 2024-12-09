@@ -3,12 +3,12 @@ from typing import Dict, List, Optional
 import pygame
 import pygame_gui
 from pygame_gui.core import ObjectID
-from pygame_gui.elements import UIPanel, UIScrollingContainer, UIButton
+from pygame_gui.elements import UIPanel, UIScrollingContainer, UIButton, UILabel
 
 from components.unit_type import UnitType
-from entities.units import unit_theme_ids
+from entities.units import unit_theme_ids, unit_values
 
-class UnitCount(UIButton):
+class UnitCount(UIPanel):
     """A custom UI button that displays a unit icon and its count."""
     
     size = 64
@@ -24,18 +24,37 @@ class UnitCount(UIButton):
         container: Optional[pygame_gui.core.UIContainer] = None,
     ):
         """Initialize the unit list item button."""
-        super().__init__(
-            relative_rect=pygame.Rect((x_pos, y_pos), (self.size, self.size)),
-            text="inf" if infinite else str(count),
-            manager=manager,
-            container=container,
-            object_id=ObjectID(class_id="@unit_count", object_id=unit_theme_ids[unit_type])
-        )
-        if not interactive:
-            self.disable()
         self.unit_type = unit_type
         self.infinite = infinite
-
+        super().__init__(
+            relative_rect=pygame.Rect((x_pos, y_pos), (self.size, self.size)),
+            manager=manager,
+            container=container,
+            margins={'left': 0, 'right': 0, 'top': 0, 'bottom': 0}
+        )
+        self.button = UIButton(
+            relative_rect=pygame.Rect((0, 0), (self.size, self.size)),
+            manager=manager,
+            text="",
+            container=self,
+            object_id=ObjectID(class_id="@unit_count", object_id=unit_theme_ids[unit_type]),
+        )
+        self.value_label = UILabel(
+            relative_rect=pygame.Rect((0, 0), (self.size, 25)),
+            text=str(unit_values[unit_type]),
+            manager=manager,
+            container=self,
+            object_id=ObjectID(class_id="@unit_count_text"),
+        )
+        self.count_label = UILabel(
+            relative_rect=pygame.Rect((0, self.size - 25), (self.size, 25)),
+            text="inf" if infinite else str(count),
+            manager=manager,
+            container=self,
+            object_id=ObjectID(class_id="@unit_count_text"),
+        )
+        if not interactive:
+            self.button.disable()
 
 class BarracksUI(UIPanel):
     """UI component for managing available units in the barracks."""

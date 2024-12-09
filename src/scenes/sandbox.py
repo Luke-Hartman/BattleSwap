@@ -135,6 +135,11 @@ class SandboxScene(Scene):
                 return False
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+                    for unit_count in self.barracks.unit_list_items:
+                        if event.ui_element == unit_count.button:
+                            play_intro(unit_count.unit_type)
+                            self.create_unit_from_list(unit_count)
+                            break
                     if event.ui_element == self.save_button:
                         enemy_placements = get_unit_placements(TeamType.TEAM2)
                         ally_placements = get_unit_placements(TeamType.TEAM1)
@@ -171,9 +176,6 @@ class SandboxScene(Scene):
                           event.ui_element == self.save_dialog.cancel_button):
                         self.save_dialog.kill()
                         self.save_dialog = None
-                    elif isinstance(event.ui_element, UnitCount):
-                        play_intro(event.ui_element.unit_type)
-                        self.create_unit_from_list(event.ui_element)
                     elif event.ui_element == self.simulate_button:
                         outcome = simulate_battle(
                             ally_placements=get_unit_placements(TeamType.TEAM1),
