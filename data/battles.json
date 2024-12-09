@@ -994,63 +994,22 @@
     "tip_voice_filename": null
   },
   {
-    "id": "awefwew",
+    "id": "1Archer vs 1Swordsman\r\n",
     "enemies": [
       [
-        "CRUSADER_GOLD_KNIGHT",
+        "CORE_SWORDSMAN",
         [
-          869,
-          196
+          844,
+          361
         ]
       ]
     ],
     "allies": [
       [
-        "CRUSADER_LONGBOWMAN",
-        [
-          272,
-          285
-        ]
-      ]
-    ],
-    "tip": [
-      "TODOs"
-    ],
-    "dependencies": [],
-    "is_test": true,
-    "tip_voice_filename": null
-  },
-  {
-    "id": "sdfee",
-    "enemies": [
-      [
         "CORE_ARCHER",
         [
-          800,
-          309
-        ]
-      ],
-      [
-        "CORE_ARCHER",
-        [
-          893,
-          449
-        ]
-      ],
-      [
-        "CORE_ARCHER",
-        [
-          818,
-          557
-        ]
-      ]
-    ],
-    "allies": [
-      [
-        "CRUSADER_PALADIN",
-        [
-          612,
-          295
+          344,
+          372
         ]
       ]
     ],
@@ -1062,13 +1021,27 @@
     "tip_voice_filename": null
   },
   {
-    "id": "Defeat the Swordsman! (test)",
+    "id": "1Duelist vs 3 Consecutive Swordsman\r\n",
     "enemies": [
       [
         "CORE_SWORDSMAN",
         [
-          725,
-          400
+          1268,
+          398
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          720,
+          397
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          1036,
+          402
         ]
       ]
     ],
@@ -1076,13 +1049,245 @@
       [
         "CORE_DUELIST",
         [
-          361,
-          432
+          406,
+          401
         ]
       ]
     ],
     "tip": [
-      "Test for Defeat the Swordsman!"
+      "TODO"
+    ],
+    "dependencies": [],
+    "is_test": true,
+    "tip_voice_filename": null
+  },
+  {
+    "id": "1Healer, 1Defender vs 2Swordsman\r\n",
+    "enemies": [
+      [
+        "CORE_SWORDSMAN",
+        [
+          731,
+          419
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          730,
+          372
+        ]
+      ]
+    ],
+    "allies": [
+      [
+        "CRUSADER_CLERIC",
+        [
+          456,
+          398
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          503,
+          400
+        ]
+      ]
+    ],
+    "tip": [
+      "TODO"
+    ],
+    "dependencies": [],
+    "is_test": true,
+    "tip_voice_filename": null
+  },
+  {
+    "id": "1Pikeman, 1Defender vs 2Swordsman\r\n",
+    "enemies": [
+      [
+        "CORE_SWORDSMAN",
+        [
+          744,
+          404
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          746,
+          376
+        ]
+      ]
+    ],
+    "allies": [
+      [
+        "CRUSADER_DEFENDER",
+        [
+          415,
+          411
+        ]
+      ],
+      [
+        "CRUSADER_PIKEMAN",
+        [
+          391,
+          410
+        ]
+      ]
+    ],
+    "tip": [
+      "TODO"
+    ],
+    "dependencies": [],
+    "is_test": true,
+    "tip_voice_filename": null
+  },
+  {
+    "id": "1Cavalry vs 2Archer\r\n",
+    "enemies": [
+      [
+        "CORE_ARCHER",
+        [
+          1030,
+          27
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          1023,
+          735
+        ]
+      ]
+    ],
+    "allies": [
+      [
+        "CORE_HORSEMAN",
+        [
+          424,
+          50
+        ]
+      ]
+    ],
+    "tip": [
+      "TODO"
+    ],
+    "dependencies": [],
+    "is_test": true,
+    "tip_voice_filename": null
+  },
+  {
+    "id": "1Swordsman vs 1Cavalry\r\n",
+    "enemies": [
+      [
+        "CORE_HORSEMAN",
+        [
+          744,
+          384
+        ]
+      ]
+    ],
+    "allies": [
+      [
+        "CORE_SWORDSMAN",
+        [
+          574,
+          387
+        ]
+      ]
+    ],
+    "tip": [
+      "TODO"
+    ],
+    "dependencies": [],
+    "is_test": true,
+    "tip_voice_filename": null
+  },
+  {
+    "id": "1Cavalry vs 1Wizard",
+    "enemies": [
+      [
+        "CORE_MAGE",
+        [
+          1068,
+          364
+        ]
+      ]
+    ],
+    "allies": [
+      [
+        "CORE_HORSEMAN",
+        [
+          281,
+          364
+        ]
+      ]
+    ],
+    "tip": [
+      "TODO"
+    ],
+    "dependencies": [],
+    "is_test": true,
+    "tip_voice_filename": null
+  },
+  {
+    "id": "1Wizard vs 6Archer Group",
+    "enemies": [
+      [
+        "CORE_ARCHER",
+        [
+          1002,
+          330
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          968,
+          359
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          1011,
+          366
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          978,
+          388
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          1015,
+          397
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          935,
+          382
+        ]
+      ]
+    ],
+    "allies": [
+      [
+        "CORE_MAGE",
+        [
+          181,
+          369
+        ]
+      ]
+    ],
+    "tip": [
+      "TODO"
     ],
     "dependencies": [],
     "is_test": true,
