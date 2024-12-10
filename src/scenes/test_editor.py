@@ -332,7 +332,6 @@ class TestEditorScene(Scene):
                                 ally_placements=battle.allies,
                                 enemy_placements=battle.enemies,
                                 battle_id=battle_id,
-                                editor_scroll=scroll_percentage
                             ).to_event()
                         )
                     elif event.ui_element in self.delete_buttons.values():

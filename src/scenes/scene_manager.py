@@ -79,13 +79,6 @@ class SceneManager:
                 params={"screen": self.screen, "manager": self.manager, 
                        "editor_scroll": self.current_scene._get_scroll_percentage()}
             )
-        elif isinstance(self.current_scene, BattleScene):
-            # Battle scene should return to select battle scene
-            self.previous_scene_state = SceneState(
-                scene_type=SelectBattleScene,
-                params={"screen": self.screen, "manager": self.manager,
-                       "progress_manager": self.progress_manager}
-            )
 
         # Clean up UI and ECS
         self.manager.clear_and_reset()
@@ -99,6 +92,7 @@ class SceneManager:
         esper.delete_world(previous_world)
 
         emit_event(STOP_ALL_SOUNDS, event=StopAllSoundsEvent())
+        print("Previous scene state:", self.previous_scene_state)
             
     def update(self, time_delta: float, events: list[pygame.event.Event]) -> bool:
         """Update the current scene and handle scene transitions."""
