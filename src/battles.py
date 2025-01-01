@@ -21,37 +21,29 @@ class Battle(BaseModel):
     enemies: List[Tuple[UnitType, Tuple[int, int]]]
     allies: Optional[List[Tuple[UnitType, Tuple[int, int]]]]
     tip: List[str]
-    dependencies: List[str]
+    hex_coords: Optional[Tuple[int, int]]
     is_test: bool
     tip_voice_filename: Optional[str] = None
 
-def get_battle(battle_id: str) -> Battle:
+def get_battle_id(battle_id: str) -> Battle:
     """Retrieve a battle by its ID."""
     for battle in _battles:
         if battle.id == battle_id:
             return battle
     raise ValueError(f"Battle with id {battle_id} not found")
 
+def get_battle_coords(battle_coords: Tuple[int, int]) -> Battle:
+    """Retrieve a battle by its coordinates."""
+    for battle in _battles:
+        if battle.hex_coords == battle_coords:
+            return battle
+    raise ValueError(f"Battle with coords {battle_coords} not found")
+
 def get_battles() -> List[Battle]:
     """Get all battles."""
     return _battles.copy()
 
 _battles: List[Battle] = []
-
-def _validate_battles(battles: List[Battle]) -> None:
-    """Validate the battles list."""
-    for battle in battles:
-        for dependency in battle.dependencies:
-            assert any(dep.id == dependency for dep in battles)
-    # all names are unique
-    if len(battles) != len(set(battle.id for battle in battles)):
-        duplicates = [id for id in set(battle.id for battle in battles) if list(battle.id for battle in battles).count(id) > 1]
-        raise ValueError(f"Duplicate battle ids: {duplicates}")
-    # battles do not have allies unless they are tests
-    for battle in battles:
-        if not battle.is_test and battle.allies is not None:
-            raise ValueError(f"Battle {battle.id} has allies but is not a test")
-
 
 def reload_battles() -> None:
     """Load battles from a JSON file."""
@@ -60,13 +52,12 @@ def reload_battles() -> None:
         battles_data = json.load(file)
         global _battles
         _battles = [Battle.model_validate(battle) for battle in battles_data]
-        _validate_battles(_battles)
 
 reload_battles()
 
 def move_battle_to_top(battle_id: str) -> None:
     """Move a battle to the top of the list."""
-    battle = get_battle(battle_id)
+    battle = get_battle_id(battle_id)
     _battles.remove(battle)
     _battles.insert(0, battle)
     _save_battles(_battles)
@@ -89,23 +80,36 @@ def move_battle_down(battle_id: str) -> None:
 
 def move_battle_to_bottom(battle_id: str) -> None:
     """Move a battle to the bottom of the list."""
-    battle = get_battle(battle_id)
+    battle = get_battle_id(battle_id)
     _battles.remove(battle)
     _battles.append(battle)
     _save_battles(_battles)
 
 def _save_battles(battles: List[Battle]) -> None:
     """Save the current battles list to the JSON file."""
-    _validate_battles(battles)
     file_path = Path(__file__).parent.parent / 'data' / 'battles.json'
     battles_data = [battle.model_dump() for battle in battles]
+    
+    # If two battles have the same id or hex_coords (excluding None), raise an error
+    for i, battle in enumerate(battles_data):
+        for other_battle in battles_data[i + 1:]:
+            if battle['id'] == other_battle['id']:
+                raise ValueError(f"Duplicate battle id: {battle}")
+            if (
+                battle['hex_coords'] is not None 
+                and battle['hex_coords'] == other_battle['hex_coords']
+            ):
+                raise ValueError(
+                    f"Duplicate battle hex_coords. Battle1: {battle}, Battle2: {other_battle}"
+                )
+    
     with open(file_path, 'w') as file:
         json.dump(battles_data, file, indent=2)
     reload_battles()
 
 def move_battle_after(battle_id: str, target_battle_id: str) -> None:
     """Move a battle to the position immediately after the target battle."""
-    battle = get_battle(battle_id)
+    battle = get_battle_id(battle_id)
     target_index = next(i for i, b in enumerate(_battles) if b.id == target_battle_id)
     
     # Remove the battle from its current position
@@ -114,16 +118,6 @@ def move_battle_after(battle_id: str, target_battle_id: str) -> None:
     # Insert it after the target battle
     _battles.insert(target_index + 1, battle)
     _save_battles(_battles)
-
-def depend_on_previous_battle(battle_id: str) -> None:
-    """Add a dependency to the previous battle."""
-    for i, battle in enumerate(_battles):
-        if battle.id == battle_id:
-            assert i > 0
-            battle.dependencies.append(_battles[i - 1].id)
-            _save_battles(_battles)
-            return
-    raise ValueError(f"Battle with id {battle_id} not found")
 
 def add_battle(battle: Battle) -> None:
     """Add a battle to the list."""
@@ -140,18 +134,11 @@ def update_battle(previous_battle: Battle, updated_battle: Battle) -> None:
         for i, battle in enumerate(_battles):
             if battle.id == previous_battle.id:
                 _battles[i] = updated_battle
-            else:
-                if previous_battle.id in _battles[i].dependencies:
-                    _battles[i].dependencies.remove(previous_battle.id)
-                    _battles[i].dependencies.append(updated_battle.id)
     _save_battles(_battles)
 
 def delete_battle(battle_id: str) -> None:
     """Delete a battle from the list."""
-    battle = get_battle(battle_id)
+    battle = get_battle_id(battle_id)
     _battles.remove(battle)
-    for i, b in enumerate(_battles):
-        if battle_id in b.dependencies:
-            b.dependencies.remove(battle_id)
     _save_battles(_battles)
 

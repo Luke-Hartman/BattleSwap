@@ -78,6 +78,7 @@ class BarracksUI(UIPanel):
         self._units = starting_units.copy()
         self.interactive = interactive
         self.sandbox_mode = sandbox_mode
+        self.selected_unit_type: Optional[UnitType] = None
         
         # In sandbox mode, make all unit types available
         if sandbox_mode:
@@ -188,6 +189,14 @@ class BarracksUI(UIPanel):
         assert self._units[unit_type] > 0
         self._units[unit_type] -= 1
         self._rebuild()
+
+    def select_unit_type(self, unit_type: Optional[UnitType]) -> None:
+        """Select the specified unit type."""
+        for item in self.unit_list_items:
+            if item.unit_type == unit_type:
+                item.button.select()
+            elif item.button.is_selected:
+                item.button.unselect()
 
     @property
     def units(self) -> Dict[UnitType, int]:

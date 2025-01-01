@@ -4,8 +4,7 @@ import esper
 
 from components.position import Position
 from components.unit_state import UnitState, State
-
-NUDGE_DISTANCE = 10
+from game_constants import gc
 
 class NudgeProcessor:
 
@@ -17,10 +16,10 @@ class NudgeProcessor:
                 if other_entity == entity or other_unit_state.state == State.DEAD:
                     continue
                 distance = pos.distance(other_pos, 1)
-                if distance < NUDGE_DISTANCE:
+                if distance < gc.NUDGE_DISTANCE:
                     if distance < 0.001:
                         continue
-                    nudge_distance = min(NUDGE_DISTANCE - distance, 1)
+                    nudge_distance = min(gc.NUDGE_DISTANCE - distance, 1)
                     pos.x += nudge_distance * (pos.x - other_pos.x) / distance
                     pos.y += nudge_distance * (pos.y - other_pos.y) / distance
 

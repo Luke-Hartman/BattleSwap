@@ -23,6 +23,9 @@ pygame.init()
 screen = pygame.display.set_mode(flags=pygame.FULLSCREEN)
 pygame.display.set_caption("Battle Swap")
 
+# Initialize font for FPS counter
+fps_font = pygame.font.SysFont('Arial', 30)
+
 # Load sprite sheets
 load_sprite_sheets()
 load_visual_sheets()
@@ -35,19 +38,8 @@ sound_handler = SoundHandler()
 running = True
 clock = pygame.time.Clock()
 
-# Get screen width and height
-screen_width = pygame.display.Info().current_w
-screen_height = pygame.display.Info().current_h
-
-# Initialize camera centered on battlefield
-initial_camera_x = (gc.BATTLEFIELD_WIDTH - screen_width) // 2
-initial_camera_y = (gc.BATTLEFIELD_HEIGHT - screen_height) // 2
-camera = Camera(screen_width, screen_height)
-camera.x = initial_camera_x
-camera.y = initial_camera_y
-
 progress_manager = ProgressManager()
-scene_manager = SceneManager(screen, camera, progress_manager)
+scene_manager = SceneManager(screen, progress_manager)
 
 while running:
     clock.tick(60)
@@ -60,6 +52,12 @@ while running:
     if not running:
         break
     running = scene_manager.update(1/60, events)
+
+    # # Render FPS counter
+    # fps_text = fps_font.render(f'FPS: {int(clock.get_fps())}', True, (255, 255, 255))
+    # fps_rect = fps_text.get_rect(topright=(screen.get_width() - 10, 10))
+    # screen.blit(fps_text, fps_rect)
+    
     pygame.display.flip()
 
 pygame.quit()

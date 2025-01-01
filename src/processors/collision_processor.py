@@ -4,10 +4,12 @@ This module contains the CollisionProcessor class, which is responsible for
 detecting collisions between projectiles and units of opposing teams.
 """
 
+from typing import Tuple
 import esper
 import pygame
 import numpy as np
 from scipy.spatial import KDTree
+from shapely import Polygon
 from components.position import Position
 from game_constants import gc
 from components.aoe import AoE
@@ -17,12 +19,13 @@ from components.team import Team, TeamType
 from components.unit_state import UnitState, State
 from components.hitbox import Hitbox
 from events import AOE_HIT, AoEHitEvent, ProjectileHitEvent, PROJECTILE_HIT, emit_event
+from hex_grid import get_hex_bounds
 
 class CollisionProcessor(esper.Processor):
     """Processor responsible for detecting collisions between projectiles and units of opposing teams."""
 
-    def __init__(self):
-        self.battlefield_rect = pygame.Rect(0, 0, gc.BATTLEFIELD_WIDTH, gc.BATTLEFIELD_HEIGHT)
+    def __init__(self, hex_coords: Tuple[int, int]):
+        self.battlefield_rect = pygame.Rect(*get_hex_bounds(*hex_coords))
 
     def process(self, dt: float):
         team1_projectiles = pygame.sprite.Group()

@@ -313,7 +313,7 @@ class TestEditorScene(Scene):
                         battle_id = list(self.edit_buttons.keys())[
                             list(self.edit_buttons.values()).index(event.ui_element)
                         ]
-                        battle = battles.get_battle(battle_id)
+                        battle = battles.get_battle_id(battle_id)
                         
                         self.save_dialog = SaveBattleDialog(
                             self.manager,
@@ -325,7 +325,7 @@ class TestEditorScene(Scene):
                         battle_id = list(self.sandbox_buttons.keys())[
                             list(self.sandbox_buttons.values()).index(event.ui_element)
                         ]
-                        battle = battles.get_battle(battle_id)
+                        battle = battles.get_battle_id(battle_id)
                         scroll_percentage = self._get_scroll_percentage()
                         pygame.event.post(
                             SandboxSceneEvent(
@@ -366,7 +366,7 @@ class TestEditorScene(Scene):
                             self.save_dialog = None
                 elif event.user_type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED:
                     if event.ui_element == self.battle_dropdown and event.text != "Create test from...":
-                        battle = battles.get_battle(event.text).model_copy()
+                        battle = battles.get_battle_id(event.text).model_copy()
                         battle.tip = ["Test for " + battle.id]
                         battle.id = battle.id + " (test)"
                         battle.is_test = True
@@ -397,7 +397,7 @@ class TestEditorScene(Scene):
 
     def _run_test(self, test_id: str) -> None:
         """Run a single test."""
-        test = battles.get_battle(test_id)
+        test = battles.get_battle_id(test_id)
         if not test or not test.allies:
             return
 

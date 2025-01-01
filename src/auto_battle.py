@@ -35,63 +35,38 @@ class BattleOutcome(Enum):
     TEAM2_VICTORY = auto()
     TIMEOUT = auto()
 
-def get_unit_placements(team_type: TeamType) -> List[Tuple[UnitType, Tuple[int, int]]]:
-    return [
-        (unit_type.type, (pos.x, pos.y))
-        for ent, (unit_type, team, pos) in esper.get_components(UnitTypeComponent, Team, Position)
-        if team.type == team_type
-    ]
+
 
 class AutoBattle:
 
     def __init__(
         self,
-        ally_placements: List[Tuple[UnitType, Tuple[int, int]]],
-        enemy_placements: List[Tuple[UnitType, Tuple[int, int]]],
         max_duration: float,
+        hex_coords: Tuple[int, int],
     ):
-        for unit_type, position in ally_placements:
-            create_unit(x=position[0], y=position[1], unit_type=unit_type, team=TeamType.TEAM1)
-        for unit_type, position in enemy_placements:
-            create_unit(x=position[0], y=position[1], unit_type=unit_type, team=TeamType.TEAM2)
-        unique_processor = UniqueProcessor()
-        targetting_processor = TargettingProcessor()
-        idle_processor = IdleProcessor()
-        fleeing_processor = FleeingProcessor()
-        ability_processor = AbilityProcessor()
-        dead_processor = DeadProcessor()
-        aura_processor = AuraProcessor()
-        movement_processor = MovementProcessor()
-        pursuing_processor = PursuingProcessor()
-        collision_processor = CollisionProcessor()
-        attached_processor = AttachedProcessor()
-        expiration_processor = ExpirationProcessor()
-        status_effect_processor = StatusEffectProcessor()
-        animation_processor = AnimationProcessor()
-        orientation_processor = OrientationProcessor()
-        position_processor = PositionProcessor()
-        nudge_processor = NudgeProcessor()
-        rotation_processor = RotationProcessor()
-        dying_processor = DyingProcessor()
-        esper.add_processor(targetting_processor)
-        esper.add_processor(idle_processor)
-        esper.add_processor(fleeing_processor)
-        esper.add_processor(ability_processor)
-        esper.add_processor(pursuing_processor)
-        esper.add_processor(dead_processor)
-        esper.add_processor(aura_processor)
-        esper.add_processor(movement_processor)
-        esper.add_processor(collision_processor)
-        esper.add_processor(attached_processor)
-        esper.add_processor(expiration_processor)
-        esper.add_processor(status_effect_processor)
-        esper.add_processor(animation_processor)
-        esper.add_processor(position_processor)
-        esper.add_processor(nudge_processor)
-        esper.add_processor(orientation_processor)
-        esper.add_processor(rotation_processor)
-        esper.add_processor(unique_processor)
-        esper.add_processor(dying_processor)
+        def _add_if_new(processor: esper.Processor):
+            if esper.get_processor(type(processor)) is None:
+                esper.add_processor(processor)
+
+        _add_if_new(TargettingProcessor())
+        _add_if_new(IdleProcessor())
+        _add_if_new(FleeingProcessor())
+        _add_if_new(AbilityProcessor())
+        _add_if_new(PursuingProcessor())
+        _add_if_new(DeadProcessor())
+        _add_if_new(AuraProcessor())
+        _add_if_new(MovementProcessor())
+        _add_if_new(CollisionProcessor(hex_coords))
+        _add_if_new(AttachedProcessor())
+        _add_if_new(ExpirationProcessor())
+        _add_if_new(StatusEffectProcessor())
+        _add_if_new(AnimationProcessor())
+        _add_if_new(PositionProcessor())
+        _add_if_new(NudgeProcessor())
+        _add_if_new(OrientationProcessor())
+        _add_if_new(RotationProcessor())
+        _add_if_new(UniqueProcessor())
+        _add_if_new(DyingProcessor())
         self.remaining_time = max_duration
         self.battle_outcome = None
 
@@ -100,7 +75,8 @@ class AutoBattle:
             return self.battle_outcome
         self.remaining_time -= dt
         if self.remaining_time <= 0:
-            return BattleOutcome.TIMEOUT
+            self.battle_outcome = BattleOutcome.TIMEOUT
+            return self.battle_outcome
 
         team1_alive = False
         team2_alive = False
@@ -127,8 +103,12 @@ def simulate_battle(
 ) -> BattleOutcome:
     previous_world = esper.current_world
     esper.switch_world("simulation")
+    for unit_type, position in ally_placements:
+        create_unit(x=position[0], y=position[1], unit_type=unit_type, team=TeamType.TEAM1)
+    for unit_type, position in enemy_placements:
+        create_unit(x=position[0], y=position[1], unit_type=unit_type, team=TeamType.TEAM2)
     outcome = None
-    auto_battle = AutoBattle(ally_placements, enemy_placements, max_duration)
+    auto_battle = AutoBattle(max_duration, hex_coords=(0, 0))
     while outcome is None:
         esper.process(1/60)
         outcome = auto_battle.update(1/60)

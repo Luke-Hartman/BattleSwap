@@ -18,6 +18,9 @@ class SaveBattleDialog:
         ally_placements: Optional[List[Tuple[UnitType, Tuple[int, int]]]],
         enemy_placements: List[Tuple[UnitType, Tuple[int, int]]],
         existing_battle_id: Optional[str],
+        hex_coords: Optional[Tuple[int, int]] = None,
+        show_battle_button: bool = True,
+        show_test_button: bool = True,
     ):
         dialog_width = 300
         dialog_height = 370
@@ -46,27 +49,38 @@ class SaveBattleDialog:
             relative_rect=pygame.Rect(10, 50, dialog_width - 20, 200),
             manager=manager,
             container=self.dialog,
-            initial_text="\n".join(battles.get_battle(existing_battle_id).tip) if existing_battle_id else "TODO"
+            initial_text="\n".join(battles.get_battle_id(existing_battle_id).tip) if existing_battle_id else "TODO"
         )
 
-        button_width = (dialog_width - 40) // 3
-        self.save_battle_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(10, 300, button_width, 30),
-            text="Save Battle",
-            manager=manager,
-            container=self.dialog
-        )
+        # Calculate button layout based on which buttons to show
+        visible_button_count = sum([show_battle_button, show_test_button, True])  # +1 for cancel
+        button_width = (dialog_width - (visible_button_count + 1) * 10) // visible_button_count
+        current_x = 10
 
-        self.save_test_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(20 + button_width, 300, button_width, 30),
-            text="Save Test",
-            manager=manager,
-            container=self.dialog
-        )
+        self.save_battle_button = None
+        self.save_test_button = None
+        
+        if show_battle_button:
+            self.save_battle_button = pygame_gui.elements.UIButton(
+                relative_rect=pygame.Rect(current_x, 300, button_width, 30),
+                text='Save Battle',
+                manager=manager,
+                container=self.dialog
+            )
+            current_x += button_width + 10
+
+        if show_test_button:
+            self.save_test_button = pygame_gui.elements.UIButton(
+                relative_rect=pygame.Rect(current_x, 300, button_width, 30),
+                text='Save Test',
+                manager=manager,
+                container=self.dialog
+            )
+            current_x += button_width + 10
 
         self.cancel_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(30 + 2 * button_width, 300, button_width, 30),
-            text="Cancel",
+            relative_rect=pygame.Rect(current_x, 300, button_width, 30),
+            text='Cancel',
             manager=manager,
             container=self.dialog
         )
@@ -74,6 +88,9 @@ class SaveBattleDialog:
         self.enemy_placements = enemy_placements
         self.ally_placements = ally_placements
         self.existing_battle_id = existing_battle_id
+        self.hex_coords = (hex_coords if hex_coords is not None else 
+                          (battles.get_battle_id(existing_battle_id).hex_coords 
+                           if existing_battle_id else None))
 
     def save_battle(self, is_test: bool) -> None:
         """Save the battle with the current settings."""
@@ -86,15 +103,16 @@ class SaveBattleDialog:
             allies=self.ally_placements if is_test else None,
             tip=tip,
             dependencies=[],
-            is_test=is_test
+            is_test=is_test,
+            hex_coords=self.hex_coords
         )
-        if self.existing_battle_id == battle_id:
-            battles.update_battle(battles.get_battle(battle_id), battle)
-        else:
-            battles.add_battle(battle)
-            if self.existing_battle_id:
-                battles.delete_battle(self.existing_battle_id)
 
+        if self.existing_battle_id:
+            # Always use update_battle when editing an existing battle
+            battles.update_battle(battles.get_battle_id(self.existing_battle_id), battle)
+        else:
+            # Only use add_battle for completely new battles
+            battles.add_battle(battle)
 
     def kill(self) -> None:
         """Remove the dialog."""

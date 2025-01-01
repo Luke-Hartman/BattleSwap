@@ -20,73 +20,6 @@ from components.unit_state import UnitState, State
 from camera import Camera
 from game_constants import gc
 
-def draw_battlefield(screen: pygame.Surface, camera: Camera, include_no_mans_land: bool = False, show_grid: bool = False):
-    """Draw the battlefield background.
-    
-    Args:
-        screen: The pygame surface to render to
-        camera: The camera controlling the view
-        include_no_mans_land: Whether to draw no man's land boundaries
-        show_grid: Whether to draw the grid
-    """
-    battlefield_color = (34, 100, 34)
-    battlefield_rect = pygame.Rect(
-        -camera.x,
-        -camera.y,
-        gc.BATTLEFIELD_WIDTH,
-        gc.BATTLEFIELD_HEIGHT
-    )
-    pygame.draw.rect(screen, battlefield_color, battlefield_rect)
-
-    if show_grid:
-        MAJOR_GRID_SIZE = gc.GRID_SIZE * gc.MAJOR_GRID_INTERVAL
-
-        # Calculate offset to center a major grid intersection in the middle of battlefield
-        center_x = gc.BATTLEFIELD_WIDTH // 2
-        center_y = gc.BATTLEFIELD_HEIGHT // 2
-        offset_x = center_x % MAJOR_GRID_SIZE
-        offset_y = center_y % MAJOR_GRID_SIZE
-
-        # Create a transparent surface for the grid
-        grid_surface = pygame.Surface(
-            (gc.BATTLEFIELD_WIDTH, gc.BATTLEFIELD_HEIGHT), 
-            pygame.SRCALPHA
-        )
-
-        # Draw vertical lines
-        for x in range(0, gc.BATTLEFIELD_WIDTH + gc.GRID_SIZE, gc.GRID_SIZE):
-            if (x - offset_x) % MAJOR_GRID_SIZE == 0:
-                # Major grid lines - 50% transparent white
-                pygame.draw.line(grid_surface, (255, 255, 255, 128), 
-                               (x, 0), (x, gc.BATTLEFIELD_HEIGHT), 1)
-            else:
-                # Minor grid lines - 80% transparent white
-                pygame.draw.line(grid_surface, (255, 255, 255, 51), 
-                               (x, 0), (x, gc.BATTLEFIELD_HEIGHT), 1)
-
-        # Draw horizontal lines
-        for y in range(0, gc.BATTLEFIELD_HEIGHT + gc.GRID_SIZE, gc.GRID_SIZE):
-            if (y - offset_y) % MAJOR_GRID_SIZE == 0:
-                # Major grid lines - 50% transparent white
-                pygame.draw.line(grid_surface, (255, 255, 255, 128), 
-                               (0, y), (gc.BATTLEFIELD_WIDTH, y), 1)
-            else:
-                # Minor grid lines - 80% transparent white
-                pygame.draw.line(grid_surface, (255, 255, 255, 51), 
-                               (0, y), (gc.BATTLEFIELD_WIDTH, y), 1)
-
-        # Draw the grid surface with camera offset
-        screen.blit(grid_surface, (-camera.x, -camera.y))
-
-    if include_no_mans_land:
-        pygame.draw.line(screen, (15, 50, 15), 
-                         (gc.BATTLEFIELD_WIDTH // 2 - gc.NO_MANS_LAND_WIDTH // 2 - camera.x, -camera.y), 
-                         (gc.BATTLEFIELD_WIDTH // 2 - gc.NO_MANS_LAND_WIDTH // 2 - camera.x, gc.BATTLEFIELD_HEIGHT - camera.y), 
-                         2)
-        pygame.draw.line(screen, (15, 50, 15), 
-                         (gc.BATTLEFIELD_WIDTH // 2 + gc.NO_MANS_LAND_WIDTH // 2 - camera.x, -camera.y), 
-                         (gc.BATTLEFIELD_WIDTH // 2 + gc.NO_MANS_LAND_WIDTH // 2 - camera.x, gc.BATTLEFIELD_HEIGHT - camera.y), 
-                         2)
 
 class RenderingProcessor(esper.Processor):
     """
@@ -96,62 +29,118 @@ class RenderingProcessor(esper.Processor):
     def __init__(self, screen: pygame.Surface, camera: Camera, manager: pygame_gui.UIManager):
         self.screen = screen
         self.camera = camera
-        self.battlefield_rect = pygame.Rect(0, 0, gc.BATTLEFIELD_WIDTH, gc.BATTLEFIELD_HEIGHT)
         self.manager = manager
         self.stats_card_ui = None
+
+    def _get_rect_for_circle(self, center_x: float, center_y: float, radius: float) -> tuple[float, float, float, float]:
+        """
+        Calculate the bounding rect for a circle in world coordinates.
+
+        Args:
+            center_x: X coordinate of circle center in world space
+            center_y: Y coordinate of circle center in world space
+            radius: Radius of the circle in world space
+
+        Returns:
+            Tuple of (min_x, min_y, width, height) defining the circle's bounding box
+        """
+        return (
+            center_x - radius,
+            center_y - radius,
+            radius * 2,
+            radius * 2
+        )
+
+    def _draw_circle(
+        self,
+        center_x: float,
+        center_y: float,
+        radius: float,
+        fill_color: tuple[int, int, int, int] | None = None,
+        outline_color: tuple[int, int, int, int] | None = None
+    ) -> None:
+        """
+        Draw a circle with optional fill and outline colors.
+
+        Args:
+            center_x: X coordinate of circle center in world space
+            center_y: Y coordinate of circle center in world space
+            radius: Radius of the circle in world space
+            fill_color: Optional RGBA tuple for the circle fill
+            outline_color: Optional RGBA tuple for the circle outline
+        """
+        world_rect = self._get_rect_for_circle(center_x, center_y, radius)
+        if self.camera.is_box_off_screen(*world_rect):
+            return
+
+        screen_pos, screen_size = self.camera.world_to_screen_rect(world_rect)
+        surface = pygame.Surface(screen_size, pygame.SRCALPHA)
+        center = (screen_size[0]/2, screen_size[1]/2)
+        radius_screen = radius * self.camera.scale
+        
+        if fill_color is not None:
+            pygame.draw.circle(surface, fill_color, center, radius_screen)
+        if outline_color is not None:
+            pygame.draw.circle(surface, outline_color, center, radius_screen, 1)
+        
+        self.screen.blit(surface, screen_pos)
 
     def process(self, dt: float):
         # Draw all auras
         for ent, (aura, position) in esper.get_components(Aura, Position):
             if aura.owner_condition.check(aura.owner):
-                # Draw filled circle with opacity
-                surface = pygame.Surface((aura.radius * 2, aura.radius * 2), pygame.SRCALPHA)
-                # Filling
-                pygame.draw.circle(surface, (*aura.color, 25), (aura.radius, aura.radius), aura.radius)
-                # Outline
-                pygame.draw.circle(self.screen, (*aura.color, 120), (position.x - self.camera.x, position.y - self.camera.y), aura.radius, 1)
-                self.screen.blit(surface, (position.x - self.camera.x - aura.radius, position.y - self.camera.y - aura.radius))
+                self._draw_circle(
+                    position.x,
+                    position.y,
+                    aura.radius,
+                    fill_color=(*aura.color, 25),
+                    outline_color=(*aura.color, 120)
+                )
 
         # Draw range indicators
         for ent, (range_indicator, position) in esper.get_components(RangeIndicator, Position):
             if range_indicator.enabled:
-                # Draw filled circle with opacity
-                surface = pygame.Surface((range_indicator.range * 2, range_indicator.range * 2), pygame.SRCALPHA)
-                pygame.draw.circle(surface, (200, 200, 200, 120), (range_indicator.range, range_indicator.range), range_indicator.range, 1)
-                self.screen.blit(surface, (position.x - self.camera.x - range_indicator.range, position.y - self.camera.y - range_indicator.range))
+                self._draw_circle(
+                    position.x,
+                    position.y,
+                    range_indicator.range,
+                    fill_color=None,
+                    outline_color=(200, 200, 200, 120)
+                )
+            range_indicator.enabled = False
 
         # Get all entities with necessary components
         entities = esper.get_components(Position, SpriteSheet)
-        
+
         # Sort entities based on their y-coordinate (higher y-value means lower on screen)
         sorted_entities = sorted(entities, key=lambda e: (e[1][1].layer, e[1][0].y))
         
-        keys = pygame.key.get_pressed()
-        show_grid = keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]
-        
         for ent, (pos, sprite_sheet) in sorted_entities:
-            render_pos = sprite_sheet.rect.move(-self.camera.x, -self.camera.y)
-            self.screen.blit(sprite_sheet.image, render_pos)
+            # Skip if sprite is completely off screen
+            if self.camera.is_box_off_screen(
+                sprite_sheet.rect.left,
+                sprite_sheet.rect.top,
+                sprite_sheet.rect.width,
+                sprite_sheet.rect.height
+            ):
+                continue
 
-            # Draw hitbox and center point when shift is held
-            if show_grid and esper.has_component(ent, Hitbox):
-                hitbox = esper.component_for_entity(ent, Hitbox)
-                
-                # Draw hitbox rectangle
-                # hitbox_rect = pygame.Rect(
-                #     pos.x - hitbox.width / 2 - self.camera.x,
-                #     pos.y - hitbox.height / 2 - self.camera.y,
-                #     hitbox.width,
-                #     hitbox.height
-                # )
-                # pygame.draw.rect(self.screen, (255, 255, 255, 128), hitbox_rect, 1)
-                
-                # Draw center point
-                center_point = (
-                    int(pos.x - self.camera.x),
-                    int(pos.y - self.camera.y)
+            rect_topleft = sprite_sheet.rect.topleft
+            rect_width = sprite_sheet.rect.width
+            rect_height = sprite_sheet.rect.height
+            new_top_left = self.camera.world_to_screen(rect_topleft[0], rect_topleft[1])
+            new_rect = pygame.Rect(new_top_left, (rect_width * self.camera.scale, rect_height * self.camera.scale))
+
+            # Scale the sprite if needed
+            if self.camera.scale != 1.0:
+                scaled_size = (
+                    int(sprite_sheet.rect.width * self.camera.scale),
+                    int(sprite_sheet.rect.height * self.camera.scale)
                 )
-                pygame.draw.circle(self.screen, (255, 255, 255), center_point, 3)
+                scaled_image = pygame.transform.scale(sprite_sheet.image, scaled_size)
+                self.screen.blit(scaled_image, new_rect)
+            else:
+                self.screen.blit(sprite_sheet.image, new_rect)
 
             # Draw health bar if entity has Health, Team, and UnitState components, is not dead, and health is not full
             if (
@@ -184,23 +173,25 @@ class RenderingProcessor(esper.Processor):
 
     def draw_health_bar(self, pos: Position, health: Health, team: Team, hitbox: Hitbox):
         """Draw a health bar above the entity."""
-        bar_width = 20
-        bar_height = 5  # pixels
-        bar_y_offset = 8  # pixels above the unit's hitbox
+        bar_width = 20 * self.camera.scale
+        bar_height = 5 * self.camera.scale  # pixels
+        bar_y_offset = 8 * self.camera.scale  # pixels above the unit's hitbox
 
+        # Get screen position
+        screen_pos = self.camera.world_to_screen(pos.x, pos.y)
+        
         # Position the health bar above the hitbox
-        bar_x = pos.x - bar_width // 2
-        bar_y = pos.y - hitbox.height/2 - bar_height - bar_y_offset
+        bar_x = screen_pos[0] - bar_width // 2
+        bar_y = screen_pos[1] - (hitbox.height * self.camera.scale)/2 - bar_height - bar_y_offset
 
-        # Apply camera offset to health bar position
-        bar_pos = pygame.Rect(bar_x - self.camera.x, bar_y - self.camera.y, bar_width, bar_height)
+        bar_pos = pygame.Rect(bar_x, bar_y, bar_width, bar_height)
 
         # Draw the background (empty health bar)
         pygame.draw.rect(self.screen, (64, 64, 64), bar_pos)
 
         # Draw the filled portion of the health bar
         fill_width = int(bar_width * health.current / health.maximum)
-        fill_color = (0, 255, 0) if team.type == TeamType.TEAM1 else (255, 0, 0)
+        fill_color = tuple(gc.TEAM1_COLOR) if team.type == TeamType.TEAM1 else tuple(gc.TEAM2_COLOR)
         pygame.draw.rect(self.screen, fill_color, (bar_pos.x, bar_pos.y, fill_width, bar_height))
 
         # Draw the border of the health bar

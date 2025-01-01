@@ -1,21 +1,25 @@
 """Custom pygame events related to scenes."""
 
 import pygame
-from typing import List, Optional, Tuple
 from abc import abstractmethod
-from components.unit_type import UnitType
 from pydantic import BaseModel
+
+from world_map_view import WorldMapView
 
 SETUP_BATTLE_SCENE_EVENT = pygame.event.custom_type()
 BATTLE_SCENE_EVENT = pygame.event.custom_type()
 SANDBOX_SCENE_EVENT = pygame.event.custom_type()
 SELECT_BATTLE_SCENE_EVENT = pygame.event.custom_type()
-BATTLE_EDITOR_SCENE_EVENT = pygame.event.custom_type()
 TEST_EDITOR_SCENE_EVENT = pygame.event.custom_type()
 PREVIOUS_SCENE_EVENT = pygame.event.custom_type()
+MOVE_BATTLES_SCENE_EVENT = pygame.event.custom_type()
+CAMPAIGN_SCENE_EVENT = pygame.event.custom_type()
 
 class PyGameEvent(BaseModel):
     """Base class for pygame events."""
+    
+    class Config:
+        arbitrary_types_allowed = True
 
     @property
     @abstractmethod
@@ -28,9 +32,9 @@ class PyGameEvent(BaseModel):
 
 class SetupBattleSceneEvent(PyGameEvent):
     """Event for setting up a battle."""
-    ally_placements: List[Tuple[UnitType, Tuple[int, int]]]
+    world_map_view: WorldMapView
     battle_id: str
-    play_tip_sound: bool
+    play_tip_sound: bool = False
 
     @property
     def _type(self) -> int:
@@ -38,9 +42,8 @@ class SetupBattleSceneEvent(PyGameEvent):
 
 class BattleSceneEvent(PyGameEvent):
     """Event for starting a battle."""
-    ally_placements: List[Tuple[UnitType, Tuple[int, int]]]
-    enemy_placements: List[Tuple[UnitType, Tuple[int, int]]]
-    battle_id: Optional[str]
+    world_map_view: WorldMapView
+    battle_id: str
     sandbox_mode: bool
 
     @property
@@ -49,9 +52,9 @@ class BattleSceneEvent(PyGameEvent):
 
 class SandboxSceneEvent(PyGameEvent):
     """Event for starting a sandbox battle."""
-    ally_placements: List[Tuple[UnitType, Tuple[int, int]]]
-    enemy_placements: List[Tuple[UnitType, Tuple[int, int]]]
-    battle_id: Optional[str]
+    world_map_view: WorldMapView
+    battle_id: str
+    sandbox_mode: bool
 
     @property
     def _type(self) -> int:
@@ -66,23 +69,36 @@ class SelectBattleSceneEvent(PyGameEvent):
         return SELECT_BATTLE_SCENE_EVENT
 
 
-class BattleEditorSceneEvent(PyGameEvent):
-    """Event for starting the battle editor."""
+class TestEditorSceneEvent(PyGameEvent):
+    """Event for switching to the test editor scene."""
 
     @property
     def _type(self) -> int:
-        return BATTLE_EDITOR_SCENE_EVENT
-
-class TestEditorSceneEvent(BaseModel):
-    """Event for switching to the test editor scene."""
-    
-    def to_event(self) -> pygame.event.Event:
-        """Convert to pygame event."""
-        return pygame.event.Event(TEST_EDITOR_SCENE_EVENT, self.model_dump())
+        return TEST_EDITOR_SCENE_EVENT
 
 class PreviousSceneEvent(PyGameEvent):
     """Event for returning to the previous scene."""
+    n: int = 1
+    """The number of scenes to pop."""
 
     @property
     def _type(self) -> int:
         return PREVIOUS_SCENE_EVENT
+
+class MoveBattlesSceneEvent(PyGameEvent):
+    """Event for transitioning to the world map scene."""
+
+    world_map_view: WorldMapView
+
+    @property
+    def _type(self) -> int:
+        return MOVE_BATTLES_SCENE_EVENT
+
+class CampaignSceneEvent(PyGameEvent):
+    """Event for transitioning to the campaign scene."""
+
+    world_map_view: WorldMapView
+
+    @property
+    def _type(self) -> int:
+        return CAMPAIGN_SCENE_EVENT

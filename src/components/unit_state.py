@@ -18,5 +18,5 @@ class State(Enum):
 
 @dataclass
 class UnitState:
-    """Represents the current state and target of a unit."""
+    """Represents the current state of a unit."""
     state: State = State.IDLE

@@ -5,8 +5,8 @@
       [
         "CORE_SWORDSMAN",
         [
-          725,
-          400
+          75,
+          0
         ]
       ]
     ],
@@ -17,7 +17,10 @@
       "Click on your unit, then click anywhere on the left side of the battlefield to place them.",
       "When you are ready to battle, click start in the upper right corner."
     ],
-    "dependencies": [],
+    "hex_coords": [
+      0,
+      0
+    ],
     "is_test": false,
     "tip_voice_filename": "defeat_the_swordsman.wav"
   },
@@ -27,8 +30,8 @@
       [
         "CORE_HORSEMAN",
         [
-          1275,
-          400
+          625,
+          0
         ]
       ]
     ],
@@ -36,7 +39,10 @@
     "tip": [
       "Cavalry move much faster than a swordsman, but deal less damage."
     ],
-    "dependencies": [],
+    "hex_coords": [
+      1,
+      0
+    ],
     "is_test": false,
     "tip_voice_filename": null
   },
@@ -46,15 +52,15 @@
       [
         "CORE_ARCHER",
         [
-          950,
-          775
+          300,
+          375
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          950,
-          25
+          300,
+          -375
         ]
       ]
     ],
@@ -62,7 +68,10 @@
     "tip": [
       "The Cavalry's speed gives them the edge in battle against archers."
     ],
-    "dependencies": [],
+    "hex_coords": [
+      2,
+      0
+    ],
     "is_test": false,
     "tip_voice_filename": null
   },
@@ -72,8 +81,8 @@
       [
         "CORE_MAGE",
         [
-          900,
-          400
+          250,
+          0
         ]
       ]
     ],
@@ -81,7 +90,10 @@
     "tip": [
       "Wizards shoot powerful fireballs that explode, damaging all nearby units. Spreading out your army can distract your foes."
     ],
-    "dependencies": [],
+    "hex_coords": [
+      3,
+      0
+    ],
     "is_test": false,
     "tip_voice_filename": null
   },
@@ -91,43 +103,43 @@
       [
         "CORE_ARCHER",
         [
-          775,
-          375
+          150,
+          25
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          775,
-          425
+          150,
+          0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          800,
-          425
+          150,
+          -25
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          775,
-          400
+          128,
+          -12
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          800,
-          400
+          128,
+          12
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          800,
-          375
+          107,
+          0
         ]
       ]
     ],
@@ -136,7 +148,10 @@
       "Each time you finish a level, you swap the army you used for the army you beat!",
       "Also, you win as long as all enemies are defeated, even if there are no survivors..."
     ],
-    "dependencies": [],
+    "hex_coords": [
+      3,
+      -1
+    ],
     "is_test": false,
     "tip_voice_filename": null
   },
@@ -146,22 +161,22 @@
       [
         "CORE_SWORDSMAN",
         [
-          900,
-          700
+          250,
+          300
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          900,
-          100
+          250,
+          -300
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          900,
-          400
+          250,
+          0
         ]
       ]
     ],
@@ -171,7 +186,10 @@
       "Any units you save can be used in future levels!",
       "Hint: Try saving one of your archers."
     ],
-    "dependencies": [],
+    "hex_coords": [
+      2,
+      1
+    ],
     "is_test": false,
     "tip_voice_filename": null
   },
@@ -181,29 +199,29 @@
       [
         "CORE_HORSEMAN",
         [
-          800,
-          425
+          150,
+          25
         ]
       ],
       [
         "CORE_HORSEMAN",
         [
-          800,
-          375
+          150,
+          -25
         ]
       ],
       [
         "CORE_HORSEMAN",
         [
-          1275,
-          425
+          625,
+          25
         ]
       ],
       [
         "CORE_HORSEMAN",
         [
-          1275,
-          375
+          625,
+          -25
         ]
       ]
     ],
@@ -211,7 +229,10 @@
     "tip": [
       "Take the horsemen out before reinforcements arrive!"
     ],
-    "dependencies": [],
+    "hex_coords": [
+      4,
+      -1
+    ],
     "is_test": false,
     "tip_voice_filename": null
   },
@@ -221,43 +242,43 @@
       [
         "CORE_SWORDSMAN",
         [
-          900,
-          100
+          250,
+          -300
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          1025,
-          700
+          375,
+          300
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          1025,
-          750
+          375,
+          350
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          1025,
-          75
+          375,
+          -325
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          900,
-          725
+          250,
+          325
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          1025,
-          125
+          375,
+          -275
         ]
       ]
     ],
@@ -266,7 +287,10 @@
       "Should you divide to conquer?",
       "Hint: Try taking them out one at a time."
     ],
-    "dependencies": [],
+    "hex_coords": [
+      4,
+      0
+    ],
     "is_test": false,
     "tip_voice_filename": null
   },
@@ -276,22 +300,22 @@
       [
         "CORE_DUELIST",
         [
-          700,
-          50
+          50,
+          -350
         ]
       ],
       [
         "CORE_DUELIST",
         [
-          700,
-          100
+          50,
+          -300
         ]
       ],
       [
         "CORE_HORSEMAN",
         [
-          800,
-          700
+          150,
+          300
         ]
       ]
     ],
@@ -300,7 +324,10 @@
       "Duelists deal very high damage, but are fragile and are vulnerable to archers.",
       "When using duelists, try to keep them behind other units."
     ],
-    "dependencies": [],
+    "hex_coords": [
+      3,
+      1
+    ],
     "is_test": false,
     "tip_voice_filename": null
   },
@@ -310,64 +337,64 @@
       [
         "CORE_SWORDSMAN",
         [
-          750,
-          375
+          100,
+          -25
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          750,
-          425
+          100,
+          25
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          825,
-          400
+          175,
+          0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          850,
-          375
+          200,
+          -25
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          725,
-          400
+          75,
+          0
         ]
       ],
       [
         "CORE_HORSEMAN",
         [
-          775,
-          500
+          125,
+          100
         ]
       ],
       [
         "CORE_HORSEMAN",
         [
-          775,
-          300
+          125,
+          -100
         ]
       ],
       [
         "CORE_HORSEMAN",
         [
-          900,
-          400
+          250,
+          0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          850,
-          425
+          200,
+          25
         ]
       ]
     ],
@@ -378,7 +405,10 @@
       "By doing this, you can free up units for future levels.",
       "This is great to try whenever you're stuck on a level!"
     ],
-    "dependencies": [],
+    "hex_coords": [
+      5,
+      0
+    ],
     "is_test": false,
     "tip_voice_filename": null
   },
@@ -388,36 +418,36 @@
       [
         "CRUSADER_DEFENDER",
         [
-          1000,
-          500
+          350,
+          100
         ]
       ],
       [
         "CRUSADER_DEFENDER",
         [
-          1000,
-          400
+          350,
+          0
         ]
       ],
       [
         "CRUSADER_DEFENDER",
         [
-          1000,
-          300
+          350,
+          -100
         ]
       ],
       [
         "CRUSADER_LONGBOWMAN",
         [
-          1050,
-          650
+          400,
+          250
         ]
       ],
       [
         "CRUSADER_LONGBOWMAN",
         [
-          1050,
-          150
+          400,
+          -250
         ]
       ]
     ],
@@ -426,7 +456,10 @@
       "Defenders are weak but take less damage due to their armor, and also move slowly.",
       "Rangers are slow but deal high damage."
     ],
-    "dependencies": [],
+    "hex_coords": [
+      6,
+      0
+    ],
     "is_test": false,
     "tip_voice_filename": null
   },
@@ -436,36 +469,36 @@
       [
         "CRUSADER_PIKEMAN",
         [
-          975,
-          500
+          325,
+          100
         ]
       ],
       [
         "CRUSADER_PIKEMAN",
         [
-          975,
-          400
+          325,
+          0
         ]
       ],
       [
         "CRUSADER_PIKEMAN",
         [
-          975,
-          300
+          325,
+          -100
         ]
       ],
       [
         "CRUSADER_CLERIC",
         [
-          1100,
-          475
+          450,
+          75
         ]
       ],
       [
         "CRUSADER_CLERIC",
         [
-          1100,
-          325
+          450,
+          -75
         ]
       ]
     ],
@@ -474,7 +507,10 @@
       "Pikemen are like swordsmen with extra reach at the cost of slower movement.",
       "Healers will restore the health of their damaged allies."
     ],
-    "dependencies": [],
+    "hex_coords": [
+      6,
+      -1
+    ],
     "is_test": false,
     "tip_voice_filename": null
   },
@@ -484,22 +520,22 @@
       [
         "CORE_HORSEMAN",
         [
-          925,
-          450
+          275,
+          50
         ]
       ],
       [
         "CORE_HORSEMAN",
         [
-          925,
-          350
+          275,
+          -50
         ]
       ],
       [
         "CRUSADER_PALADIN",
         [
-          900,
-          400
+          250,
+          0
         ]
       ]
     ],
@@ -508,7 +544,10 @@
       "Paladins have  high health and they can heal themselves,",
       "but they have low damage and are overwhelmed by groups."
     ],
-    "dependencies": [],
+    "hex_coords": [
+      7,
+      -1
+    ],
     "is_test": false,
     "tip_voice_filename": null
   },
@@ -518,29 +557,29 @@
       [
         "CRUSADER_DEFENDER",
         [
-          1000,
-          375
+          350,
+          -25
         ]
       ],
       [
         "CRUSADER_DEFENDER",
         [
-          975,
-          400
+          325,
+          0
         ]
       ],
       [
         "CRUSADER_DEFENDER",
         [
-          1000,
-          425
+          350,
+          25
         ]
       ],
       [
         "CRUSADER_COMMANDER",
         [
-          1025,
-          400
+          375,
+          0
         ]
       ]
     ],
@@ -548,7 +587,10 @@
     "tip": [
       "Commanders are weak on their own, but they increase the damage of their allies."
     ],
-    "dependencies": [],
+    "hex_coords": [
+      8,
+      0
+    ],
     "is_test": false,
     "tip_voice_filename": null
   },
@@ -558,22 +600,22 @@
       [
         "CRUSADER_PALADIN",
         [
-          975,
-          600
-        ]
-      ],
-      [
-        "CRUSADER_PALADIN",
-        [
-          975,
-          400
-        ]
-      ],
-      [
-        "CRUSADER_PALADIN",
-        [
-          975,
+          325,
           200
+        ]
+      ],
+      [
+        "CRUSADER_PALADIN",
+        [
+          325,
+          0
+        ]
+      ],
+      [
+        "CRUSADER_PALADIN",
+        [
+          325,
+          -200
         ]
       ]
     ],
@@ -582,7 +624,10 @@
       "Hint: Try taking them out one at a time.",
       "If you need to, you can also revisit previous levels to improve your solutions."
     ],
-    "dependencies": [],
+    "hex_coords": [
+      8,
+      -1
+    ],
     "is_test": false,
     "tip_voice_filename": null
   },
@@ -592,50 +637,50 @@
       [
         "CRUSADER_DEFENDER",
         [
-          975,
-          500
+          325,
+          100
         ]
       ],
       [
         "CRUSADER_DEFENDER",
         [
-          975,
-          400
+          325,
+          0
         ]
       ],
       [
         "CRUSADER_DEFENDER",
         [
-          975,
-          300
+          325,
+          -100
         ]
       ],
       [
         "CRUSADER_PIKEMAN",
         [
-          1025,
-          450
+          375,
+          50
         ]
       ],
       [
         "CRUSADER_PIKEMAN",
         [
-          1025,
-          350
+          375,
+          -50
         ]
       ],
       [
         "CRUSADER_LONGBOWMAN",
         [
-          1150,
-          600
-        ]
-      ],
-      [
-        "CRUSADER_LONGBOWMAN",
-        [
-          1150,
+          500,
           200
+        ]
+      ],
+      [
+        "CRUSADER_LONGBOWMAN",
+        [
+          500,
+          -200
         ]
       ]
     ],
@@ -643,7 +688,10 @@
     "tip": [
       "Defenders and pikemen are a powerful pairing."
     ],
-    "dependencies": [],
+    "hex_coords": [
+      7,
+      0
+    ],
     "is_test": false,
     "tip_voice_filename": null
   },
@@ -653,29 +701,29 @@
       [
         "CRUSADER_GOLD_KNIGHT",
         [
-          825,
-          400
+          175,
+          0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          925,
-          325
+          275,
+          -75
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          975,
-          400
+          325,
+          0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          925,
-          475
+          275,
+          75
         ]
       ]
     ],
@@ -684,7 +732,10 @@
       "Gold Knights damage all enemy units around them and heal a little with every hit.",
       "This makes them excellent against groups of melee units, but vulnerable to ranged or strong opponents."
     ],
-    "dependencies": [],
+    "hex_coords": [
+      5,
+      1
+    ],
     "is_test": false,
     "tip_voice_filename": null
   },
@@ -694,36 +745,36 @@
       [
         "CRUSADER_GOLD_KNIGHT",
         [
-          725,
-          100
+          75,
+          -300
         ]
       ],
       [
         "CRUSADER_DEFENDER",
         [
-          700,
-          75
+          50,
+          -325
         ]
       ],
       [
         "CRUSADER_DEFENDER",
         [
-          700,
-          125
+          50,
+          -275
         ]
       ],
       [
         "CORE_HORSEMAN",
         [
-          1250,
-          375
+          600,
+          -25
         ]
       ],
       [
         "CORE_HORSEMAN",
         [
-          1250,
-          425
+          600,
+          25
         ]
       ]
     ],
@@ -731,7 +782,10 @@
     "tip": [
       "Cavalry's here!"
     ],
-    "dependencies": [],
+    "hex_coords": [
+      6,
+      1
+    ],
     "is_test": false,
     "tip_voice_filename": null
   },
@@ -741,78 +795,78 @@
       [
         "CORE_SWORDSMAN",
         [
-          750,
-          400
+          100,
+          0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          800,
-          350
+          150,
+          -50
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          850,
-          400
+          200,
+          0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          800,
-          450
+          150,
+          50
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          800,
-          400
+          150,
+          0
         ]
       ],
       [
         "CRUSADER_CLERIC",
         [
-          1275,
-          350
+          625,
+          -50
         ]
       ],
       [
         "CRUSADER_CLERIC",
         [
-          1225,
-          350
+          575,
+          -50
         ]
       ],
       [
         "CRUSADER_CLERIC",
         [
-          1225,
-          450
+          575,
+          50
         ]
       ],
       [
         "CRUSADER_CLERIC",
         [
-          1275,
-          450
+          625,
+          50
         ]
       ],
       [
         "CRUSADER_PALADIN",
         [
-          1275,
-          775
+          625,
+          375
         ]
       ],
       [
         "CRUSADER_PALADIN",
         [
-          1275,
-          25
+          625,
+          -375
         ]
       ]
     ],
@@ -821,7 +875,10 @@
       "Remember that you can also revisit previous levels to improve your solutions.",
       "It would be great to have a duelist or two to overwhelm the enemy's healing."
     ],
-    "dependencies": [],
+    "hex_coords": [
+      9,
+      0
+    ],
     "is_test": false,
     "tip_voice_filename": null
   },
@@ -831,36 +888,36 @@
       [
         "CORE_SWORDSMAN",
         [
-          775,
-          400
+          125,
+          0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          775,
-          400
+          125,
+          0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          775,
-          400
+          125,
+          0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          775,
-          400
+          125,
+          0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          775,
-          400
+          125,
+          0
         ]
       ]
     ],
@@ -868,7 +925,10 @@
     "tip": [
       "Or is he?"
     ],
-    "dependencies": [],
+    "hex_coords": [
+      2,
+      2
+    ],
     "is_test": false,
     "tip_voice_filename": null
   },
@@ -878,57 +938,57 @@
       [
         "CRUSADER_COMMANDER",
         [
-          975,
-          350
+          325,
+          -50
         ]
       ],
       [
         "CRUSADER_COMMANDER",
         [
-          975,
-          450
+          325,
+          50
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          1050,
-          300
+          400,
+          -100
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          1050,
-          400
+          400,
+          0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          1050,
-          500
+          400,
+          100
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          925,
-          325
+          275,
+          -75
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          925,
-          475
+          275,
+          75
         ]
       ],
       [
         "CRUSADER_DEFENDER",
         [
-          875,
-          400
+          225,
+          0
         ]
       ]
     ],
@@ -937,7 +997,10 @@
       "Stronger united!",
       "Note that the commander aura does not stack."
     ],
-    "dependencies": [],
+    "hex_coords": [
+      8,
+      1
+    ],
     "is_test": false,
     "tip_voice_filename": null
   },
@@ -947,22 +1010,22 @@
       [
         "CRUSADER_GOLD_KNIGHT",
         [
-          725,
-          350
+          75,
+          -50
         ]
       ],
       [
         "CRUSADER_GOLD_KNIGHT",
         [
-          725,
-          450
+          75,
+          50
         ]
       ],
       [
         "CRUSADER_GOLD_KNIGHT",
         [
-          725,
-          400
+          75,
+          0
         ]
       ]
     ],
@@ -970,7 +1033,10 @@
     "tip": [
       "Remember that gold knights deal damage to all enemy units around them and heal a little with every hit."
     ],
-    "dependencies": [],
+    "hex_coords": [
+      7,
+      1
+    ],
     "is_test": false,
     "tip_voice_filename": null
   },
@@ -980,8 +1046,8 @@
       [
         "CRUSADER_BLACK_KNIGHT",
         [
-          900,
-          400
+          250,
+          0
         ]
       ]
     ],
@@ -989,18 +1055,21 @@
     "tip": [
       "The Black Knight scares away his foes with his cruel attacks."
     ],
-    "dependencies": [],
+    "hex_coords": [
+      9,
+      -1
+    ],
     "is_test": false,
     "tip_voice_filename": null
   },
   {
-    "id": "1Archer vs 1Swordsman\r\n",
+    "id": "1Archer vs 1Swordsman",
     "enemies": [
       [
         "CORE_SWORDSMAN",
         [
-          844,
-          361
+          194,
+          -39
         ]
       ]
     ],
@@ -1008,40 +1077,40 @@
       [
         "CORE_ARCHER",
         [
-          344,
-          372
+          -306,
+          -28
         ]
       ]
     ],
     "tip": [
       "TODO"
     ],
-    "dependencies": [],
+    "hex_coords": null,
     "is_test": true,
     "tip_voice_filename": null
   },
   {
-    "id": "1Duelist vs 3 Consecutive Swordsman\r\n",
+    "id": "1Duelist vs 3 Consecutive Swordsman",
     "enemies": [
       [
         "CORE_SWORDSMAN",
         [
-          1268,
-          398
+          618,
+          -2
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          720,
-          397
+          70,
+          -3
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          1036,
-          402
+          386,
+          2
         ]
       ]
     ],
@@ -1049,33 +1118,33 @@
       [
         "CORE_DUELIST",
         [
-          406,
-          401
+          -244,
+          1
         ]
       ]
     ],
     "tip": [
       "TODO"
     ],
-    "dependencies": [],
+    "hex_coords": null,
     "is_test": true,
     "tip_voice_filename": null
   },
   {
-    "id": "1Healer, 1Defender vs 2Swordsman\r\n",
+    "id": "1Healer, 1Defender vs 2Swordsman",
     "enemies": [
       [
         "CORE_SWORDSMAN",
         [
-          731,
-          419
+          81,
+          19
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          730,
-          372
+          80,
+          -28
         ]
       ]
     ],
@@ -1083,40 +1152,40 @@
       [
         "CRUSADER_CLERIC",
         [
-          456,
-          398
+          -194,
+          -2
         ]
       ],
       [
         "CRUSADER_DEFENDER",
         [
-          503,
-          400
+          -147,
+          0
         ]
       ]
     ],
     "tip": [
       "TODO"
     ],
-    "dependencies": [],
+    "hex_coords": null,
     "is_test": true,
     "tip_voice_filename": null
   },
   {
-    "id": "1Pikeman, 1Defender vs 2Swordsman\r\n",
+    "id": "1Pikeman, 1Defender vs 2Swordsman",
     "enemies": [
       [
         "CORE_SWORDSMAN",
         [
-          744,
-          404
+          94,
+          4
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          746,
-          376
+          96,
+          -24
         ]
       ]
     ],
@@ -1124,40 +1193,40 @@
       [
         "CRUSADER_DEFENDER",
         [
-          415,
-          411
+          -235,
+          11
         ]
       ],
       [
         "CRUSADER_PIKEMAN",
         [
-          391,
-          410
+          -259,
+          10
         ]
       ]
     ],
     "tip": [
       "TODO"
     ],
-    "dependencies": [],
+    "hex_coords": null,
     "is_test": true,
     "tip_voice_filename": null
   },
   {
-    "id": "1Cavalry vs 2Archer\r\n",
+    "id": "1Cavalry vs 2Archer",
     "enemies": [
       [
         "CORE_ARCHER",
         [
-          1030,
-          27
+          380,
+          -373
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          1023,
-          735
+          373,
+          335
         ]
       ]
     ],
@@ -1165,26 +1234,26 @@
       [
         "CORE_HORSEMAN",
         [
-          424,
-          50
+          -226,
+          -350
         ]
       ]
     ],
     "tip": [
       "TODO"
     ],
-    "dependencies": [],
+    "hex_coords": null,
     "is_test": true,
     "tip_voice_filename": null
   },
   {
-    "id": "1Swordsman vs 1Cavalry\r\n",
+    "id": "1Swordsman vs 1Cavalry",
     "enemies": [
       [
         "CORE_HORSEMAN",
         [
-          744,
-          384
+          94,
+          -16
         ]
       ]
     ],
@@ -1192,15 +1261,15 @@
       [
         "CORE_SWORDSMAN",
         [
-          574,
-          387
+          -76,
+          -13
         ]
       ]
     ],
     "tip": [
       "TODO"
     ],
-    "dependencies": [],
+    "hex_coords": null,
     "is_test": true,
     "tip_voice_filename": null
   },
@@ -1210,8 +1279,8 @@
       [
         "CORE_MAGE",
         [
-          1068,
-          364
+          418,
+          -36
         ]
       ]
     ],
@@ -1219,15 +1288,15 @@
       [
         "CORE_HORSEMAN",
         [
-          281,
-          364
+          -369,
+          -36
         ]
       ]
     ],
     "tip": [
       "TODO"
     ],
-    "dependencies": [],
+    "hex_coords": null,
     "is_test": true,
     "tip_voice_filename": null
   },
@@ -1237,43 +1306,43 @@
       [
         "CORE_ARCHER",
         [
-          1002,
-          330
+          352,
+          -70
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          968,
-          359
+          318,
+          -41
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          1011,
-          366
+          361,
+          -34
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          978,
-          388
+          328,
+          -12
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          1015,
-          397
+          365,
+          -3
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          935,
-          382
+          285,
+          -18
         ]
       ]
     ],
@@ -1281,15 +1350,15 @@
       [
         "CORE_MAGE",
         [
-          181,
-          369
+          -469,
+          -31
         ]
       ]
     ],
     "tip": [
       "TODO"
     ],
-    "dependencies": [],
+    "hex_coords": null,
     "is_test": true,
     "tip_voice_filename": null
   },
@@ -1299,50 +1368,50 @@
       [
         "CORE_SWORDSMAN",
         [
-          790,
-          410
+          140,
+          10
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          791,
-          384
+          141,
+          -16
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          825,
-          373
+          175,
+          -27
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          823,
-          397
+          173,
+          -3
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          823,
-          423
+          173,
+          23
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          854,
-          383
+          204,
+          -17
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          853,
-          409
+          203,
+          9
         ]
       ]
     ],
@@ -1350,29 +1419,29 @@
       [
         "CRUSADER_DEFENDER",
         [
-          605,
-          370
+          -45,
+          -30
         ]
       ],
       [
         "CRUSADER_DEFENDER",
         [
-          604,
-          421
+          -46,
+          21
         ]
       ],
       [
         "CRUSADER_GOLD_KNIGHT",
         [
-          532,
-          397
+          -118,
+          -3
         ]
       ]
     ],
     "tip": [
       "TODO"
     ],
-    "dependencies": [],
+    "hex_coords": null,
     "is_test": true,
     "tip_voice_filename": null
   },
@@ -1382,15 +1451,15 @@
       [
         "CORE_SWORDSMAN",
         [
-          820,
-          397
+          170,
+          -3
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          820,
-          347
+          170,
+          -53
         ]
       ]
     ],
@@ -1398,15 +1467,15 @@
       [
         "CRUSADER_PALADIN",
         [
-          498,
-          363
+          -152,
+          -37
         ]
       ]
     ],
     "tip": [
       "TODO"
     ],
-    "dependencies": [],
+    "hex_coords": null,
     "is_test": true,
     "tip_voice_filename": null
   }

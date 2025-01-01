@@ -55,10 +55,7 @@ unit_theme_ids: Dict[UnitType, str] = {
 
 unit_icon_surfaces: Dict[UnitType, pygame.Surface] = {}
 
-sprite_sheets: Dict[TeamType, Dict[UnitType, pygame.Surface]] = {
-    TeamType.TEAM1: {},
-    TeamType.TEAM2: {}
-}
+sprite_sheets: Dict[UnitType, pygame.Surface] = {}
 
 unit_values: Dict[UnitType, int] = {
     UnitType.CORE_ARCHER: 100,
@@ -716,7 +713,8 @@ def create_core_swordsman(x: int, y: int, team: TeamType) -> int:
                             ])
                         )
                     ],
-                    effects={2: [
+                    effects={
+                        2: [
                             Damages(damage=gc.CORE_SWORDSMAN_ATTACK_DAMAGE, recipient=Recipient.TARGET),
                             PlaySound([
                                 (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)

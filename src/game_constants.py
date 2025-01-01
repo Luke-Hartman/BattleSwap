@@ -16,15 +16,27 @@ class GameConstants(BaseModel):
 
     # Basic Settings
     NO_MANS_LAND_WIDTH: int
-    BATTLEFIELD_WIDTH: int
-    BATTLEFIELD_HEIGHT: int
     GRID_SIZE: int
     MAJOR_GRID_INTERVAL: int  # Number of grid cells between major grid lines
+    HEX_SIZE: float  # Distance from hex center to corner
+    NUDGE_DISTANCE: float
+    PLACEMENT_MOUSE_DISTANCE: float
+    UNIT_PLACEMENT_MINIMUM_DISTANCE: float
     
     MINIFOLKS_SCALE: float
     TINY_RPG_SCALE: float
     MAGE_FIREBALL_SCALE: float
     
+    # Colors
+    TEAM1_COLOR: list[int]
+    TEAM2_COLOR: list[int]
+    MAP_BACKGROUND_COLOR: list[int]
+    MAP_BATTLEFIELD_COLOR: list[int]
+    MAP_BATTLEFIELD_EDGE_COLOR: list[int]
+    MAP_HIGHLIGHT_COLOR: list[int]
+    MAP_FOG_COLOR: list[int]
+    MAP_UNFOCUSED_COLOR: list[int]
+
     TARGETTING_SWITCH_BIAS: float
     TARGETTING_GRACE_DISTANCE: float
     DEFAULT_AURA_PERIOD: float
@@ -208,6 +220,14 @@ class GameConstants(BaseModel):
     WEREBEAR_ANIMATION_WALKING_DURATION: float
     WEREBEAR_ANIMATION_ATTACK_DURATION: float
     WEREBEAR_ANIMATION_DYING_DURATION: float
+
+    # Camera animation constants
+    CAMERA_ANIMATION_DURATION_SCALE: float  # A: scales overall animation duration
+    CAMERA_ANIMATION_DURATION_EXPONENT: float  # B: sub-linear exponent in (0, 1)
+    CAMERA_ANIMATION_ZOOM_VELOCITY_SCALE: float  # gamma: how strongly velocity affects zoom
+    CAMERA_ANIMATION_ZOOM_DURATION_SCALE: float  # scales duration of zoom animations
+    CAMERA_ANIMATION_SOFTMIN_INTENSITY: float  # intensity parameter for softmin function
+    CAMERA_ANIMATION_EASE_POWER: float  # power parameter for ease out and in function
 
     class Config:
         frozen = False
