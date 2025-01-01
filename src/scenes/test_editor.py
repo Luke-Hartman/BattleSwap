@@ -3,13 +3,15 @@ from collections import defaultdict
 from enum import Enum, auto
 import pygame
 import pygame_gui
+from camera import Camera
 from scenes.scene import Scene
-from scenes.events import SandboxSceneEvent, SelectBattleSceneEvent
+from scenes.events import PreviousSceneEvent, SandboxSceneEvent, SelectBattleSceneEvent
 from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event
 from ui_components.barracks_ui import UnitCount
 import battles
 from auto_battle import simulate_battle, BattleOutcome
 from ui_components.save_battle_dialog import SaveBattleDialog
+from world_map_view import WorldMapView
 
 class TestStatus(Enum):
     """Status of a test run."""
@@ -300,13 +302,14 @@ class TestEditorScene(Scene):
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element.text == "Return":
-                        pygame.event.post(SelectBattleSceneEvent().to_event())
+                        pygame.event.post(PreviousSceneEvent().to_event())
                     elif event.ui_element.text == "New Sandbox":
                         pygame.event.post(
                             SandboxSceneEvent(
-                                ally_placements=[],
-                                enemy_placements=[],
+                                world_map_view=None,
                                 battle_id=None,
+                                sandbox_mode=True,
+                                developer_mode=True,
                             ).to_event()
                         )
                     elif event.ui_element in self.edit_buttons.values():
@@ -326,12 +329,19 @@ class TestEditorScene(Scene):
                             list(self.sandbox_buttons.values()).index(event.ui_element)
                         ]
                         battle = battles.get_battle_id(battle_id)
-                        scroll_percentage = self._get_scroll_percentage()
+                        battle.hex_coords = (0, 0)
+                        world_map_view = WorldMapView(
+                            screen=self.screen,
+                            manager=self.manager,
+                            battles=[battle],
+                            camera=Camera(),
+                        )
                         pygame.event.post(
                             SandboxSceneEvent(
-                                ally_placements=battle.allies,
-                                enemy_placements=battle.enemies,
+                                world_map_view=world_map_view,
                                 battle_id=battle_id,
+                                sandbox_mode=True,
+                                developer_mode=True,
                             ).to_event()
                         )
                     elif event.ui_element in self.delete_buttons.values():

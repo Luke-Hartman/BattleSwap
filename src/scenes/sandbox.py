@@ -6,6 +6,7 @@ import pygame_gui
 import shapely
 from shapely.ops import nearest_points
 from battles import get_battles
+import battles
 from components.animation import AnimationState
 from components.focus import Focus
 from components.position import Position
@@ -27,7 +28,6 @@ from ui_components.return_button import ReturnButton
 from ui_components.start_button import StartButton
 from scenes.events import BattleSceneEvent, PreviousSceneEvent
 from ui_components.save_battle_dialog import SaveBattleDialog
-from ui_components.reload_constants_button import ReloadConstantsButton
 from auto_battle import BattleOutcome, simulate_battle
 from voice import play_intro
 from world_map_view import FillState, HexState, WorldMapView
@@ -45,10 +45,11 @@ class SandboxScene(Scene):
         self,
         screen: pygame.Surface,
         manager: pygame_gui.UIManager,
-        world_map_view: WorldMapView,
-        battle_id: str,
+        world_map_view: Optional[WorldMapView],
+        battle_id: Optional[str],
         progress_manager: Optional[ProgressManager] = None,
         sandbox_mode: bool = False,
+        developer_mode: bool = False,
     ):
         """Initialize the sandbox scene.
         
@@ -58,7 +59,9 @@ class SandboxScene(Scene):
             world_map_view: The world map view for the scene.
             battle_id: Which battle is focused.
             progress_manager: The progress manager for the scene.
-            sandbox_mode: Whether the battle is in sandbox mode.
+            sandbox_mode: In sandbox mode, there are no restrictions on unit placement.
+            developer_mode: In developer mode, there are additional buttons such as saving
+                and simulating the battle.
         """
         emit_event(CHANGE_MUSIC, event=ChangeMusicEvent(
             filename="Main Theme.wav",
@@ -66,12 +69,33 @@ class SandboxScene(Scene):
         self.screen = screen
         self.manager = manager
         self._selected_unit_type: Optional[UnitType] = None
+        if world_map_view is None:
+            battle = battles.Battle(
+                id="sandbox",
+                tip=["A customizable battle for experimenting"],
+                hex_coords=(0, 0),
+                allies=[],
+                enemies=[],
+                is_test=False,
+            )
+            world_map_view = WorldMapView(
+                screen=self.screen,
+                manager=self.manager,
+                battles=[battle],
+                camera=Camera(),
+            )
+            if battle_id is not None:
+                raise ValueError("Battle ID must be None if world_map_view is None")
+            battle_id = "sandbox"
+        else:
+            if battle_id is None:
+                raise ValueError("Battle ID must be provided if world_map_view is not None")
         self.world_map_view = world_map_view
         self.camera = world_map_view.camera
         self.battle_id = battle_id
         self.progress_manager = progress_manager
         self.sandbox_mode = sandbox_mode
-
+        self.developer_mode = developer_mode
         
         battle = self.world_map_view.battles[battle_id]
         if self.sandbox_mode:
@@ -99,41 +123,43 @@ class SandboxScene(Scene):
         
         self.barracks = BarracksUI(
             self.manager,
-            starting_units=self.progress_manager.available_units(battle),
+            starting_units={} if self.sandbox_mode else self.progress_manager.available_units(battle),
             interactive=True,
             sandbox_mode=self.sandbox_mode,
         )
 
-        self.save_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(
-                (pygame.display.Info().current_w - 310, 10),
-                (100, 30)
-            ),
-            text='Save Battle',
-            manager=self.manager
-        )
         self.selected_partial_unit: Optional[int] = None
 
         self.save_dialog: Optional[SaveBattleDialog] = None
-
-        self.reload_constants_button = ReloadConstantsButton(self.manager)
-        self.simulate_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(
-                (pygame.display.Info().current_w - 420, 10),
-                (100, 30)
-            ),
-            text='Simulate',
-            manager=self.manager
-        )
-
-        self.results_box = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect(
-                (pygame.display.Info().current_w - 420, 50),  # Position below simulate button
-                (100, 30)
-            ),
-            text='',
-            manager=self.manager
-        )
+        if self.developer_mode:
+            self.save_button = pygame_gui.elements.UIButton(
+                relative_rect=pygame.Rect(
+                    (pygame.display.Info().current_w - 310, 10),
+                    (100, 30)
+                ),
+                text='Save Battle',
+                manager=self.manager
+            )
+            self.simulate_button = pygame_gui.elements.UIButton(
+                relative_rect=pygame.Rect(
+                    (pygame.display.Info().current_w - 420, 10),
+                    (100, 30)
+                ),
+                text='Simulate',
+                manager=self.manager
+            )
+            self.results_box = pygame_gui.elements.UILabel(
+                relative_rect=pygame.Rect(
+                    (pygame.display.Info().current_w - 420, 50),  # Position below simulate button
+                    (100, 30)
+                ),
+                text='',
+                manager=self.manager
+            )
+        else:
+            self.save_button = None
+            self.simulate_button = None
+            self.results_box = None
     
     @property
     def selected_unit_type(self) -> Optional[UnitType]:
@@ -214,6 +240,7 @@ class SandboxScene(Scene):
                             play_intro(unit_count.unit_type)
                             self.selected_unit_type = unit_count.unit_type
                             break
+                    assert event.ui_element is not None
                     if event.ui_element == self.save_button:
                         enemy_placements = get_unit_placements(TeamType.TEAM2, battle_coords)
                         ally_placements = get_unit_placements(TeamType.TEAM1, battle_coords)
@@ -290,7 +317,6 @@ class SandboxScene(Scene):
                             self.remove_unit(hovered_unit)
                             hovered_unit = None
 
-            self.reload_constants_button.handle_event(event)
             self.camera.process_event(event)
             self.manager.process_events(event)
 

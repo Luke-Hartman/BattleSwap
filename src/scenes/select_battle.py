@@ -246,6 +246,7 @@ class SelectBattleScene(Scene):
                             world_map_view=world_map_view,
                             battle_id=battle.id,
                             sandbox_mode=True,
+                            developer_mode=True,
                         ).to_event())
                     elif event.ui_element == self.test_editor_button:
                         pygame.event.post(TestEditorSceneEvent().to_event())

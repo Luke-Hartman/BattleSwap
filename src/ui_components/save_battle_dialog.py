@@ -104,7 +104,7 @@ class SaveBattleDialog:
             tip=tip,
             dependencies=[],
             is_test=is_test,
-            hex_coords=self.hex_coords
+            hex_coords=self.hex_coords if not is_test else None
         )
 
         if self.existing_battle_id:

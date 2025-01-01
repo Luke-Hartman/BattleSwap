@@ -118,6 +118,7 @@ class CampaignScene(Scene):
                             world_map_view=self.world_map_view,
                             battle_id=battle.id,
                             sandbox_mode=False,
+                            developer_mode=False,
                         ).to_event()
                     )
 

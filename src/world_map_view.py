@@ -6,7 +6,7 @@ import pygame
 import pygame_gui
 from shapely import Polygon
 
-from game_constants import gc
+from game_constants import gc, reload_game_constants
 from auto_battle import AutoBattle
 from battles import Battle
 from components.position import Position
@@ -247,6 +247,7 @@ class WorldMapView:
         }
         
         self.reset_hex_states()
+        reload_game_constants()
 
         for battle in self.battles.values():
             self._initialize_battle_world(battle)

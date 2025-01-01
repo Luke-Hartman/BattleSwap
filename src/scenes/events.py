@@ -1,5 +1,6 @@
 """Custom pygame events related to scenes."""
 
+from typing import Optional
 import pygame
 from abc import abstractmethod
 from pydantic import BaseModel
@@ -14,6 +15,7 @@ TEST_EDITOR_SCENE_EVENT = pygame.event.custom_type()
 PREVIOUS_SCENE_EVENT = pygame.event.custom_type()
 MOVE_BATTLES_SCENE_EVENT = pygame.event.custom_type()
 CAMPAIGN_SCENE_EVENT = pygame.event.custom_type()
+DEVELOPER_TOOLS_SCENE_EVENT = pygame.event.custom_type()
 
 class PyGameEvent(BaseModel):
     """Base class for pygame events."""
@@ -52,9 +54,10 @@ class BattleSceneEvent(PyGameEvent):
 
 class SandboxSceneEvent(PyGameEvent):
     """Event for starting a sandbox battle."""
-    world_map_view: WorldMapView
-    battle_id: str
+    world_map_view: Optional[WorldMapView]
+    battle_id: Optional[str]
     sandbox_mode: bool
+    developer_mode: bool
 
     @property
     def _type(self) -> int:
@@ -102,3 +105,10 @@ class CampaignSceneEvent(PyGameEvent):
     @property
     def _type(self) -> int:
         return CAMPAIGN_SCENE_EVENT
+
+class DeveloperToolsSceneEvent(PyGameEvent):
+    """Event for transitioning to the developer tools scene."""
+
+    @property
+    def _type(self) -> int:
+        return DEVELOPER_TOOLS_SCENE_EVENT

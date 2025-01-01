@@ -27,11 +27,14 @@ from scenes.events import (
     TestEditorSceneEvent,
     MoveBattlesSceneEvent,
     CampaignSceneEvent,
+    DEVELOPER_TOOLS_SCENE_EVENT,
 )
 from scenes.move_battles import MoveBattlesScene
 from world_map_view import WorldMapView
 from battles import Battle, get_battle_id, get_battles
 from scenes.campaign import CampaignScene
+from scenes.main_menu import MainMenuScene
+from scenes.developer_tools import DeveloperToolsScene
 
 class CameraState:
     
@@ -70,17 +73,18 @@ class SceneManager:
             'src/theme.json'
         )
 
-        self.current_scene = SelectBattleScene(
-            screen=self.screen,
-            manager=self.manager,
-            progress_manager=self.progress_manager
-        )
+        self.current_scene = MainMenuScene(screen, self.manager)
         self.scene_stack: List[SceneState] = []
 
     def cleanup(self, add_to_stack: bool = True) -> None:
         """Clean up the current scene and save its state."""
         if add_to_stack:
-            if isinstance(self.current_scene, SelectBattleScene):
+            if isinstance(self.current_scene, MainMenuScene):
+                self.scene_stack.append(SceneState(
+                    scene_type=MainMenuScene,
+                    params={"screen": self.screen, "manager": self.manager}
+                ))
+            elif isinstance(self.current_scene, SelectBattleScene):
                 self.scene_stack.append(SceneState(
                     scene_type=SelectBattleScene,
                     params={"screen": self.screen, "manager": self.manager, 
@@ -123,6 +127,11 @@ class SceneManager:
                         "sandbox_mode": self.current_scene.sandbox_mode,
                     },
                 ))
+            elif isinstance(self.current_scene, DeveloperToolsScene):
+                self.scene_stack.append(SceneState(
+                    scene_type=DeveloperToolsScene,
+                    params={"screen": self.screen, "manager": self.manager}
+                ))
 
         # Clean up UI and ECS
         self.manager.clear_and_reset()
@@ -163,14 +172,15 @@ class SceneManager:
             elif event.type == SANDBOX_SCENE_EVENT:
                 self.cleanup()
                 validated_event = SandboxSceneEvent.model_validate(event.dict)
-                camera = validated_event.world_map_view.camera
-                battle = validated_event.world_map_view.battles[validated_event.battle_id]
-                world_x, world_y = axial_to_world(*battle.hex_coords)
-                camera.move(
-                    centerx=world_x,
-                    centery=world_y,
-                    zoom=1.0
-                )
+                if validated_event.world_map_view is not None:
+                    camera = validated_event.world_map_view.camera
+                    battle = validated_event.world_map_view.battles[validated_event.battle_id]
+                    world_x, world_y = axial_to_world(*battle.hex_coords)
+                    camera.move(
+                        centerx=world_x,
+                        centery=world_y,
+                        zoom=1.0
+                    )
                 self.current_scene = SandboxScene(
                     screen=self.screen,
                     manager=self.manager,
@@ -178,6 +188,7 @@ class SceneManager:
                     battle_id=validated_event.battle_id,
                     progress_manager=self.progress_manager,
                     sandbox_mode=validated_event.sandbox_mode,
+                    developer_mode=validated_event.developer_mode,
                 )
             elif event.type == TEST_EDITOR_SCENE_EVENT:
                 self.cleanup()
@@ -202,6 +213,12 @@ class SceneManager:
                     manager=self.manager,
                     world_map_view=validated_event.world_map_view,
                     progress_manager=self.progress_manager
+                )
+            elif event.type == DEVELOPER_TOOLS_SCENE_EVENT:
+                self.cleanup()
+                self.current_scene = DeveloperToolsScene(
+                    screen=self.screen,
+                    manager=self.manager,
                 )
         
         return self.current_scene.update(time_delta, events)
