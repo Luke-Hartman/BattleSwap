@@ -162,6 +162,34 @@ class Camera:
             return True
         return False
     
+    def _check_edge_scroll(self) -> tuple[float, float]:
+        """Check if mouse is at screen edges and return scroll direction vector."""
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        edge_size = 20  # pixels from edge that triggers scrolling
+        
+        dx = 0.0
+        dy = 0.0
+        
+        # Check horizontal edges
+        if mouse_x < edge_size:
+            dx = -1.0
+        elif mouse_x > self._base_width - edge_size:
+            dx = 1.0
+            
+        # Check vertical edges
+        if mouse_y < edge_size:
+            dy = -1.0
+        elif mouse_y > self._base_height - edge_size:
+            dy = 1.0
+            
+        # Normalize diagonal movement
+        if dx != 0 and dy != 0:
+            magnitude = (dx * dx + dy * dy) ** 0.5
+            dx /= magnitude
+            dy /= magnitude
+            
+        return dx, dy
+
     def update(self, time_delta: float) -> None:
         """Update the camera position based on input and animation."""
         if self._moving:
@@ -229,14 +257,33 @@ class Camera:
         else:
             # Handle manual movement
             keys = pygame.key.get_pressed()
+            dx = 0.0
+            dy = 0.0
+            
             if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-                self.x -= self.speed / self.scale
+                dx -= 1.0
             if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-                self.x += self.speed / self.scale
+                dx += 1.0
             if keys[pygame.K_UP] or keys[pygame.K_w]:
-                self.y -= self.speed / self.scale
+                dy -= 1.0
             if keys[pygame.K_DOWN] or keys[pygame.K_s]:
-                self.y += self.speed / self.scale
+                dy += 1.0
+                
+            # Add edge scrolling movement
+            edge_dx, edge_dy = self._check_edge_scroll()
+            dx += edge_dx
+            dy += edge_dy
+            
+            # Apply movement if any
+            if dx != 0 or dy != 0:
+                # Normalize diagonal movement
+                if dx != 0 and dy != 0:
+                    magnitude = (dx * dx + dy * dy) ** 0.5
+                    dx /= magnitude
+                    dy /= magnitude
+                
+                self.x += (self.speed / self.scale) * dx
+                self.y += (self.speed / self.scale) * dy
 
     def world_to_screen(self, world_x: float, world_y: float) -> tuple[float, float]:
         """
