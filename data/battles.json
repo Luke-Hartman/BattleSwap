@@ -28,7 +28,7 @@
     "id": "Defeat the Cavalry!",
     "enemies": [
       [
-        "CORE_HORSEMAN",
+        "CORE_CAVALRY",
         [
           625,
           0
@@ -79,7 +79,7 @@
     "id": "Defeat the Wizard!",
     "enemies": [
       [
-        "CORE_MAGE",
+        "CORE_WIZARD",
         [
           250,
           0
@@ -197,28 +197,28 @@
     "id": "Let's Ride!",
     "enemies": [
       [
-        "CORE_HORSEMAN",
+        "CORE_CAVALRY",
         [
           150,
           25
         ]
       ],
       [
-        "CORE_HORSEMAN",
+        "CORE_CAVALRY",
         [
           150,
           -25
         ]
       ],
       [
-        "CORE_HORSEMAN",
+        "CORE_CAVALRY",
         [
           625,
           25
         ]
       ],
       [
-        "CORE_HORSEMAN",
+        "CORE_CAVALRY",
         [
           625,
           -25
@@ -227,7 +227,7 @@
     ],
     "allies": null,
     "tip": [
-      "Take the horsemen out before reinforcements arrive!"
+      "Take the cavalry out before reinforcements arrive!"
     ],
     "hex_coords": [
       4,
@@ -312,7 +312,7 @@
         ]
       ],
       [
-        "CORE_HORSEMAN",
+        "CORE_CAVALRY",
         [
           150,
           300
@@ -370,21 +370,21 @@
         ]
       ],
       [
-        "CORE_HORSEMAN",
+        "CORE_CAVALRY",
         [
           125,
           100
         ]
       ],
       [
-        "CORE_HORSEMAN",
+        "CORE_CAVALRY",
         [
           125,
           -100
         ]
       ],
       [
-        "CORE_HORSEMAN",
+        "CORE_CAVALRY",
         [
           250,
           0
@@ -518,14 +518,14 @@
     "id": "Defeat the Paladin!",
     "enemies": [
       [
-        "CORE_HORSEMAN",
+        "CORE_CAVALRY",
         [
           275,
           50
         ]
       ],
       [
-        "CORE_HORSEMAN",
+        "CORE_CAVALRY",
         [
           275,
           -50
@@ -764,14 +764,14 @@
         ]
       ],
       [
-        "CORE_HORSEMAN",
+        "CORE_CAVALRY",
         [
           600,
           -25
         ]
       ],
       [
-        "CORE_HORSEMAN",
+        "CORE_CAVALRY",
         [
           600,
           25
@@ -1131,47 +1131,6 @@
     "tip_voice_filename": null
   },
   {
-    "id": "1Healer, 1Defender vs 2Swordsman",
-    "enemies": [
-      [
-        "CORE_SWORDSMAN",
-        [
-          81,
-          19
-        ]
-      ],
-      [
-        "CORE_SWORDSMAN",
-        [
-          80,
-          -28
-        ]
-      ]
-    ],
-    "allies": [
-      [
-        "CRUSADER_CLERIC",
-        [
-          -194,
-          -2
-        ]
-      ],
-      [
-        "CRUSADER_DEFENDER",
-        [
-          -147,
-          0
-        ]
-      ]
-    ],
-    "tip": [
-      "TODO"
-    ],
-    "hex_coords": null,
-    "is_test": true,
-    "tip_voice_filename": null
-  },
-  {
     "id": "1Pikeman, 1Defender vs 2Swordsman",
     "enemies": [
       [
@@ -1232,7 +1191,7 @@
     ],
     "allies": [
       [
-        "CORE_HORSEMAN",
+        "CORE_CAVALRY",
         [
           -226,
           -350
@@ -1250,7 +1209,7 @@
     "id": "1Swordsman vs 1Cavalry",
     "enemies": [
       [
-        "CORE_HORSEMAN",
+        "CORE_CAVALRY",
         [
           94,
           -16
@@ -1277,7 +1236,7 @@
     "id": "1Cavalry vs 1Wizard",
     "enemies": [
       [
-        "CORE_MAGE",
+        "CORE_WIZARD",
         [
           418,
           -36
@@ -1286,7 +1245,7 @@
     ],
     "allies": [
       [
-        "CORE_HORSEMAN",
+        "CORE_CAVALRY",
         [
           -369,
           -36
@@ -1348,7 +1307,7 @@
     ],
     "allies": [
       [
-        "CORE_MAGE",
+        "CORE_WIZARD",
         [
           -469,
           -31
@@ -1435,40 +1394,6 @@
         [
           -118,
           -3
-        ]
-      ]
-    ],
-    "tip": [
-      "TODO"
-    ],
-    "hex_coords": null,
-    "is_test": true,
-    "tip_voice_filename": null
-  },
-  {
-    "id": "1Paladin vs 2Swordsman",
-    "enemies": [
-      [
-        "CORE_SWORDSMAN",
-        [
-          170,
-          -3
-        ]
-      ],
-      [
-        "CORE_SWORDSMAN",
-        [
-          170,
-          -53
-        ]
-      ]
-    ],
-    "allies": [
-      [
-        "CRUSADER_PALADIN",
-        [
-          -152,
-          -37
         ]
       ]
     ],

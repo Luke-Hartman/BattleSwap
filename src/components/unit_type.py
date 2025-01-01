@@ -5,9 +5,9 @@ from enum import Enum
 class UnitType(str, Enum):
     """Enum representing different types of units."""
     CORE_ARCHER = "CORE_ARCHER"
+    CORE_CAVALRY = "CORE_CAVALRY"
     CORE_DUELIST = "CORE_DUELIST"
-    CORE_HORSEMAN = "CORE_HORSEMAN"
-    CORE_MAGE = "CORE_MAGE"
+    CORE_WIZARD = "CORE_WIZARD"
     CORE_SWORDSMAN = "CORE_SWORDSMAN"
     CRUSADER_BLACK_KNIGHT = "CRUSADER_BLACK_KNIGHT"
     CRUSADER_CLERIC = "CRUSADER_CLERIC"

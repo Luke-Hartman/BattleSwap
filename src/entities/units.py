@@ -37,10 +37,10 @@ from visuals import Visual
 
 unit_theme_ids: Dict[UnitType, str] = {
     UnitType.CORE_ARCHER: "#core_archer_icon", 
+    UnitType.CORE_CAVALRY: "#core_cavalry_icon",
     UnitType.CORE_DUELIST: "#core_duelist_icon",
-    UnitType.CORE_HORSEMAN: "#core_horseman_icon",
-    UnitType.CORE_MAGE: "#core_mage_icon",
     UnitType.CORE_SWORDSMAN: "#core_swordsman_icon",
+    UnitType.CORE_WIZARD: "#core_wizard_icon",
     UnitType.CRUSADER_BLACK_KNIGHT: "#crusader_black_knight_icon",
     UnitType.CRUSADER_CLERIC: "#crusader_cleric_icon",
     UnitType.CRUSADER_COMMANDER: "#crusader_commander_icon",
@@ -60,9 +60,9 @@ sprite_sheets: Dict[UnitType, pygame.Surface] = {}
 unit_values: Dict[UnitType, int] = {
     UnitType.CORE_ARCHER: 100,
     UnitType.CORE_DUELIST: 100,
-    UnitType.CORE_HORSEMAN: 100,
-    UnitType.CORE_MAGE: 100,
+    UnitType.CORE_CAVALRY: 100,
     UnitType.CORE_SWORDSMAN: 100,
+    UnitType.CORE_WIZARD: 100,
     UnitType.CRUSADER_BLACK_KNIGHT: 100,
     UnitType.CRUSADER_CLERIC: 100,
     UnitType.CRUSADER_COMMANDER: 100,
@@ -79,10 +79,10 @@ def load_sprite_sheets():
     """Load all sprite sheets and unit icons."""
     unit_filenames = {
         UnitType.CORE_ARCHER: "CoreArcher.png", 
+        UnitType.CORE_CAVALRY: "CoreCavalry.png",
         UnitType.CORE_DUELIST: "CoreDuelist.png",
-        UnitType.CORE_HORSEMAN: "CoreHorseman.png",
-        UnitType.CORE_MAGE: "CoreMage.png",
         UnitType.CORE_SWORDSMAN: "CoreSwordsman.png", 
+        UnitType.CORE_WIZARD: "CoreWizard.png",
         UnitType.CRUSADER_BLACK_KNIGHT: "CrusaderBlackKnight.png",
         UnitType.CRUSADER_CLERIC: "CrusaderCleric.png",
         UnitType.CRUSADER_COMMANDER: "CrusaderCommander.png",
@@ -101,10 +101,10 @@ def load_sprite_sheets():
     # Load unit icons
     unit_icon_paths: Dict[UnitType, str] = {
         UnitType.CORE_ARCHER: "CoreArcherIcon.png",
+        UnitType.CORE_CAVALRY: "CoreCavalryIcon.png",
         UnitType.CORE_DUELIST: "CoreDuelistIcon.png",
-        UnitType.CORE_HORSEMAN: "CoreHorsemanIcon.png",
-        UnitType.CORE_MAGE: "CoreMageIcon.png",
         UnitType.CORE_SWORDSMAN: "CoreSwordsmanIcon.png",
+        UnitType.CORE_WIZARD: "CoreWizardIcon.png",
         UnitType.CRUSADER_BLACK_KNIGHT: "CrusaderBlackKnightIcon.png",
         UnitType.CRUSADER_CLERIC: "CrusaderClericIcon.png",
         UnitType.CRUSADER_COMMANDER: "CrusaderCommanderIcon.png",
@@ -124,10 +124,10 @@ def create_unit(x: int, y: int, unit_type: UnitType, team: TeamType) -> int:
     """Create a unit entity with all necessary components."""
     return {
         UnitType.CORE_ARCHER: create_core_archer,
+        UnitType.CORE_CAVALRY: create_core_cavalry,
         UnitType.CORE_DUELIST: create_core_duelist,
-        UnitType.CORE_HORSEMAN: create_core_horseman,
-        UnitType.CORE_MAGE: create_core_mage,
         UnitType.CORE_SWORDSMAN: create_core_swordsman,
+        UnitType.CORE_WIZARD: create_core_wizard,
         UnitType.CRUSADER_BLACK_KNIGHT: create_crusader_black_knight,
         UnitType.CRUSADER_CLERIC: create_crusader_cleric,
         UnitType.CRUSADER_COMMANDER: create_crusader_commander,
@@ -292,6 +292,107 @@ def create_core_archer(x: int, y: int, team: TeamType) -> int:
     }))
     return entity
 
+def create_core_cavalry(x: int, y: int, team: TeamType) -> int:
+    """Create a cavalry entity with all necessary components."""
+    entity = unit_base_entity(
+        x=x,
+        y=y,
+        team=team,
+        unit_type=UnitType.CORE_CAVALRY,
+        movement_speed=gc.CORE_CAVALRY_MOVEMENT_SPEED,
+        health=gc.  CORE_CAVALRY_HP,
+        hitbox=Hitbox(
+            width=32,
+            height=46,
+        )
+    )
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=2, ascending=True),
+        ],
+        unit_condition=All([OnTeam(team=team.other()), Alive()])
+    )
+    esper.add_component(
+        entity,
+        Destination(target_strategy=targetting_strategy, x_offset=gc.CORE_CAVALRY_ATTACK_RANGE*2/3)
+    )
+    esper.add_component(
+        entity,
+        Abilities(
+            abilities=[
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.CORE_CAVALRY_ATTACK_RANGE,
+                                    y_bias=5
+                                ),
+                            ])
+                        )
+                    ],
+                    persistent_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.CORE_CAVALRY_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    y_bias=5
+                                ),
+                            ])
+                        )
+                    ],
+                    effects={3: [
+                        Damages(damage=gc.CORE_CAVALRY_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                        PlaySound([
+                            (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
+                        ]),
+                    ]},
+                )
+            ]
+        )
+    )
+    esper.add_component(entity, SpriteSheet(
+        surface=sprite_sheets[UnitType.CORE_CAVALRY],
+        frame_width=32,
+        frame_height=32,
+        scale=gc.MINIFOLKS_SCALE,
+        frames={AnimationType.IDLE: 8, AnimationType.WALKING: 6, AnimationType.ABILITY1: 7, AnimationType.DYING: 6},
+        rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 4, AnimationType.DYING: 6},
+        animation_durations={
+            AnimationType.IDLE: gc.CORE_CAVALRY_ANIMATION_IDLE_DURATION,
+            AnimationType.WALKING: gc.CORE_CAVALRY_ANIMATION_WALKING_DURATION,
+            AnimationType.ABILITY1: gc.CORE_CAVALRY_ANIMATION_ATTACK_DURATION,
+            AnimationType.DYING: gc.CORE_CAVALRY_ANIMATION_DYING_DURATION,
+        },
+        sprite_center_offset=(1, -6),
+    ))
+    esper.add_component(
+        entity,
+        StatsCard(
+            text=[
+                f"Name: Horseman",
+                f"Faction: Core",
+                f"Health: {gc.CORE_CAVALRY_HP}",
+                f"Attack: {gc.CORE_CAVALRY_ATTACK_DAMAGE}",
+                f"DPS: {round(gc.CORE_CAVALRY_ATTACK_DAMAGE/gc.CORE_CAVALRY_ANIMATION_ATTACK_DURATION, 2)}",
+                f"Speed: {gc.CORE_CAVALRY_MOVEMENT_SPEED}",
+                f"Range: {gc.CORE_CAVALRY_ATTACK_RANGE}",
+                f"AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
+            ]
+        )
+    )
+    esper.add_component(entity, WalkEffects({
+        frame: [PlaySound(sound_effects=[
+            (SoundEffect(filename=f"horse_footsteps_grass{i+1}.wav", volume=0.15), 1.0) for i in range(4)
+        ])]
+        for frame in [2]
+    }))
+    return entity
+
 def create_core_duelist(x: int, y: int, team: TeamType) -> int:
     """Create a fancy swordsman entity with all necessary components."""
     entity = unit_base_entity(
@@ -422,244 +523,6 @@ def create_core_duelist(x: int, y: int, team: TeamType) -> int:
     }))
     return entity
 
-def create_core_horseman(x: int, y: int, team: TeamType) -> int:
-    """Create a horseman entity with all necessary components."""
-    entity = unit_base_entity(
-        x=x,
-        y=y,
-        team=team,
-        unit_type=UnitType.CORE_HORSEMAN,
-        movement_speed=gc.CORE_HORSEMAN_MOVEMENT_SPEED,
-        health=gc.  CORE_HORSEMAN_HP,
-        hitbox=Hitbox(
-            width=32,
-            height=46,
-        )
-    )
-    targetting_strategy = TargetStrategy(
-        rankings=[
-            ByDistance(entity=entity, y_bias=2, ascending=True),
-        ],
-        unit_condition=All([OnTeam(team=team.other()), Alive()])
-    )
-    esper.add_component(
-        entity,
-        Destination(target_strategy=targetting_strategy, x_offset=gc.CORE_HORSEMAN_ATTACK_RANGE*2/3)
-    )
-    esper.add_component(
-        entity,
-        Abilities(
-            abilities=[
-                Ability(
-                    target_strategy=targetting_strategy,
-                    trigger_conditions=[
-                        HasTarget(
-                            unit_condition=All([
-                                Alive(),
-                                MaximumDistanceFromEntity(
-                                    entity=entity,
-                                    distance=gc.CORE_HORSEMAN_ATTACK_RANGE,
-                                    y_bias=5
-                                ),
-                            ])
-                        )
-                    ],
-                    persistent_conditions=[
-                        HasTarget(
-                            unit_condition=All([
-                                MaximumDistanceFromEntity(
-                                    entity=entity,
-                                    distance=gc.CORE_HORSEMAN_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
-                                    y_bias=5
-                                ),
-                            ])
-                        )
-                    ],
-                    effects={3: [
-                        Damages(damage=gc.CORE_HORSEMAN_ATTACK_DAMAGE, recipient=Recipient.TARGET),
-                        PlaySound([
-                            (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
-                        ]),
-                    ]},
-                )
-            ]
-        )
-    )
-    esper.add_component(entity, SpriteSheet(
-        surface=sprite_sheets[UnitType.CORE_HORSEMAN],
-        frame_width=32,
-        frame_height=32,
-        scale=gc.MINIFOLKS_SCALE,
-        frames={AnimationType.IDLE: 8, AnimationType.WALKING: 6, AnimationType.ABILITY1: 7, AnimationType.DYING: 6},
-        rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 4, AnimationType.DYING: 6},
-        animation_durations={
-            AnimationType.IDLE: gc.CORE_HORSEMAN_ANIMATION_IDLE_DURATION,
-            AnimationType.WALKING: gc.CORE_HORSEMAN_ANIMATION_WALKING_DURATION,
-            AnimationType.ABILITY1: gc.CORE_HORSEMAN_ANIMATION_ATTACK_DURATION,
-            AnimationType.DYING: gc.CORE_HORSEMAN_ANIMATION_DYING_DURATION,
-        },
-        sprite_center_offset=(1, -6),
-    ))
-    esper.add_component(
-        entity,
-        StatsCard(
-            text=[
-                f"Name: Horseman",
-                f"Faction: Core",
-                f"Health: {gc.CORE_HORSEMAN_HP}",
-                f"Attack: {gc.CORE_HORSEMAN_ATTACK_DAMAGE}",
-                f"DPS: {round(gc.CORE_HORSEMAN_ATTACK_DAMAGE/gc.CORE_HORSEMAN_ANIMATION_ATTACK_DURATION, 2)}",
-                f"Speed: {gc.CORE_HORSEMAN_MOVEMENT_SPEED}",
-                f"Range: {gc.CORE_HORSEMAN_ATTACK_RANGE}",
-                f"AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
-            ]
-        )
-    )
-    esper.add_component(entity, WalkEffects({
-        frame: [PlaySound(sound_effects=[
-            (SoundEffect(filename=f"horse_footsteps_grass{i+1}.wav", volume=0.15), 1.0) for i in range(4)
-        ])]
-        for frame in [2]
-    }))
-    return entity
-
-def create_core_mage(x: int, y: int, team: TeamType) -> int:
-    """Create a mage entity with all necessary components."""
-    entity = unit_base_entity(
-        x=x,
-        y=y,
-        team=team,
-        unit_type=UnitType.CORE_MAGE,
-        movement_speed=gc.CORE_MAGE_MOVEMENT_SPEED,
-        health=gc.CORE_MAGE_HP,
-        hitbox=Hitbox(
-            width=24,
-            height=36,
-        )
-    )
-    targetting_strategy = TargetStrategy(
-        rankings=[
-            ByDistance(entity=entity, y_bias=2, ascending=True),
-        ],
-        unit_condition=All([OnTeam(team=team.other()), Alive()])
-    )
-    esper.add_component(
-        entity,
-        Destination(target_strategy=targetting_strategy, x_offset=0)
-    )
-    esper.add_component(
-        entity,
-        RangeIndicator(range=gc.CORE_MAGE_ATTACK_RANGE)
-    )
-    esper.add_component(
-        entity,
-        Abilities(
-            abilities=[
-                Ability(
-                    target_strategy=targetting_strategy,
-                    trigger_conditions=[
-                        HasTarget(
-                            unit_condition=All([
-                                Alive(),
-                                MaximumDistanceFromEntity(
-                                    entity=entity,
-                                    distance=gc.CORE_MAGE_ATTACK_RANGE,
-                                    y_bias=None
-                                )
-                            ])
-                        )
-                    ],
-                    persistent_conditions=[
-                        HasTarget(
-                            unit_condition=All([
-                                MaximumDistanceFromEntity(
-                                    entity=entity,
-                                    distance=gc.CORE_MAGE_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
-                                    y_bias=None
-                                )
-                            ])
-                        )
-                    ],
-                    effects={
-                        0: [
-                            PlaySound(SoundEffect(filename="fireball_channeling.wav", volume=0.50)),
-                        ],
-                        6: [
-                            PlaySound(SoundEffect(filename="fireball_creation.wav", volume=0.50)),
-                        ],
-                        7: [
-                            CreatesProjectile(
-                                projectile_speed=gc.CORE_MAGE_PROJECTILE_SPEED,
-                                effects=[
-                                    CreatesAoE(
-                                        effects=[
-                                            Damages(damage=gc.CORE_MAGE_ATTACK_DAMAGE, recipient=Recipient.TARGET),
-                                            AppliesStatusEffect(
-                                                status_effect=Ignited(
-                                                    dps=gc.CORE_MAGE_IGNITE_DAMAGE/gc.CORE_MAGE_IGNITE_DURATION,
-                                                    time_remaining=gc.CORE_MAGE_IGNITE_DURATION
-                                                ),
-                                                recipient=Recipient.TARGET
-                                            ),
-                                        ],
-                                        visual=Visual.Explosion,
-                                        duration=gc.CORE_MAGE_FIREBALL_AOE_DURATION,
-                                        scale=gc.CORE_MAGE_FIREBALL_AOE_SCALE,
-                                        unit_condition=Alive(),
-                                        location=Recipient.PARENT,
-                                    ),
-                                    PlaySound(SoundEffect(filename="fireball_impact.wav", volume=0.50)),
-                                ],
-                                visual=Visual.Fireball,
-                                projectile_offset_x=11*gc.MINIFOLKS_SCALE,
-                                projectile_offset_y=-4*gc.MINIFOLKS_SCALE,
-                            ),
-                        ]
-                    }
-                )
-            ]
-        )
-    )
-    esper.add_component(entity, SpriteSheet(
-        surface=sprite_sheets[UnitType.CORE_MAGE],
-        frame_width=32,
-        frame_height=32,
-        scale=gc.MINIFOLKS_SCALE,
-        frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.ABILITY1: 11, AnimationType.DYING: 9},
-        rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 3, AnimationType.DYING: 7},
-        animation_durations={
-            AnimationType.IDLE: gc.CORE_MAGE_ANIMATION_IDLE_DURATION,
-            AnimationType.WALKING: gc.CORE_MAGE_ANIMATION_WALKING_DURATION,
-            AnimationType.ABILITY1: gc.CORE_MAGE_ANIMATION_ATTACK_DURATION,
-            AnimationType.DYING: gc.CORE_MAGE_ANIMATION_DYING_DURATION,
-        },
-        sprite_center_offset=(0, -8),
-    ))
-    esper.add_component(
-        entity,
-        StatsCard(
-            text=[
-                f"Name: Mage",
-                f"Faction: Core",
-                f"Health: {gc.CORE_MAGE_HP}",
-                f"Attack: {gc.CORE_MAGE_ATTACK_DAMAGE}",
-                f"DPS: {round(gc.CORE_MAGE_ATTACK_DAMAGE/gc.CORE_MAGE_ANIMATION_ATTACK_DURATION, 2)}",
-                f"Speed: {gc.CORE_MAGE_MOVEMENT_SPEED}",
-                f"Range: {gc.CORE_MAGE_ATTACK_RANGE}",
-                f"Projectile Speed: {gc.CORE_MAGE_PROJECTILE_SPEED}",
-                f"Special: Fireball attack explodes, damaging all units in an AoE and igniting them for {gc.CORE_MAGE_IGNITE_DAMAGE} over {gc.CORE_MAGE_IGNITE_DURATION} seconds.",
-                f"AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
-            ]
-        )
-    )
-    esper.add_component(entity, WalkEffects({
-        frame: [PlaySound(sound_effects=[
-            (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
-        ])]
-        for frame in [1, 4]
-    }))
-    return entity
-
 def create_core_swordsman(x: int, y: int, team: TeamType) -> int:
     """Create a swordsman entity with all necessary components."""
     entity = unit_base_entity(
@@ -760,6 +623,144 @@ def create_core_swordsman(x: int, y: int, team: TeamType) -> int:
             (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
         ])]
         for frame in [2, 5]
+    }))
+    return entity
+
+def create_core_wizard(x: int, y: int, team: TeamType) -> int:
+    """Create a wizard entity with all necessary components."""
+    entity = unit_base_entity(
+        x=x,
+        y=y,
+        team=team,
+        unit_type=UnitType.CORE_WIZARD,
+        movement_speed=gc.CORE_WIZARD_MOVEMENT_SPEED,
+        health=gc.CORE_WIZARD_HP,
+        hitbox=Hitbox(
+            width=24,
+            height=36,
+        )
+    )
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=2, ascending=True),
+        ],
+        unit_condition=All([OnTeam(team=team.other()), Alive()])
+    )
+    esper.add_component(
+        entity,
+        Destination(target_strategy=targetting_strategy, x_offset=0)
+    )
+    esper.add_component(
+        entity,
+        RangeIndicator(range=gc.CORE_WIZARD_ATTACK_RANGE)
+    )
+    esper.add_component(
+        entity,
+        Abilities(
+            abilities=[
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.CORE_WIZARD_ATTACK_RANGE,
+                                    y_bias=None
+                                )
+                            ])
+                        )
+                    ],
+                    persistent_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.CORE_WIZARD_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    y_bias=None
+                                )
+                            ])
+                        )
+                    ],
+                    effects={
+                        0: [
+                            PlaySound(SoundEffect(filename="fireball_channeling.wav", volume=0.50)),
+                        ],
+                        6: [
+                            PlaySound(SoundEffect(filename="fireball_creation.wav", volume=0.50)),
+                        ],
+                        7: [
+                            CreatesProjectile(
+                                projectile_speed=gc.CORE_WIZARD_PROJECTILE_SPEED,
+                                effects=[
+                                    CreatesAoE(
+                                        effects=[
+                                            Damages(damage=gc.CORE_WIZARD_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                                            AppliesStatusEffect(
+                                                status_effect=Ignited(
+                                                    dps=gc.CORE_WIZARD_IGNITE_DAMAGE/gc.CORE_WIZARD_IGNITE_DURATION,
+                                                    time_remaining=gc.CORE_WIZARD_IGNITE_DURATION
+                                                ),
+                                                recipient=Recipient.TARGET
+                                            ),
+                                        ],
+                                        visual=Visual.Explosion,
+                                        duration=gc.CORE_WIZARD_FIREBALL_AOE_DURATION,
+                                        scale=gc.CORE_WIZARD_FIREBALL_AOE_SCALE,
+                                        unit_condition=Alive(),
+                                        location=Recipient.PARENT,
+                                    ),
+                                    PlaySound(SoundEffect(filename="fireball_impact.wav", volume=0.50)),
+                                ],
+                                visual=Visual.Fireball,
+                                projectile_offset_x=11*gc.MINIFOLKS_SCALE,
+                                projectile_offset_y=-4*gc.MINIFOLKS_SCALE,
+                            ),
+                        ]
+                    }
+                )
+            ]
+        )
+    )
+    esper.add_component(entity, SpriteSheet(
+        surface=sprite_sheets[UnitType.CORE_WIZARD],
+        frame_width=32,
+        frame_height=32,
+        scale=gc.MINIFOLKS_SCALE,
+        frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.ABILITY1: 11, AnimationType.DYING: 9},
+        rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 3, AnimationType.DYING: 7},
+        animation_durations={
+            AnimationType.IDLE: gc.CORE_WIZARD_ANIMATION_IDLE_DURATION,
+            AnimationType.WALKING: gc.CORE_WIZARD_ANIMATION_WALKING_DURATION,
+            AnimationType.ABILITY1: gc.CORE_WIZARD_ANIMATION_ATTACK_DURATION,
+            AnimationType.DYING: gc.CORE_WIZARD_ANIMATION_DYING_DURATION,
+        },
+        sprite_center_offset=(0, -8),
+    ))
+    esper.add_component(
+        entity,
+        StatsCard(
+            text=[
+                f"Name: Wizard",
+                f"Faction: Core",
+                f"Health: {gc.CORE_WIZARD_HP}",
+                f"Attack: {gc.CORE_WIZARD_ATTACK_DAMAGE}",
+                f"DPS: {round(gc.CORE_WIZARD_ATTACK_DAMAGE/gc.CORE_WIZARD_ANIMATION_ATTACK_DURATION, 2)}",
+                f"Speed: {gc.CORE_WIZARD_MOVEMENT_SPEED}",
+                f"Range: {gc.CORE_WIZARD_ATTACK_RANGE}",
+                f"Projectile Speed: {gc.CORE_WIZARD_PROJECTILE_SPEED}",
+                f"Special: Fireball attack explodes, damaging all units in an AoE and igniting them for {gc.CORE_WIZARD_IGNITE_DAMAGE} over {gc.CORE_WIZARD_IGNITE_DURATION} seconds.",
+                f"AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
+            ]
+        )
+    )
+    esper.add_component(entity, WalkEffects({
+        frame: [PlaySound(sound_effects=[
+            (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+        ])]
+        for frame in [1, 4]
     }))
     return entity
 
