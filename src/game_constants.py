@@ -37,6 +37,13 @@ class GameConstants(BaseModel):
     MAP_FOG_COLOR: list[int]
     MAP_UNFOCUSED_COLOR: list[int]
 
+    # Target Preview Settings
+    TARGET_PREVIEW_SHIFT: float
+    TARGET_PREVIEW_GAP_DISTANCE: float
+    TARGET_PREVIEW_DASH_LENGTH: float
+    TARGET_PREVIEW_GAP_LENGTH: float
+    TARGET_PREVIEW_TICK_RATE: float
+
     TARGETTING_SWITCH_BIAS: float
     TARGETTING_GRACE_DISTANCE: float
     DEFAULT_AURA_PERIOD: float

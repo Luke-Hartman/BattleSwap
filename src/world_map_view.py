@@ -27,6 +27,7 @@ from hex_grid import (
     get_edge_vertices,
     get_edges_for_hexes
 )
+from processors.targetting_processor import TargettingProcessor
 from scene_utils import draw_polygon, use_world
 from events import PLAY_SOUND, PlaySoundEvent, emit_event
 
@@ -90,6 +91,7 @@ class WorldMapView:
             esper.add_processor(PositionProcessor())
             esper.add_processor(OrientationProcessor())
             esper.add_processor(RotationProcessor())
+            esper.add_processor(TargettingProcessor())
             world_x, world_y = axial_to_world(*battle.hex_coords)
             for unit_type, position in battle.allies or []:
                 create_unit(

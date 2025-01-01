@@ -7,6 +7,7 @@ import shapely
 from shapely.ops import nearest_points
 from battles import get_battles
 from components.animation import AnimationState
+from components.focus import Focus
 from components.position import Position
 from components.range_indicator import RangeIndicator
 from components.sprite_sheet import SpriteSheet
@@ -156,7 +157,6 @@ class SandboxScene(Scene):
             team=TeamType.TEAM1,
        )
         esper.remove_component(self.selected_partial_unit, UnitTypeComponent)
-        esper.remove_component(self.selected_partial_unit, UnitState)
     
     def create_unit_of_selected_type(self, placement_pos: Tuple[int, int], team: TeamType) -> None:
         """Create a unit of the selected type."""
@@ -296,17 +296,9 @@ class SandboxScene(Scene):
 
         # Update range indicator and stats card for hovered unit
         if hovered_unit is not None:
-            range_indicator = esper.try_component(hovered_unit, RangeIndicator)
-            if range_indicator:
-                range_indicator.enabled = True
-            stats_card = esper.component_for_entity(hovered_unit, StatsCard)
-            stats_card.active = True
+            esper.add_component(hovered_unit, Focus())
         elif self.selected_partial_unit is not None:
-            range_indicator = esper.try_component(self.selected_partial_unit, RangeIndicator)
-            if range_indicator:
-                range_indicator.enabled = True
-            stats_card = esper.component_for_entity(self.selected_partial_unit, StatsCard)
-            stats_card.active = True
+            esper.add_component(self.selected_partial_unit, Focus())
             position = esper.component_for_entity(self.selected_partial_unit, Position)
             position.x, position.y = placement_pos
 

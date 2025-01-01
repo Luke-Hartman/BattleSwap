@@ -5,10 +5,14 @@ This module contains the RenderingProcessor class, which is responsible for
 rendering entities with Position, AnimationState, SpriteSheet, and Team components.
 """
 
+import math
 import esper
 import pygame
+import pygame.gfxdraw
 import pygame_gui
 from components.aura import Aura
+from components.destination import Destination
+from components.focus import Focus
 from components.hitbox import Hitbox
 from components.position import Position
 from components.range_indicator import RangeIndicator
@@ -97,17 +101,16 @@ class RenderingProcessor(esper.Processor):
                     outline_color=(*aura.color, 120)
                 )
 
-        # Draw range indicators
-        for ent, (range_indicator, position) in esper.get_components(RangeIndicator, Position):
-            if range_indicator.enabled:
-                self._draw_circle(
-                    position.x,
-                    position.y,
-                    range_indicator.range,
-                    fill_color=None,
-                    outline_color=(200, 200, 200, 120)
-                )
-            range_indicator.enabled = False
+        # Draw range indicators on focused units
+        for ent, (range_indicator, position, _) in esper.get_components(RangeIndicator, Position, Focus):
+            self._draw_circle(
+                position.x,
+                position.y,
+                range_indicator.range,
+                fill_color=None,
+                outline_color=(200, 200, 200, 120)
+            )
+
 
         # Get all entities with necessary components
         entities = esper.get_components(Position, SpriteSheet)
@@ -155,21 +158,118 @@ class RenderingProcessor(esper.Processor):
                 if unit_state.state != State.DEAD and health.current < health.maximum:
                     self.draw_health_bar(pos, health, team, hitbox)
         
-        # Draw stats card if active
+        # Draw stats card on focused units
         if self.stats_card_ui is not None:
             self.stats_card_ui.kill()
-        for ent, (stats_card,) in esper.get_components(StatsCard):
-            if stats_card.active:
-                text = "\n".join(stats_card.text)
-                # Use Pygame GUI to draw the text in the bottom right corner of the screen, above the barracks
-                self.stats_card_ui = pygame_gui.elements.UITextBox(
-                    relative_rect=pygame.Rect(0, 0, 300, -1),
-                    html_text=text,
-                    wrap_to_height=True,
-                    manager=self.manager
+        for ent, (stats_card, focus) in esper.get_components(StatsCard, Focus):
+            text = "\n".join(stats_card.text)
+            # Use Pygame GUI to draw the text in the bottom right corner of the screen, above the barracks
+            self.stats_card_ui = pygame_gui.elements.UITextBox(
+                relative_rect=pygame.Rect(0, 0, 300, -1),
+                html_text=text,
+                wrap_to_height=True,
+                manager=self.manager
+            )
+            self.stats_card_ui.rect.midright = (self.screen.get_width() - 10, self.screen.get_height()/2)
+
+        def draw_dashed_line(surface, color, start_pos, end_pos, width=1, dash_length=10, gap_length=5, t=0):
+            start = pygame.Vector2(start_pos)
+            end = pygame.Vector2(end_pos)
+            direction = end - start
+            distance = direction.length()
+
+            if distance == 0:
+                return  # Avoid division by zero
+
+            direction.normalize_ip()
+            pattern_length = dash_length + gap_length
+
+            # Adjust t to loop within the pattern length
+            t = t % pattern_length
+
+            # Determine if we start with a dash or a gap based on t
+            if t < dash_length:
+                # Start with a partial dash
+                dash_start = start
+                dash_end = start + direction * min(dash_length - t, distance)
+                pygame.draw.aaline(surface, color, dash_start, dash_end, width)
+                current_pos = dash_length + gap_length - t
+            else:
+                current_pos = pattern_length - t
+
+            while current_pos < distance:
+                dash_start = start + direction * current_pos
+                dash_end = start + direction * min(current_pos + dash_length, distance)
+                pygame.draw.aaline(surface, color, dash_start, dash_end, width)
+                current_pos += pattern_length
+
+        def draw_arrow(
+            start_x: float,
+            start_y: float,
+            end_x: float,
+            end_y: float,
+            color: tuple[int, int, int, int]
+        ) -> None:
+            start = pygame.Vector2(start_x, start_y)
+            end = pygame.Vector2(end_x, end_y)
+            direction = end - start
+            distance = max(gc.TARGET_PREVIEW_GAP_DISTANCE, direction.length())
+            
+            # Get normalized direction vector
+            direction = direction / distance
+            
+            # Get perpendicular vector for shift
+            perp = pygame.Vector2(-direction.y, direction.x)
+            shift = perp * gc.TARGET_PREVIEW_SHIFT
+            
+            # Calculate arrow body and head positions
+            arrow_body = start + direction * gc.TARGET_PREVIEW_GAP_DISTANCE + shift
+            arrow_head = start + direction * (distance - gc.TARGET_PREVIEW_GAP_DISTANCE) + shift
+            draw_dashed_line(
+                self.screen,
+                color,
+                arrow_body,
+                arrow_head,
+                width=1,
+                dash_length=gc.TARGET_PREVIEW_DASH_LENGTH,
+                gap_length=gc.TARGET_PREVIEW_GAP_LENGTH,
+                t=pygame.time.get_ticks() / gc.TARGET_PREVIEW_TICK_RATE
+            )
+
+        # Draw arrows from focused units to their targets
+        for ent, (destination, position, team, _) in esper.get_components(Destination, Position, Team, Focus):
+            target = destination.target_strategy.target
+            if target is not None and esper.entity_exists(target):
+                target_position = esper.component_for_entity(target, Position)
+                screen_pos = self.camera.world_to_screen(position.x, position.y)
+                target_screen_pos = self.camera.world_to_screen(target_position.x, target_position.y)
+                draw_arrow(
+                    start_x=screen_pos[0],
+                    start_y=screen_pos[1],
+                    end_x=target_screen_pos[0],
+                    end_y=target_screen_pos[1],
+                    color=gc.TEAM1_COLOR if team.type == TeamType.TEAM1 else gc.TEAM2_COLOR
                 )
-                self.stats_card_ui.rect.midright = (self.screen.get_width() - 10, self.screen.get_height()/2)
-                stats_card.active = False
+        
+        # Draw arrows from units targetting focused units
+        for ent, (destination, position, team) in esper.get_components(Destination, Position, Team):
+            target = destination.target_strategy.target
+            if target is not None and esper.entity_exists(target):
+                if esper.has_component(target, Focus):
+                    target_position = esper.component_for_entity(target, Position)
+                    screen_pos = self.camera.world_to_screen(position.x, position.y)
+                    target_screen_pos = self.camera.world_to_screen(target_position.x, target_position.y)
+                    draw_arrow(
+                        start_x=screen_pos[0],
+                        start_y=screen_pos[1],
+                        end_x=target_screen_pos[0],
+                        end_y=target_screen_pos[1],
+                        color=gc.TEAM1_COLOR if team.type == TeamType.TEAM1 else gc.TEAM2_COLOR
+                    )
+
+        # Clear focus on all units
+        for ent, (focus,) in esper.get_components(Focus):
+            esper.remove_component(ent, Focus)
 
     def draw_health_bar(self, pos: Position, health: Health, team: Team, hitbox: Hitbox):
         """Draw a health bar above the entity."""
