@@ -8,14 +8,12 @@ from camera import Camera
 from events import STOP_ALL_SOUNDS, StopAllSoundsEvent, emit_event
 from hex_grid import axial_to_world
 from progress_manager import ProgressManager
-from scenes.select_battle import SelectBattleScene
 from scenes.battle import BattleScene
 from scenes.sandbox import SandboxScene
 from scenes.test_editor import TestEditorScene
 from scenes.events import (
     BATTLE_SCENE_EVENT,
     SANDBOX_SCENE_EVENT,
-    SELECT_BATTLE_SCENE_EVENT,
     TEST_EDITOR_SCENE_EVENT,
     PREVIOUS_SCENE_EVENT,
     MOVE_BATTLES_SCENE_EVENT,
@@ -23,7 +21,6 @@ from scenes.events import (
     BattleSceneEvent,
     PreviousSceneEvent,
     SandboxSceneEvent,
-    SelectBattleSceneEvent,
     TestEditorSceneEvent,
     MoveBattlesSceneEvent,
     CampaignSceneEvent,
@@ -83,12 +80,6 @@ class SceneManager:
                 self.scene_stack.append(SceneState(
                     scene_type=MainMenuScene,
                     params={"screen": self.screen, "manager": self.manager}
-                ))
-            elif isinstance(self.current_scene, SelectBattleScene):
-                self.scene_stack.append(SceneState(
-                    scene_type=SelectBattleScene,
-                    params={"screen": self.screen, "manager": self.manager, 
-                        "progress_manager": self.progress_manager}
                 ))
             elif isinstance(self.current_scene, TestEditorScene):
                 self.scene_stack.append(SceneState(
@@ -160,14 +151,6 @@ class SceneManager:
                     world_map_view=validated_event.world_map_view,
                     battle_id=validated_event.battle_id,
                     sandbox_mode=validated_event.sandbox_mode,
-                )
-            elif event.type == SELECT_BATTLE_SCENE_EVENT:
-                self.cleanup()
-                validated_event = SelectBattleSceneEvent.model_validate(event.dict)
-                self.current_scene = SelectBattleScene(
-                    screen=self.screen,
-                    manager=self.manager,
-                    progress_manager=self.progress_manager
                 )
             elif event.type == SANDBOX_SCENE_EVENT:
                 self.cleanup()

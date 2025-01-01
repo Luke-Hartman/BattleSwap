@@ -7,10 +7,8 @@ from pydantic import BaseModel
 
 from world_map_view import WorldMapView
 
-SETUP_BATTLE_SCENE_EVENT = pygame.event.custom_type()
 BATTLE_SCENE_EVENT = pygame.event.custom_type()
 SANDBOX_SCENE_EVENT = pygame.event.custom_type()
-SELECT_BATTLE_SCENE_EVENT = pygame.event.custom_type()
 TEST_EDITOR_SCENE_EVENT = pygame.event.custom_type()
 PREVIOUS_SCENE_EVENT = pygame.event.custom_type()
 MOVE_BATTLES_SCENE_EVENT = pygame.event.custom_type()
@@ -32,16 +30,6 @@ class PyGameEvent(BaseModel):
         """Convert the pydantic model to a pygame event."""
         return pygame.event.Event(self._type, **self.model_dump())
 
-class SetupBattleSceneEvent(PyGameEvent):
-    """Event for setting up a battle."""
-    world_map_view: WorldMapView
-    battle_id: str
-    play_tip_sound: bool = False
-
-    @property
-    def _type(self) -> int:
-        return SETUP_BATTLE_SCENE_EVENT
-
 class BattleSceneEvent(PyGameEvent):
     """Event for starting a battle."""
     world_map_view: WorldMapView
@@ -62,14 +50,6 @@ class SandboxSceneEvent(PyGameEvent):
     @property
     def _type(self) -> int:
         return SANDBOX_SCENE_EVENT
-
-
-class SelectBattleSceneEvent(PyGameEvent):
-    """Event for selecting a battle."""
-
-    @property
-    def _type(self) -> int:
-        return SELECT_BATTLE_SCENE_EVENT
 
 
 class TestEditorSceneEvent(PyGameEvent):

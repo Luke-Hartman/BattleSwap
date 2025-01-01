@@ -6,7 +6,7 @@ from auto_battle import AutoBattle, BattleOutcome
 from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event
 from scene_utils import get_unit_placements, use_world
 from scenes.scene import Scene
-from scenes.events import PreviousSceneEvent, SandboxSceneEvent, SelectBattleSceneEvent, SetupBattleSceneEvent
+from scenes.events import PreviousSceneEvent
 from world_map_view import WorldMapView
 from ui_components.return_button import ReturnButton
 from progress_manager import ProgressManager, Solution

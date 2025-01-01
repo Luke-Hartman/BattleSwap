@@ -5,7 +5,7 @@ import pygame
 import pygame_gui
 from camera import Camera
 from scenes.scene import Scene
-from scenes.events import PreviousSceneEvent, SandboxSceneEvent, SelectBattleSceneEvent
+from scenes.events import PreviousSceneEvent, SandboxSceneEvent
 from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event
 from ui_components.barracks_ui import UnitCount
 import battles
