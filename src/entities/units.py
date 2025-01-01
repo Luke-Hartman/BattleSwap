@@ -374,7 +374,7 @@ def create_core_cavalry(x: int, y: int, team: TeamType) -> int:
         entity,
         StatsCard(
             text=[
-                f"Name: Horseman",
+                f"Name: Cavalry",
                 f"Faction: Core",
                 f"Health: {gc.CORE_CAVALRY_HP}",
                 f"Attack: {gc.CORE_CAVALRY_ATTACK_DAMAGE}",

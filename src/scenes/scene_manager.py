@@ -9,24 +9,24 @@ from events import STOP_ALL_SOUNDS, StopAllSoundsEvent, emit_event
 from hex_grid import axial_to_world
 from progress_manager import ProgressManager
 from scenes.battle import BattleScene
-from scenes.sandbox import SandboxScene
+from scenes.setup_battle import SetupBattleScene
 from scenes.test_editor import TestEditorScene
 from scenes.events import (
     BATTLE_SCENE_EVENT,
-    SANDBOX_SCENE_EVENT,
+    SETUP_BATTLE_SCENE_EVENT,
     TEST_EDITOR_SCENE_EVENT,
     PREVIOUS_SCENE_EVENT,
-    MOVE_BATTLES_SCENE_EVENT,
+    CAMPAIGN_EDITOR_SCENE_EVENT,
     CAMPAIGN_SCENE_EVENT,
     BattleSceneEvent,
     PreviousSceneEvent,
-    SandboxSceneEvent,
+    SetupBattleSceneEvent,
     TestEditorSceneEvent,
-    MoveBattlesSceneEvent,
+    CampaignEditorSceneEvent,
     CampaignSceneEvent,
     DEVELOPER_TOOLS_SCENE_EVENT,
 )
-from scenes.move_battles import MoveBattlesScene
+from scenes.campaign_editor import CampaignEditorScene
 from world_map_view import WorldMapView
 from battles import Battle, get_battle_id, get_battles
 from scenes.campaign import CampaignScene
@@ -87,9 +87,9 @@ class SceneManager:
                     params={"screen": self.screen, "manager": self.manager, 
                         "editor_scroll": self.current_scene._get_scroll_percentage()}
                 ))
-            elif isinstance(self.current_scene, MoveBattlesScene):
+            elif isinstance(self.current_scene, CampaignEditorScene):
                 self.scene_stack.append(SceneState(
-                    scene_type=MoveBattlesScene,
+                    scene_type=CampaignEditorScene,
                     params={"screen": self.screen, "manager": self.manager,
                         "world_map_view": self.current_scene.world_map_view},
                     # camera_state=CameraState(
@@ -106,9 +106,9 @@ class SceneManager:
                     #     camera=self.current_scene.world_map_view.camera
                     # )
                 ))
-            elif isinstance(self.current_scene, SandboxScene):
+            elif isinstance(self.current_scene, SetupBattleScene):
                 self.scene_stack.append(SceneState(
-                    scene_type=SandboxScene,
+                    scene_type=SetupBattleScene,
                     params={
                         "screen": self.screen, 
                         "manager": self.manager,
@@ -152,9 +152,9 @@ class SceneManager:
                     battle_id=validated_event.battle_id,
                     sandbox_mode=validated_event.sandbox_mode,
                 )
-            elif event.type == SANDBOX_SCENE_EVENT:
+            elif event.type == SETUP_BATTLE_SCENE_EVENT:
                 self.cleanup()
-                validated_event = SandboxSceneEvent.model_validate(event.dict)
+                validated_event = SetupBattleSceneEvent.model_validate(event.dict)
                 if validated_event.world_map_view is not None:
                     camera = validated_event.world_map_view.camera
                     battle = validated_event.world_map_view.battles[validated_event.battle_id]
@@ -164,7 +164,7 @@ class SceneManager:
                         centery=world_y,
                         zoom=1.0
                     )
-                self.current_scene = SandboxScene(
+                self.current_scene = SetupBattleScene(
                     screen=self.screen,
                     manager=self.manager,
                     world_map_view=validated_event.world_map_view,
@@ -180,10 +180,10 @@ class SceneManager:
                     screen=self.screen,
                     manager=self.manager,
                 )
-            elif event.type == MOVE_BATTLES_SCENE_EVENT:
+            elif event.type == CAMPAIGN_EDITOR_SCENE_EVENT:
                 self.cleanup()
-                validated_event = MoveBattlesSceneEvent.model_validate(event.dict)
-                self.current_scene = MoveBattlesScene(
+                validated_event = CampaignEditorSceneEvent.model_validate(event.dict)
+                self.current_scene = CampaignEditorScene(
                     screen=self.screen,
                     manager=self.manager,
                     world_map_view=validated_event.world_map_view,

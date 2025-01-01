@@ -4,7 +4,7 @@ import pygame_gui
 from camera import Camera
 from scenes.scene import Scene
 from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event
-from scenes.events import SandboxSceneEvent, CampaignSceneEvent, DeveloperToolsSceneEvent
+from scenes.events import SetupBattleSceneEvent, CampaignSceneEvent, DeveloperToolsSceneEvent
 from world_map_view import WorldMapView
 import battles
 
@@ -117,7 +117,7 @@ class MainMenuScene(Scene):
                         ).to_event())
                     
                     elif event.ui_element == self.sandbox_button:
-                        pygame.event.post(SandboxSceneEvent(
+                        pygame.event.post(SetupBattleSceneEvent(
                             world_map_view=None,
                             battle_id=None,
                             sandbox_mode=True,

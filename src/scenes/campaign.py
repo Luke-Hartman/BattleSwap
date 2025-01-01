@@ -8,7 +8,7 @@ import pygame_gui
 from battles import get_battles
 from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event
 from progress_manager import ProgressManager
-from scenes.events import PreviousSceneEvent, SandboxSceneEvent
+from scenes.events import PreviousSceneEvent, SetupBattleSceneEvent
 from scenes.scene import Scene
 from camera import Camera
 from ui_components.barracks_ui import BarracksUI
@@ -114,7 +114,7 @@ class CampaignScene(Scene):
                 ):
                     battle = self.world_map_view.get_battle_from_hex(self.selected_battle_hex)
                     pygame.event.post(
-                        SandboxSceneEvent(
+                        SetupBattleSceneEvent(
                             world_map_view=self.world_map_view,
                             battle_id=battle.id,
                             sandbox_mode=False,

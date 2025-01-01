@@ -17,8 +17,8 @@ from world_map_view import BorderState, FillState, WorldMapView, HexState
 from ui_components.tip_box import TipBox
 from ui_components.save_battle_dialog import SaveBattleDialog
 
-class MoveBattlesScene(Scene):
-    """A 2D hex grid world map for battle selection."""
+class CampaignEditorScene(Scene):
+    """Scene for editing the campaign."""
     
     def __init__(
         self,

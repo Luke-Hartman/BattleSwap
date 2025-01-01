@@ -8,10 +8,10 @@ from pydantic import BaseModel
 from world_map_view import WorldMapView
 
 BATTLE_SCENE_EVENT = pygame.event.custom_type()
-SANDBOX_SCENE_EVENT = pygame.event.custom_type()
+SETUP_BATTLE_SCENE_EVENT = pygame.event.custom_type()
 TEST_EDITOR_SCENE_EVENT = pygame.event.custom_type()
 PREVIOUS_SCENE_EVENT = pygame.event.custom_type()
-MOVE_BATTLES_SCENE_EVENT = pygame.event.custom_type()
+CAMPAIGN_EDITOR_SCENE_EVENT = pygame.event.custom_type()
 CAMPAIGN_SCENE_EVENT = pygame.event.custom_type()
 DEVELOPER_TOOLS_SCENE_EVENT = pygame.event.custom_type()
 
@@ -40,8 +40,8 @@ class BattleSceneEvent(PyGameEvent):
     def _type(self) -> int:
         return BATTLE_SCENE_EVENT
 
-class SandboxSceneEvent(PyGameEvent):
-    """Event for starting a sandbox battle."""
+class SetupBattleSceneEvent(PyGameEvent):
+    """Event for setting up a battle."""
     world_map_view: Optional[WorldMapView]
     battle_id: Optional[str]
     sandbox_mode: bool
@@ -49,7 +49,7 @@ class SandboxSceneEvent(PyGameEvent):
 
     @property
     def _type(self) -> int:
-        return SANDBOX_SCENE_EVENT
+        return SETUP_BATTLE_SCENE_EVENT
 
 
 class TestEditorSceneEvent(PyGameEvent):
@@ -68,14 +68,14 @@ class PreviousSceneEvent(PyGameEvent):
     def _type(self) -> int:
         return PREVIOUS_SCENE_EVENT
 
-class MoveBattlesSceneEvent(PyGameEvent):
-    """Event for transitioning to the world map scene."""
+class CampaignEditorSceneEvent(PyGameEvent):
+    """Event for transitioning to the campaign editor scene."""
 
     world_map_view: WorldMapView
 
     @property
     def _type(self) -> int:
-        return MOVE_BATTLES_SCENE_EVENT
+        return CAMPAIGN_EDITOR_SCENE_EVENT
 
 class CampaignSceneEvent(PyGameEvent):
     """Event for transitioning to the campaign scene."""

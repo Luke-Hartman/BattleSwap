@@ -6,9 +6,9 @@ import battles
 from scenes.scene import Scene
 from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event
 from scenes.events import (
-    MoveBattlesSceneEvent,
+    CampaignEditorSceneEvent,
     TestEditorSceneEvent,
-    SandboxSceneEvent,
+    SetupBattleSceneEvent,
     PreviousSceneEvent,
 )
 from ui_components.return_button import ReturnButton
@@ -104,7 +104,7 @@ class DeveloperToolsScene(Scene):
                             battles=battles.get_battles(),
                             camera=camera
                         )
-                        pygame.event.post(MoveBattlesSceneEvent(
+                        pygame.event.post(CampaignEditorSceneEvent(
                             world_map_view=world_map_view,
                         ).to_event())
                     
@@ -128,7 +128,7 @@ class DeveloperToolsScene(Scene):
                             battles=[battle],
                             camera=camera
                         )
-                        pygame.event.post(SandboxSceneEvent(
+                        pygame.event.post(SetupBattleSceneEvent(
                             world_map_view=world_map_view,
                             battle_id=battle.id,
                             sandbox_mode=True,

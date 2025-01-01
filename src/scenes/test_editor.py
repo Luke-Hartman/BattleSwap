@@ -5,7 +5,7 @@ import pygame
 import pygame_gui
 from camera import Camera
 from scenes.scene import Scene
-from scenes.events import PreviousSceneEvent, SandboxSceneEvent
+from scenes.events import PreviousSceneEvent, SetupBattleSceneEvent
 from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event
 from ui_components.barracks_ui import UnitCount
 import battles
@@ -305,7 +305,7 @@ class TestEditorScene(Scene):
                         pygame.event.post(PreviousSceneEvent().to_event())
                     elif event.ui_element.text == "New Sandbox":
                         pygame.event.post(
-                            SandboxSceneEvent(
+                            SetupBattleSceneEvent(
                                 world_map_view=None,
                                 battle_id=None,
                                 sandbox_mode=True,
@@ -337,7 +337,7 @@ class TestEditorScene(Scene):
                             camera=Camera(),
                         )
                         pygame.event.post(
-                            SandboxSceneEvent(
+                            SetupBattleSceneEvent(
                                 world_map_view=world_map_view,
                                 battle_id=battle_id,
                                 sandbox_mode=True,

@@ -34,11 +34,10 @@ from world_map_view import FillState, HexState, WorldMapView
 from scene_utils import draw_grid, get_center_line, get_placement_pos, get_hovered_unit, get_unit_placements, get_legal_placement_area, mouse_over_ui
 
 
-class SandboxScene(Scene):
-    """A sandbox scene for experimenting with unit placement and battles.
-    
-    This scene allows placing any units on either team without restrictions.
-    Units can be placed on their respective sides of the battlefield.
+class SetupBattleScene(Scene):
+    """A scene for setting up a battle.
+
+    Has additional options for sandbox and developer modes.
     """
 
     def __init__(
