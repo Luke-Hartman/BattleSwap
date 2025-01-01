@@ -165,7 +165,7 @@ class Camera:
     def _check_edge_scroll(self) -> tuple[float, float]:
         """Check if mouse is at screen edges and return scroll direction vector."""
         mouse_x, mouse_y = pygame.mouse.get_pos()
-        edge_size = 20  # pixels from edge that triggers scrolling
+        edge_size = 2  # pixels from edge that triggers scrolling
         
         dx = 0.0
         dy = 0.0
