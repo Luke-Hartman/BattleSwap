@@ -11,7 +11,6 @@ from entities.units import load_sprite_sheets
 from handlers.combat_handler import CombatHandler
 from handlers.sound_handler import SoundHandler
 from handlers.state_machine import StateMachine
-from progress_manager import ProgressManager
 from scenes.scene_manager import SceneManager
 from visuals import load_visual_sheets
 from game_constants import gc
@@ -38,8 +37,7 @@ sound_handler = SoundHandler()
 running = True
 clock = pygame.time.Clock()
 
-progress_manager = ProgressManager()
-scene_manager = SceneManager(screen, progress_manager)
+scene_manager = SceneManager(screen)
 
 while running:
     clock.tick(60)

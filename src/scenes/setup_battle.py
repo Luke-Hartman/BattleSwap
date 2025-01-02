@@ -19,7 +19,7 @@ from components.unit_type import UnitType, UnitTypeComponent
 from entities.units import create_unit
 from events import CHANGE_MUSIC, PLAY_SOUND, ChangeMusicEvent, PlaySoundEvent, emit_event
 from hex_grid import axial_to_world, get_hex_vertices
-from progress_manager import ProgressManager
+from progress_manager import progress_manager
 from scenes.scene import Scene
 from game_constants import gc
 from camera import Camera
@@ -46,7 +46,6 @@ class SetupBattleScene(Scene):
         manager: pygame_gui.UIManager,
         world_map_view: Optional[WorldMapView],
         battle_id: Optional[str],
-        progress_manager: Optional[ProgressManager] = None,
         sandbox_mode: bool = False,
         developer_mode: bool = False,
     ):
@@ -57,7 +56,6 @@ class SetupBattleScene(Scene):
             manager: The pygame_gui manager for the scene.
             world_map_view: The world map view for the scene.
             battle_id: Which battle is focused.
-            progress_manager: The progress manager for the scene.
             sandbox_mode: In sandbox mode, there are no restrictions on unit placement.
             developer_mode: In developer mode, there are additional buttons such as saving
                 and simulating the battle.
@@ -92,7 +90,6 @@ class SetupBattleScene(Scene):
         self.world_map_view = world_map_view
         self.camera = world_map_view.camera
         self.battle_id = battle_id
-        self.progress_manager = progress_manager
         self.sandbox_mode = sandbox_mode
         self.developer_mode = developer_mode
         
@@ -110,7 +107,7 @@ class SetupBattleScene(Scene):
             for other_battle in self.world_map_view.battles.values():
                 if other_battle.hex_coords == battle.hex_coords:
                     unfocused_states[other_battle.hex_coords] = HexState(fill=FillState.NORMAL)
-                elif other_battle.hex_coords in self.progress_manager.solutions:
+                elif other_battle.hex_coords in progress_manager.solutions:
                     unfocused_states[other_battle.hex_coords] = HexState(fill=FillState.UNFOCUSED)
                 else:
                     unfocused_states[other_battle.hex_coords] = HexState(fill=FillState.FOGGED)
@@ -122,7 +119,7 @@ class SetupBattleScene(Scene):
         
         self.barracks = BarracksUI(
             self.manager,
-            starting_units={} if self.sandbox_mode else self.progress_manager.available_units(battle),
+            starting_units={} if self.sandbox_mode else progress_manager.available_units(battle),
             interactive=True,
             sandbox_mode=self.sandbox_mode,
         )
@@ -251,7 +248,7 @@ class SetupBattleScene(Scene):
                         )
                     elif event.ui_element == self.return_button:
                         self.world_map_view.move_camera_above_battle(self.battle_id)
-                        self.world_map_view.rebuild(battles=self.progress_manager.get_battles_including_solutions())
+                        self.world_map_view.rebuild(battles=progress_manager.get_battles_including_solutions())
                         pygame.event.post(PreviousSceneEvent().to_event())
                         return super().update(time_delta, events)
                     elif event.ui_element == self.start_button:

@@ -7,7 +7,6 @@ from typing import Optional, Any, List
 from camera import Camera
 from events import STOP_ALL_SOUNDS, StopAllSoundsEvent, emit_event
 from hex_grid import axial_to_world
-from progress_manager import ProgressManager
 from scenes.battle import BattleScene
 from scenes.setup_battle import SetupBattleScene
 from scenes.test_editor import TestEditorScene
@@ -29,8 +28,6 @@ from scenes.events import (
     DEVELOPER_TOOLS_SCENE_EVENT,
 )
 from scenes.campaign_editor import CampaignEditorScene
-from world_map_view import WorldMapView
-from battles import Battle, get_battle_id, get_battles
 from scenes.campaign import CampaignScene
 from scenes.main_menu import MainMenuScene
 from scenes.developer_tools import DeveloperToolsScene
@@ -64,10 +61,8 @@ class SceneManager:
     def __init__(
             self, 
             screen: pygame.Surface,
-            progress_manager: ProgressManager
     ):
         self.screen = screen
-        self.progress_manager = progress_manager
         self.manager = pygame_gui.UIManager(
             (pygame.display.Info().current_w, pygame.display.Info().current_h), 
             'src/theme.json'
@@ -101,8 +96,7 @@ class SceneManager:
                     scene_type=CampaignScene,
                     params={"screen": self.screen, "manager": self.manager,
                         "world_map_view": self.current_scene.world_map_view,
-                        "progress_manager": self.progress_manager},
-                ))
+                    }))
             elif isinstance(self.current_scene, SetupBattleScene):
                 self.scene_stack.append(SceneState(
                     scene_type=SetupBattleScene,
@@ -111,7 +105,6 @@ class SceneManager:
                         "manager": self.manager,
                         "world_map_view": self.current_scene.world_map_view,
                         "battle_id": self.current_scene.battle_id,
-                        "progress_manager": self.progress_manager,
                         "sandbox_mode": self.current_scene.sandbox_mode,
                     },
                 ))
@@ -149,7 +142,6 @@ class SceneManager:
                 self.current_scene = BattleScene(
                     screen=self.screen,
                     manager=self.manager,
-                    progress_manager=self.progress_manager,
                     world_map_view=validated_event.world_map_view,
                     battle_id=validated_event.battle_id,
                     sandbox_mode=validated_event.sandbox_mode,
@@ -171,7 +163,6 @@ class SceneManager:
                     manager=self.manager,
                     world_map_view=validated_event.world_map_view,
                     battle_id=validated_event.battle_id,
-                    progress_manager=self.progress_manager,
                     sandbox_mode=validated_event.sandbox_mode,
                     developer_mode=validated_event.developer_mode,
                 )
@@ -197,7 +188,6 @@ class SceneManager:
                     screen=self.screen,
                     manager=self.manager,
                     world_map_view=validated_event.world_map_view,
-                    progress_manager=self.progress_manager
                 )
             elif event.type == DEVELOPER_TOOLS_SCENE_EVENT:
                 self.cleanup()

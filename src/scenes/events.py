@@ -15,6 +15,7 @@ CAMPAIGN_EDITOR_SCENE_EVENT = pygame.event.custom_type()
 CAMPAIGN_SCENE_EVENT = pygame.event.custom_type()
 DEVELOPER_TOOLS_SCENE_EVENT = pygame.event.custom_type()
 SETTINGS_SCENE_EVENT = pygame.event.custom_type()
+
 class PyGameEvent(BaseModel):
     """Base class for pygame events."""
     

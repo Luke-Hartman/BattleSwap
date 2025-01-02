@@ -41,7 +41,7 @@ def get_battle_coords(battle_coords: Tuple[int, int]) -> Battle:
 
 def get_battles() -> List[Battle]:
     """Get all battles."""
-    return _battles.copy()
+    return [battle.model_copy(deep=True) for battle in _battles]
 
 _battles: List[Battle] = []
 

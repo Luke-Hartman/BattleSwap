@@ -7,7 +7,7 @@ import pygame_gui
 
 from battles import get_battles
 from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event
-from progress_manager import ProgressManager
+from progress_manager import progress_manager
 from scenes.events import PreviousSceneEvent, SetupBattleSceneEvent
 from scenes.scene import Scene
 from camera import Camera
@@ -23,14 +23,12 @@ class CampaignScene(Scene):
         screen: pygame.Surface,
         manager: pygame_gui.UIManager,
         world_map_view: WorldMapView,
-        progress_manager: ProgressManager
     ) -> None:
         emit_event(CHANGE_MUSIC, event=ChangeMusicEvent(
             filename="Main Theme.wav",
         ))
         self.screen = screen
         self.manager = manager
-        self.progress_manager = progress_manager
         self.world_map_view = world_map_view
 
         # Create camera with desired initial settings
@@ -40,10 +38,10 @@ class CampaignScene(Scene):
         # Store context buttons
         self.context_buttons: dict[str, pygame_gui.elements.UIButton] = {}
 
-        if self.progress_manager.solutions:
+        if progress_manager.solutions:
             self.barracks = BarracksUI(
                 self.manager,
-                self.progress_manager.available_units(None),
+                progress_manager.available_units(None),
                 interactive=False,
                 sandbox_mode=False,
             )
@@ -80,7 +78,7 @@ class CampaignScene(Scene):
         y = screen_rect.height - bottom_margin - button_height
 
         # Show different button based on whether battle is solved
-        if battle.hex_coords in self.progress_manager.solutions:
+        if battle.hex_coords in progress_manager.solutions:
             self.context_buttons["improve"] = pygame_gui.elements.UIButton(
                 relative_rect=pygame.Rect(
                     (start_x, y),
@@ -130,7 +128,7 @@ class CampaignScene(Scene):
 
                     # Only select if clicking an available battle hex
                     if (battle is not None and 
-                        clicked_hex in self.progress_manager.available_battles()):
+                        clicked_hex in progress_manager.available_battles()):
                         self.selected_battle_hex = clicked_hex
                         self.create_context_buttons()
                     else:
@@ -152,7 +150,7 @@ class CampaignScene(Scene):
                     # Only hover available battle hexes that aren't selected
                     if (
                         self.world_map_view.get_battle_from_hex(hovered_hex) is not None and
-                        hovered_hex in self.progress_manager.available_battles()
+                        hovered_hex in progress_manager.available_battles()
                     ):
                         self.hovered_battle_hex = hovered_hex
 
@@ -160,13 +158,13 @@ class CampaignScene(Scene):
             self.manager.process_events(event)
 
         # Update hex states while preserving fog of war
-        available_battles = self.progress_manager.available_battles()
+        available_battles = progress_manager.available_battles()
         states = defaultdict(HexState)
         for battle in get_battles():
             if battle.hex_coords is not None:
                 if battle.hex_coords in available_battles:
                     # Mark available battles with green border if not yet solved
-                    if battle.hex_coords not in self.progress_manager.solutions:
+                    if battle.hex_coords not in progress_manager.solutions:
                         states[battle.hex_coords].fill = FillState.UNFOCUSED
                 else:
                     states[battle.hex_coords].fill = FillState.FOGGED

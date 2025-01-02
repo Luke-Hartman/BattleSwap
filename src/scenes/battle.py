@@ -9,7 +9,7 @@ from scenes.scene import Scene
 from scenes.events import PreviousSceneEvent
 from world_map_view import WorldMapView
 from ui_components.return_button import ReturnButton
-from progress_manager import ProgressManager, Solution
+from progress_manager import progress_manager, Solution
 
 class BattleScene(Scene):
     """The scene for the battle."""
@@ -18,7 +18,6 @@ class BattleScene(Scene):
         self,
         screen: pygame.Surface,
         manager: pygame_gui.UIManager,
-        progress_manager: ProgressManager,
         world_map_view: WorldMapView,
         battle_id: str,
         sandbox_mode: bool = False
@@ -38,7 +37,6 @@ class BattleScene(Scene):
         ))
         self.screen = screen
         self.manager = manager
-        self.progress_manager = progress_manager
         self.world_map_view = world_map_view
         self.battle_id = battle_id
         self.battle = self.world_map_view.battles[self.battle_id]
@@ -64,8 +62,8 @@ class BattleScene(Scene):
                         pygame.event.post(PreviousSceneEvent().to_event())
                         return super().update(time_delta, events)
                     elif event.ui_element == self.victory_button:
-                        self.progress_manager.save_solution(Solution(self.battle.hex_coords, self.battle.allies))
-                        self.world_map_view.rebuild(self.progress_manager.get_battles_including_solutions())
+                        progress_manager.save_solution(Solution(hex_coords=self.battle.hex_coords, unit_placements=self.battle.allies))
+                        self.world_map_view.rebuild(progress_manager.get_battles_including_solutions())
                         self.world_map_view.move_camera_above_battle(self.battle_id)
                         pygame.event.post(PreviousSceneEvent(n=2).to_event())
                         return super().update(time_delta, events)

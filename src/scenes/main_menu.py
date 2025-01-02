@@ -6,7 +6,7 @@ from scenes.scene import Scene
 from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event
 from scenes.events import SettingsSceneEvent, SetupBattleSceneEvent, CampaignSceneEvent, DeveloperToolsSceneEvent
 from world_map_view import WorldMapView
-import battles
+from progress_manager import progress_manager, reset_progress
 
 class MainMenuScene(Scene):
     """Main menu scene with primary navigation options for the game."""
@@ -17,6 +17,7 @@ class MainMenuScene(Scene):
         ))
         self.screen = screen
         self.manager = manager
+        self.confirmation_dialog: pygame_gui.elements.UIConfirmationDialog | None = None
         self.create_buttons()
 
     def create_buttons(self) -> None:
@@ -34,6 +35,19 @@ class MainMenuScene(Scene):
         # Calculate X position to center buttons horizontally
         screen_width = pygame.display.Info().current_w
         button_x = (screen_width - button_width) // 2
+
+        # Create reset progress button in top right corner
+        reset_button_width = 150
+        reset_button_height = 40
+        margin = 20
+        self.reset_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect(
+                (screen_width - reset_button_width - margin, margin),
+                (reset_button_width, reset_button_height)
+            ),
+            text="Reset Progress",
+            manager=self.manager
+        )
 
         # Create title
         title_height = 100
@@ -109,7 +123,7 @@ class MainMenuScene(Scene):
                         world_map_view = WorldMapView(
                             screen=self.screen,
                             manager=self.manager,
-                            battles=battles.get_battles(),
+                            battles=progress_manager.get_battles_including_solutions(),
                             camera=camera
                         )
                         pygame.event.post(CampaignSceneEvent(
@@ -132,6 +146,22 @@ class MainMenuScene(Scene):
                     
                     elif event.ui_element == self.exit_button:
                         return False
+                    
+                    elif event.ui_element == self.reset_button:
+                        self.confirmation_dialog = pygame_gui.windows.UIConfirmationDialog(
+                            rect=pygame.Rect((pygame.display.Info().current_w/2 - 150, pygame.display.Info().current_h/2 - 100), (300, 200)),
+                            manager=self.manager,
+                            window_title="Reset Progress",
+                            action_long_desc="Are you sure you want to reset all game progress? This cannot be undone.",
+                            action_short_name="Reset",
+                            blocking=True
+                        )
+
+                elif event.user_type == pygame_gui.UI_CONFIRMATION_DIALOG_CONFIRMED:
+                    if self.confirmation_dialog is not None and event.ui_element == self.confirmation_dialog:
+                        reset_progress()
+                        print(progress_manager.solutions)
+                        self.confirmation_dialog = None
 
             self.manager.process_events(event)
 

@@ -42,12 +42,10 @@ def load_settings() -> None:
     """Load the settings from the JSON file or create default settings if the file doesn't exist."""
     global settings
     settings_path = get_settings_path()
-    print(settings_path)
     
     if settings_path.exists():
         with open(settings_path, "r") as file:
             new_settings = Settings.model_validate_json(file.read())
-            print(new_settings)
     else:
         new_settings = Settings()
         # Save default settings
