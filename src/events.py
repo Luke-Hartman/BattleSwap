@@ -58,6 +58,12 @@ class ChangeMusicEvent:
     """The name of the music file to play."""
 
 @dataclass
+class ChangeMusicVolumeEvent:
+    """Event triggered to change the music volume."""
+    volume: float
+    """The new volume to set."""
+
+@dataclass
 class DestinationTargetAcquiredEvent:
     """Event triggered when a unit identifies a destination."""
     entity: int
@@ -120,6 +126,7 @@ ABILITY_TRIGGERED = 'ability_triggered'
 AOE_HIT = 'aoe_hit'
 AURA_HIT = 'aura_hit'
 CHANGE_MUSIC = 'change_music'
+CHANGE_MUSIC_VOLUME = 'change_music_volume'
 DEATH = 'death'
 DESTINATION_TARGET_ACQUIRED = 'destination_target_acquired'
 DESTINATION_TARGET_LOST = 'destination_target_lost'

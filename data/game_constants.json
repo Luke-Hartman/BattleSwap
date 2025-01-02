@@ -1,8 +1,4 @@
 {
-    "SOUND_VOLUME": 0.5,
-    "MUSIC_VOLUME": 0.5,
-    "VOICE_VOLUME": 0.5,
-
     "NO_MANS_LAND_WIDTH": 50,
     "GRID_SIZE": 25,
     "MAJOR_GRID_INTERVAL": 5,

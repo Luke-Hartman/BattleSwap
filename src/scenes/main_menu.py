@@ -4,7 +4,7 @@ import pygame_gui
 from camera import Camera
 from scenes.scene import Scene
 from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event
-from scenes.events import SetupBattleSceneEvent, CampaignSceneEvent, DeveloperToolsSceneEvent
+from scenes.events import SettingsSceneEvent, SetupBattleSceneEvent, CampaignSceneEvent, DeveloperToolsSceneEvent
 from world_map_view import WorldMapView
 import battles
 
@@ -124,6 +124,9 @@ class MainMenuScene(Scene):
                             developer_mode=False,
                         ).to_event())
                     
+                    elif event.ui_element == self.settings_button:
+                        pygame.event.post(SettingsSceneEvent().to_event())
+
                     elif event.ui_element == self.developer_button:
                         pygame.event.post(DeveloperToolsSceneEvent().to_event())
                     

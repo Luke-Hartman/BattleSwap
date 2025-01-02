@@ -18,12 +18,14 @@ from scenes.events import (
     PREVIOUS_SCENE_EVENT,
     CAMPAIGN_EDITOR_SCENE_EVENT,
     CAMPAIGN_SCENE_EVENT,
+    SETTINGS_SCENE_EVENT,
     BattleSceneEvent,
     PreviousSceneEvent,
     SetupBattleSceneEvent,
     TestEditorSceneEvent,
     CampaignEditorSceneEvent,
     CampaignSceneEvent,
+    SettingsSceneEvent,
     DEVELOPER_TOOLS_SCENE_EVENT,
 )
 from scenes.campaign_editor import CampaignEditorScene
@@ -32,6 +34,7 @@ from battles import Battle, get_battle_id, get_battles
 from scenes.campaign import CampaignScene
 from scenes.main_menu import MainMenuScene
 from scenes.developer_tools import DeveloperToolsScene
+from scenes.settings import SettingsScene
 
 class CameraState:
     
@@ -92,9 +95,6 @@ class SceneManager:
                     scene_type=CampaignEditorScene,
                     params={"screen": self.screen, "manager": self.manager,
                         "world_map_view": self.current_scene.world_map_view},
-                    # camera_state=CameraState(
-                    #     camera=self.current_scene.world_map_view.camera
-                    # )
                 ))
             elif isinstance(self.current_scene, CampaignScene):
                 self.scene_stack.append(SceneState(
@@ -102,9 +102,6 @@ class SceneManager:
                     params={"screen": self.screen, "manager": self.manager,
                         "world_map_view": self.current_scene.world_map_view,
                         "progress_manager": self.progress_manager},
-                    # camera_state=CameraState(
-                    #     camera=self.current_scene.world_map_view.camera
-                    # )
                 ))
             elif isinstance(self.current_scene, SetupBattleScene):
                 self.scene_stack.append(SceneState(
@@ -121,6 +118,11 @@ class SceneManager:
             elif isinstance(self.current_scene, DeveloperToolsScene):
                 self.scene_stack.append(SceneState(
                     scene_type=DeveloperToolsScene,
+                    params={"screen": self.screen, "manager": self.manager}
+                ))
+            elif isinstance(self.current_scene, SettingsScene):
+                self.scene_stack.append(SceneState(
+                    scene_type=SettingsScene,
                     params={"screen": self.screen, "manager": self.manager}
                 ))
 
@@ -200,6 +202,13 @@ class SceneManager:
             elif event.type == DEVELOPER_TOOLS_SCENE_EVENT:
                 self.cleanup()
                 self.current_scene = DeveloperToolsScene(
+                    screen=self.screen,
+                    manager=self.manager,
+                )
+            elif event.type == SETTINGS_SCENE_EVENT:
+                self.cleanup()
+                validated_event = SettingsSceneEvent.model_validate(event.dict)
+                self.current_scene = SettingsScene(
                     screen=self.screen,
                     manager=self.manager,
                 )

@@ -9,11 +9,6 @@ from pathlib import Path
 from pydantic import BaseModel
 
 class GameConstants(BaseModel):
-    # User configurable settings
-    SOUND_VOLUME: float
-    MUSIC_VOLUME: float
-    VOICE_VOLUME: float
-
     # Basic Settings
     NO_MANS_LAND_WIDTH: int
     GRID_SIZE: int
@@ -129,7 +124,7 @@ class GameConstants(BaseModel):
     CRUSADER_CLERIC_ANIMATION_WALKING_DURATION: float
     CRUSADER_CLERIC_ANIMATION_ATTACK_DURATION: float
     CRUSADER_CLERIC_ANIMATION_DYING_DURATION: float
-    
+
     # Commander
     CRUSADER_COMMANDER_EMPOWERED_DAMAGE_PERCENTAGE: float
     CRUSADER_COMMANDER_AURA_RADIUS: float
@@ -238,7 +233,6 @@ class GameConstants(BaseModel):
 
     class Config:
         frozen = False
-
 
 gc = None
 
