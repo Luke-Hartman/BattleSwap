@@ -28,6 +28,7 @@ from hex_grid import (
     get_edges_for_hexes
 )
 from processors.targetting_processor import TargettingProcessor
+from processors.transparency_processor import TransparencyProcessor
 from scene_utils import draw_polygon, use_world
 from events import PLAY_SOUND, PlaySoundEvent, emit_event
 
@@ -86,6 +87,7 @@ class WorldMapView:
         if battle.id in esper.list_worlds():
             raise ValueError(f"Battle world {battle.id} already exists")
         with use_world(battle.id):
+            esper.add_processor(TransparencyProcessor())
             esper.add_processor(RenderingProcessor(self.screen, self.camera, self.manager))
             esper.add_processor(AnimationProcessor())
             esper.add_processor(PositionProcessor())

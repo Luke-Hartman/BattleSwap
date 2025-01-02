@@ -14,6 +14,7 @@ from components.range_indicator import RangeIndicator
 from components.sprite_sheet import SpriteSheet
 from components.stats_card import StatsCard
 from components.team import Team, TeamType
+from components.transparent import Transparency
 from components.unit_state import UnitState
 from components.unit_type import UnitType, UnitTypeComponent
 from entities.units import create_unit
@@ -162,8 +163,11 @@ class SetupBattleScene(Scene):
         """Get the currently selected unit type."""
         return self._selected_unit_type
 
-    @selected_unit_type.setter
-    def selected_unit_type(self, value: Optional[UnitType]) -> None:
+    def set_selected_unit_type(
+        self,
+        value: Optional[UnitType],
+        placement_team: TeamType,
+    ) -> None:
         """Set the currently selected unit type."""
         self._selected_unit_type = value
         self.barracks.select_unit_type(value)
@@ -176,9 +180,10 @@ class SetupBattleScene(Scene):
             x=0,
             y=0,
             unit_type=value,
-            team=TeamType.TEAM1,
+            team=placement_team,
        )
         esper.remove_component(self.selected_partial_unit, UnitTypeComponent)
+        esper.add_component(self.selected_partial_unit, Transparency(alpha=128))
     
     def create_unit_of_selected_type(self, placement_pos: Tuple[int, int], team: TeamType) -> None:
         """Create a unit of the selected type."""
@@ -191,7 +196,7 @@ class SetupBattleScene(Scene):
         )
         self.barracks.remove_unit(self.selected_unit_type)
         if self.barracks.units[self.selected_unit_type] == 0:
-            self.selected_unit_type = None
+            self.set_selected_unit_type(None, TeamType.TEAM1)
     
     def remove_unit(self, unit_id: int) -> None:
         """Delete a unit of the selected type."""
@@ -225,6 +230,19 @@ class SetupBattleScene(Scene):
             snap_to_grid=show_grid,
             required_team=None if self.sandbox_mode else TeamType.TEAM1,
         )
+        placement_team = TeamType.TEAM1 if placement_pos[0] < world_x else TeamType.TEAM2
+
+        # Update range indicator and stats card for hovered unit
+        if self.selected_partial_unit is not None:
+            team = esper.component_for_entity(self.selected_partial_unit, Team)
+            if team.type != placement_team:
+                # If the partial unit is no longer on the side it was created on, recreate it
+                self.set_selected_unit_type(self.selected_unit_type, placement_team)
+            esper.add_component(self.selected_partial_unit, Focus())
+            position = esper.component_for_entity(self.selected_partial_unit, Position)
+            position.x, position.y = placement_pos
+        elif hovered_unit is not None:
+            esper.add_component(hovered_unit, Focus())
 
         for event in events:
             if event.type == pygame.QUIT:
@@ -234,7 +252,7 @@ class SetupBattleScene(Scene):
                     for unit_count in self.barracks.unit_list_items:
                         if event.ui_element == unit_count.button:
                             play_intro(unit_count.unit_type)
-                            self.selected_unit_type = unit_count.unit_type
+                            self.set_selected_unit_type(unit_count.unit_type, placement_team)
                             break
                     assert event.ui_element is not None
                     if event.ui_element == self.save_button:
@@ -293,17 +311,17 @@ class SetupBattleScene(Scene):
                 if event.button == pygame.BUTTON_LEFT:
                     if self.selected_unit_type is None:
                         if hovered_unit is not None and (self.sandbox_mode or hovered_team == TeamType.TEAM1):
-                            self.selected_unit_type = esper.component_for_entity(hovered_unit, UnitTypeComponent).type
+                            self.set_selected_unit_type(esper.component_for_entity(hovered_unit, UnitTypeComponent).type, placement_team)
                             self.remove_unit(hovered_unit)
                             hovered_unit = None
                     else:
                         self.create_unit_of_selected_type(
                             placement_pos,
-                            TeamType.TEAM1 if placement_pos[0] < world_x else TeamType.TEAM2,
+                            placement_team,
                         )
                 elif event.button == pygame.BUTTON_RIGHT:
                     if self.selected_unit_type is not None:
-                        self.selected_unit_type = None
+                        self.set_selected_unit_type(None, placement_team)
                         emit_event(PLAY_SOUND, event=PlaySoundEvent(
                             filename="unit_picked_up.wav",
                             volume=0.5,
@@ -315,14 +333,6 @@ class SetupBattleScene(Scene):
 
             self.camera.process_event(event)
             self.manager.process_events(event)
-
-        # Update range indicator and stats card for hovered unit
-        if hovered_unit is not None:
-            esper.add_component(hovered_unit, Focus())
-        elif self.selected_partial_unit is not None:
-            esper.add_component(self.selected_partial_unit, Focus())
-            position = esper.component_for_entity(self.selected_partial_unit, Position)
-            position.x, position.y = placement_pos
 
         # Only update camera if no dialog is focused
         if self.save_dialog is None or not self.save_dialog.dialog.alive():
