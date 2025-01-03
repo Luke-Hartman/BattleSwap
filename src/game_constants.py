@@ -5,8 +5,20 @@ This module defines the Pydantic model used to load and validate game constants
 from JSON configuration.
 """
 
+import os
+import sys
 from pathlib import Path
 from pydantic import BaseModel
+
+def get_resource_path(relative_path: str) -> Path:
+    """Get absolute path to resource, works for dev and for PyInstaller."""
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    
+    return Path(base_path) / relative_path
 
 class GameConstants(BaseModel):
     # Basic Settings
@@ -239,7 +251,8 @@ gc = None
 def reload_game_constants() -> None:
     """Reload the game constants from the JSON file."""
     global gc
-    with open(Path(__file__).parent.parent / "data" / "game_constants.json", "r") as file:
+    constants_path = get_resource_path("data/game_constants.json")
+    with open(constants_path, "r") as file:
         new_gc = GameConstants.model_validate_json(file.read())
         if gc is None:
             gc = new_gc

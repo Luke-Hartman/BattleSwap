@@ -4,12 +4,24 @@ This module defines the Battle model and loads battle data from a JSON file.
 """
 
 import json
+import os
+import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 from pydantic import BaseModel
 
 from entities.units import UnitType
+
+def get_resource_path(relative_path: str) -> Path:
+    """Get absolute path to resource, works for dev and for PyInstaller."""
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    
+    return Path(base_path) / relative_path
 
 starting_units: Dict[UnitType, int] = {
     UnitType.CORE_DUELIST: 1
@@ -47,7 +59,7 @@ _battles: List[Battle] = []
 
 def reload_battles() -> None:
     """Load battles from a JSON file."""
-    file_path = Path(__file__).parent.parent / 'data' / 'battles.json'
+    file_path = get_resource_path('data/battles.json')
     with open(file_path, 'r') as file:
         battles_data = json.load(file)
         global _battles
@@ -87,7 +99,7 @@ def move_battle_to_bottom(battle_id: str) -> None:
 
 def _save_battles(battles: List[Battle]) -> None:
     """Save the current battles list to the JSON file."""
-    file_path = Path(__file__).parent.parent / 'data' / 'battles.json'
+    file_path = get_resource_path('data/battles.json')
     battles_data = [battle.model_dump() for battle in battles]
     
     # If two battles have the same id or hex_coords (excluding None), raise an error

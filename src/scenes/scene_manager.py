@@ -1,7 +1,10 @@
 import esper
 import pygame
 import pygame_gui
+import os
+import sys
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Optional, Any, List
 
 from camera import Camera
@@ -33,6 +36,16 @@ from scenes.main_menu import MainMenuScene
 from scenes.developer_tools import DeveloperToolsScene
 from scenes.settings import SettingsScene
 
+def get_resource_path(relative_path: str) -> Path:
+    """Get absolute path to resource, works for dev and for PyInstaller."""
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    
+    return Path(base_path) / relative_path
+
 class CameraState:
     
     def __init__(self, camera: Camera):
@@ -63,9 +76,10 @@ class SceneManager:
             screen: pygame.Surface,
     ):
         self.screen = screen
+        theme_path = str(get_resource_path('data/theme.json'))
         self.manager = pygame_gui.UIManager(
             (pygame.display.Info().current_w, pygame.display.Info().current_h), 
-            'src/theme.json'
+            theme_path
         )
 
         self.current_scene = MainMenuScene(screen, self.manager)
