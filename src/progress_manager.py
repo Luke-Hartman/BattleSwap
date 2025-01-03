@@ -59,20 +59,24 @@ class ProgressManager(BaseModel):
         """Get the available units for the player."""
         units = defaultdict(int)
         units.update(battles.starting_units)
+        # Handle units from battles other than the current one
         for coords in self.solutions:
-            if current_battle is None or current_battle.hex_coords != coords:
-                battle = battles.get_battle_coords(coords)
-            else:
-                battle = current_battle
+            if current_battle is not None and current_battle.hex_coords == coords:
+                continue
+            battle = battles.get_battle_coords(coords)
             for (unit_type, _) in battle.enemies:
                 units[unit_type] += 1
             for (unit_type, _) in self.solutions[coords].unit_placements:
                 units[unit_type] -= 1
-        if current_battle is not None and current_battle.hex_coords not in self.solutions and current_battle.allies is not None:
+        # Handle units from the current battle
+        if current_battle is not None and current_battle.allies is not None:
+            if current_battle.hex_coords in self.solutions:
+                for (unit_type, _) in current_battle.enemies:
+                    units[unit_type] += 1
             for (unit_type, _) in current_battle.allies:
                 units[unit_type] -= 1
         for unit_type, count in units.items():
-            assert count >= 0
+            assert count >= 0, str(units)
         return units
 
     def available_battles(self) -> List[Tuple[int, int]]:
