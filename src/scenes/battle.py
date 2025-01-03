@@ -91,24 +91,24 @@ class BattleScene(Scene):
         # Calculate x positions for the buttons
         left_button_x = (panel_width - (2 * button_width + button_spacing)) // 2
 
-        # Save and continue button (left)
-        self.save_continue_button = pygame_gui.elements.UIButton(
+        # Edit button (left)
+        self.edit_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(
                 (left_button_x, start_y),
                 (button_width, button_height)
             ),
-            text="Save and Continue",
+            text="Edit Solution",
             manager=self.manager,
             container=self.victory_panel
         )
 
-        # Edit button (right)
-        self.edit_button = pygame_gui.elements.UIButton(
+        # Save and continue button (right)
+        self.save_continue_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(
                 (left_button_x + button_width + button_spacing, start_y),
                 (button_width, button_height)
             ),
-            text="Edit Solution",
+            text="Save and Continue",
             manager=self.manager,
             container=self.victory_panel
         )
