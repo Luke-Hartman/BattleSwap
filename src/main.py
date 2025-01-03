@@ -6,7 +6,6 @@ and runs the main game loop.
 """
 
 import pygame
-from camera import Camera
 from entities.units import load_sprite_sheets
 from handlers.combat_handler import CombatHandler
 from handlers.sound_handler import SoundHandler
@@ -14,12 +13,26 @@ from handlers.state_machine import StateMachine
 from scenes.scene_manager import SceneManager
 from visuals import load_visual_sheets
 from game_constants import gc
+import steam
+
 # Initialize Pygame
 pygame.init()
 
+# Initialize Steamworks
+steam.init_steam()
+
 # Set up the display
 # Use the full screen
-screen = pygame.display.set_mode(flags=pygame.FULLSCREEN)
+
+# This is slightly awkward, but it let's us
+# 1. Get the correct screen size
+# 2. Use the "SCALED" flag, which is apparently required for the steam overlay
+screen = pygame.display.set_mode((0, 0),pygame.FULLSCREEN)
+screen_width, screen_height = screen.get_size()
+screen = pygame.display.set_mode(
+    (screen_width, screen_height),
+    pygame.SCALED
+)
 pygame.display.set_caption("Battle Swap")
 
 # Initialize font for FPS counter

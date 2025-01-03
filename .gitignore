@@ -26,7 +26,6 @@ share/python-wheels/
 *.pyo
 *.pyd
 *.so
-*.dll
 *.exe
 
 # Virtual Environment
