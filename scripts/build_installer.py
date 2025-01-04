@@ -4,12 +4,14 @@ This script handles:
 1. Creating an executable using PyInstaller
 2. Packaging assets and dependencies
 3. Creating an installer
+4. Creating a distributable zip file
 """
 
 import json
 import os
 import shutil
 import subprocess
+import zipfile
 from pathlib import Path
 from typing import List, Optional, Set
 
@@ -193,6 +195,28 @@ def cleanup_build_artifacts(project_root: Path, preserve_build: bool = True) -> 
         for file_path in project_root.rglob(pattern):
             file_path.unlink(missing_ok=True)
 
+def create_distribution_zip(build_dir: Path) -> None:
+    """Create a zip file containing the game executable and required files.
+    
+    Args:
+        build_dir: Directory containing the built files
+    """
+    zip_path = build_dir.parent / 'build' / 'BattleSwap.zip'
+    
+    with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zf:
+        # Add executable
+        exe_path = build_dir / 'BattleSwap.exe'
+        if exe_path.exists():
+            zf.write(exe_path, exe_path.name)
+        
+        # Add assets and data directories
+        for dir_name in ['assets', 'data']:
+            dir_path = build_dir / dir_name
+            if dir_path.exists():
+                for file_path in dir_path.rglob('*'):
+                    if file_path.is_file():
+                        zf.write(file_path, str(file_path.relative_to(build_dir)))
+
 def main() -> None:
     project_root = Path(__file__).parent.parent
     build_dir = project_root / 'build'
@@ -214,6 +238,9 @@ def main() -> None:
     
     print("Cleaning up temporary files...")
     cleanup_build_artifacts(project_root, preserve_build=True)
+    
+    print("Creating distribution zip file...")
+    create_distribution_zip(build_dir)
     
     print("Build complete!")
 
