@@ -101,19 +101,28 @@ def create_executable(project_root: Path, build_dir: Path) -> None:
         project_root: Root directory of the project
         build_dir: Directory where the executable should be created
     """
+    # Copy steam_appid.txt to build directory
+    shutil.copy2(project_root / 'steam_appid.txt', build_dir / 'steam_appid.txt')
+    
     spec_content = f'''# -*- mode: python ; coding: utf-8 -*-
 block_cipher = None
 
 a = Analysis(
     [r'{str(project_root / "src" / "main.py")}'],
     pathex=[r'{str(project_root / "src")}'],
-    binaries=[],
+    binaries=[
+        (r'{str(project_root / "steam_api64.dll")}', '.'),
+        (r'{str(project_root / "SteamworksPy64.dll")}', '.'),
+        (r'{str(project_root / "steam_api64.dll")}', 'steamworks'),
+        (r'{str(project_root / "SteamworksPy64.dll")}', 'steamworks'),
+    ],
     datas=[
         (r'{str(project_root / "assets")}', 'assets'),
         (r'{str(project_root / "data")}', 'data'),
         (r'{str(project_root / "src" / "settings.py")}', '.'),
+        (r'{str(project_root / "steam_appid.txt")}', '.'),
     ],
-    hiddenimports=[],
+    hiddenimports=['steamworks', 'steamworks.util', 'steamworks.interfaces'],
     hookspath=[],
     hooksconfig={{}},
     runtime_hooks=[],
@@ -201,21 +210,25 @@ def create_distribution_zip(build_dir: Path) -> None:
     Args:
         build_dir: Directory containing the built files
     """
-    zip_path = build_dir.parent / 'build' / 'BattleSwap.zip'
+    # Create zip file in temp location first
+    temp_zip_path = build_dir.parent / 'temp_BattleSwap.zip'
+    final_zip_path = build_dir / 'BattleSwap.zip'
     
-    with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zf:
-        # Add executable
-        exe_path = build_dir / 'BattleSwap.exe'
-        if exe_path.exists():
-            zf.write(exe_path, exe_path.name)
+    try:
+        with zipfile.ZipFile(temp_zip_path, 'w', zipfile.ZIP_DEFLATED) as zf:
+            # Add all files from build directory
+            for file_path in build_dir.rglob('*'):
+                if file_path.is_file():
+                    zf.write(file_path, str(file_path.relative_to(build_dir)))
         
-        # Add assets and data directories
-        for dir_name in ['assets', 'data']:
-            dir_path = build_dir / dir_name
-            if dir_path.exists():
-                for file_path in dir_path.rglob('*'):
-                    if file_path.is_file():
-                        zf.write(file_path, str(file_path.relative_to(build_dir)))
+        # Move zip file to build directory
+        if final_zip_path.exists():
+            final_zip_path.unlink()
+        shutil.move(temp_zip_path, final_zip_path)
+    finally:
+        # Clean up temp file if something went wrong
+        if temp_zip_path.exists():
+            temp_zip_path.unlink()
 
 def main() -> None:
     project_root = Path(__file__).parent.parent
