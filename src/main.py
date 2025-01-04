@@ -11,6 +11,7 @@ from handlers.combat_handler import CombatHandler
 from handlers.sound_handler import SoundHandler
 from handlers.state_machine import StateMachine
 from scenes.scene_manager import SceneManager
+from time_manager import time_manager
 from visuals import load_visual_sheets
 from game_constants import gc
 import steam
@@ -53,8 +54,9 @@ clock = pygame.time.Clock()
 scene_manager = SceneManager(screen)
 
 while running:
-    clock.tick(60)
+    dt = clock.tick(time_manager.max_fps) / 1000
     events = pygame.event.get()
+
     # Escape key quits the game
     for event in events:
         if event.type == pygame.KEYDOWN:
@@ -62,7 +64,7 @@ while running:
                 running = False
     if not running:
         break
-    running = scene_manager.update(1/60, events)
+    running = scene_manager.update(dt, events)
 
     # # Render FPS counter
     # fps_text = fps_font.render(f'FPS: {int(clock.get_fps())}', True, (255, 255, 255))

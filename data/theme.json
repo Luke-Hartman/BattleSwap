@@ -162,6 +162,20 @@
         "misc": {
             "text_horiz_alignment": "left"
         }
+    },
+    "#pause_button": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/Pause.png"
+            }
+        }
+    },
+    "#play_button": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/Play.png"
+            }
+        }
     }
 }
     
