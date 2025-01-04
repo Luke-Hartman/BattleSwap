@@ -56,7 +56,7 @@ class MainMenuScene(Scene):
                 (screen_width/2 - button_width/2, start_y - title_height - button_spacing),
                 (button_width, title_height)
             ),
-            text="BattleSwap",
+            text="Battle Swap",
             manager=self.manager,
             object_id=pygame_gui.core.ObjectID(
                 class_id="@title_label",
@@ -160,7 +160,6 @@ class MainMenuScene(Scene):
                 elif event.user_type == pygame_gui.UI_CONFIRMATION_DIALOG_CONFIRMED:
                     if self.confirmation_dialog is not None and event.ui_element == self.confirmation_dialog:
                         reset_progress()
-                        print(progress_manager.solutions)
                         self.confirmation_dialog = None
 
             self.manager.process_events(event)

@@ -117,7 +117,7 @@ class SetupBattleScene(Scene):
 
         self.return_button = ReturnButton(self.manager)
         self.start_button = StartButton(self.manager)
-        
+
         self.barracks = BarracksUI(
             self.manager,
             starting_units={} if self.sandbox_mode else progress_manager.available_units(battle),

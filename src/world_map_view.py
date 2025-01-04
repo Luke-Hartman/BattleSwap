@@ -31,6 +31,7 @@ from processors.targetting_processor import TargettingProcessor
 from processors.transparency_processor import TransparencyProcessor
 from scene_utils import draw_polygon, use_world
 from events import PLAY_SOUND, PlaySoundEvent, emit_event
+from time_manager import time_manager
 
 
 class FillState(Enum):
@@ -81,7 +82,7 @@ class WorldMapView:
         self.default_world = "__default__"
 
         self.hex_states: Dict[Tuple[int, int], HexState] = {}
-        self.rebuild(battles, cleanup=False)        
+        self.rebuild(battles, cleanup=False)
     
     def _initialize_battle_world(self, battle: Battle) -> None:
         if battle.id in esper.list_worlds():
@@ -141,7 +142,8 @@ class WorldMapView:
                 continue
             
             esper.switch_world(battle.id)
-            esper.process(time_delta)
+            # dt should be either 1/60 or 0. This makes sure the game is deterministic.
+            esper.process(time_manager.dt)
 
     def get_hex_states(self) -> Dict[Tuple[int, int], HexState]:
         """Return a copy of all current hex states."""

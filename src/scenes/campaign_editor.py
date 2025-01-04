@@ -1,4 +1,3 @@
-
 from collections import defaultdict
 from game_constants import gc
 from typing import Tuple, Optional
@@ -42,7 +41,6 @@ class CampaignEditorScene(Scene):
         # Store UI elements for battle info
         self.battle_id_label: Optional[pygame_gui.elements.UILabel] = None
         self.tip_box: Optional[TipBox] = None
-        
         self.create_ui()
 
     def create_ui(self) -> None:

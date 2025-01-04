@@ -10,6 +10,7 @@ from scenes.events import PreviousSceneEvent
 from world_map_view import WorldMapView
 from ui_components.return_button import ReturnButton
 from progress_manager import progress_manager, Solution
+from ui_components.time_controls import TimeControls
 
 class BattleScene(Scene):
     """The scene for the battle."""
@@ -42,6 +43,7 @@ class BattleScene(Scene):
         self.battle = self.world_map_view.battles[self.battle_id]
         self.sandbox_mode = sandbox_mode
         self.return_button = ReturnButton(self.manager)
+        self.time_controls = TimeControls(self.manager)
         self.victory_panel = None
         self.defeat_panel = None
         self.outcome_time = None
@@ -183,6 +185,7 @@ class BattleScene(Scene):
                         return super().update(time_delta, events)
 
             self.world_map_view.camera.process_event(event)
+            self.time_controls.handle_event(event)
             self.manager.process_events(event)
 
         self.screen.fill(gc.MAP_BACKGROUND_COLOR)
