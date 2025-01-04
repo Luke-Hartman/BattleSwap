@@ -25,6 +25,7 @@ from scenes.scene import Scene
 from game_constants import gc
 from camera import Camera
 from ui_components.barracks_ui import BarracksUI, UnitCount
+from ui_components.feedback_button import FeedbackButton
 from ui_components.return_button import ReturnButton
 from ui_components.start_button import StartButton
 from scenes.events import BattleSceneEvent, PreviousSceneEvent
@@ -117,6 +118,7 @@ class SetupBattleScene(Scene):
 
         self.return_button = ReturnButton(self.manager)
         self.start_button = StartButton(self.manager)
+        self.feedback_button = FeedbackButton(self.manager)
 
         self.barracks = BarracksUI(
             self.manager,
@@ -333,6 +335,7 @@ class SetupBattleScene(Scene):
 
             self.camera.process_event(event)
             self.manager.process_events(event)
+            self.feedback_button.handle_event(event)
 
         # Only update camera if no dialog is focused
         if self.save_dialog is None or not self.save_dialog.dialog.alive():

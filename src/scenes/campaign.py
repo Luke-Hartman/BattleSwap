@@ -13,6 +13,7 @@ from scenes.scene import Scene
 from camera import Camera
 from ui_components.barracks_ui import BarracksUI
 from ui_components.return_button import ReturnButton
+from ui_components.feedback_button import FeedbackButton
 from world_map_view import BorderState, FillState, WorldMapView, HexState
 
 class CampaignScene(Scene):
@@ -53,7 +54,7 @@ class CampaignScene(Scene):
     def create_ui(self) -> None:
         """Create the UI elements for the world map scene."""
         self.return_button = ReturnButton(self.manager)
-
+        self.feedback_button = FeedbackButton(self.manager)
     def create_context_buttons(self) -> None:
         """Create context-sensitive buttons based on selected hex."""
         # Clear existing buttons
@@ -156,7 +157,7 @@ class CampaignScene(Scene):
 
             self.world_map_view.camera.process_event(event)
             self.manager.process_events(event)
-
+            self.feedback_button.handle_event(event)
         # Update hex states while preserving fog of war
         available_battles = progress_manager.available_battles()
         states = defaultdict(HexState)
