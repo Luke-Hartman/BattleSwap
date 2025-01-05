@@ -11,23 +11,27 @@ from progress_manager import progress_manager, reset_progress
 class MainMenuScene(Scene):
     """Main menu scene with primary navigation options for the game."""
 
-    def __init__(self, screen: pygame.Surface, manager: pygame_gui.UIManager):
+    def __init__(self, screen: pygame.Surface, manager: pygame_gui.UIManager, developer_mode: bool):
         emit_event(CHANGE_MUSIC, event=ChangeMusicEvent(
             filename="Main Theme.wav",
         ))
         self.screen = screen
         self.manager = manager
+        self.developer_mode = developer_mode
         self.confirmation_dialog: pygame_gui.elements.UIConfirmationDialog | None = None
-        self.create_buttons()
+        self.create_buttons(developer_mode)
 
-    def create_buttons(self) -> None:
+    def create_buttons(self, developer_mode: bool) -> None:
         button_width = 300
         button_height = 80
         button_spacing = 20
-        
+
         # Calculate total height of all buttons including spacing
-        total_buttons_height = 5 * button_height + 4 * button_spacing
-        
+        if developer_mode:
+            total_buttons_height = 5 * button_height + 4 * button_spacing
+        else:
+            total_buttons_height = 4 * button_height + 3 * button_spacing
+
         # Calculate starting Y position to center the buttons vertically
         screen_height = pygame.display.Info().current_h
         start_y = (screen_height - total_buttons_height) // 2
@@ -65,50 +69,58 @@ class MainMenuScene(Scene):
         )
 
         # Create main menu buttons
+        y = start_y
         self.campaign_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(
-                (button_x, start_y),
+                (button_x, y),
                 (button_width, button_height)
             ),
             text="Play Campaign",
             manager=self.manager
         )
+        y += button_height + button_spacing
 
         self.sandbox_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(
-                (button_x, start_y + button_height + button_spacing),
+                (button_x, y),
                 (button_width, button_height)
             ),
             text="Sandbox Mode",
             manager=self.manager
         )
+        y += button_height + button_spacing
 
         self.settings_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(
-                (button_x, start_y + 2 * (button_height + button_spacing)),
+                (button_x, y),
                 (button_width, button_height)
             ),
             text="Settings",
             manager=self.manager
         )
-
-        self.developer_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(
-                (button_x, start_y + 3 * (button_height + button_spacing)),
-                (button_width, button_height)
-            ),
-            text="Developer Tools",
-            manager=self.manager
-        )
+        y += button_height + button_spacing
+        if developer_mode:
+            self.developer_button = pygame_gui.elements.UIButton(
+                relative_rect=pygame.Rect(
+                    (button_x, y),
+                    (button_width, button_height)
+                ),
+                text="Developer Tools",
+                manager=self.manager
+            )
+            y += button_height + button_spacing
+        else:
+            self.developer_button = None
 
         self.exit_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(
-                (button_x, start_y + 4 * (button_height + button_spacing)),
+                (button_x, y),
                 (button_width, button_height)
             ),
             text="Exit",
             manager=self.manager
         )
+        y += button_height + button_spacing
 
     def update(self, time_delta: float, events: List[pygame.event.Event]) -> bool:
         """Update the main menu scene."""

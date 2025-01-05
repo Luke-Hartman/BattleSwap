@@ -5,6 +5,7 @@ This module initializes the game, sets up the display, creates processors,
 and runs the main game loop.
 """
 
+import argparse
 import pygame
 from entities.units import load_sprite_sheets
 from handlers.combat_handler import CombatHandler
@@ -51,7 +52,14 @@ sound_handler = SoundHandler()
 running = True
 clock = pygame.time.Clock()
 
-scene_manager = SceneManager(screen)
+parser = argparse.ArgumentParser()
+parser.add_argument("--no_dev", action="store_true", default=False)
+args = parser.parse_args()
+
+scene_manager = SceneManager(
+    screen,
+    developer_mode=not args.no_dev
+)
 
 while running:
     dt = clock.tick(time_manager.max_fps) / 1000

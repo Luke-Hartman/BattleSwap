@@ -74,6 +74,7 @@ class SceneManager:
     def __init__(
             self, 
             screen: pygame.Surface,
+            developer_mode: bool = False,
     ):
         self.screen = screen
         theme_path = str(get_resource_path('data/theme.json'))
@@ -82,7 +83,7 @@ class SceneManager:
             theme_path
         )
 
-        self.current_scene = MainMenuScene(screen, self.manager)
+        self.current_scene = MainMenuScene(screen, self.manager, developer_mode)
         self.scene_stack: List[SceneState] = []
 
     def cleanup(self, add_to_stack: bool = True) -> None:
@@ -91,7 +92,11 @@ class SceneManager:
             if isinstance(self.current_scene, MainMenuScene):
                 self.scene_stack.append(SceneState(
                     scene_type=MainMenuScene,
-                    params={"screen": self.screen, "manager": self.manager}
+                    params={
+                        "screen": self.screen,
+                        "manager": self.manager,
+                        "developer_mode": self.current_scene.developer_mode,
+                    }
                 ))
             elif isinstance(self.current_scene, TestEditorScene):
                 self.scene_stack.append(SceneState(
