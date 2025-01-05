@@ -9,6 +9,7 @@ import esper
 
 from components.health import Health
 from components.position import Position
+from components.stance import Stance
 from components.team import Team, TeamType
 from components.unit_state import State, UnitState
 
@@ -165,3 +166,14 @@ class MaximumAngleFromEntity(UnitCondition):
             abs(other_position.x - position.x)
         )
         return abs(angle) <= self.maximum_angle
+
+
+@dataclass
+class InStance(UnitCondition):
+    """The unit is in the given stance."""
+
+    stance: int
+    """The required stance."""
+
+    def check(self, entity: int) -> bool:
+        return esper.component_for_entity(entity, Stance).stance == self.stance

@@ -9,6 +9,7 @@ import os
 from typing import Dict
 from components.hitbox import Hitbox
 from components.range_indicator import RangeIndicator
+from components.stance import Stance
 from components.stats_card import StatsCard
 from components.walk_effects import WalkEffects
 from game_constants import gc
@@ -28,9 +29,9 @@ from components.unit_type import UnitType, UnitTypeComponent
 from components.velocity import Velocity
 from components.health import Health
 from components.orientation import Orientation, FacingDirection
-from effects import AppliesStatusEffect, CreatesAoE, CreatesAttachedVisual, CreatesProjectile, Damages, Heals, PlaySound, Recipient, SoundEffect
+from effects import AppliesStatusEffect, CreatesAoE, CreatesAttachedVisual, CreatesProjectile, Damages, Heals, PlaySound, Recipient, SoundEffect, StanceChange
 from unit_condition import (
-    All, Alive, HealthBelowPercent, Never, NotEntity, OnTeam,
+    All, Alive, Always, HealthBelowPercent, InStance, MinimumDistanceFromEntity, Never, NotEntity, OnTeam,
     MaximumDistanceFromEntity
 )
 from visuals import Visual
@@ -50,6 +51,7 @@ unit_theme_ids: Dict[UnitType, str] = {
     UnitType.CRUSADER_PALADIN: "#crusader_paladin_icon",
     UnitType.CRUSADER_PIKEMAN: "#crusader_pikeman_icon",
     UnitType.CRUSADER_RED_KNIGHT: "#crusader_red_knight_icon",
+    UnitType.CRUSADER_SOLDIER: "#crusader_soldier_icon",
     UnitType.WEREBEAR: "#werebear_icon",
 }
 
@@ -72,6 +74,7 @@ unit_values: Dict[UnitType, int] = {
     UnitType.CRUSADER_PALADIN: 100,
     UnitType.CRUSADER_PIKEMAN: 100,
     UnitType.CRUSADER_RED_KNIGHT: 100,
+    UnitType.CRUSADER_SOLDIER: 100,
     UnitType.WEREBEAR: 100,
 }
 
@@ -92,6 +95,7 @@ def load_sprite_sheets():
         UnitType.CRUSADER_PALADIN: "CrusaderPaladin.png",
         UnitType.CRUSADER_PIKEMAN: "CrusaderPikeman.png",
         UnitType.CRUSADER_RED_KNIGHT: "CrusaderRedKnight.png",
+        UnitType.CRUSADER_SOLDIER: "CrusaderSoldier.png",
         UnitType.WEREBEAR: "Werebear.png",
     }
     for unit_type, filename in unit_filenames.items():
@@ -114,6 +118,7 @@ def load_sprite_sheets():
         UnitType.CRUSADER_PALADIN: "CrusaderPaladinIcon.png",
         UnitType.CRUSADER_PIKEMAN: "CrusaderPikemanIcon.png",
         UnitType.CRUSADER_RED_KNIGHT: "CrusaderRedKnightIcon.png",
+        UnitType.CRUSADER_SOLDIER: "CrusaderSoldierIcon.png",
         UnitType.WEREBEAR: "WerebearIcon.png",
     }
     for unit_type, filename in unit_icon_paths.items():
@@ -137,6 +142,7 @@ def create_unit(x: int, y: int, unit_type: UnitType, team: TeamType) -> int:
         UnitType.CRUSADER_PALADIN: create_crusader_paladin,
         UnitType.CRUSADER_PIKEMAN: create_crusader_pikeman,
         UnitType.CRUSADER_RED_KNIGHT: create_crusader_red_knight,
+        UnitType.CRUSADER_SOLDIER: create_crusader_soldier,
         UnitType.WEREBEAR: create_werebear,
     }[unit_type](x, y, team)
 
@@ -1248,7 +1254,7 @@ def create_crusader_defender(x: int, y: int, team: TeamType) -> int:
         frame: [PlaySound(sound_effects=[
             (SoundEffect(filename=f"armored_grass_footstep{i+1}.wav", volume=0.25), 1.0) for i in range(5)
         ])]
-        for frame in [3, 7]
+        for frame in [1, 5]
     }))
     return entity
 
@@ -1855,6 +1861,231 @@ def create_crusader_red_knight(x: int, y: int, team: TeamType) -> int:
     esper.add_component(entity, WalkEffects({
         frame: [PlaySound(sound_effects=[
             (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+        ])]
+        for frame in [3, 7]
+    }))
+    return entity
+
+def create_crusader_soldier(x: int, y: int, team: TeamType) -> int:
+    """Create a soldier entity with all necessary components."""
+    MELEE = 0
+    RANGED = 1
+    entity = unit_base_entity(
+        x=x,
+        y=y,
+        team=team,
+        unit_type=UnitType.CRUSADER_SOLDIER,
+        movement_speed=gc.CRUSADER_SOLDIER_MOVEMENT_SPEED,
+        health=gc.CRUSADER_SOLDIER_HP,
+        hitbox=Hitbox(
+            width=16,
+            height=32,
+        )
+    )
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=2, ascending=True),
+        ],
+        unit_condition=All([OnTeam(team=team.other()), Alive()])
+    )
+    esper.add_component(
+        entity,
+        Destination(target_strategy=targetting_strategy, x_offset=gc.CRUSADER_SOLDIER_MELEE_RANGE*2/3)
+    )
+    esper.add_component(
+        entity,
+        RangeIndicator(range=gc.CRUSADER_SOLDIER_RANGED_RANGE)
+    )
+    esper.add_component(entity, Stance(stance=RANGED))
+    esper.add_component(
+        entity,
+        Abilities(
+            abilities=[
+                # Switch stance to melee
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        SatisfiesUnitCondition(InStance(stance=RANGED)),
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.CRUSADER_SOLDIER_SWITCH_STANCE_RANGE,
+                                    y_bias=None,
+                                ),
+                            ])
+                        )
+                    ],
+                    persistent_conditions=[],
+                    effects={
+                        1: [
+                            StanceChange(stance=MELEE),
+                            PlaySound(SoundEffect(filename="drawing_sword.wav", volume=0.15)),
+                        ]
+                    }
+                ),
+                # Switch stance to ranged
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        SatisfiesUnitCondition(InStance(stance=MELEE)),
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                MinimumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.CRUSADER_SOLDIER_SWITCH_STANCE_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    y_bias=None,
+                                ),
+                            ])
+                        )
+                    ],
+                    persistent_conditions=[],
+                    effects={
+                        1: [
+                            StanceChange(stance=RANGED),
+                        ]
+                    }
+                ),
+                # Melee attack
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        SatisfiesUnitCondition(InStance(stance=MELEE)),
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.CRUSADER_SOLDIER_MELEE_RANGE,
+                                    y_bias=3
+                                ),
+                            ])
+                        ),
+                    ],
+                    persistent_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.CRUSADER_SOLDIER_MELEE_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    y_bias=3
+                                ),
+                            ])
+                        )
+                    ],
+                    effects={
+                        3: [
+                            Damages(damage=gc.CRUSADER_SOLDIER_MELEE_DAMAGE, recipient=Recipient.TARGET),
+                            PlaySound([
+                                (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
+                            ]),
+                        ]
+                    }
+                ),
+                # Ranged attack
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        SatisfiesUnitCondition(InStance(stance=RANGED)),
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.CRUSADER_SOLDIER_RANGED_RANGE,
+                                    y_bias=None,
+                                ),
+                            ])
+                        ),
+                    ],
+                    persistent_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.CRUSADER_SOLDIER_RANGED_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    y_bias=None
+                                ),
+                                MinimumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.CRUSADER_SOLDIER_SWITCH_STANCE_RANGE,
+                                    y_bias=None
+                                )
+                            ])
+                        )
+                    ],
+                    effects={
+                        4: [
+                            PlaySound(SoundEffect(filename="bow_loading.wav", volume=0.25)),
+                        ],
+                        7: [
+                            CreatesProjectile(
+                                projectile_speed=gc.CORE_ARCHER_PROJECTILE_SPEED,
+                                effects=[
+                                    Damages(damage=gc.CORE_ARCHER_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                                ],
+                                visual=Visual.Arrow,
+                                projectile_offset_x=5*gc.MINIFOLKS_SCALE,
+                                projectile_offset_y=0,
+                            ),
+                            PlaySound(
+                                sound_effects=[
+                                    (SoundEffect(filename="arrow_fired_from_bow.wav", volume=0.25), 1.0),
+                                ]
+                            )
+                        ]
+                    }
+                ),
+            ]
+        )
+    )
+    esper.add_component(
+        entity,
+        SpriteSheet(
+            surface=sprite_sheets[UnitType.CRUSADER_SOLDIER],
+            frame_width=100,
+            frame_height=100,
+            scale=gc.TINY_RPG_SCALE,
+            frames={AnimationType.IDLE: 6, AnimationType.WALKING: 8, AnimationType.ABILITY1: 3, AnimationType.ABILITY2: 3, AnimationType.ABILITY3: 6, AnimationType.ABILITY4: 9, AnimationType.DYING: 4},
+            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 7, AnimationType.ABILITY2: 8, AnimationType.ABILITY3: 2, AnimationType.ABILITY4: 4, AnimationType.DYING: 6},
+            animation_durations={
+                AnimationType.IDLE: gc.CRUSADER_SOLDIER_ANIMATION_IDLE_DURATION,
+                AnimationType.WALKING: gc.CRUSADER_SOLDIER_ANIMATION_WALKING_DURATION,
+                AnimationType.ABILITY1: gc.CRUSADER_SOLDIER_ANIMATION_SWITCH_STANCE_DURATION,
+                AnimationType.ABILITY2: 1e-9, # Not actually playing this animation
+                AnimationType.ABILITY3: gc.CRUSADER_SOLDIER_ANIMATION_MELEE_ATTACK_DURATION,
+                AnimationType.ABILITY4: gc.CRUSADER_SOLDIER_ANIMATION_RANGED_ATTACK_DURATION,
+                AnimationType.DYING: gc.CRUSADER_SOLDIER_ANIMATION_DYING_DURATION,
+            },
+            sprite_center_offset=(0, 1),
+        )
+    )
+    esper.add_component(
+        entity,
+        StatsCard(
+            text=[
+                f"Name: Soldier",
+                f"Faction: Crusader",
+                f"Health: {gc.CRUSADER_SOLDIER_HP}",
+                f"Melee Attack: {gc.CRUSADER_SOLDIER_MELEE_DAMAGE}",
+                f"Melee DPS: {round(gc.CRUSADER_SOLDIER_MELEE_DAMAGE/gc.CRUSADER_SOLDIER_ANIMATION_MELEE_ATTACK_DURATION, 2)}",
+                f"Melee Range: {gc.CRUSADER_SOLDIER_MELEE_RANGE}",
+                f"Ranged Attack: {gc.CRUSADER_SOLDIER_RANGED_DAMAGE}",
+                f"Ranged DPS: {round(gc.CRUSADER_SOLDIER_RANGED_DAMAGE/gc.CRUSADER_SOLDIER_ANIMATION_RANGED_ATTACK_DURATION, 2)}",
+                f"Ranged Range: {gc.CRUSADER_SOLDIER_RANGED_RANGE}",
+                f"Speed: {gc.CRUSADER_SOLDIER_MOVEMENT_SPEED}",
+                f"AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
+                f"Special: Soldiers switch from ranged attacks to melee attacks when their target is within {gc.CRUSADER_SOLDIER_SWITCH_STANCE_RANGE} units of them, and switch back to ranged attacks when their target is out of range.",
+            ]
+        )
+    )
+    esper.add_component(entity, WalkEffects({
+        frame: [PlaySound(sound_effects=[
+            (SoundEffect(filename=f"armored_grass_footstep{i+1}.wav", volume=0.25), 1.0) for i in range(5)
         ])]
         for frame in [3, 7]
     }))

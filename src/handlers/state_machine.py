@@ -44,6 +44,10 @@ class StateMachine:
             unit_state.state = State.ABILITY2
         elif event.index == 2:
             unit_state.state = State.ABILITY3
+        elif event.index == 3:
+            unit_state.state = State.ABILITY4
+        elif event.index == 4:
+            unit_state.state = State.ABILITY5
         else:
             raise ValueError(f"Invalid ability index: {event.index}")
         emit_event(STATE_CHANGED, event=StateChangedEvent(event.entity, unit_state.state))

@@ -41,6 +41,8 @@ class AnimationProcessor(esper.Processor):
                 State.ABILITY1: AnimationType.ABILITY1,
                 State.ABILITY2: AnimationType.ABILITY2,
                 State.ABILITY3: AnimationType.ABILITY3,
+                State.ABILITY4: AnimationType.ABILITY4,
+                State.ABILITY5: AnimationType.ABILITY5,
                 State.DEAD: AnimationType.DYING
             }[unit_state.state]
 
@@ -77,7 +79,12 @@ class AnimationProcessor(esper.Processor):
                     index = 1
                 elif unit_state.state == State.ABILITY3 and anim_state.type == AnimationType.ABILITY3:
                     index = 2
-                
+                elif unit_state.state == State.ABILITY4 and anim_state.type == AnimationType.ABILITY4:
+                    index = 3
+                elif unit_state.state == State.ABILITY5 and anim_state.type == AnimationType.ABILITY5:
+                    index = 4
+
+
                 if index is not None:
                     ability = esper.component_for_entity(ent, Abilities).abilities[index]
                     if ability.effects.get(anim_state.current_frame, None):

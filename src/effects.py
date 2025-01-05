@@ -19,6 +19,7 @@ from components.health import Health
 from components.orientation import FacingDirection, Orientation
 from components.position import Position
 from components.projectile import Projectile
+from components.stance import Stance
 from components.status_effect import CrusaderCommanderEmpowered, StatusEffect, StatusEffects
 from components.team import Team
 from components.unique import Unique
@@ -421,3 +422,16 @@ class PlaySound(Effect):
                 weights=[weight for _, weight in self.sound_effects]
             )[0]
         emit_event(PLAY_SOUND, event=PlaySoundEvent(filename=sound_effect.filename, volume=sound_effect.volume))
+
+@dataclass
+class StanceChange(Effect):
+    """Effect changes the stance of the owner."""
+
+    stance: int
+    """The stance to change to."""
+
+    def apply(self, owner: Optional[int], parent: int, target: int) -> None:
+        if owner is None:
+            raise ValueError("Owner is required for StanceChange effect")
+        esper.component_for_entity(owner, Stance).stance = self.stance
+

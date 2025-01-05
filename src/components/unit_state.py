@@ -14,6 +14,8 @@ class State(Enum):
     ABILITY1 = auto()
     ABILITY2 = auto()
     ABILITY3 = auto()
+    ABILITY4 = auto()
+    ABILITY5 = auto()
     DEAD = auto()
 
 @dataclass

@@ -127,6 +127,13 @@
             }
         }
     },
+    "#crusader_soldier_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/CrusaderSoldierIcon.png"
+            }
+        }
+    },
     "#werebear_icon": {
         "images": {
             "normal_image": {

@@ -28,6 +28,12 @@ class AnimationType(Enum):
     ABILITY3 = auto()
     """The third highest priority ability animation state."""
 
+    ABILITY4 = auto()
+    """The fourth highest priority ability animation state."""
+
+    ABILITY5 = auto()
+    """The fifth highest priority ability animation state."""
+
     DYING = auto()
     """The dying animation state."""
 

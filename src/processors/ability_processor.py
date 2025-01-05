@@ -30,6 +30,10 @@ class AbilityProcessor(esper.Processor):
                 index = 1
             elif unit_state.state == State.ABILITY3:
                 index = 2
+            elif unit_state.state == State.ABILITY4:
+                index = 3
+            elif unit_state.state == State.ABILITY5:
+                index = 4
             else:
                 continue
             ability = abilities.abilities[index]
@@ -42,6 +46,10 @@ class AbilityProcessor(esper.Processor):
                 index = 1
             elif unit_state.state == State.ABILITY3:
                 index = 2
+            elif unit_state.state == State.ABILITY4:
+                index = 3
+            elif unit_state.state == State.ABILITY5:
+                index = 4
             else:
                 continue
             ability = abilities.abilities[index]
@@ -67,5 +75,7 @@ def check_condition(entity: int, condition: Condition, ability: Ability) -> bool
     elif isinstance(condition, SatisfiesUnitCondition):
         if not condition.unit_condition.check(entity):
             return False
+    else:
+        raise ValueError(f"Unknown condition type: {type(condition)}, maybe missing SatisfiesUnitCondition?")
     return True
 
