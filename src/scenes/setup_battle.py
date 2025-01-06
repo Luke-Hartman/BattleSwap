@@ -96,7 +96,6 @@ class SetupBattleScene(Scene):
         self.battle_id = battle_id
         self.sandbox_mode = sandbox_mode
         self.developer_mode = developer_mode
-        self.tip_box = TipBox(self.manager, battle)
         
         if self.sandbox_mode:
             # Set unfocused states for all battles except the focused one
@@ -121,6 +120,7 @@ class SetupBattleScene(Scene):
         self.return_button = ReturnButton(self.manager)
         self.start_button = StartButton(self.manager)
         self.feedback_button = FeedbackButton(self.manager)
+        self.tip_box = TipBox(self.manager, battle)
 
         self.barracks = BarracksUI(
             self.manager,
