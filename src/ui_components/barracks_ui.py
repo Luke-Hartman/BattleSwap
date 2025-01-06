@@ -39,13 +39,13 @@ class UnitCount(UIPanel):
             container=self,
             object_id=ObjectID(class_id="@unit_count", object_id=unit_theme_ids[unit_type]),
         )
-        self.value_label = UILabel(
-            relative_rect=pygame.Rect((0, 0), (self.size, 25)),
-            text=str(unit_values[unit_type]),
-            manager=manager,
-            container=self,
-            object_id=ObjectID(class_id="@unit_count_text"),
-        )
+        # self.value_label = UILabel(
+        #     relative_rect=pygame.Rect((0, 0), (self.size, 25)),
+        #     text=str(unit_values[unit_type]),
+        #     manager=manager,
+        #     container=self,
+        #     object_id=ObjectID(class_id="@unit_count_text"),
+        # )
         self.count_label = UILabel(
             relative_rect=pygame.Rect((0, self.size - 25), (self.size, 25)),
             text="inf" if infinite else str(count),

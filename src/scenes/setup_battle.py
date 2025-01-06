@@ -31,6 +31,7 @@ from ui_components.start_button import StartButton
 from scenes.events import BattleSceneEvent, PreviousSceneEvent
 from ui_components.save_battle_dialog import SaveBattleDialog
 from auto_battle import BattleOutcome, simulate_battle
+from ui_components.tip_box import TipBox
 from voice import play_intro
 from world_map_view import FillState, HexState, WorldMapView
 from scene_utils import draw_grid, get_center_line, get_placement_pos, get_hovered_unit, get_unit_placements, get_legal_placement_area, mouse_over_ui
@@ -89,13 +90,14 @@ class SetupBattleScene(Scene):
         else:
             if battle_id is None:
                 raise ValueError("Battle ID must be provided if world_map_view is not None")
+            battle = world_map_view.battles[battle_id]
         self.world_map_view = world_map_view
         self.camera = world_map_view.camera
         self.battle_id = battle_id
         self.sandbox_mode = sandbox_mode
         self.developer_mode = developer_mode
+        self.tip_box = TipBox(self.manager, battle)
         
-        battle = self.world_map_view.battles[battle_id]
         if self.sandbox_mode:
             # Set unfocused states for all battles except the focused one
             unfocused_states = {

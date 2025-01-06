@@ -37,7 +37,9 @@
     ],
     "allies": null,
     "tip": [
-      "Cavalry move much faster than a swordsman, but deal less damage."
+      "Cavalry move much faster than a swordsman, but deal less damage.",
+      "",
+      "You can snap units to a grid using \"shift\", and control time using \"space\", \"+\", and \"-\"."
     ],
     "hex_coords": [
       1,
@@ -145,8 +147,7 @@
     ],
     "allies": null,
     "tip": [
-      "Each time you finish a level, you swap the army you used for the army you beat!",
-      "Also, you win as long as all enemies are defeated, even if there are no survivors..."
+      "Each time you finish a level, you swap the army you used for the army you beat!"
     ],
     "hex_coords": [
       3,
@@ -183,8 +184,7 @@
     "allies": null,
     "tip": [
       "The placement of your units is critical to an efficient victory.",
-      "Any units you save can be used in future levels!",
-      "Hint: Try saving one of your archers."
+      "Any units you save can be used in future levels!"
     ],
     "hex_coords": [
       2,
@@ -284,8 +284,7 @@
     ],
     "allies": null,
     "tip": [
-      "Should you divide to conquer?",
-      "Hint: Try taking them out one at a time."
+      "Should you divide to conquer?"
     ],
     "hex_coords": [
       4,
@@ -621,8 +620,9 @@
     ],
     "allies": null,
     "tip": [
-      "Hint: Try taking them out one at a time.",
-      "If you need to, you can also revisit previous levels to improve your solutions."
+      "If you need to, you can also revisit previous levels to improve your solutions.",
+      "",
+      "Hint: Try taking them out one at a time."
     ],
     "hex_coords": [
       8,
@@ -923,7 +923,7 @@
     ],
     "allies": null,
     "tip": [
-      "Or is he?"
+      "The lone swordsman...?"
     ],
     "hex_coords": [
       2,
