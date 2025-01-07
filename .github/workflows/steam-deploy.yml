@@ -34,9 +34,4 @@ jobs:
     - name: Deploy to Steam
       env:
         STEAM_PASSWORD: ${{ secrets.STEAM_PASSWORD }}
-      run: |
-        python scripts/deploy_to_steam.py `
-          --app-id ${{ secrets.STEAM_APP_ID }} `
-          --depot-id ${{ secrets.STEAM_DEPOT_ID }} `
-          --username ${{ secrets.STEAM_USERNAME }} `
-          --branch ${{ inputs.branch }} 
+      run: python scripts/deploy_to_steam.py --app-id "${{ secrets.STEAM_APP_ID }}" --depot-id "${{ secrets.STEAM_DEPOT_ID }}" --username "${{ secrets.STEAM_USERNAME }}" --branch "${{ inputs.branch }}" 
