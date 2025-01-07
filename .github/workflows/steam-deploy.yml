@@ -1,0 +1,42 @@
+name: Deploy to Steam
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Steam branch to deploy to'
+        required: true
+        default: 'beta'
+        type: choice
+        options:
+          - beta
+          - public
+
+jobs:
+  deploy:
+    runs-on: windows-latest  # Steam deployment requires Windows
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pyinstaller
+    
+    - name: Deploy to Steam
+      env:
+        STEAM_PASSWORD: ${{ secrets.STEAM_PASSWORD }}
+      run: |
+        python scripts/deploy_to_steam.py `
+          --app-id ${{ secrets.STEAM_APP_ID }} `
+          --depot-id ${{ secrets.STEAM_DEPOT_ID }} `
+          --username ${{ secrets.STEAM_USERNAME }} `
+          --branch ${{ inputs.branch }} 
