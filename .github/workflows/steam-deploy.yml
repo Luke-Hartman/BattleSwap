@@ -9,8 +9,8 @@ on:
         default: 'beta'
         type: choice
         options:
-          - beta
-          - public
+          - staging
+          - default
 
 jobs:
   deploy:
