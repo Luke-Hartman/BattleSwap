@@ -1,6 +1,6 @@
 import os
 import sys
-
+import platform
 
 from steamworks import STEAMWORKS
 from steamworks.exceptions import SteamNotRunningException
@@ -15,13 +15,20 @@ def get_resource_path(relative_path: str) -> str:
     
     return os.path.join(base_path, relative_path)
 
-steamworks = STEAMWORKS()
 
 def init_steam():
-    # Ensure DLL directory is in path
-    dll_dir = get_resource_path(".")
-    os.add_dll_directory(dll_dir)
-    
+    # Store the original working directory and change it only on MacOS
+    if platform.system() == "Darwin":
+        os.chdir(get_resource_path("."))
+
+    # Add DLL directory to path only on Windows
+    if platform.system() == "Windows":
+        dll_dir = get_resource_path(".")
+        os.add_dll_directory(dll_dir)
+        
+    # Initialize Steam
+
+    steamworks = STEAMWORKS()   
     try:
         steamworks.initialize()
     except OSError as e:

@@ -14,6 +14,8 @@ import subprocess
 import zipfile
 from pathlib import Path
 from typing import List, Optional, Set
+import sys
+import platform
 
 REQUIRED_ASSETS = {
     'directories': {
@@ -42,6 +44,21 @@ EXCLUDED_PATTERNS = {
     '*.pyc',
     '*.pyo',
     '*.pyd',
+}
+
+STEAM_LIBRARIES = {
+    'windows': [
+        ('steam_api64.dll', '.'),
+        ('SteamworksPy64.dll', '.'),
+        ('steam_api64.dll', 'steamworks'),
+        ('SteamworksPy64.dll', 'steamworks'),
+    ],
+    'darwin': [  # MacOS
+        ('libsteam_api.dylib', '.'),
+        ('SteamworksPy.dylib', '.'),
+        ('libsteam_api.dylib', 'steamworks'),
+        ('SteamworksPy.dylib', 'steamworks'),
+    ]
 }
 
 def validate_project_structure(asset_dir: Path, data_dir: Path) -> None:
@@ -104,18 +121,24 @@ def create_executable(project_root: Path, build_dir: Path) -> None:
     # Copy steam_appid.txt to build directory
     shutil.copy2(project_root / 'steam_appid.txt', build_dir / 'steam_appid.txt')
     
+    # Determine platform-specific settings
+    platform_name = 'darwin' if sys.platform == 'darwin' else 'windows'
+    steam_libs = STEAM_LIBRARIES[platform_name]
+    
+    # Convert steam library paths to actual file paths
+    binary_paths = []
+    for lib_file, dest in steam_libs:
+        lib_path = project_root / lib_file
+        if lib_path.exists():
+            binary_paths.append((str(lib_path), dest))
+    
     spec_content = f'''# -*- mode: python ; coding: utf-8 -*-
 block_cipher = None
 
 a = Analysis(
     [r'{str(project_root / "src" / "main.py")}'],
     pathex=[r'{str(project_root / "src")}'],
-    binaries=[
-        (r'{str(project_root / "steam_api64.dll")}', '.'),
-        (r'{str(project_root / "SteamworksPy64.dll")}', '.'),
-        (r'{str(project_root / "steam_api64.dll")}', 'steamworks'),
-        (r'{str(project_root / "SteamworksPy64.dll")}', 'steamworks'),
-    ],
+    binaries={binary_paths},
     datas=[
         (r'{str(project_root / "assets")}', 'assets'),
         (r'{str(project_root / "data")}', 'data'),
@@ -155,6 +178,22 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+)
+'''
+
+    if platform.system() == 'Darwin':
+        # Add MacOS-specific app bundle configuration
+        spec_content += '''
+app = BUNDLE(
+    exe,
+    name='BattleSwap.app',
+    icon=None,  # You can specify an .icns file here
+    bundle_identifier='com.yourgame.battleswap',
+    info_plist={
+        'CFBundleShortVersionString': '1.0.0',
+        'CFBundleName': 'BattleSwap',
+        'NSHighResolutionCapable': 'True',
+    },
 )
 '''
     

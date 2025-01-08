@@ -33,7 +33,7 @@ screen = pygame.display.set_mode((0, 0),pygame.FULLSCREEN)
 screen_width, screen_height = screen.get_size()
 screen = pygame.display.set_mode(
     (screen_width, screen_height),
-    pygame.SCALED
+    pygame.SCALED | pygame.FULLSCREEN
 )
 pygame.display.set_caption("Battle Swap")
 
