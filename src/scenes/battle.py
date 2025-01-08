@@ -49,6 +49,8 @@ class BattleScene(Scene):
         self.outcome_time = None
         self.panel_delay = 0.25  # Delay in seconds before showing panel
 
+        self.world_map_view.rebuild(self.world_map_view.battles.values())
+
         with use_world(self.battle_id):
             self.auto_battle = AutoBattle(
                 max_duration=float('inf'),
