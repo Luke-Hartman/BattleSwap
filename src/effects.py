@@ -7,6 +7,7 @@ from typing import Callable, List, Optional, Tuple, Union
 
 import esper
 
+from components.ammo import Ammo
 from components.angle import Angle
 from components.animation import AnimationState, AnimationType
 from components.aoe import AoE
@@ -435,3 +436,15 @@ class StanceChange(Effect):
             raise ValueError("Owner is required for StanceChange effect")
         esper.component_for_entity(owner, Stance).stance = self.stance
 
+@dataclass
+class IncreaseAmmo(Effect):
+    """Effect increases the ammo of the owner."""
+
+    amount: int
+    """The amount of ammo to increase. Can be negative."""
+
+    def apply(self, owner: Optional[int], parent: int, target: int) -> None:
+        if owner is None:
+            raise ValueError("Owner is required for IncreaseAmmo effect")
+        ammo = esper.component_for_entity(owner, Ammo)
+        ammo.current = max(min(ammo.current + self.amount, ammo.max), 0)

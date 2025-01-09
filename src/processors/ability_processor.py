@@ -1,25 +1,36 @@
 """Processor responsible for abilities."""
 
+from typing import Optional, Union
 import esper
 
 from components.ability import Abilities, Ability, Condition, Cooldown, HasTarget, SatisfiesUnitCondition
+from components.instant_ability import InstantAbilities, InstantAbility
 from components.orientation import FacingDirection, Orientation
 from components.position import Position
 from components.unit_state import State, UnitState
 from components.velocity import Velocity
-from events import ABILITY_INTERRUPTED, ABILITY_TRIGGERED, AbilityInterruptedEvent, AbilityTriggeredEvent, emit_event
+from events import ABILITY_INTERRUPTED, ABILITY_TRIGGERED, AbilityInterruptedEvent, AbilityTriggeredEvent, emit_event, INSTANT_ABILITY_TRIGGERED, InstantAbilityTriggeredEvent
 
 class AbilityProcessor(esper.Processor):
     """Processor responsible for abilities."""
 
     def process(self, dt: float):
+        for ent, (unit_state, instant_abilities) in esper.get_components(UnitState, InstantAbilities):
+            for i, ability in enumerate(instant_abilities.abilities):
+                ability.time_since_last_use += dt
+                if not all(check_condition(ent, condition, ability, ability.target_strategy.target) for condition in ability.trigger_conditions):
+                    continue
+                ability.time_since_last_use = 0
+                emit_event(INSTANT_ABILITY_TRIGGERED, event=InstantAbilityTriggeredEvent(ent, i))
+                break
+
         for ent, (unit_state, abilities) in esper.get_components(UnitState, Abilities):
             for ability in abilities.abilities:
                 ability.time_since_last_use += dt
             if unit_state.state in [State.IDLE, State.PURSUING]:
                 for i, ability in enumerate(abilities.abilities):
                     ability.target = ability.target_strategy.target
-                    if not all(check_condition(ent, condition, ability) for condition in ability.trigger_conditions):
+                    if not all(check_condition(ent, condition, ability, ability.target) for condition in ability.trigger_conditions):
                         continue
                     ability.time_since_last_use = 0
                     emit_event(ABILITY_TRIGGERED, event=AbilityTriggeredEvent(ent, i))
@@ -37,7 +48,7 @@ class AbilityProcessor(esper.Processor):
             else:
                 continue
             ability = abilities.abilities[index]
-            if not all(check_condition(ent, condition, ability) for condition in ability.persistent_conditions):
+            if not all(check_condition(ent, condition, ability, ability.target) for condition in ability.persistent_conditions):
                 emit_event(ABILITY_INTERRUPTED, event=AbilityInterruptedEvent(ent, index))
         for ent, (unit_state, velocity, pos, abilities, orientation) in esper.get_components(UnitState, Velocity, Position, Abilities, Orientation):
             if unit_state.state == State.ABILITY1:
@@ -62,15 +73,15 @@ class AbilityProcessor(esper.Processor):
                 
                 
 
-def check_condition(entity: int, condition: Condition, ability: Ability) -> bool:
+def check_condition(entity: int, condition: Condition, ability: Union[Ability, InstantAbility], target: Optional[int] = None) -> bool:
     """Check if the condition is met for the given ability."""
     if isinstance(condition, Cooldown):
         if ability.time_since_last_use < condition.duration:
             return False
     elif isinstance(condition, HasTarget):
-        if ability.target is None:
+        if target is None:
             return False
-        if not condition.unit_condition.check(ability.target):
+        if not condition.unit_condition.check(target):
             return False
     elif isinstance(condition, SatisfiesUnitCondition):
         if not condition.unit_condition.check(entity):

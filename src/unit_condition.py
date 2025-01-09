@@ -7,6 +7,7 @@ import math
 
 import esper
 
+from components.ammo import Ammo
 from components.health import Health
 from components.position import Position
 from components.stance import Stance
@@ -177,3 +178,13 @@ class InStance(UnitCondition):
 
     def check(self, entity: int) -> bool:
         return esper.component_for_entity(entity, Stance).stance == self.stance
+
+@dataclass
+class AmmoEquals(UnitCondition):
+    """The unit has the given amount of ammo."""
+
+    amount: int
+    """The amount of ammo to check against."""
+
+    def check(self, entity: int) -> bool:
+        return esper.component_for_entity(entity, Ammo).current == self.amount

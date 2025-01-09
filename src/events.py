@@ -64,6 +64,11 @@ class ChangeMusicVolumeEvent:
     """The new volume to set."""
 
 @dataclass
+class DeathEvent:
+    """Event triggered when a unit dies."""
+    entity: int
+
+@dataclass
 class DestinationTargetAcquiredEvent:
     """Event triggered when a unit identifies a destination."""
     entity: int
@@ -85,9 +90,10 @@ class FleeingExpiredEvent:
     entity: int
 
 @dataclass
-class DeathEvent:
-    """Event triggered when a unit dies."""
+class InstantAbilityTriggeredEvent:
+    """Event triggered when a unit's instant ability is triggered."""
     entity: int
+    index: int
 
 @dataclass
 class PlaySoundEvent:
@@ -132,6 +138,7 @@ DESTINATION_TARGET_ACQUIRED = 'destination_target_acquired'
 DESTINATION_TARGET_LOST = 'destination_target_lost'
 FLEEING_STARTED = 'fleeing_started'
 FLEEING_EXPIRED = 'fleeing_expired'
+INSTANT_ABILITY_TRIGGERED = 'instant_ability_triggered'
 PLAY_SOUND = 'play_sound'
 PLAY_VOICE = 'play_voice'
 PROJECTILE_HIT = 'projectile_hit'

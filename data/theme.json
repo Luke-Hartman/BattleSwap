@@ -84,7 +84,14 @@
                 "path": "assets/icons/CrusaderCommanderIcon.png"
             }
         }
-    },  
+    },
+    "#crusader_crossbowman_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/CrusaderCrossbowmanIcon.png"
+            }
+        }
+    },
     "#crusader_defender_icon": {
         "images": {
             "normal_image": {

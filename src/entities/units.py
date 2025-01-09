@@ -7,7 +7,9 @@ import esper
 import pygame
 import os
 from typing import Dict
+from components.ammo import Ammo
 from components.hitbox import Hitbox
+from components.instant_ability import InstantAbilities, InstantAbility
 from components.range_indicator import RangeIndicator
 from components.stance import Stance
 from components.stats_card import StatsCard
@@ -23,15 +25,15 @@ from components.status_effect import CrusaderCommanderEmpowered, Fleeing, Healin
 from target_strategy import ByDistance, ByMaxHealth, ByMissingHealth, TargetStrategy
 from components.destination import Destination
 from components.team import Team, TeamType
-from components.unit_state import UnitState
+from components.unit_state import State, UnitState
 from components.movement import Movement
 from components.unit_type import UnitType, UnitTypeComponent
 from components.velocity import Velocity
 from components.health import Health
 from components.orientation import Orientation, FacingDirection
-from effects import AppliesStatusEffect, CreatesAoE, CreatesAttachedVisual, CreatesProjectile, Damages, Heals, PlaySound, Recipient, SoundEffect, StanceChange
+from effects import AppliesStatusEffect, CreatesAoE, CreatesAttachedVisual, CreatesProjectile, Damages, Heals, IncreaseAmmo, PlaySound, Recipient, SoundEffect, StanceChange
 from unit_condition import (
-    All, Alive, Always, HealthBelowPercent, InStance, MinimumDistanceFromEntity, Never, NotEntity, OnTeam,
+    All, Alive, Always, AmmoEquals, HealthBelowPercent, InStance, MinimumDistanceFromEntity, Never, NotEntity, OnTeam,
     MaximumDistanceFromEntity
 )
 from visuals import Visual
@@ -45,6 +47,7 @@ unit_theme_ids: Dict[UnitType, str] = {
     UnitType.CRUSADER_BLACK_KNIGHT: "#crusader_black_knight_icon",
     UnitType.CRUSADER_CLERIC: "#crusader_cleric_icon",
     UnitType.CRUSADER_COMMANDER: "#crusader_commander_icon",
+    UnitType.CRUSADER_CROSSBOWMAN: "#crusader_crossbowman_icon",
     UnitType.CRUSADER_DEFENDER: "#crusader_defender_icon",
     UnitType.CRUSADER_GOLD_KNIGHT: "#crusader_gold_knight_icon",
     UnitType.CRUSADER_LONGBOWMAN: "#crusader_longbowman_icon",
@@ -68,6 +71,7 @@ unit_values: Dict[UnitType, int] = {
     UnitType.CRUSADER_BLACK_KNIGHT: 100,
     UnitType.CRUSADER_CLERIC: 100,
     UnitType.CRUSADER_COMMANDER: 100,
+    UnitType.CRUSADER_CROSSBOWMAN: 100,
     UnitType.CRUSADER_DEFENDER: 100,
     UnitType.CRUSADER_GOLD_KNIGHT: 100,
     UnitType.CRUSADER_LONGBOWMAN: 100,
@@ -89,6 +93,7 @@ def load_sprite_sheets():
         UnitType.CRUSADER_BLACK_KNIGHT: "CrusaderBlackKnight.png",
         UnitType.CRUSADER_CLERIC: "CrusaderCleric.png",
         UnitType.CRUSADER_COMMANDER: "CrusaderCommander.png",
+        UnitType.CRUSADER_CROSSBOWMAN: "CrusaderCrossbowman.png",
         UnitType.CRUSADER_DEFENDER: "CrusaderDefender.png",
         UnitType.CRUSADER_GOLD_KNIGHT: "CrusaderGoldKnight.png",
         UnitType.CRUSADER_LONGBOWMAN: "CrusaderLongbowman.png",
@@ -112,6 +117,7 @@ def load_sprite_sheets():
         UnitType.CRUSADER_BLACK_KNIGHT: "CrusaderBlackKnightIcon.png",
         UnitType.CRUSADER_CLERIC: "CrusaderClericIcon.png",
         UnitType.CRUSADER_COMMANDER: "CrusaderCommanderIcon.png",
+        UnitType.CRUSADER_CROSSBOWMAN: "CrusaderCrossbowmanIcon.png",
         UnitType.CRUSADER_DEFENDER: "CrusaderDefenderIcon.png",
         UnitType.CRUSADER_GOLD_KNIGHT: "CrusaderGoldKnightIcon.png",
         UnitType.CRUSADER_LONGBOWMAN: "CrusaderLongbowmanIcon.png",
@@ -136,6 +142,7 @@ def create_unit(x: int, y: int, unit_type: UnitType, team: TeamType) -> int:
         UnitType.CRUSADER_BLACK_KNIGHT: create_crusader_black_knight,
         UnitType.CRUSADER_CLERIC: create_crusader_cleric,
         UnitType.CRUSADER_COMMANDER: create_crusader_commander,
+        UnitType.CRUSADER_CROSSBOWMAN: create_crusader_crossbowman,
         UnitType.CRUSADER_DEFENDER: create_crusader_defender,
         UnitType.CRUSADER_GOLD_KNIGHT: create_crusader_gold_knight,
         UnitType.CRUSADER_LONGBOWMAN: create_crusader_longbowman,
@@ -1155,6 +1162,180 @@ def create_crusader_commander(x: int, y: int, team: TeamType) -> int:
     }))
     return entity
 
+def create_crusader_crossbowman(x: int, y: int, team: TeamType) -> int:
+    """Create a crossbowman entity with all necessary components."""
+    entity = unit_base_entity(
+        x=x,
+        y=y,
+        team=team,
+        unit_type=UnitType.CRUSADER_CROSSBOWMAN,
+        movement_speed=gc.CRUSADER_CROSSBOWMAN_MOVEMENT_SPEED,
+        health=gc.CRUSADER_CROSSBOWMAN_HP,
+        hitbox=Hitbox(
+            width=16,
+            height=36,
+        )
+    )
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=2, ascending=True),
+        ],
+        unit_condition=All([OnTeam(team=team.other()), Alive()])
+    )
+    no_target_strategy = TargetStrategy(
+        rankings=[ByDistance(entity=entity, y_bias=2, ascending=True)],
+        unit_condition=Never(),
+    )
+    esper.add_component(entity, Destination(target_strategy=targetting_strategy, x_offset=0))
+    esper.add_component(
+        entity,
+        Ammo(
+            gc.CRUSADER_CROSSBOWMAN_STARTING_AMMO,
+            max=gc.CRUSADER_CROSSBOWMAN_MAX_AMMO
+        )
+    )
+    esper.add_component(entity, RangeIndicator(range=gc.CRUSADER_CROSSBOWMAN_ATTACK_RANGE))
+    RELOADING = 0
+    FIRING = 1
+    esper.add_component(entity, Stance(stance=RELOADING))
+    esper.add_component(entity, Abilities(
+        abilities=[
+            Ability(
+                target_strategy=targetting_strategy,
+                trigger_conditions=[
+                    HasTarget(
+                        unit_condition=All([
+                            Alive(),
+                            MaximumDistanceFromEntity(
+                                entity=entity,
+                                distance=gc.CRUSADER_CROSSBOWMAN_ATTACK_RANGE,
+                                y_bias=None
+                            )
+                        ])
+                    ),
+                    SatisfiesUnitCondition(
+                        InStance(FIRING)
+                    ),
+                ],
+                persistent_conditions=[
+                    HasTarget(
+                        unit_condition=All([
+                            Alive(),
+                            MaximumDistanceFromEntity(
+                                entity=entity,
+                                distance=gc.CRUSADER_CROSSBOWMAN_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                y_bias=None
+                            )
+                        ])
+                    )
+                ],
+                effects={
+                    4: [
+                        CreatesProjectile(
+                            projectile_speed=gc.CRUSADER_CROSSBOWMAN_PROJECTILE_SPEED,
+                            effects=[
+                                Damages(damage=gc.CRUSADER_CROSSBOWMAN_ATTACK_DAMAGE, recipient=Recipient.TARGET),        
+                            ],
+                            visual=Visual.Arrow,
+                            projectile_offset_x=5*gc.MINIFOLKS_SCALE,
+                            projectile_offset_y=0
+                        ),
+                        IncreaseAmmo(amount=-1),
+                        PlaySound(SoundEffect(filename="crossbow_firing.wav", volume=0.2)),
+                    ]
+                }
+            ),
+            Ability(
+                target_strategy=no_target_strategy,
+                trigger_conditions=[
+                    SatisfiesUnitCondition(
+                        InStance(RELOADING)
+                    ),
+                ],
+                persistent_conditions=[],
+                effects={
+                    2: [
+                        IncreaseAmmo(amount=1),
+                        PlaySound(SoundEffect(filename="crossbow_reloading.wav", volume=0.05)),
+                    ]
+                }
+            ),
+        ]
+    ))
+    esper.add_component(entity, InstantAbilities(
+        abilities=[
+            InstantAbility(
+                target_strategy=no_target_strategy,
+                trigger_conditions=[
+                    SatisfiesUnitCondition(
+                        All([
+                            InStance(RELOADING),
+                            AmmoEquals(gc.CRUSADER_CROSSBOWMAN_MAX_AMMO),
+                        ])
+                    ),
+                ],
+                effects=[
+                    StanceChange(stance=FIRING),
+                ],
+            ),
+            InstantAbility(
+                target_strategy=no_target_strategy,
+                trigger_conditions=[
+                    SatisfiesUnitCondition(
+                        All([
+                            InStance(FIRING),
+                            AmmoEquals(0),
+                        ])
+                    ),
+                ],
+                effects=[StanceChange(stance=RELOADING)],
+            ),
+        ]
+    ))
+    esper.add_component(
+        entity,
+        SpriteSheet(
+            surface=sprite_sheets[UnitType.CRUSADER_CROSSBOWMAN],
+            frame_width=100,
+            frame_height=100,
+            scale=gc.TINY_RPG_SCALE,
+            frames={AnimationType.IDLE: 6, AnimationType.WALKING: 7, AnimationType.ABILITY1: 8, AnimationType.ABILITY2: 4, AnimationType.DYING: 4},
+            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 2, AnimationType.ABILITY2: 4, AnimationType.DYING: 5},
+            animation_durations={
+                AnimationType.IDLE: gc.CRUSADER_CROSSBOWMAN_ANIMATION_IDLE_DURATION,
+                AnimationType.WALKING: gc.CRUSADER_CROSSBOWMAN_ANIMATION_WALKING_DURATION,
+                AnimationType.ABILITY1: gc.CRUSADER_CROSSBOWMAN_ANIMATION_ATTACK_DURATION,
+                AnimationType.ABILITY2: gc.CRUSADER_CROSSBOWMAN_ANIMATION_RELOAD_DURATION,
+                AnimationType.DYING: gc.CRUSADER_CROSSBOWMAN_ANIMATION_DYING_DURATION,
+            },
+            sprite_center_offset=(0, 2),
+        )
+    )
+    esper.add_component(
+        entity,
+        StatsCard(
+            text=[
+                f"Name: Crossbowman",
+                f"Faction: Crusader",
+                f"Health: {gc.CRUSADER_CROSSBOWMAN_HP}",
+                f"Attack: {gc.CRUSADER_CROSSBOWMAN_ATTACK_DAMAGE}",
+                f"Firing DPS: {round(gc.CRUSADER_CROSSBOWMAN_ATTACK_DAMAGE/gc.CRUSADER_CROSSBOWMAN_ANIMATION_ATTACK_DURATION, 2)}",
+                f"Average DPS: {round(gc.CRUSADER_CROSSBOWMAN_ATTACK_DAMAGE/(gc.CRUSADER_CROSSBOWMAN_ANIMATION_ATTACK_DURATION + gc.CRUSADER_CROSSBOWMAN_ANIMATION_RELOAD_DURATION), 2)}",
+                f"Speed: {gc.CRUSADER_CROSSBOWMAN_MOVEMENT_SPEED}",
+                f"Range: {gc.CRUSADER_CROSSBOWMAN_ATTACK_RANGE}",
+                f"AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
+                f"Special: Has {gc.CRUSADER_CROSSBOWMAN_STARTING_AMMO} ammo to start with, and can reload to regain ammo, up to {gc.CRUSADER_CROSSBOWMAN_MAX_AMMO}.",
+            ]
+        )
+    )
+    esper.add_component(entity, WalkEffects({
+        frame: [PlaySound(sound_effects=[
+            (SoundEffect(filename=f"armored_grass_footstep{i+1}.wav", volume=0.25), 1.0) for i in range(5)
+        ])]
+        for frame in [1, 5]
+    }))
+    return entity
+
 def create_crusader_defender(x: int, y: int, team: TeamType) -> int:
     """Create a defender entity with all necessary components."""
     entity = unit_base_entity(
@@ -1899,6 +2080,30 @@ def create_crusader_soldier(x: int, y: int, team: TeamType) -> int:
     esper.add_component(entity, Stance(stance=RANGED))
     esper.add_component(
         entity,
+        InstantAbilities(
+            abilities=[
+                InstantAbility(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        SatisfiesUnitCondition(InStance(stance=MELEE)),
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                MinimumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.CRUSADER_SOLDIER_SWITCH_STANCE_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    y_bias=None,
+                                ),
+                            ])
+                        )
+                    ],
+                    effects=[StanceChange(stance=RANGED)]
+                )
+            ]
+        )
+    )
+    esper.add_component(
+        entity,
         Abilities(
             abilities=[
                 # Switch stance to melee
@@ -1922,29 +2127,6 @@ def create_crusader_soldier(x: int, y: int, team: TeamType) -> int:
                         1: [
                             StanceChange(stance=MELEE),
                             PlaySound(SoundEffect(filename="drawing_sword.wav", volume=0.15)),
-                        ]
-                    }
-                ),
-                # Switch stance to ranged
-                Ability(
-                    target_strategy=targetting_strategy,
-                    trigger_conditions=[
-                        SatisfiesUnitCondition(InStance(stance=MELEE)),
-                        HasTarget(
-                            unit_condition=All([
-                                Alive(),
-                                MinimumDistanceFromEntity(
-                                    entity=entity,
-                                    distance=gc.CRUSADER_SOLDIER_SWITCH_STANCE_RANGE + gc.TARGETTING_GRACE_DISTANCE,
-                                    y_bias=None,
-                                ),
-                            ])
-                        )
-                    ],
-                    persistent_conditions=[],
-                    effects={
-                        1: [
-                            StanceChange(stance=RANGED),
                         ]
                     }
                 ),
@@ -2050,15 +2232,14 @@ def create_crusader_soldier(x: int, y: int, team: TeamType) -> int:
             frame_width=100,
             frame_height=100,
             scale=gc.TINY_RPG_SCALE,
-            frames={AnimationType.IDLE: 6, AnimationType.WALKING: 8, AnimationType.ABILITY1: 3, AnimationType.ABILITY2: 3, AnimationType.ABILITY3: 6, AnimationType.ABILITY4: 9, AnimationType.DYING: 4},
-            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 7, AnimationType.ABILITY2: 8, AnimationType.ABILITY3: 2, AnimationType.ABILITY4: 4, AnimationType.DYING: 6},
+            frames={AnimationType.IDLE: 6, AnimationType.WALKING: 8, AnimationType.ABILITY1: 3, AnimationType.ABILITY2: 6, AnimationType.ABILITY3: 9, AnimationType.DYING: 4},
+            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 7, AnimationType.ABILITY2: 2, AnimationType.ABILITY3: 4, AnimationType.DYING: 6},
             animation_durations={
                 AnimationType.IDLE: gc.CRUSADER_SOLDIER_ANIMATION_IDLE_DURATION,
                 AnimationType.WALKING: gc.CRUSADER_SOLDIER_ANIMATION_WALKING_DURATION,
                 AnimationType.ABILITY1: gc.CRUSADER_SOLDIER_ANIMATION_SWITCH_STANCE_DURATION,
-                AnimationType.ABILITY2: 1e-9, # Not actually playing this animation
-                AnimationType.ABILITY3: gc.CRUSADER_SOLDIER_ANIMATION_MELEE_ATTACK_DURATION,
-                AnimationType.ABILITY4: gc.CRUSADER_SOLDIER_ANIMATION_RANGED_ATTACK_DURATION,
+                AnimationType.ABILITY2: gc.CRUSADER_SOLDIER_ANIMATION_MELEE_ATTACK_DURATION,
+                AnimationType.ABILITY3: gc.CRUSADER_SOLDIER_ANIMATION_RANGED_ATTACK_DURATION,
                 AnimationType.DYING: gc.CRUSADER_SOLDIER_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(0, 1),

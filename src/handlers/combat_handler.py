@@ -8,12 +8,14 @@ import esper
 from components.ability import Abilities
 from components.aoe import AoE
 from components.aura import Aura
+from components.instant_ability import InstantAbilities
 from components.projectile import Projectile
 from events import (
     AbilityActivatedEvent, ABILITY_ACTIVATED,
     AoEHitEvent, AOE_HIT,
     AuraHitEvent, AURA_HIT,
     ProjectileHitEvent, PROJECTILE_HIT,
+    InstantAbilityTriggeredEvent, INSTANT_ABILITY_TRIGGERED,
 )
 from pydispatch import dispatcher
 
@@ -22,6 +24,7 @@ class CombatHandler:
 
     def __init__(self):
         dispatcher.connect(self.handle_ability_activated, signal=ABILITY_ACTIVATED)
+        dispatcher.connect(self.handle_instant_ability_triggered, signal=INSTANT_ABILITY_TRIGGERED)
         dispatcher.connect(self.handle_projectile_hit, signal=PROJECTILE_HIT)
         dispatcher.connect(self.handle_aoe_hit, signal=AOE_HIT)
         dispatcher.connect(self.handle_aura_hit, signal=AURA_HIT)
@@ -35,6 +38,16 @@ class CombatHandler:
                 owner=owner,
                 parent=owner,
                 target=ability.target
+            )
+    def handle_instant_ability_triggered(self, event: InstantAbilityTriggeredEvent):
+        owner = event.entity
+        instant_abilities = esper.component_for_entity(owner, InstantAbilities)
+        ability = instant_abilities.abilities[event.index]
+        for effect in ability.effects:
+            effect.apply(
+                owner=owner,
+                parent=owner,
+                target=ability.target_strategy.target
             )
 
     def handle_projectile_hit(self, event: ProjectileHitEvent):
