@@ -1297,6 +1297,28 @@ def create_crusader_crossbowman(x: int, y: int, team: TeamType) -> int:
                 ],
                 effects=[StanceChange(stance=RELOADING)],
             ),
+            # If the target is not in range, reload
+            InstantAbility(
+                target_strategy=targetting_strategy,
+                trigger_conditions=[
+                    HasTarget(
+                        unit_condition=MinimumDistanceFromEntity(
+                            entity=entity,
+                            distance=gc.CRUSADER_CROSSBOWMAN_ATTACK_RANGE*1.1, # Not in range, so reload
+                            y_bias=None
+                        )
+                    ),
+                    SatisfiesUnitCondition(
+                        All([
+                            InStance(FIRING),
+                            Not(AmmoEquals(gc.CRUSADER_CROSSBOWMAN_MAX_AMMO))
+                        ])
+                    ),
+                ],
+                effects=[
+                    StanceChange(stance=RELOADING),
+                ],
+            ),
         ]
     ))
     esper.add_component(
