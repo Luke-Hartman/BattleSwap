@@ -8,8 +8,10 @@ import pygame
 import os
 from typing import Dict
 from components.ammo import Ammo
+from components.attached import Attached
 from components.hitbox import Hitbox
 from components.instant_ability import InstantAbilities, InstantAbility
+from components.no_nudge import NoNudge
 from components.range_indicator import RangeIndicator
 from components.stance import Stance
 from components.stats_card import StatsCard
@@ -31,10 +33,10 @@ from components.unit_type import UnitType, UnitTypeComponent
 from components.velocity import Velocity
 from components.health import Health
 from components.orientation import Orientation, FacingDirection
-from effects import AppliesStatusEffect, CreatesAoE, CreatesAttachedVisual, CreatesProjectile, Damages, Heals, IncreaseAmmo, PlaySound, Recipient, SoundEffect, StanceChange
+from effects import AppliesStatusEffect, AttachToTarget, CreatesAoE, CreatesAttachedVisual, CreatesProjectile, Damages, Forget, Heals, IncreaseAmmo, PlaySound, Recipient, SoundEffect, StanceChange, RememberTarget
 from unit_condition import (
-    All, Alive, Always, AmmoEquals, HealthBelowPercent, InStance, MinimumDistanceFromEntity, Never, NotEntity, OnTeam,
-    MaximumDistanceFromEntity
+    All, Alive, AmmoEquals, HealthBelowPercent, InStance, IsEntity, IsUnitType, MaximumDistanceFromDestination, MinimumDistanceFromEntity, Never, Not, OnTeam,
+    MaximumDistanceFromEntity, RememberedBy
 )
 from visuals import Visual
 
@@ -50,6 +52,7 @@ unit_theme_ids: Dict[UnitType, str] = {
     UnitType.CRUSADER_CROSSBOWMAN: "#crusader_crossbowman_icon",
     UnitType.CRUSADER_DEFENDER: "#crusader_defender_icon",
     UnitType.CRUSADER_GOLD_KNIGHT: "#crusader_gold_knight_icon",
+    UnitType.CRUSADER_GUARDIAN_ANGEL: "#crusader_guardian_angel_icon",
     UnitType.CRUSADER_LONGBOWMAN: "#crusader_longbowman_icon",
     UnitType.CRUSADER_PALADIN: "#crusader_paladin_icon",
     UnitType.CRUSADER_PIKEMAN: "#crusader_pikeman_icon",
@@ -74,6 +77,7 @@ unit_values: Dict[UnitType, int] = {
     UnitType.CRUSADER_CROSSBOWMAN: 100,
     UnitType.CRUSADER_DEFENDER: 100,
     UnitType.CRUSADER_GOLD_KNIGHT: 100,
+    UnitType.CRUSADER_GUARDIAN_ANGEL: 100,
     UnitType.CRUSADER_LONGBOWMAN: 100,
     UnitType.CRUSADER_PALADIN: 100,
     UnitType.CRUSADER_PIKEMAN: 100,
@@ -96,6 +100,7 @@ def load_sprite_sheets():
         UnitType.CRUSADER_CROSSBOWMAN: "CrusaderCrossbowman.png",
         UnitType.CRUSADER_DEFENDER: "CrusaderDefender.png",
         UnitType.CRUSADER_GOLD_KNIGHT: "CrusaderGoldKnight.png",
+        UnitType.CRUSADER_GUARDIAN_ANGEL: "CrusaderGuardianAngel.png",
         UnitType.CRUSADER_LONGBOWMAN: "CrusaderLongbowman.png",
         UnitType.CRUSADER_PALADIN: "CrusaderPaladin.png",
         UnitType.CRUSADER_PIKEMAN: "CrusaderPikeman.png",
@@ -120,6 +125,7 @@ def load_sprite_sheets():
         UnitType.CRUSADER_CROSSBOWMAN: "CrusaderCrossbowmanIcon.png",
         UnitType.CRUSADER_DEFENDER: "CrusaderDefenderIcon.png",
         UnitType.CRUSADER_GOLD_KNIGHT: "CrusaderGoldKnightIcon.png",
+        UnitType.CRUSADER_GUARDIAN_ANGEL: "CrusaderGuardianAngelIcon.png",
         UnitType.CRUSADER_LONGBOWMAN: "CrusaderLongbowmanIcon.png",
         UnitType.CRUSADER_PALADIN: "CrusaderPaladinIcon.png",
         UnitType.CRUSADER_PIKEMAN: "CrusaderPikemanIcon.png",
@@ -145,6 +151,7 @@ def create_unit(x: int, y: int, unit_type: UnitType, team: TeamType) -> int:
         UnitType.CRUSADER_CROSSBOWMAN: create_crusader_crossbowman,
         UnitType.CRUSADER_DEFENDER: create_crusader_defender,
         UnitType.CRUSADER_GOLD_KNIGHT: create_crusader_gold_knight,
+        UnitType.CRUSADER_GUARDIAN_ANGEL: create_crusader_guardian_angel,
         UnitType.CRUSADER_LONGBOWMAN: create_crusader_longbowman,
         UnitType.CRUSADER_PALADIN: create_crusader_paladin,
         UnitType.CRUSADER_PIKEMAN: create_crusader_pikeman,
@@ -850,7 +857,7 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
                                             animation_duration=0.3,
                                             expiration_duration=gc.CRUSADER_BLACK_KNIGHT_FLEE_DURATION,
                                             scale=gc.TINY_RPG_SCALE,
-                                            remove_on_death=True,
+                                            on_death=lambda e: esper.delete_entity(e),
                                             unique_key=lambda e: f"FLEE {e}",
                                             offset=lambda e: (0, -esper.component_for_entity(e, Hitbox).height/2),
                                             layer=1
@@ -858,7 +865,7 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
                                     ],
                                     duration=gc.CRUSADER_BLACK_KNIGHT_FEAR_AOE_DURATION,
                                     scale=gc.CRUSADER_BLACK_KNIGHT_FEAR_AOE_SCALE,
-                                    unit_condition=All([Alive(), NotEntity(entity=entity)]),
+                                    unit_condition=All([Alive(), Not(IsEntity(entity=entity))]),
                                     visual=Visual.CrusaderBlackKnightFear,
                                     location=Recipient.PARENT,
                                 ),
@@ -939,7 +946,7 @@ def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
                     [
                         OnTeam(team=team),
                         Alive(),
-                        NotEntity(entity=entity),
+                        Not(IsEntity(entity=entity)),
                     ]
                 )
             ),
@@ -991,9 +998,9 @@ def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
                                 animation_duration=1,
                                 expiration_duration=2,
                                 scale=2,
-                                remove_on_death=False,
                                 random_starting_frame=True,
                                 layer=1,
+                                on_death=lambda e: esper.delete_entity(e),
                             ),
                             PlaySound(SoundEffect(filename="heal.wav", volume=0.50)),
                         ]
@@ -1117,7 +1124,7 @@ def create_crusader_commander(x: int, y: int, team: TeamType) -> int:
             period=gc.DEFAULT_AURA_PERIOD,
             owner_condition=Alive(),
             unit_condition=All([
-                NotEntity(entity=entity),
+                Not(IsEntity(entity=entity)),
                 OnTeam(team=team),
                 Alive()
             ]),
@@ -1533,6 +1540,192 @@ def create_crusader_gold_knight(x: int, y: int, team: TeamType) -> int:
                 f"Range: {gc.CRUSADER_GOLD_KNIGHT_ATTACK_RANGE}",
                 f"AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
                 f"Special: Gold Knights hit all enemies in the radius of their attack, and heal for {gc.CRUSADER_GOLD_KNIGHT_ATTACK_HEAL} per enemy hit.",
+            ]
+        )
+    )
+    esper.add_component(entity, WalkEffects({
+        frame: [PlaySound(sound_effects=[
+            (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+        ])]
+        for frame in [3, 7]
+    }))
+    return entity
+
+def create_crusader_guardian_angel(x: int, y: int, team: TeamType) -> int:
+    """Create an angel entity with all necessary components."""
+    entity = unit_base_entity(
+        x=x,
+        y=y,
+        team=team,
+        unit_type=UnitType.CRUSADER_GUARDIAN_ANGEL,
+        movement_speed=gc.GUARDIAN_ANGEL_MOVEMENT_SPEED,
+        health=gc.GUARDIAN_ANGEL_HP,
+        hitbox=Hitbox(
+            width=16,
+            height=32,
+        )
+    )
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=None, ascending=True),
+        ],
+        unit_condition=All([Not(IsUnitType(unit_type=UnitType.CRUSADER_GUARDIAN_ANGEL)), OnTeam(team=team), Alive()])
+    )
+    target_attached = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=None, ascending=True),
+        ],
+        unit_condition=RememberedBy(entity=entity)
+    )
+    esper.add_component(
+        entity,
+        Destination(
+            target_strategy=targetting_strategy,
+            x_offset=gc.GUARDIAN_ANGEL_ATTACHMENT_RANGE,
+            use_team_x_offset=True,
+            min_distance=0
+        )
+    )
+    NOT_ATTACHED = 0
+    ATTACHED = 1
+    esper.add_component(entity, Stance(NOT_ATTACHED))
+    esper.add_component(entity, NoNudge())
+    esper.add_component(
+        entity,
+        Abilities(
+            abilities=[
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        SatisfiesUnitCondition(unit_condition=InStance(NOT_ATTACHED)),
+                        HasTarget(
+                            unit_condition=All([
+                                Not(IsUnitType(unit_type=UnitType.CRUSADER_GUARDIAN_ANGEL)),
+                                OnTeam(team=team),
+                                Alive()
+                            ])
+                        ),
+                        SatisfiesUnitCondition(unit_condition=MaximumDistanceFromDestination(distance=5))
+                    ],
+                    persistent_conditions=[],
+                    effects={
+                        1: [
+                            StanceChange(ATTACHED),
+                            AttachToTarget(
+                                offset=(
+                                    -gc.GUARDIAN_ANGEL_ATTACHMENT_RANGE
+                                    if team == TeamType.TEAM1
+                                    else gc.GUARDIAN_ANGEL_ATTACHMENT_RANGE,
+                                    0
+                                ),
+                                on_death=lambda e: esper.remove_component(e, Attached),
+                            ),
+                            RememberTarget()
+                        ]
+                    },
+                ),
+                Ability(
+                    target_strategy=target_attached,
+                    trigger_conditions=[
+                        SatisfiesUnitCondition(unit_condition=InStance(ATTACHED)),
+                        HasTarget(
+                            unit_condition=All([
+                                Not(IsUnitType(unit_type=UnitType.CRUSADER_GUARDIAN_ANGEL)),
+                                OnTeam(team=team),
+                                RememberedBy(entity=entity),
+                                Alive()
+                            ])
+                        )
+                    ],
+                    persistent_conditions=[
+                        SatisfiesUnitCondition(unit_condition=InStance(ATTACHED)),
+                        HasTarget(
+                            unit_condition=All([
+                                Not(IsUnitType(unit_type=UnitType.CRUSADER_GUARDIAN_ANGEL)),
+                                OnTeam(team=team),
+                                RememberedBy(entity=entity),
+                                Alive()
+                            ])
+                        )
+                    ],
+                    effects={
+                        2: [
+                            AppliesStatusEffect(
+                                status_effect=Healing(time_remaining=gc.GUARDIAN_ANGEL_ANIMATION_HEAL_DURATION, dps=gc.GUARDIAN_ANGEL_HEALING/gc.GUARDIAN_ANGEL_ANIMATION_HEAL_DURATION),
+                                recipient=Recipient.TARGET
+                            ),
+                            CreatesAttachedVisual(
+                                visual=Visual.Healing,
+                                animation_duration=gc.GUARDIAN_ANGEL_ANIMATION_HEAL_DURATION + 1/30,
+                                expiration_duration=gc.GUARDIAN_ANGEL_ANIMATION_HEAL_DURATION + 1/30,
+                                scale=2,
+                                on_death=lambda e: esper.delete_entity(e),
+                                random_starting_frame=False,
+                                layer=1,
+                            ),
+                            PlaySound(SoundEffect(filename="heal.wav", volume=0.50)),
+                        ]
+                    },
+                )
+            ]
+        )
+    )
+    esper.add_component(
+        entity,
+        InstantAbilities(
+            abilities=[
+                InstantAbility(
+                    target_strategy=target_attached,
+                    trigger_conditions=[
+                        HasTarget(
+                            unit_condition=Not(
+                                All([
+                                    Alive(),
+                                    OnTeam(team=team),
+                                ])
+                            )
+                        )
+                    ],
+                    effects=[
+                        Forget(),
+                        StanceChange(NOT_ATTACHED),
+                    ],
+                )
+            ]
+        )
+    )
+    esper.add_component(
+        entity,
+        SpriteSheet(
+            surface=sprite_sheets[UnitType.CRUSADER_GUARDIAN_ANGEL],
+            frame_width=100,
+            frame_height=100,
+            scale=gc.TINY_RPG_SCALE,
+            frames={AnimationType.IDLE: 6, AnimationType.WALKING: 8, AnimationType.ABILITY1: 4, AnimationType.ABILITY2: 4, AnimationType.DYING: 4},
+            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 3, AnimationType.ABILITY2: 3, AnimationType.DYING: 5},
+            sprite_center_offset=(0, 2),
+            animation_durations={
+                AnimationType.IDLE: gc.GUARDIAN_ANGEL_ANIMATION_IDLE_DURATION,
+                AnimationType.WALKING: gc.GUARDIAN_ANGEL_ANIMATION_WALKING_DURATION,
+                AnimationType.ABILITY1: gc.GUARDIAN_ANGEL_ANIMATION_ATTACH_DURATION,
+                AnimationType.ABILITY2: gc.GUARDIAN_ANGEL_ANIMATION_HEAL_DURATION,
+                AnimationType.DYING: gc.GUARDIAN_ANGEL_ANIMATION_DYING_DURATION,
+            },
+        )
+    )
+    esper.add_component(
+        entity,
+        StatsCard(
+            text=[
+                f"Name: Guardian Angel",
+                f"Faction: Crusader",
+                f"Health: {gc.GUARDIAN_ANGEL_HP}",
+                f"Healing: {gc.GUARDIAN_ANGEL_HEALING}",
+                f"Healing DPS: {round(gc.GUARDIAN_ANGEL_HEALING/gc.GUARDIAN_ANGEL_ANIMATION_HEAL_DURATION, 2)}",
+                f"Speed: {gc.GUARDIAN_ANGEL_MOVEMENT_SPEED}",
+                f"Attachment Range: {gc.GUARDIAN_ANGEL_ATTACHMENT_RANGE}",
+                f"AI: Targets the nearest ally, preferring units at the same height on the y-axis",
+                f"Special: Attaches to the nearest ally and heals them until they die.",
             ]
         )
     )

@@ -106,6 +106,13 @@
             }
         }
     },
+    "#crusader_guardian_angel_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/CrusaderGuardianAngelIcon.png"
+            }
+        }
+    },
     "#crusader_longbowman_icon": {
         "images": {
             "normal_image": {

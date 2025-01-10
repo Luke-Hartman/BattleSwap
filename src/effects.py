@@ -15,6 +15,7 @@ from components.armor import Armor
 from components.attached import Attached
 from components.aura import Aura
 from components.dying import Dying
+from components.entity_memory import EntityMemory
 from components.expiration import Expiration
 from components.health import Health
 from components.orientation import FacingDirection, Orientation
@@ -280,11 +281,11 @@ class CreatesTemporaryAura(Effect):
     recipient: Recipient
     """The recipient of the effect."""
 
-    remove_on_death: bool
-    """Whether the aura should be removed when the recipient dies."""
-
     unique_key: Optional[str]
     """The key of the unique component to attach to the aura."""
+
+    on_death: Optional[Callable[[int], None]] = None
+    """The action to take when the recipient dies."""
 
     def apply(self, owner: Optional[int], parent: int, target: int) -> None:
         if self.recipient == Recipient.OWNER:
@@ -309,7 +310,7 @@ class CreatesTemporaryAura(Effect):
             )
         )
         esper.add_component(entity, Expiration(time_left=self.duration))
-        esper.add_component(entity, Attached(entity=recipient, remove_on_death=self.remove_on_death))
+        esper.add_component(entity, Attached(entity=recipient, on_death=self.on_death))
         position = esper.component_for_entity(recipient, Position)
         esper.add_component(entity, Position(x=position.x, y=position.y))
         if self.unique_key:
@@ -355,8 +356,8 @@ class CreatesAttachedVisual(Effect):
     scale: float
     """The scale of the effect."""
 
-    remove_on_death: bool
-    """Whether the effect should be removed when the target dies."""
+    on_death: Optional[Callable[[int], None]] = None
+    """The action to take when the recipient dies."""
 
     unique_key: Optional[Callable[[int], str]] = None
     """The key of the unique component to attach to the effect."""
@@ -380,7 +381,7 @@ class CreatesAttachedVisual(Effect):
             offset = (0, 0)
         esper.add_component(entity, Position(x=position.x + offset[0], y=position.y + offset[1]))
         esper.add_component(entity, Team(type=team.type))
-        esper.add_component(entity, Attached(entity=target, remove_on_death=self.remove_on_death, offset=offset))
+        esper.add_component(entity, Attached(entity=target, on_death=self.on_death, offset=offset))
         sprite_sheet = create_visual_spritesheet(
             visual=self.visual,
             scale=self.scale,
@@ -396,6 +397,33 @@ class CreatesAttachedVisual(Effect):
         esper.add_component(entity, Expiration(time_left=self.expiration_duration))
         if self.unique_key:
             esper.add_component(entity, Unique(key=self.unique_key(target)))
+
+@dataclass
+class AttachToTarget(Effect):
+    """Effect attaches the parent to the target."""
+
+    offset: Tuple[int, int]
+    """The offset of the parent from the target's position."""
+
+    on_death: Optional[Callable[[int], None]] = None
+    """The action to take when the recipient dies."""
+
+    def apply(self, owner: Optional[int], parent: int, target: int) -> None:
+        esper.add_component(parent, Attached(entity=target, on_death=self.on_death, offset=self.offset))
+
+@dataclass
+class RememberTarget(Effect):
+    """Effect stores the target in the parent's entity memory."""
+
+    def apply(self, owner: Optional[int], parent: int, target: int) -> None:
+        esper.add_component(parent, EntityMemory(entity=target))
+
+@dataclass
+class Forget(Effect):
+    """Effect forgets the remembered unit in the parent's entity memory."""
+
+    def apply(self, owner: Optional[int], parent: int, target: int) -> None:
+        esper.remove_component(parent, EntityMemory)
 
 @dataclass
 class SoundEffect:

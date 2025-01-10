@@ -8,11 +8,14 @@ import math
 import esper
 
 from components.ammo import Ammo
+from components.entity_memory import EntityMemory
 from components.health import Health
+from components.orientation import Orientation
 from components.position import Position
 from components.stance import Stance
 from components.team import Team, TeamType
 from components.unit_state import State, UnitState
+from components.unit_type import UnitType, UnitTypeComponent
 
 class UnitCondition(ABC):
     """A condition that a unit may or may not meet."""
@@ -74,14 +77,14 @@ class Alive(UnitCondition):
         return unit_state is not None and unit_state.state != State.DEAD
 
 @dataclass
-class NotEntity(UnitCondition):
-    """The unit is not the given entity."""
+class IsEntity(UnitCondition):
+    """The unit is the given entity."""
 
     entity: int
     """The entity to check against."""
 
     def check(self, entity: int) -> bool:
-        return entity != self.entity
+        return entity == self.entity
 
 @dataclass
 class OnTeam(UnitCondition):
@@ -168,6 +171,27 @@ class MaximumAngleFromEntity(UnitCondition):
         )
         return abs(angle) <= self.maximum_angle
 
+@dataclass
+class MaximumDistanceFromDestination(UnitCondition):
+    """The unit is within a certain distance from their destination."""
+
+    distance: float
+    """The maximum distance within which the condition is met."""
+
+    y_bias: Optional[float] = None
+    """The y-bias to apply to the distance check."""
+
+    def check(self, entity: int) -> bool:
+        from components.destination import Destination
+        position = esper.component_for_entity(entity, Position)
+        destination = esper.component_for_entity(entity, Destination)
+        team = esper.component_for_entity(entity, Team)
+        orientation = esper.component_for_entity(entity, Orientation)
+        target = destination.target_strategy.target
+        target_position = esper.component_for_entity(target, Position)
+        destination_position_x = target_position.x + destination.get_x_offset(team.type, orientation.facing)
+        destination_position_y = target_position.y
+        return position.distance(Position(destination_position_x, destination_position_y), self.y_bias) <= self.distance
 
 @dataclass
 class InStance(UnitCondition):
@@ -188,3 +212,25 @@ class AmmoEquals(UnitCondition):
 
     def check(self, entity: int) -> bool:
         return esper.component_for_entity(entity, Ammo).current == self.amount
+
+@dataclass
+class RememberedBy(UnitCondition):
+    """The unit is remembered by the given entity."""
+
+    entity: int
+    """The entity to check against."""
+
+    def check(self, entity: int) -> bool:
+        memory = esper.try_component(self.entity, EntityMemory)
+        return memory is not None and memory.entity == entity
+
+@dataclass
+class IsUnitType(UnitCondition):
+    """The unit is of the given type."""
+
+    unit_type: UnitType
+    """The type of unit to check against."""
+
+    def check(self, entity: int) -> bool:
+        unit_type = esper.try_component(entity, UnitTypeComponent)
+        return unit_type is not None and unit_type.type == self.unit_type

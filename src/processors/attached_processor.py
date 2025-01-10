@@ -13,8 +13,8 @@ class AttachedProcessor(esper.Processor):
             # If entity that is attached to this entity is deleted, delete this entity
             if not esper.has_component(attached.entity, Position):
                 esper.delete_entity(ent, immediate=True)
-            elif attached.remove_on_death and esper.component_for_entity(attached.entity, UnitState).state == State.DEAD:
-                esper.delete_entity(ent, immediate=True)
+            elif attached.on_death is not None and esper.component_for_entity(attached.entity, UnitState).state == State.DEAD:
+                attached.on_death(ent)
             else:
                 attached_position = esper.component_for_entity(attached.entity, Position)
                 pos.x = attached_position.x + attached.offset[0]

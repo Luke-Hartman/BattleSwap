@@ -26,15 +26,23 @@ class PursuingProcessor(esper.Processor):
             if unit_state.state == State.PURSUING and target is not None:
                 target_pos = esper.component_for_entity(target, Position)
                 orientation.facing = FacingDirection.RIGHT if target_pos.x > pos.x else FacingDirection.LEFT
-                destination_x = target_pos.x - destination.x_offset * orientation.facing.value
-
-                destination_dx = destination_x - pos.x
-                destination_dy = target_pos.y - pos.y
+                team = esper.component_for_entity(ent, Team)
+                destination_position_x = target_pos.x + destination.get_x_offset(team.type, orientation.facing)
+                destination_position_y = target_pos.y
+                target_velocity = esper.component_for_entity(target, Velocity)
+                destination_position_x += target_velocity.x * dt
+                destination_position_y += target_velocity.y * dt
+                destination_dx = destination_position_x - pos.x
+                destination_dy = destination_position_y - pos.y
                 destination_distance = math.sqrt(destination_dx**2 + destination_dy**2)
 
                 if destination_distance < destination.min_distance:
                     velocity.x = 0
                     velocity.y = 0
                 else:
-                    velocity.x = (destination_dx / destination_distance) * movement.speed
-                    velocity.y = (destination_dy / destination_distance) * movement.speed
+                    speed = min(
+                        destination_distance/dt, # 30 ticks per second
+                        movement.speed
+                    )
+                    velocity.x = (destination_dx / destination_distance) * speed
+                    velocity.y = (destination_dy / destination_distance) * speed
