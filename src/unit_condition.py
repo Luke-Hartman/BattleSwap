@@ -225,6 +225,17 @@ class RememberedBy(UnitCondition):
         return memory is not None and memory.entity == entity
 
 @dataclass
+class RememberedSatisfies(UnitCondition):
+    """Condition that the remembered entity must satisfy."""
+
+    condition: UnitCondition
+    """The condition that the remembered entity must satisfy."""
+
+    def check(self, entity: int) -> bool:
+        memory = esper.try_component(entity, EntityMemory)
+        return memory is not None and self.condition.check(memory.entity)
+
+@dataclass
 class IsUnitType(UnitCondition):
     """The unit is of the given type."""
 

@@ -71,6 +71,13 @@
             }
         }
     },
+    "#crusader_banner_bearer_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/CrusaderBannerBearerIcon.png"
+            }
+        }
+    },
     "#crusader_cleric_icon": {
         "images": {
             "normal_image": {

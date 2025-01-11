@@ -22,7 +22,7 @@ from components.orientation import FacingDirection, Orientation
 from components.position import Position
 from components.projectile import Projectile
 from components.stance import Stance
-from components.status_effect import CrusaderCommanderEmpowered, StatusEffect, StatusEffects
+from components.status_effect import CrusaderBannerBearerEmpowered, StatusEffect, StatusEffects
 from components.team import Team
 from components.unique import Unique
 from components.velocity import Velocity
@@ -80,7 +80,7 @@ class Damages(Effect):
         if owner and esper.entity_exists(owner):
             status_effects = esper.component_for_entity(owner, StatusEffects)
             for status_effect in status_effects.active_effects():
-                if isinstance(status_effect, CrusaderCommanderEmpowered) and not applied_gold_knight_empowered:
+                if isinstance(status_effect, CrusaderBannerBearerEmpowered) and not applied_gold_knight_empowered:
                     damage *= 1 + status_effect.damage_percentage
                     applied_gold_knight_empowered = True
 
@@ -416,6 +416,8 @@ class RememberTarget(Effect):
     """Effect stores the target in the parent's entity memory."""
 
     def apply(self, owner: Optional[int], parent: int, target: int) -> None:
+        if target is None:
+            raise ValueError("Target is required for RememberTarget effect")
         esper.add_component(parent, EntityMemory(entity=target))
 
 @dataclass

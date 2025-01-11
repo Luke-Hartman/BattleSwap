@@ -4,6 +4,7 @@
 import esper
 from components.ability import Abilities
 from components.destination import Destination
+from components.instant_ability import InstantAbilities
 from components.unit_state import State, UnitState
 from target_strategy import TargetStrategy
 
@@ -14,6 +15,9 @@ class TargettingProcessor(esper.Processor):
     def process(self, dt: float):
         for ent, (unit_state, destination) in esper.get_components(UnitState, Destination):
             self._update_target(ent, unit_state, destination.target_strategy)
+        for ent, (unit_state, instant_abilities) in esper.get_components(UnitState, InstantAbilities):
+            for ability in instant_abilities.abilities:
+                self._update_target(ent, unit_state, ability.target_strategy)
         for ent, (unit_state, abilities) in esper.get_components(UnitState, Abilities):
             for ability in abilities.abilities:
                 self._update_target(ent, unit_state, ability.target_strategy)

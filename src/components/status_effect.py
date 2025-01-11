@@ -14,7 +14,7 @@ class StatusEffect:
     """The time remaining for the status effect."""
 
 @dataclass
-class CrusaderCommanderEmpowered(StatusEffect):
+class CrusaderBannerBearerEmpowered(StatusEffect):
     """Status effect buffs damage."""
 
     damage_percentage = gc.CRUSADER_COMMANDER_EMPOWERED_DAMAGE_PERCENTAGE
@@ -47,7 +47,7 @@ class StatusEffects:
     def __init__(self):
         self._status_by_type = {
             Ignited: [],
-            CrusaderCommanderEmpowered: [],
+            CrusaderBannerBearerEmpowered: [],
             Fleeing: [],
             Healing: [],
         }
@@ -74,8 +74,8 @@ class StatusEffects:
         if self._status_by_type[Ignited]:
             strongest_ignited = max(self._status_by_type[Ignited], key=lambda e: e.dps)
             active_effects.append(strongest_ignited)
-        if self._status_by_type[CrusaderCommanderEmpowered]:
-            active_effects.append(self._status_by_type[CrusaderCommanderEmpowered][0])
+        if self._status_by_type[CrusaderBannerBearerEmpowered]:
+            active_effects.append(self._status_by_type[CrusaderBannerBearerEmpowered][0])
         if self._status_by_type[Fleeing]:
             longest_fleeing = max(self._status_by_type[Fleeing], key=lambda e: e.time_remaining)
             active_effects.append(longest_fleeing)

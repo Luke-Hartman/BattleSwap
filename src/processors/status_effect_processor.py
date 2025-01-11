@@ -2,7 +2,7 @@
 
 from components.dying import Dying
 from components.health import Health
-from components.status_effect import CrusaderCommanderEmpowered, Fleeing, Healing, Ignited, StatusEffects
+from components.status_effect import CrusaderBannerBearerEmpowered, Fleeing, Healing, Ignited, StatusEffects
 import esper
 
 from components.unit_state import State, UnitState
@@ -20,7 +20,7 @@ class StatusEffectProcessor(esper.Processor):
                     health.current = max(health.current - damage, 0)
                     if health.current == 0 and not esper.component_for_entity(ent, UnitState).state == State.DEAD:
                         esper.add_component(ent, Dying())
-                elif isinstance(status_effect, CrusaderCommanderEmpowered):
+                elif isinstance(status_effect, CrusaderBannerBearerEmpowered):
                     # Handled in the damage effect
                     pass
                 elif isinstance(status_effect, Fleeing):

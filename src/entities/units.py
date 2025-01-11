@@ -23,7 +23,7 @@ from components.aura import Aura
 from components.position import Position
 from components.animation import AnimationState, AnimationType
 from components.sprite_sheet import SpriteSheet
-from components.status_effect import CrusaderCommanderEmpowered, Fleeing, Healing, Ignited, StatusEffects
+from components.status_effect import CrusaderBannerBearerEmpowered, Fleeing, Healing, Ignited, StatusEffects
 from target_strategy import ByDistance, ByMaxHealth, ByMissingHealth, TargetStrategy
 from components.destination import Destination
 from components.team import Team, TeamType
@@ -35,8 +35,8 @@ from components.health import Health
 from components.orientation import Orientation, FacingDirection
 from effects import AppliesStatusEffect, AttachToTarget, CreatesAoE, CreatesAttachedVisual, CreatesProjectile, Damages, Forget, Heals, IncreaseAmmo, PlaySound, Recipient, SoundEffect, StanceChange, RememberTarget
 from unit_condition import (
-    All, Alive, AmmoEquals, HealthBelowPercent, InStance, IsEntity, IsUnitType, MaximumDistanceFromDestination, MinimumDistanceFromEntity, Never, Not, OnTeam,
-    MaximumDistanceFromEntity, RememberedBy
+    All, Alive, Always, AmmoEquals, Any, HealthBelowPercent, InStance, IsEntity, IsUnitType, MaximumDistanceFromDestination, MinimumDistanceFromEntity, Never, Not, OnTeam,
+    MaximumDistanceFromEntity, RememberedBy, RememberedSatisfies
 )
 from visuals import Visual
 
@@ -47,6 +47,7 @@ unit_theme_ids: Dict[UnitType, str] = {
     UnitType.CORE_SWORDSMAN: "#core_swordsman_icon",
     UnitType.CORE_WIZARD: "#core_wizard_icon",
     UnitType.CRUSADER_BLACK_KNIGHT: "#crusader_black_knight_icon",
+    UnitType.CRUSADER_BANNER_BEARER: "#crusader_banner_bearer_icon",
     UnitType.CRUSADER_CLERIC: "#crusader_cleric_icon",
     UnitType.CRUSADER_COMMANDER: "#crusader_commander_icon",
     UnitType.CRUSADER_CROSSBOWMAN: "#crusader_crossbowman_icon",
@@ -72,6 +73,7 @@ unit_values: Dict[UnitType, int] = {
     UnitType.CORE_SWORDSMAN: 100,
     UnitType.CORE_WIZARD: 100,
     UnitType.CRUSADER_BLACK_KNIGHT: 100,
+    UnitType.CRUSADER_BANNER_BEARER: 100,
     UnitType.CRUSADER_CLERIC: 100,
     UnitType.CRUSADER_COMMANDER: 100,
     UnitType.CRUSADER_CROSSBOWMAN: 100,
@@ -95,6 +97,7 @@ def load_sprite_sheets():
         UnitType.CORE_SWORDSMAN: "CoreSwordsman.png", 
         UnitType.CORE_WIZARD: "CoreWizard.png",
         UnitType.CRUSADER_BLACK_KNIGHT: "CrusaderBlackKnight.png",
+        UnitType.CRUSADER_BANNER_BEARER: "Kirby.png",
         UnitType.CRUSADER_CLERIC: "CrusaderCleric.png",
         UnitType.CRUSADER_COMMANDER: "CrusaderCommander.png",
         UnitType.CRUSADER_CROSSBOWMAN: "CrusaderCrossbowman.png",
@@ -120,6 +123,7 @@ def load_sprite_sheets():
         UnitType.CORE_SWORDSMAN: "CoreSwordsmanIcon.png",
         UnitType.CORE_WIZARD: "CoreWizardIcon.png",
         UnitType.CRUSADER_BLACK_KNIGHT: "CrusaderBlackKnightIcon.png",
+        UnitType.CRUSADER_BANNER_BEARER: "CrusaderBannerBearerIcon.png",
         UnitType.CRUSADER_CLERIC: "CrusaderClericIcon.png",
         UnitType.CRUSADER_COMMANDER: "CrusaderCommanderIcon.png",
         UnitType.CRUSADER_CROSSBOWMAN: "CrusaderCrossbowmanIcon.png",
@@ -146,6 +150,7 @@ def create_unit(x: int, y: int, unit_type: UnitType, team: TeamType) -> int:
         UnitType.CORE_SWORDSMAN: create_core_swordsman,
         UnitType.CORE_WIZARD: create_core_wizard,
         UnitType.CRUSADER_BLACK_KNIGHT: create_crusader_black_knight,
+        UnitType.CRUSADER_BANNER_BEARER: create_crusader_banner_bearer,
         UnitType.CRUSADER_CLERIC: create_crusader_cleric,
         UnitType.CRUSADER_COMMANDER: create_crusader_commander,
         UnitType.CRUSADER_CROSSBOWMAN: create_crusader_crossbowman,
@@ -1117,7 +1122,7 @@ def create_crusader_commander(x: int, y: int, team: TeamType) -> int:
             radius=gc.CRUSADER_COMMANDER_AURA_RADIUS,
             effects=[
                 AppliesStatusEffect(
-                    status_effect=CrusaderCommanderEmpowered(time_remaining=gc.DEFAULT_AURA_PERIOD),
+                    status_effect=CrusaderBannerBearerEmpowered(time_remaining=gc.DEFAULT_AURA_PERIOD),
                     recipient=Recipient.TARGET
                 )
             ],
@@ -1158,6 +1163,146 @@ def create_crusader_commander(x: int, y: int, team: TeamType) -> int:
                 f"Speed: {gc.CRUSADER_COMMANDER_MOVEMENT_SPEED}",
                 f"Range: {gc.CRUSADER_COMMANDER_ATTACK_RANGE}",
                 f"Special: Commanders have an aura which gives allied units {round(gc.CRUSADER_COMMANDER_EMPOWERED_DAMAGE_PERCENTAGE*100)}% increased damage (does not stack with itself).",
+            ]
+        )
+    )
+    esper.add_component(entity, WalkEffects({
+        frame: [PlaySound(sound_effects=[
+            (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+        ])]
+        for frame in [3, 7]
+    }))
+    return entity
+
+def create_crusader_banner_bearer(x: int, y: int, team: TeamType) -> int:
+    """Create a banner bearer entity with all necessary components."""
+    entity = unit_base_entity(
+        x=x,
+        y=y,
+        team=team,
+        unit_type=UnitType.CRUSADER_BANNER_BEARER,
+        movement_speed=gc.CRUSADER_BANNER_BEARER_MOVEMENT_SPEED,
+        health=gc.CRUSADER_BANNER_BEARER_HP,
+        hitbox=Hitbox(
+            width=16,
+            height=36,
+        )
+    )
+    find_target_to_follow = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=None, ascending=True),
+        ],
+        unit_condition=All(
+            [
+                Not(
+                    Any(
+                        [
+                            IsUnitType(unit_type=UnitType.CRUSADER_BANNER_BEARER),
+                            IsUnitType(unit_type=UnitType.CRUSADER_GUARDIAN_ANGEL),
+                        ]
+                    ),
+                ),
+                OnTeam(team=team),
+                Alive()
+            ]
+        )
+    )
+    follow_target = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=None, ascending=True),
+        ],
+        unit_condition=All(
+            [
+                RememberedBy(entity=entity),
+                Alive(),
+                OnTeam(team=team),
+            ]
+        )
+    )
+    esper.add_component(
+        entity,
+        Destination(
+            target_strategy=follow_target,
+            x_offset=gc.CRUSADER_BANNER_BEARER_AURA_RADIUS/2,
+            use_team_x_offset=True,
+            min_distance=1
+        )
+    )
+    esper.add_component(
+        entity,
+        InstantAbilities(
+            abilities=[
+                InstantAbility(
+                    target_strategy=find_target_to_follow,
+                    trigger_conditions=[
+                        HasTarget(
+                            unit_condition=Always()
+                        ),
+                        SatisfiesUnitCondition(
+                            Not(
+                                RememberedSatisfies(
+                                    condition=All(
+                                        [
+                                            Alive(),
+                                            OnTeam(team=team),
+                                        ]
+                                    )
+                                )
+                            )
+                        )
+                    ],
+                    effects=[
+                        RememberTarget(),
+                    ]
+                )
+            ]
+        )
+    )
+    esper.add_component(
+        entity,
+        Aura(
+            owner=entity,
+            radius=gc.CRUSADER_BANNER_BEARER_AURA_RADIUS,
+            effects=[
+                AppliesStatusEffect(
+                    status_effect=CrusaderBannerBearerEmpowered(time_remaining=gc.DEFAULT_AURA_PERIOD),
+                    recipient=Recipient.TARGET
+                )
+            ],
+            period=gc.DEFAULT_AURA_PERIOD,
+            owner_condition=Alive(),
+            unit_condition=All([
+                Not(IsEntity(entity=entity)),
+                OnTeam(team=team),
+                Alive()
+            ]),
+            color=(255, 215, 0),
+        )
+    )
+    esper.add_component(entity, SpriteSheet(
+        surface=sprite_sheets[UnitType.CRUSADER_BANNER_BEARER],
+        frame_width=100,
+        frame_height=100,
+        scale=gc.TINY_RPG_SCALE,
+        frames={AnimationType.IDLE: 6, AnimationType.WALKING: 8, AnimationType.DYING: 3},
+        rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.DYING: 4},
+        animation_durations={
+            AnimationType.IDLE: gc.CRUSADER_BANNER_BEARER_ANIMATION_IDLE_DURATION,
+            AnimationType.WALKING: gc.CRUSADER_BANNER_BEARER_ANIMATION_WALKING_DURATION,
+            AnimationType.DYING: gc.CRUSADER_BANNER_BEARER_ANIMATION_DYING_DURATION,
+        },
+        sprite_center_offset=(0, 10),
+    ))
+    esper.add_component(
+        entity,
+        StatsCard(
+            text=[
+                f"Name: Banner Bearer",
+                f"Faction: Crusader",
+                f"Health: {gc.CRUSADER_BANNER_BEARER_HP}",
+                f"Speed: {gc.CRUSADER_BANNER_BEARER_MOVEMENT_SPEED}",
+                f"Special: Banner Bearers have an aura which gives allied units {round(gc.CRUSADER_BANNER_BEARER_AURA_DAMAGE_PERCENTAGE*100)}% increased damage (does not stack with itself).",
+                f"AI: Locks on to the nearest ally, and and follows them from behind until they die, then finds a new ally to follow.",
             ]
         )
     )
