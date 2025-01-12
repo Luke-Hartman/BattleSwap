@@ -64,17 +64,17 @@
             }
         }
     },
-    "#crusader_black_knight_icon": {
-        "images": {
-            "normal_image": {
-                "path": "assets/icons/CrusaderBlackKnightIcon.png"
-            }
-        }
-    },
     "#crusader_banner_bearer_icon": {
         "images": {
             "normal_image": {
                 "path": "assets/icons/CrusaderBannerBearerIcon.png"
+            }
+        }
+    },
+    "#crusader_black_knight_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/CrusaderBlackKnightIcon.png"
             }
         }
     },
