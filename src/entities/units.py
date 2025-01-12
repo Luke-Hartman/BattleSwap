@@ -24,7 +24,7 @@ from components.position import Position
 from components.animation import AnimationState, AnimationType
 from components.sprite_sheet import SpriteSheet
 from components.status_effect import CrusaderBannerBearerEmpowered, Fleeing, Healing, Ignited, StatusEffects
-from target_strategy import ByDistance, ByMaxHealth, ByMissingHealth, TargetStrategy, WeightedRanking
+from target_strategy import ByCurrentHealth, ByDistance, ByMaxHealth, ByMissingHealth, TargetStrategy, WeightedRanking
 from components.destination import Destination
 from components.team import Team, TeamType
 from components.unit_state import State, UnitState
@@ -945,8 +945,12 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
     )
     targetting_strategy = TargetStrategy(
         rankings=[
-            ByMaxHealth(ascending=True),
-            ByDistance(entity=entity, y_bias=2, ascending=True),
+            WeightedRanking(
+                rankings={
+                    ByDistance(entity=entity, y_bias=None, ascending=True): 1,
+                    ByCurrentHealth(ascending=False): -0.6,
+                },
+            ),
         ],
         unit_condition=All([OnTeam(team=team.other()), Alive()])
     )
@@ -1053,7 +1057,7 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
                 f"Range: {gc.CRUSADER_BLACK_KNIGHT_ATTACK_RANGE}",
                 f"Fear Duration: {gc.CRUSADER_BLACK_KNIGHT_FLEE_DURATION}",
                 f"Special: Killing blows inflict fear on all other units in an AoE around the black knight.",
-                f"AI: Targets the lowest health enemy, ties broken by distance.",
+                f"AI: Targets nearby enemies, prioritizing enemies with low current health.",
             ]
         )
     )

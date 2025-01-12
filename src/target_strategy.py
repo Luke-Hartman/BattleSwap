@@ -73,6 +73,12 @@ class ByMaxHealth(Ranking):
         health = esper.component_for_entity(ent, Health)
         return health.maximum
 
+class ByCurrentHealth(Ranking):
+
+    def _key(self, ent: int) -> float:
+        health = esper.component_for_entity(ent, Health)
+        return health.current
+
 class TargetStrategy:
     """Represents a target strategy."""
 
