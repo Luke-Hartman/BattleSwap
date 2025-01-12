@@ -1176,7 +1176,7 @@ def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
                 f"Healing DPS: {round(gc.CRUSADER_CLERIC_HEALING/gc.CRUSADER_CLERIC_ANIMATION_ATTACK_DURATION, 2)}",
                 f"Speed: {gc.CRUSADER_CLERIC_MOVEMENT_SPEED}",
                 f"Range: {gc.CRUSADER_CLERIC_ATTACK_RANGE}",
-                f"AI: Walks towards the ally with the highest health, but heals the ally with the lowest current health in range. Ally must be under 90% health.",
+                f"AI: Targets nearby allies, prioritizing allies who are closer and missing more health.",
             ]
         )
     )
