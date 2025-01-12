@@ -22,5 +22,5 @@ class NudgeProcessor:
                         continue
                     nudge_distance = min(gc.NUDGE_DISTANCE - distance, 1)
                     pos.x += nudge_distance * (pos.x - other_pos.x) / distance
-                    pos.y += nudge_distance * (pos.y - other_pos.y) / distance
+                    pos.y += nudge_distance * (pos.y - other_pos.y) / distance - 0.3
 
