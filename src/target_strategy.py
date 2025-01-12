@@ -1,7 +1,7 @@
 """Targetting strategy logic for Battle Swap."""
 
 from abc import ABC, abstractmethod
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import esper
 
@@ -11,10 +11,13 @@ from unit_condition import UnitCondition
 
 class Ranking(ABC):
 
-    def __init__(self, ascending: bool):
+    def __init__(self, ascending: bool, unit_condition: Optional[UnitCondition] = None):
         self.ascending = ascending
+        self.unit_condition = unit_condition
 
     def key(self, ent: int) -> float:
+        if self.unit_condition is not None and not self.unit_condition.check(ent):
+            return float('inf')
         if self.ascending:
             return self._key(ent)
         return -self._key(ent)
@@ -23,12 +26,33 @@ class Ranking(ABC):
     def _key(self, ent: int) -> float:
         ...
 
+class WeightedRanking(Ranking):
+
+    def __init__(self, rankings: Dict[Ranking, float], unit_condition: Optional[UnitCondition] = None, ascending: bool = True):
+        self.rankings = rankings
+        super().__init__(
+            ascending=ascending,
+            unit_condition=unit_condition
+        )
+
+    def _key(self, ent: int) -> float:
+        return sum(ranking.key(ent) * weight for ranking, weight in self.rankings.items())
+
 class ByDistance(Ranking):
 
-    def __init__(self, entity: int, y_bias: Optional[float], ascending: bool):
+    def __init__(
+        self,
+        entity: int,
+        y_bias: Optional[float] = None,
+        unit_condition: Optional[UnitCondition] = None,
+        ascending: bool = True
+    ):
         self.entity = entity
         self.y_bias = y_bias
-        super().__init__(ascending)
+        super().__init__(
+            unit_condition=unit_condition,
+            ascending=ascending
+        )
 
     def _key(self, ent: int) -> float:
         e_pos = esper.component_for_entity(self.entity, Position)
@@ -38,6 +62,8 @@ class ByDistance(Ranking):
 class ByMissingHealth(Ranking):
 
     def _key(self, ent: int) -> float:
+        if self.unit_condition is not None and not self.unit_condition.check(ent):
+            return float('inf')
         health = esper.component_for_entity(ent, Health)
         return (health.maximum - health.current)
 
@@ -46,7 +72,6 @@ class ByMaxHealth(Ranking):
     def _key(self, ent: int) -> float:
         health = esper.component_for_entity(ent, Health)
         return health.maximum
-
 
 class TargetStrategy:
     """Represents a target strategy."""

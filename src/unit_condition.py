@@ -110,6 +110,18 @@ class HealthBelowPercent(UnitCondition):
         return health is not None and health.current / health.maximum < self.percent
 
 @dataclass
+class MaxHealthAbove(UnitCondition):
+    """The unit has at least `health` health."""
+
+    health: float
+    """The health to check against."""
+
+    def check(self, entity: int) -> bool:
+        health = esper.try_component(entity, Health)
+        return health is not None and health.maximum >= self.health
+
+
+@dataclass
 class MaximumDistanceFromEntity(UnitCondition):
     """The unit is within a certain distance from the given entity."""
 

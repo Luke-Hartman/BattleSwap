@@ -24,7 +24,7 @@ from components.position import Position
 from components.animation import AnimationState, AnimationType
 from components.sprite_sheet import SpriteSheet
 from components.status_effect import CrusaderBannerBearerEmpowered, Fleeing, Healing, Ignited, StatusEffects
-from target_strategy import ByDistance, ByMaxHealth, ByMissingHealth, TargetStrategy
+from target_strategy import ByDistance, ByMaxHealth, ByMissingHealth, TargetStrategy, WeightedRanking
 from components.destination import Destination
 from components.team import Team, TeamType
 from components.unit_state import State, UnitState
@@ -72,8 +72,8 @@ unit_values: Dict[UnitType, int] = {
     UnitType.CORE_CAVALRY: 100,
     UnitType.CORE_SWORDSMAN: 100,
     UnitType.CORE_WIZARD: 100,
-    UnitType.CRUSADER_BLACK_KNIGHT: 100,
     UnitType.CRUSADER_BANNER_BEARER: 100,
+    UnitType.CRUSADER_BLACK_KNIGHT: 100,
     UnitType.CRUSADER_CLERIC: 100,
     UnitType.CRUSADER_COMMANDER: 100,
     UnitType.CRUSADER_CROSSBOWMAN: 100,
@@ -96,8 +96,8 @@ def load_sprite_sheets():
         UnitType.CORE_DUELIST: "CoreDuelist.png",
         UnitType.CORE_SWORDSMAN: "CoreSwordsman.png", 
         UnitType.CORE_WIZARD: "CoreWizard.png",
-        UnitType.CRUSADER_BLACK_KNIGHT: "CrusaderBlackKnight.png",
         UnitType.CRUSADER_BANNER_BEARER: "Kirby.png",
+        UnitType.CRUSADER_BLACK_KNIGHT: "CrusaderBlackKnight.png",
         UnitType.CRUSADER_CLERIC: "CrusaderCleric.png",
         UnitType.CRUSADER_COMMANDER: "CrusaderCommander.png",
         UnitType.CRUSADER_CROSSBOWMAN: "CrusaderCrossbowman.png",
@@ -1079,22 +1079,23 @@ def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
             height=36,
         )
     )
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            WeightedRanking(
+                rankings={
+                    ByDistance(entity=entity, y_bias=None, ascending=True): 1,
+                    ByMissingHealth(ascending=False): 0.6,
+                },
+                unit_condition=All([OnTeam(team=team), Alive(), Not(IsEntity(entity=entity)), HealthBelowPercent(percent=1)])
+            ),
+            ByDistance(entity=entity, y_bias=None, ascending=True),
+        ],
+        unit_condition=All([OnTeam(team=team), Alive(), Not(IsEntity(entity=entity))])
+    )
     esper.add_component(
         entity,
         Destination(
-            target_strategy=TargetStrategy(
-                rankings=[
-                    ByMaxHealth(ascending=False),
-                    ByDistance(entity=entity, y_bias=2, ascending=True),
-                ],
-                unit_condition=All(
-                    [
-                        OnTeam(team=team),
-                        Alive(),
-                        Not(IsEntity(entity=entity)),
-                    ]
-                )
-            ),
+            target_strategy=targetting_strategy,
             x_offset=0,
             min_distance=gc.CRUSADER_CLERIC_ATTACK_RANGE*2/3
         )
@@ -1108,13 +1109,7 @@ def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
         Abilities(
             abilities=[
                 Ability(
-                    target_strategy=TargetStrategy(
-                        rankings=[
-                            ByMissingHealth(ascending=False),
-                            ByDistance(entity=entity, y_bias=2, ascending=True),
-                        ],
-                        unit_condition=All([OnTeam(team=team), Alive(), HealthBelowPercent(percent=0.9)])
-                    ),
+                    target_strategy=targetting_strategy,
                     trigger_conditions=[
                         HasTarget(
                             unit_condition=All([
@@ -1173,7 +1168,7 @@ def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
         entity,
         StatsCard(
             text=[
-                f"Name: Cleric",
+                f"Name: Healer",
                 f"Faction: Crusader",
                 f"Health: {gc.CRUSADER_CLERIC_HP}",
                 f"Healing: {gc.CRUSADER_CLERIC_HEALING}",
