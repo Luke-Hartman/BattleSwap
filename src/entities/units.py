@@ -1118,7 +1118,8 @@ def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
                                     entity=entity,
                                     distance=gc.CRUSADER_CLERIC_ATTACK_RANGE,
                                     y_bias=None
-                                )
+                                ),
+                                HealthBelowPercent(percent=1),
                             ])
                         )
                     ],
