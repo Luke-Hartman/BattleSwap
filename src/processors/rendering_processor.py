@@ -155,6 +155,20 @@ class RenderingProcessor(esper.Processor):
                 team = esper.component_for_entity(ent, Team)
                 unit_state = esper.component_for_entity(ent, UnitState)
                 hitbox = esper.component_for_entity(ent, Hitbox)
+                # Draw hitbox
+                # pygame.draw.rect(
+                #     self.screen,
+                #     (255, 255, 255),
+                #     self.camera.world_to_screen_rect(
+                #         (
+                #             pos.x - hitbox.width/2,
+                #             pos.y - hitbox.height/2,
+                #             hitbox.width,
+                #             hitbox.height
+                #         )
+                #     ),
+                #     1
+                # )
                 if unit_state.state != State.DEAD and health.current < health.maximum:
                     self.draw_health_bar(pos, health, team, hitbox)
         

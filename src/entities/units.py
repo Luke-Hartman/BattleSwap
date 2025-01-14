@@ -1725,11 +1725,11 @@ def create_crusader_guardian_angel(x: int, y: int, team: TeamType) -> int:
         y=y,
         team=team,
         unit_type=UnitType.CRUSADER_GUARDIAN_ANGEL,
-        movement_speed=gc.GUARDIAN_ANGEL_MOVEMENT_SPEED,
-        health=gc.GUARDIAN_ANGEL_HP,
+        movement_speed=gc.CRUSADER_GUARDIAN_ANGEL_MOVEMENT_SPEED,
+        health=gc.CRUSADER_GUARDIAN_ANGEL_HP,
         hitbox=Hitbox(
             width=16,
-            height=32,
+            height=22,
         )
     )
     targetting_strategy = TargetStrategy(
@@ -1748,9 +1748,9 @@ def create_crusader_guardian_angel(x: int, y: int, team: TeamType) -> int:
         entity,
         Destination(
             target_strategy=targetting_strategy,
-            x_offset=gc.GUARDIAN_ANGEL_ATTACHMENT_RANGE,
+            x_offset=gc.CRUSADER_GUARDIAN_ANGEL_ATTACHMENT_RANGE,
             use_team_x_offset=True,
-            min_distance=0
+            min_distance=0.01
         )
     )
     NOT_ATTACHED = 0
@@ -1759,9 +1759,9 @@ def create_crusader_guardian_angel(x: int, y: int, team: TeamType) -> int:
     esper.add_component(entity, NoNudge())
     esper.add_component(
         entity,
-        Abilities(
+        InstantAbilities(
             abilities=[
-                Ability(
+                InstantAbility(
                     target_strategy=targetting_strategy,
                     trigger_conditions=[
                         SatisfiesUnitCondition(unit_condition=InStance(NOT_ATTACHED)),
@@ -1774,73 +1774,20 @@ def create_crusader_guardian_angel(x: int, y: int, team: TeamType) -> int:
                         ),
                         SatisfiesUnitCondition(unit_condition=MaximumDistanceFromDestination(distance=5))
                     ],
-                    persistent_conditions=[],
-                    effects={
-                        1: [
-                            StanceChange(ATTACHED),
-                            AttachToTarget(
-                                offset=(
-                                    -gc.GUARDIAN_ANGEL_ATTACHMENT_RANGE
-                                    if team == TeamType.TEAM1
-                                    else gc.GUARDIAN_ANGEL_ATTACHMENT_RANGE,
-                                    0
-                                ),
-                                on_death=lambda e: esper.remove_component(e, Attached),
+                    effects=[
+                        StanceChange(ATTACHED),
+                        AttachToTarget(
+                            offset=(
+                                -gc.CRUSADER_GUARDIAN_ANGEL_ATTACHMENT_RANGE
+                                if team == TeamType.TEAM1
+                                else gc.CRUSADER_GUARDIAN_ANGEL_ATTACHMENT_RANGE,
+                                0
                             ),
-                            RememberTarget()
-                        ]
-                    },
+                            on_death=lambda e: esper.remove_component(e, Attached),
+                        ),
+                        RememberTarget()
+                    ]
                 ),
-                Ability(
-                    target_strategy=target_attached,
-                    trigger_conditions=[
-                        SatisfiesUnitCondition(unit_condition=InStance(ATTACHED)),
-                        HasTarget(
-                            unit_condition=All([
-                                Not(IsUnitType(unit_type=UnitType.CRUSADER_GUARDIAN_ANGEL)),
-                                OnTeam(team=team),
-                                RememberedBy(entity=entity),
-                                Alive()
-                            ])
-                        )
-                    ],
-                    persistent_conditions=[
-                        SatisfiesUnitCondition(unit_condition=InStance(ATTACHED)),
-                        HasTarget(
-                            unit_condition=All([
-                                Not(IsUnitType(unit_type=UnitType.CRUSADER_GUARDIAN_ANGEL)),
-                                OnTeam(team=team),
-                                RememberedBy(entity=entity),
-                                Alive()
-                            ])
-                        )
-                    ],
-                    effects={
-                        2: [
-                            AppliesStatusEffect(
-                                status_effect=Healing(time_remaining=gc.GUARDIAN_ANGEL_ANIMATION_HEAL_DURATION, dps=gc.GUARDIAN_ANGEL_HEALING/gc.GUARDIAN_ANGEL_ANIMATION_HEAL_DURATION),
-                                recipient=Recipient.TARGET
-                            ),
-                            CreatesAttachedVisual(
-                                visual=Visual.Healing,
-                                animation_duration=gc.GUARDIAN_ANGEL_ANIMATION_HEAL_DURATION + 1/30,
-                                expiration_duration=gc.GUARDIAN_ANGEL_ANIMATION_HEAL_DURATION + 1/30,
-                                scale=2,
-                                on_death=lambda e: esper.delete_entity(e),
-                                random_starting_frame=False,
-                                layer=1,
-                            ),
-                            PlaySound(SoundEffect(filename="heal.wav", volume=0.50)),
-                        ]
-                    },
-                )
-            ]
-        )
-    )
-    esper.add_component(
-        entity,
-        InstantAbilities(
-            abilities=[
                 InstantAbility(
                     target_strategy=target_attached,
                     trigger_conditions=[
@@ -1857,6 +1804,35 @@ def create_crusader_guardian_angel(x: int, y: int, team: TeamType) -> int:
                         Forget(),
                         StanceChange(NOT_ATTACHED),
                     ],
+                ),
+                InstantAbility(
+                    target_strategy=target_attached,
+                    trigger_conditions=[
+                        Cooldown(duration=gc.CRUSADER_GUARDIAN_ANGEL_HEAL_COOLDOWN),
+                        HasTarget(
+                            unit_condition=All([
+                                OnTeam(team=team),
+                                RememberedBy(entity=entity),
+                                Alive()
+                            ])
+                        )
+                    ],
+                    effects=[
+                        AppliesStatusEffect(
+                            status_effect=Healing(time_remaining=gc.CRUSADER_GUARDIAN_ANGEL_HEAL_COOLDOWN, dps=gc.CRUSADER_GUARDIAN_ANGEL_HEALING/gc.CRUSADER_GUARDIAN_ANGEL_HEAL_COOLDOWN),
+                            recipient=Recipient.TARGET
+                        ),
+                        CreatesAttachedVisual(
+                            visual=Visual.Healing,
+                            animation_duration=gc.CRUSADER_GUARDIAN_ANGEL_HEAL_COOLDOWN + 1/30,
+                            expiration_duration=gc.CRUSADER_GUARDIAN_ANGEL_HEAL_COOLDOWN + 1/30,
+                            scale=2,
+                            on_death=lambda e: esper.delete_entity(e),
+                            random_starting_frame=False,
+                            layer=1,
+                        ),
+                        PlaySound(SoundEffect(filename="heal.wav", volume=0.50)),
+                    ]
                 )
             ]
         )
@@ -1868,15 +1844,13 @@ def create_crusader_guardian_angel(x: int, y: int, team: TeamType) -> int:
             frame_width=100,
             frame_height=100,
             scale=gc.TINY_RPG_SCALE,
-            frames={AnimationType.IDLE: 6, AnimationType.WALKING: 8, AnimationType.ABILITY1: 4, AnimationType.ABILITY2: 4, AnimationType.DYING: 4},
-            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 3, AnimationType.ABILITY2: 3, AnimationType.DYING: 5},
-            sprite_center_offset=(0, 2),
+            frames={AnimationType.IDLE: 24, AnimationType.WALKING: 24, AnimationType.DYING: 8},
+            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 0, AnimationType.DYING: 1},
+            sprite_center_offset=(0, 6),
             animation_durations={
-                AnimationType.IDLE: gc.GUARDIAN_ANGEL_ANIMATION_IDLE_DURATION,
-                AnimationType.WALKING: gc.GUARDIAN_ANGEL_ANIMATION_WALKING_DURATION,
-                AnimationType.ABILITY1: gc.GUARDIAN_ANGEL_ANIMATION_ATTACH_DURATION,
-                AnimationType.ABILITY2: gc.GUARDIAN_ANGEL_ANIMATION_HEAL_DURATION,
-                AnimationType.DYING: gc.GUARDIAN_ANGEL_ANIMATION_DYING_DURATION,
+                AnimationType.IDLE: gc.CRUSADER_GUARDIAN_ANGEL_ANIMATION_FLYING_DURATION,
+                AnimationType.WALKING: gc.CRUSADER_GUARDIAN_ANGEL_ANIMATION_FLYING_DURATION,
+                AnimationType.DYING: gc.CRUSADER_GUARDIAN_ANGEL_ANIMATION_DYING_DURATION,
             },
         )
     )
@@ -1886,12 +1860,12 @@ def create_crusader_guardian_angel(x: int, y: int, team: TeamType) -> int:
             text=[
                 f"Name: Guardian Angel",
                 f"Faction: Crusader",
-                f"Health: {gc.GUARDIAN_ANGEL_HP}",
-                f"Healing: {gc.GUARDIAN_ANGEL_HEALING}",
-                f"Healing DPS: {round(gc.GUARDIAN_ANGEL_HEALING/gc.GUARDIAN_ANGEL_ANIMATION_HEAL_DURATION, 2)}",
-                f"Speed: {gc.GUARDIAN_ANGEL_MOVEMENT_SPEED}",
-                f"Attachment Range: {gc.GUARDIAN_ANGEL_ATTACHMENT_RANGE}",
-                f"AI: Targets the nearest ally, preferring units at the same height on the y-axis",
+                f"Health: {gc.CRUSADER_GUARDIAN_ANGEL_HP}",
+                f"Healing: {gc.CRUSADER_GUARDIAN_ANGEL_HEALING}",
+                f"Healing DPS: {round(gc.CRUSADER_GUARDIAN_ANGEL_HEALING/gc.CRUSADER_GUARDIAN_ANGEL_HEAL_COOLDOWN, 2)}",
+                f"Speed: {gc.CRUSADER_GUARDIAN_ANGEL_MOVEMENT_SPEED}",
+                f"Attachment Range: {gc.CRUSADER_GUARDIAN_ANGEL_ATTACHMENT_RANGE}",
+                f"AI: Targets the nearest ally.",
                 f"Special: Attaches to the nearest ally and heals them until they die.",
             ]
         )
