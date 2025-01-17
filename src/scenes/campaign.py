@@ -158,6 +158,8 @@ class CampaignScene(Scene):
             self.world_map_view.camera.process_event(event)
             self.manager.process_events(event)
             self.feedback_button.handle_event(event)
+            if self.barracks is not None:
+                self.barracks.handle_event(event)
         # Update hex states while preserving fog of war
         available_battles = progress_manager.available_battles()
         states = defaultdict(HexState)

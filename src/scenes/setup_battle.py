@@ -338,6 +338,7 @@ class SetupBattleScene(Scene):
             self.camera.process_event(event)
             self.manager.process_events(event)
             self.feedback_button.handle_event(event)
+            self.barracks.handle_event(event)
 
         # Only update camera if no dialog is focused
         if self.save_dialog is None or not self.save_dialog.dialog.alive():
