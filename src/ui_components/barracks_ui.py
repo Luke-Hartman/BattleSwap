@@ -174,7 +174,12 @@ class BarracksUI(UIPanel):
         y_offset = (container_height - UnitCount.size) // 2 if not needs_scrollbar else 0
         
         x_position = 0
-        for unit_type, count in self._units.items():
+        # Alphabetically sort the units
+        unit_order = sorted(
+            self._units.items(),
+            key=lambda x: x[0].value
+        )
+        for unit_type, count in unit_order:
             if count > 0:
                 item = UnitCount(
                     x_pos=x_position,
