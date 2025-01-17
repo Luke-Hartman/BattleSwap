@@ -78,6 +78,13 @@
             }
         }
     },
+    "#crusader_catapult_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/CrusaderCatapultIcon.png"
+            }
+        }
+    },
     "#crusader_cleric_icon": {
         "images": {
             "normal_image": {

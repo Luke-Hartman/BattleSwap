@@ -9,11 +9,12 @@ from components.ability import Abilities
 from components.aoe import AoE
 from components.aura import Aura
 from components.instant_ability import InstantAbilities
+from components.lobbed import Lobbed
 from components.projectile import Projectile
 from events import (
-    AbilityActivatedEvent, ABILITY_ACTIVATED,
+    LOBBED_ARRIVED, AbilityActivatedEvent, ABILITY_ACTIVATED,
     AoEHitEvent, AOE_HIT,
-    AuraHitEvent, AURA_HIT,
+    AuraHitEvent, AURA_HIT, LobbedArrivedEvent,
     ProjectileHitEvent, PROJECTILE_HIT,
     InstantAbilityTriggeredEvent, INSTANT_ABILITY_TRIGGERED,
 )
@@ -28,6 +29,7 @@ class CombatHandler:
         dispatcher.connect(self.handle_projectile_hit, signal=PROJECTILE_HIT)
         dispatcher.connect(self.handle_aoe_hit, signal=AOE_HIT)
         dispatcher.connect(self.handle_aura_hit, signal=AURA_HIT)
+        dispatcher.connect(self.handle_lobbed_arrived, signal=LOBBED_ARRIVED)
 
     def handle_ability_activated(self, event: AbilityActivatedEvent):
         owner = event.entity
@@ -89,4 +91,14 @@ class CombatHandler:
                     parent=aura_ent,
                     target=target_ent
                 )
+
+    def handle_lobbed_arrived(self, event: LobbedArrivedEvent):
+        lobbed_ent = event.entity
+        lobbed = esper.component_for_entity(lobbed_ent, Lobbed)
+        for effect in lobbed.effects:
+            effect.apply(
+                owner=lobbed.owner,
+                parent=lobbed_ent,
+                target=None,
+            )
 

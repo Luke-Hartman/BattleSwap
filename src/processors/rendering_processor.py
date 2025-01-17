@@ -103,13 +103,14 @@ class RenderingProcessor(esper.Processor):
 
         # Draw range indicators on focused units
         for ent, (range_indicator, position, _) in esper.get_components(RangeIndicator, Position, Focus):
-            self._draw_circle(
-                position.x,
-                position.y,
-                range_indicator.range,
-                fill_color=None,
-                outline_color=(200, 200, 200, 120)
-            )
+            for range_value in range_indicator.ranges:
+                self._draw_circle(
+                    position.x,
+                    position.y,
+                    range_value,
+                    fill_color=None,
+                    outline_color=(200, 200, 200, 120)
+                )
 
 
         # Get all entities with necessary components

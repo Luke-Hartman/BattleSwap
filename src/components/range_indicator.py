@@ -1,5 +1,7 @@
 from dataclasses import dataclass
+from typing import List
 
 @dataclass
 class RangeIndicator:
-    range: int
+    """Component for displaying one or more range indicators around an entity."""
+    ranges: List[float]

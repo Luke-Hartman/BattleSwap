@@ -6,6 +6,7 @@ import random
 from typing import Callable, List, Optional, Tuple, Union
 
 import esper
+from pygame import Vector2
 
 from components.ammo import Ammo
 from components.angle import Angle
@@ -18,6 +19,7 @@ from components.dying import Dying
 from components.entity_memory import EntityMemory
 from components.expiration import Expiration
 from components.health import Health
+from components.lobbed import Lobbed
 from components.orientation import FacingDirection, Orientation
 from components.position import Position
 from components.projectile import Projectile
@@ -46,7 +48,7 @@ class Effect:
     """An effect that an ability has."""
 
     @abstractmethod
-    def apply(self, owner: int, parent: int, target: int) -> None:
+    def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
         """Apply the effect."""
 
 
@@ -63,13 +65,15 @@ class Damages(Effect):
     on_kill_effects: Optional[List[Effect]] = None
     """Effects to apply when the target is killed."""
 
-    def apply(self, owner: Optional[int], parent: int, target: int) -> None:
+    def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
         if self.recipient == Recipient.OWNER:
             assert owner is not None
             recipient = owner
         elif self.recipient == Recipient.PARENT:
+            assert parent is not None
             recipient = parent
         elif self.recipient == Recipient.TARGET:
+            assert target is not None
             recipient = target
         else:
             raise ValueError(f"Invalid recipient: {self.recipient}")
@@ -115,12 +119,15 @@ class Heals(Effect):
     recipient: Recipient
     """The recipient of the effect."""
 
-    def apply(self, owner: Optional[int], parent: int, target: int) -> None:
+    def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
         if self.recipient == Recipient.OWNER:
+            assert owner is not None
             recipient = owner
         elif self.recipient == Recipient.PARENT:
+            assert parent is not None
             recipient = parent
         elif self.recipient == Recipient.TARGET:
+            assert target is not None
             recipient = target
         else:
             raise ValueError(f"Invalid recipient: {self.recipient}")
@@ -157,13 +164,16 @@ class CreatesAoE(Effect):
     on_create: Optional[Callable[[int], None]] = None
     """Function to call when the AoE is created."""
 
-    def apply(self, owner: Optional[int], parent: int, target: int) -> None:
+    def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
         entity = esper.create_entity()
         if self.location == Recipient.OWNER:
+            assert owner is not None
             recipient = owner
         elif self.location == Recipient.PARENT:
+            assert parent is not None
             recipient = parent
         elif self.location == Recipient.TARGET:
+            assert target is not None
             recipient = target
         else:
             raise ValueError(f"Invalid location: {self.location}")
@@ -219,7 +229,9 @@ class CreatesProjectile(Effect):
     on_create: Optional[Callable[[int], None]] = None
     """Function to call when the projectile is created."""
 
-    def apply(self, owner: Optional[int], parent: int, target: int) -> None:
+    def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
+        assert parent is not None
+        assert target is not None
         entity = esper.create_entity()
         parent_position = esper.component_for_entity(parent, Position)
         parent_orientation = esper.component_for_entity(parent, Orientation)
@@ -287,12 +299,15 @@ class CreatesTemporaryAura(Effect):
     on_death: Optional[Callable[[int], None]] = None
     """The action to take when the recipient dies."""
 
-    def apply(self, owner: Optional[int], parent: int, target: int) -> None:
+    def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
         if self.recipient == Recipient.OWNER:
+            assert owner is not None
             recipient = owner
         elif self.recipient == Recipient.PARENT:
+            assert parent is not None
             recipient = parent
         elif self.recipient == Recipient.TARGET:
+            assert target is not None
             recipient = target
         else:
             raise ValueError(f"Invalid recipient: {self.recipient}")
@@ -327,12 +342,15 @@ class AppliesStatusEffect(Effect):
     recipient: Recipient
     """The recipient of the status effect."""
 
-    def apply(self, owner: Optional[int], parent: int, target: int) -> None:
+    def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
         if self.recipient == Recipient.OWNER:
+            assert owner is not None
             recipient = owner
         elif self.recipient == Recipient.PARENT:
+            assert parent is not None
             recipient = parent
         elif self.recipient == Recipient.TARGET:
+            assert target is not None
             recipient = target
         else:
             raise ValueError(f"Invalid recipient: {self.recipient}")
@@ -371,7 +389,8 @@ class CreatesAttachedVisual(Effect):
     layer: int = 0
     """The layer of the effect."""
 
-    def apply(self, owner: Optional[int], parent: int, target: int) -> None:
+    def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
+        assert target is not None
         entity = esper.create_entity()
         position = esper.component_for_entity(target, Position)
         team = esper.component_for_entity(target, Team)
@@ -408,23 +427,26 @@ class AttachToTarget(Effect):
     on_death: Optional[Callable[[int], None]] = None
     """The action to take when the recipient dies."""
 
-    def apply(self, owner: Optional[int], parent: int, target: int) -> None:
+    def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
+        assert parent is not None
+        assert target is not None
         esper.add_component(parent, Attached(entity=target, on_death=self.on_death, offset=self.offset))
 
 @dataclass
 class RememberTarget(Effect):
     """Effect stores the target in the parent's entity memory."""
 
-    def apply(self, owner: Optional[int], parent: int, target: int) -> None:
-        if target is None:
-            raise ValueError("Target is required for RememberTarget effect")
+    def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
+        assert parent is not None
+        assert target is not None
         esper.add_component(parent, EntityMemory(entity=target))
 
 @dataclass
 class Forget(Effect):
     """Effect forgets the remembered unit in the parent's entity memory."""
 
-    def apply(self, owner: Optional[int], parent: int, target: int) -> None:
+    def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
+        assert parent is not None
         esper.remove_component(parent, EntityMemory)
 
 @dataclass
@@ -444,7 +466,7 @@ class PlaySound(Effect):
     sound_effects: Union[SoundEffect, List[Tuple[SoundEffect, float]]]
     """The sound effects to play and the weight for each sound effect to be chosen."""
 
-    def apply(self, owner: Optional[int], parent: int, target: int) -> None:
+    def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
         if isinstance(self.sound_effects, SoundEffect):
             sound_effect = self.sound_effects
         else:
@@ -461,9 +483,8 @@ class StanceChange(Effect):
     stance: int
     """The stance to change to."""
 
-    def apply(self, owner: Optional[int], parent: int, target: int) -> None:
-        if owner is None:
-            raise ValueError("Owner is required for StanceChange effect")
+    def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:    
+        assert owner is not None
         esper.component_for_entity(owner, Stance).stance = self.stance
 
 @dataclass
@@ -473,8 +494,54 @@ class IncreaseAmmo(Effect):
     amount: int
     """The amount of ammo to increase. Can be negative."""
 
-    def apply(self, owner: Optional[int], parent: int, target: int) -> None:
-        if owner is None:
-            raise ValueError("Owner is required for IncreaseAmmo effect")
+    def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
+        assert owner is not None
         ammo = esper.component_for_entity(owner, Ammo)
         ammo.current = max(min(ammo.current + self.amount, ammo.max), 0)
+
+
+@dataclass
+class CreatesLobbed(Effect):
+    """Effect creates a lobbed entity towards the target from the parent."""
+
+    effects: List[Effect]
+    """The effects of the lobbed entity."""
+
+    max_range: float
+    """The maximum range of the lobbed entity."""
+
+    visual: Visual
+    """The visual of the lobbed entity."""
+
+    offset: Tuple[float, float]
+    """The offset of the lobbed entity from the parent's position."""
+
+    def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
+        assert parent is not None
+        assert target is not None
+
+        parent_position = esper.component_for_entity(parent, Position)
+        target_position = esper.component_for_entity(target, Position)
+        entity = esper.create_entity()
+        parent_orientation = esper.try_component(parent, Orientation)
+        parent_team = esper.component_for_entity(parent, Team)
+        offset = Vector2(self.offset[0], self.offset[1])
+        if parent_orientation is not None:
+            offset.x *= parent_orientation.facing.value
+            
+        esper.add_component(
+            entity,
+            Lobbed(
+                start=Vector2(parent_position.x + offset.x, parent_position.y + offset.y),
+                target=Vector2(target_position.x, target_position.y),
+                max_range=self.max_range,
+                effects=self.effects,
+                owner=owner,
+            )
+        )
+        esper.add_component(entity, Position(x=parent_position.x + offset.x, y=parent_position.y + offset.y))
+        esper.add_component(entity, create_visual_spritesheet(self.visual))
+        esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
+        esper.add_component(entity, Team(type=parent_team.type))
+        esper.add_component(entity, Orientation(facing=parent_orientation.facing))
+

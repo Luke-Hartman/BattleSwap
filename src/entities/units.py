@@ -33,7 +33,7 @@ from components.unit_type import UnitType, UnitTypeComponent
 from components.velocity import Velocity
 from components.health import Health
 from components.orientation import Orientation, FacingDirection
-from effects import AppliesStatusEffect, AttachToTarget, CreatesAoE, CreatesAttachedVisual, CreatesProjectile, Damages, Forget, Heals, IncreaseAmmo, PlaySound, Recipient, SoundEffect, StanceChange, RememberTarget
+from effects import AppliesStatusEffect, AttachToTarget, CreatesAoE, CreatesAttachedVisual, CreatesLobbed, CreatesProjectile, Damages, Forget, Heals, IncreaseAmmo, PlaySound, Recipient, SoundEffect, StanceChange, RememberTarget
 from unit_condition import (
     All, Alive, Always, AmmoEquals, Any, HealthBelowPercent, InStance, IsEntity, IsUnitType, MaximumDistanceFromDestination, MinimumDistanceFromEntity, Never, Not, OnTeam,
     MaximumDistanceFromEntity, RememberedBy, RememberedSatisfies
@@ -48,6 +48,7 @@ unit_theme_ids: Dict[UnitType, str] = {
     UnitType.CORE_WIZARD: "#core_wizard_icon",
     UnitType.CRUSADER_BLACK_KNIGHT: "#crusader_black_knight_icon",
     UnitType.CRUSADER_BANNER_BEARER: "#crusader_banner_bearer_icon",
+    UnitType.CRUSADER_CATAPULT: "#crusader_catapult_icon",
     UnitType.CRUSADER_CLERIC: "#crusader_cleric_icon",
     UnitType.CRUSADER_COMMANDER: "#crusader_commander_icon",
     UnitType.CRUSADER_CROSSBOWMAN: "#crusader_crossbowman_icon",
@@ -74,6 +75,7 @@ unit_values: Dict[UnitType, int] = {
     UnitType.CORE_WIZARD: 100,
     UnitType.CRUSADER_BANNER_BEARER: 100,
     UnitType.CRUSADER_BLACK_KNIGHT: 100,
+    UnitType.CRUSADER_CATAPULT: 100,
     UnitType.CRUSADER_CLERIC: 100,
     UnitType.CRUSADER_COMMANDER: 100,
     UnitType.CRUSADER_CROSSBOWMAN: 100,
@@ -98,6 +100,7 @@ def load_sprite_sheets():
         UnitType.CORE_WIZARD: "CoreWizard.png",
         UnitType.CRUSADER_BANNER_BEARER: "Kirby.png",
         UnitType.CRUSADER_BLACK_KNIGHT: "CrusaderBlackKnight.png",
+        UnitType.CRUSADER_CATAPULT: "kirby_library/ReKirby_01.png",
         UnitType.CRUSADER_CLERIC: "CrusaderCleric.png",
         UnitType.CRUSADER_COMMANDER: "CrusaderCommander.png",
         UnitType.CRUSADER_CROSSBOWMAN: "CrusaderCrossbowman.png",
@@ -124,6 +127,7 @@ def load_sprite_sheets():
         UnitType.CORE_WIZARD: "CoreWizardIcon.png",
         UnitType.CRUSADER_BANNER_BEARER: "CrusaderBannerBearerIcon.png",
         UnitType.CRUSADER_BLACK_KNIGHT: "CrusaderBlackKnightIcon.png",
+        UnitType.CRUSADER_CATAPULT: "CrusaderCatapultIcon.png",
         UnitType.CRUSADER_CLERIC: "CrusaderClericIcon.png",
         UnitType.CRUSADER_COMMANDER: "CrusaderCommanderIcon.png",
         UnitType.CRUSADER_CROSSBOWMAN: "CrusaderCrossbowmanIcon.png",
@@ -151,6 +155,7 @@ def create_unit(x: int, y: int, unit_type: UnitType, team: TeamType) -> int:
         UnitType.CORE_WIZARD: create_core_wizard,
         UnitType.CRUSADER_BANNER_BEARER: create_crusader_banner_bearer,
         UnitType.CRUSADER_BLACK_KNIGHT: create_crusader_black_knight,
+        UnitType.CRUSADER_CATAPULT: create_crusader_catapult,
         UnitType.CRUSADER_CLERIC: create_crusader_cleric,
         UnitType.CRUSADER_COMMANDER: create_crusader_commander,
         UnitType.CRUSADER_CROSSBOWMAN: create_crusader_crossbowman,
@@ -215,10 +220,7 @@ def create_core_archer(x: int, y: int, team: TeamType) -> int:
         entity,
         Destination(target_strategy=targetting_strategy, x_offset=0)
     )
-    esper.add_component(
-        entity,
-        RangeIndicator(range=gc.CORE_ARCHER_ATTACK_RANGE)
-    )
+    esper.add_component(entity, RangeIndicator(ranges=[gc.CORE_ARCHER_ATTACK_RANGE]))
     esper.add_component(
         entity,
         Abilities(
@@ -675,10 +677,7 @@ def create_core_wizard(x: int, y: int, team: TeamType) -> int:
         entity,
         Destination(target_strategy=targetting_strategy, x_offset=0)
     )
-    esper.add_component(
-        entity,
-        RangeIndicator(range=gc.CORE_WIZARD_ATTACK_RANGE)
-    )
+    esper.add_component(entity, RangeIndicator(ranges=[gc.CORE_WIZARD_ATTACK_RANGE]))
     esper.add_component(
         entity,
         Abilities(
@@ -1069,6 +1068,112 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
     }))
     return entity
 
+def create_crusader_catapult(x: int, y: int, team: TeamType) -> int:
+    """Create a catapult entity with all necessary components."""
+    entity = unit_base_entity(
+        x=x,
+        y=y,
+        team=team,
+        unit_type=UnitType.CRUSADER_CATAPULT,
+        movement_speed=0,
+        health=gc.CRUSADER_CATAPULT_HP,
+        hitbox=Hitbox(
+            width=16,
+            height=36,
+        )
+    )
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=2, ascending=True),
+        ],
+        unit_condition=All(
+            [
+                OnTeam(team=team.other()),
+                Alive(),
+                MaximumDistanceFromEntity(
+                    entity=entity,
+                    distance=gc.CRUSADER_CATAPULT_MAXIMUM_RANGE,
+                    y_bias=None
+                ),
+                MinimumDistanceFromEntity(
+                    entity=entity,
+                    distance=gc.CRUSADER_CATAPULT_MINIMUM_RANGE,
+                    y_bias=None
+                )
+            ]
+        )
+    )
+    esper.add_component(entity, Destination(target_strategy=targetting_strategy, x_offset=0))
+    esper.add_component(entity, RangeIndicator(ranges=[gc.CRUSADER_CATAPULT_MINIMUM_RANGE, gc.CRUSADER_CATAPULT_MAXIMUM_RANGE]))
+    esper.add_component(
+        entity,
+        Abilities(
+            abilities=[
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        HasTarget(unit_condition=Always())
+                    ],
+                    persistent_conditions=[
+                        HasTarget(unit_condition=Alive())
+                    ],
+                    effects={
+                        2: [
+                            CreatesLobbed(
+                                effects=[
+                                    CreatesAoE(
+                                        effects=[
+                                            Damages(damage=gc.CRUSADER_CATAPULT_DAMAGE, recipient=Recipient.TARGET)
+                                        ],
+                                        visual=Visual.Explosion,
+                                        duration=gc.CORE_WIZARD_FIREBALL_AOE_DURATION,
+                                        scale=gc.CORE_WIZARD_FIREBALL_AOE_SCALE,
+                                        unit_condition=Alive(),
+                                        location=Recipient.PARENT,
+                                    )
+                                ],
+                                max_range=gc.CRUSADER_CATAPULT_MAXIMUM_RANGE,
+                                visual=Visual.Fireball,
+                                offset=(30, 0),
+                            )
+                        ]
+                    }
+                )
+            ]
+        )
+    )
+    esper.add_component(entity, SpriteSheet(
+        surface=sprite_sheets[UnitType.CRUSADER_CATAPULT],
+        frame_width=100,
+        frame_height=100,
+        scale=gc.TINY_RPG_SCALE,
+        frames={AnimationType.IDLE: 6, AnimationType.ABILITY1: 5, AnimationType.DYING: 3},
+        rows={AnimationType.IDLE: 0, AnimationType.ABILITY1: 5, AnimationType.DYING: 7},
+        animation_durations={
+            AnimationType.IDLE: gc.CRUSADER_CATAPULT_ANIMATION_IDLE_DURATION,
+            AnimationType.ABILITY1: gc.CRUSADER_CATAPULT_ANIMATION_ATTACK_DURATION,
+            AnimationType.DYING: gc.CRUSADER_CATAPULT_ANIMATION_DYING_DURATION,
+        },
+        sprite_center_offset=(2, 9),
+    ))
+    esper.add_component(
+        entity,
+        StatsCard(
+            text=[
+                f"Name: Catapult",
+                f"Faction: Crusader",
+                f"Health: {gc.CRUSADER_CATAPULT_HP}",
+                f"Attack: {gc.CRUSADER_CATAPULT_DAMAGE}",
+                f"DPS: {round(gc.CRUSADER_CATAPULT_DAMAGE/gc.CRUSADER_CATAPULT_ANIMATION_ATTACK_DURATION, 2)}",
+                f"Speed: Immobile",
+                f"Range: {gc.CRUSADER_CATAPULT_MINIMUM_RANGE} to {gc.CRUSADER_CATAPULT_MAXIMUM_RANGE}",
+                f"Special: Lobs AoE projectiles that deal damage on impact.",
+                f"AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
+            ]
+        )
+    )
+    return entity
+
 def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
     """Create a cleric entity with all necessary components."""
     entity = unit_base_entity(
@@ -1106,7 +1211,7 @@ def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
     )
     esper.add_component(
         entity,
-        RangeIndicator(range=gc.CRUSADER_CLERIC_ATTACK_RANGE)
+        RangeIndicator(ranges=[gc.CRUSADER_CLERIC_ATTACK_RANGE])
     )
     esper.add_component(
         entity,
@@ -1346,7 +1451,7 @@ def create_crusader_crossbowman(x: int, y: int, team: TeamType) -> int:
             max=gc.CRUSADER_CROSSBOWMAN_MAX_AMMO
         )
     )
-    esper.add_component(entity, RangeIndicator(range=gc.CRUSADER_CROSSBOWMAN_ATTACK_RANGE))
+    esper.add_component(entity, RangeIndicator(ranges=[gc.CRUSADER_CROSSBOWMAN_ATTACK_RANGE]))
     RELOADING = 0
     FIRING = 1
     esper.add_component(entity, Stance(stance=RELOADING))
@@ -1905,7 +2010,7 @@ def create_crusader_longbowman(x: int, y: int, team: TeamType) -> int:
     )
     esper.add_component(
         entity,
-        RangeIndicator(range=gc.CRUSADER_LONGBOWMAN_ATTACK_RANGE)
+        RangeIndicator(ranges=[gc.CRUSADER_LONGBOWMAN_ATTACK_RANGE])
     )
     esper.add_component(
         entity,
@@ -2409,7 +2514,7 @@ def create_crusader_soldier(x: int, y: int, team: TeamType) -> int:
     )
     esper.add_component(
         entity,
-        RangeIndicator(range=gc.CRUSADER_SOLDIER_RANGED_RANGE)
+        RangeIndicator(ranges=[gc.CRUSADER_SOLDIER_RANGED_RANGE])
     )
     esper.add_component(entity, Stance(stance=RANGED))
     esper.add_component(

@@ -96,6 +96,11 @@ class InstantAbilityTriggeredEvent:
     index: int
 
 @dataclass
+class LobbedArrivedEvent:
+    """Event triggered when a lobbed entity arrives at its target."""
+    entity: int
+
+@dataclass
 class PlaySoundEvent:
     """Event triggered to play a sound."""
     filename: str
@@ -139,6 +144,7 @@ DESTINATION_TARGET_LOST = 'destination_target_lost'
 FLEEING_STARTED = 'fleeing_started'
 FLEEING_EXPIRED = 'fleeing_expired'
 INSTANT_ABILITY_TRIGGERED = 'instant_ability_triggered'
+LOBBED_ARRIVED = 'lobbed_arrived'
 PLAY_SOUND = 'play_sound'
 PLAY_VOICE = 'play_voice'
 PROJECTILE_HIT = 'projectile_hit'

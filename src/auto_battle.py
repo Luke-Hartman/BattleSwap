@@ -19,6 +19,7 @@ from processors.expiration_processor import ExpirationProcessor
 from processors.fleeing_processor import FleeingProcessor
 from processors.idle_processor import IdleProcessor
 from processors.animation_processor import AnimationProcessor
+from processors.lobbed_processor import LobbedProcessor
 from processors.movement_processor import MovementProcessor
 from processors.nudge_processor import NudgeProcessor
 from processors.orientation_processor import OrientationProcessor
@@ -56,6 +57,7 @@ class AutoBattle:
         _add_if_new(DeadProcessor())
         _add_if_new(AuraProcessor())
         _add_if_new(MovementProcessor())
+        _add_if_new(LobbedProcessor())
         _add_if_new(CollisionProcessor(hex_coords))
         _add_if_new(AttachedProcessor())
         _add_if_new(ExpirationProcessor())
