@@ -106,6 +106,19 @@ class CampaignScene(Scene):
             
             self.handle_escape(event)
 
+            # Add enter key handling
+            if (event.type == pygame.KEYDOWN and 
+                event.key == pygame.K_RETURN and 
+                self.selected_battle_hex is not None):
+                # Simulate clicking the battle/improve button
+                button = (self.context_buttons.get("battle") or 
+                         self.context_buttons.get("improve"))
+                if button is not None:
+                    pygame.event.post(pygame.event.Event(
+                        pygame.USEREVENT,
+                        {'user_type': pygame_gui.UI_BUTTON_PRESSED, 'ui_element': button}
+                    ))
+
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.return_button:
@@ -133,8 +146,18 @@ class CampaignScene(Scene):
                     # Only select if clicking an available battle hex
                     if (battle is not None and 
                         clicked_hex in progress_manager.available_battles()):
-                        self.selected_battle_hex = clicked_hex
-                        self.create_context_buttons()
+                        # If clicking the same hex that's already selected, trigger the button
+                        if clicked_hex == self.selected_battle_hex:
+                            button = (self.context_buttons.get("battle") or 
+                                    self.context_buttons.get("improve"))
+                            if button is not None:
+                                pygame.event.post(pygame.event.Event(
+                                    pygame.USEREVENT,
+                                    {'user_type': pygame_gui.UI_BUTTON_PRESSED, 'ui_element': button}
+                                ))
+                        else:
+                            self.selected_battle_hex = clicked_hex
+                            self.create_context_buttons()
                     else:
                         self.selected_battle_hex = None
                         self.create_context_buttons()
