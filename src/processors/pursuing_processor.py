@@ -40,9 +40,12 @@ class PursuingProcessor(esper.Processor):
                     velocity.x = 0
                     velocity.y = 0
                 else:
-                    speed = min(
-                        destination_distance/dt, # 30 ticks per second
-                        movement.speed
-                    )
+                    if dt == 0:
+                        speed = 0
+                    else:
+                        speed = min(
+                            destination_distance/dt, # 30 ticks per second
+                            movement.speed
+                        )
                     velocity.x = (destination_dx / destination_distance) * speed
                     velocity.y = (destination_dy / destination_distance) * speed
