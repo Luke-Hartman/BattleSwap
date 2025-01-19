@@ -4,16 +4,23 @@ from typing import Tuple, Optional
 
 import pygame
 import pygame_gui
+import esper
 
 from battles import get_battles
+from components.hitbox import Hitbox
+from components.position import Position
+from components.team import Team, TeamType
+from components.unit_type import UnitTypeComponent
 from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event
 from progress_manager import progress_manager
 from scenes.events import PreviousSceneEvent, SetupBattleSceneEvent
 from scenes.scene import Scene
+from selected_unit_manager import selected_unit_manager
 from ui_components.barracks_ui import BarracksUI
 from ui_components.return_button import ReturnButton
 from ui_components.feedback_button import FeedbackButton
 from world_map_view import BorderState, FillState, WorldMapView, HexState
+from scene_utils import use_world
 
 class CampaignScene(Scene):
     """A 2D hex grid world map for progressing through the campaign."""
@@ -209,6 +216,18 @@ class CampaignScene(Scene):
         self.world_map_view.camera.update(time_delta)
         self.world_map_view.draw_map()
         self.world_map_view.update_battles(time_delta)
+
+        # Draw circles around units if there is a selected unit type
+        if selected_unit_manager.selected_unit_type is not None:
+            for battle in get_battles():
+                if battle.hex_coords is not None and battle.hex_coords in available_battles:
+                    with use_world(battle.id):
+                        for ent, (pos, unit_type, team, hitbox) in esper.get_components(Position, UnitTypeComponent, Team, Hitbox):
+                            if unit_type.type == selected_unit_manager.selected_unit_type:
+                                radius = (hitbox.width ** 2 + hitbox.height ** 2) ** 0.5
+                                screen_pos = self.world_map_view.camera.world_to_screen(pos.x, pos.y)
+                                color = gc.TEAM1_COLOR if team.type == TeamType.TEAM1 else gc.TEAM2_COLOR
+                                pygame.draw.circle(self.screen, color, screen_pos, radius * self.world_map_view.camera.scale, width=1)
         
         self.manager.update(time_delta)
         self.manager.draw_ui(self.screen)
