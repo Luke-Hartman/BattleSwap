@@ -87,7 +87,7 @@ class WorldMapView:
     
     def _initialize_battle_world(self, battle: Battle) -> None:
         if battle.id in esper.list_worlds():
-            raise ValueError(f"Battle world {battle.id} already exists")
+            esper.delete_world(battle.id)
         with use_world(battle.id):
             esper.add_processor(TransparencyProcessor())
             esper.add_processor(RenderingProcessor(self.screen, self.camera, self.manager))
@@ -253,7 +253,9 @@ class WorldMapView:
         """
         Rebuild the world map view with new battles while preserving camera state.
         
-        :param battles: A list of Battle objects with defined hex_coords.
+        Args:
+            battles: A list of Battle objects with defined hex_coords.
+            cleanup: Whether to clean up existing battle worlds.
         """
         if cleanup:
             self._cleanup()
