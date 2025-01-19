@@ -1,30 +1,23 @@
 """Sandbox scene for experimenting with unit placement and battles."""
-from typing import Optional, List, Tuple
+from typing import Optional, Tuple
 import esper
 import pygame
 import pygame_gui
 import shapely
-from shapely.ops import nearest_points
-from battles import get_battles
 import battles
-from components.animation import AnimationState
 from components.focus import Focus
 from components.position import Position
-from components.range_indicator import RangeIndicator
-from components.sprite_sheet import SpriteSheet
-from components.stats_card import StatsCard
 from components.team import Team, TeamType
 from components.transparent import Transparency
-from components.unit_state import UnitState
 from components.unit_type import UnitType, UnitTypeComponent
 from entities.units import create_unit
 from events import CHANGE_MUSIC, PLAY_SOUND, ChangeMusicEvent, PlaySoundEvent, emit_event
-from hex_grid import axial_to_world, get_hex_vertices
+from hex_grid import axial_to_world
 from progress_manager import progress_manager
 from scenes.scene import Scene
 from game_constants import gc
 from camera import Camera
-from ui_components.barracks_ui import BarracksUI, UnitCount
+from ui_components.barracks_ui import BarracksUI
 from ui_components.feedback_button import FeedbackButton
 from ui_components.return_button import ReturnButton
 from ui_components.start_button import StartButton
@@ -34,7 +27,7 @@ from auto_battle import BattleOutcome, simulate_battle
 from ui_components.tip_box import TipBox
 from voice import play_intro
 from world_map_view import FillState, HexState, WorldMapView
-from scene_utils import draw_grid, get_center_line, get_placement_pos, get_hovered_unit, get_unit_placements, get_legal_placement_area, mouse_over_ui
+from scene_utils import draw_grid, get_center_line, get_placement_pos, get_hovered_unit, get_unit_placements, get_legal_placement_area, has_unsaved_changes, mouse_over_ui
 
 
 class SetupBattleScene(Scene):
@@ -94,6 +87,7 @@ class SetupBattleScene(Scene):
         self.world_map_view = world_map_view
         self.camera = world_map_view.camera
         self.battle_id = battle_id
+        self.battle = battle
         self.sandbox_mode = sandbox_mode
         self.developer_mode = developer_mode
         
@@ -161,6 +155,8 @@ class SetupBattleScene(Scene):
             self.save_button = None
             self.simulate_button = None
             self.results_box = None
+        
+        self.confirmation_dialog: Optional[pygame_gui.windows.UIConfirmationDialog] = None
     
     @property
     def selected_unit_type(self) -> Optional[UnitType]:
@@ -212,6 +208,32 @@ class SetupBattleScene(Scene):
         unit_type = esper.component_for_entity(unit_id, UnitTypeComponent).type
         self.barracks.add_unit(unit_type)
 
+    def show_exit_confirmation(self) -> None:
+        """Show confirmation dialog for exiting with unsaved changes."""
+        self.confirmation_dialog = pygame_gui.windows.UIConfirmationDialog(
+            rect=pygame.Rect((pygame.display.Info().current_w/2 - 150, pygame.display.Info().current_h/2 - 100), (300, 200)),
+            manager=self.manager,
+            window_title="Unsaved Changes",
+            action_long_desc="You have unsaved changes. Are you sure you want to exit?" if not self.sandbox_mode else "Are you sure you want to exit?",
+            action_short_name="Exit",
+            blocking=True
+        )
+
+    def handle_return(self) -> None:
+        """Handle return button press or escape key."""
+        if (
+            not self.sandbox_mode and has_unsaved_changes(self.battle)
+            or self.sandbox_mode and (
+                len(get_unit_placements(TeamType.TEAM1, self.battle.hex_coords)) > 0
+                or len(get_unit_placements(TeamType.TEAM2, self.battle.hex_coords)) > 0
+            )
+        ):
+            self.show_exit_confirmation()
+        else:
+            self.world_map_view.move_camera_above_battle(self.battle_id)
+            self.world_map_view.rebuild(battles=progress_manager.get_battles_including_solutions())
+            pygame.event.post(PreviousSceneEvent().to_event())
+
     def update(self, time_delta: float, events: list[pygame.event.Event]) -> bool:
         """Update the sandbox scene."""
         esper.switch_world(self.battle_id)
@@ -251,6 +273,11 @@ class SetupBattleScene(Scene):
         for event in events:
             if event.type == pygame.QUIT:
                 return False
+
+            if self.handle_confirmation_dialog_keys(event):
+                continue
+            self.handle_escape(event)
+
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     for unit_count in self.barracks.unit_list_items:
@@ -269,9 +296,7 @@ class SetupBattleScene(Scene):
                             existing_battle_id=self.battle_id,
                         )
                     elif event.ui_element == self.return_button:
-                        self.world_map_view.move_camera_above_battle(self.battle_id)
-                        self.world_map_view.rebuild(battles=progress_manager.get_battles_including_solutions())
-                        pygame.event.post(PreviousSceneEvent().to_event())
+                        self.handle_return()
                         return super().update(time_delta, events)
                     elif event.ui_element == self.start_button:
                         pygame.event.post(
@@ -310,6 +335,12 @@ class SetupBattleScene(Scene):
                             self.results_box.set_text('Team 2 Wins')
                         elif outcome == BattleOutcome.TIMEOUT:
                             self.results_box.set_text('Timeout')
+                elif event.user_type == pygame_gui.UI_CONFIRMATION_DIALOG_CONFIRMED:
+                    if self.confirmation_dialog is not None and event.ui_element == self.confirmation_dialog:
+                        self.world_map_view.move_camera_above_battle(self.battle_id)
+                        self.world_map_view.rebuild(battles=progress_manager.get_battles_including_solutions())
+                        pygame.event.post(PreviousSceneEvent().to_event())
+                        return super().update(time_delta, events)
 
             if event.type == pygame.MOUSEBUTTONDOWN and not mouse_over_ui(self.manager):
                 if event.button == pygame.BUTTON_LEFT:

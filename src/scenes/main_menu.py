@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 import pygame
 import pygame_gui
 from camera import Camera
@@ -18,7 +18,7 @@ class MainMenuScene(Scene):
         self.screen = screen
         self.manager = manager
         self.developer_mode = developer_mode
-        self.confirmation_dialog: pygame_gui.elements.UIConfirmationDialog | None = None
+        self.confirmation_dialog: Optional[pygame_gui.windows.UIConfirmationDialog] = None
         self.create_buttons(developer_mode)
 
     def create_buttons(self, developer_mode: bool) -> None:
@@ -122,11 +122,35 @@ class MainMenuScene(Scene):
         )
         y += button_height + button_spacing
 
+    def show_quit_confirmation(self) -> None:
+        """Show confirmation dialog for quitting the game."""
+        self.confirmation_dialog = pygame_gui.windows.UIConfirmationDialog(
+            rect=pygame.Rect((pygame.display.Info().current_w/2 - 150, pygame.display.Info().current_h/2 - 100), (300, 200)),
+            manager=self.manager,
+            window_title="Quit Game",
+            action_long_desc="Are you sure you want to quit the game?",
+            action_short_name="Quit",
+            blocking=True
+        )
+
+    def handle_quit(self) -> bool:
+        """Handle quit request from escape key or exit button."""
+        if self.confirmation_dialog is None:
+            self.show_quit_confirmation()
+            return True
+        return False
+
     def update(self, time_delta: float, events: List[pygame.event.Event]) -> bool:
         """Update the main menu scene."""
         for event in events:
             if event.type == pygame.QUIT:
                 return False
+            
+            if self.handle_confirmation_dialog_keys(event):
+                continue
+
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                return self.handle_quit()
                 
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
@@ -155,9 +179,9 @@ class MainMenuScene(Scene):
 
                     elif event.ui_element == self.developer_button:
                         pygame.event.post(DeveloperToolsSceneEvent().to_event())
-                    
+
                     elif event.ui_element == self.exit_button:
-                        return False
+                        return self.handle_quit()
                     
                     elif event.ui_element == self.reset_button:
                         self.confirmation_dialog = pygame_gui.windows.UIConfirmationDialog(
@@ -170,9 +194,13 @@ class MainMenuScene(Scene):
                         )
 
                 elif event.user_type == pygame_gui.UI_CONFIRMATION_DIALOG_CONFIRMED:
-                    if self.confirmation_dialog is not None and event.ui_element == self.confirmation_dialog:
-                        reset_progress()
-                        self.confirmation_dialog = None
+                    if self.confirmation_dialog is not None:
+                        if event.ui_element == self.confirmation_dialog:
+                            if self.confirmation_dialog.title_bar.text == "Reset Progress":
+                                reset_progress()
+                            elif self.confirmation_dialog.title_bar.text == "Quit Game":
+                                return False
+                            self.confirmation_dialog = None
 
             self.manager.process_events(event)
 

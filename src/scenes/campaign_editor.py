@@ -147,69 +147,71 @@ class CampaignEditorScene(Scene):
             if event.type == pygame.QUIT:
                 return False
             
-            if event.type == pygame_gui.UI_BUTTON_PRESSED:
-                if event.ui_element == self.return_button:
-                    pygame.event.post(PreviousSceneEvent().to_event())
-                elif event.ui_element == self.context_buttons.get("sandbox"):
-                    # Open the battle in sandbox mode
-                    battle = self.world_map_view.get_battle_from_hex(self.selected_hex)
-                    if battle:
-                        pygame.event.post(
-                            SetupBattleSceneEvent(
-                                world_map_view=self.world_map_view,
-                                battle_id=battle.id,
-                                sandbox_mode=True,
-                                developer_mode=True,
-                            ).to_event()
-                        )
-                elif event.ui_element == self.context_buttons.get("create"):
-                    # Create a new battle at the selected hex
-                    self.save_battle_dialog = SaveBattleDialog(
-                        manager=self.manager,
-                        ally_placements=None,
-                        enemy_placements=[],  # Start with empty placements
-                        existing_battle_id=None,
-                        hex_coords=self.selected_hex,
-                        show_test_button=False  # Only show save battle button
-                    )
-                elif event.ui_element == self.context_buttons.get("edit"):
-                    # Edit the selected battle's name and tip
-                    battle = self.world_map_view.get_battle_from_hex(self.selected_hex)
-                    if battle:
+            self.handle_escape(event)
+            
+            if event.type == pygame.USEREVENT:
+                if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+                    if event.ui_element == self.return_button:
+                        pygame.event.post(PreviousSceneEvent().to_event())
+                    elif event.ui_element == self.context_buttons.get("sandbox"):
+                        # Open the battle in sandbox mode
+                        battle = self.world_map_view.get_battle_from_hex(self.selected_hex)
+                        if battle:
+                            pygame.event.post(
+                                SetupBattleSceneEvent(
+                                    world_map_view=self.world_map_view,
+                                    battle_id=battle.id,
+                                    sandbox_mode=True,
+                                    developer_mode=True,
+                                ).to_event()
+                            )
+                    elif event.ui_element == self.context_buttons.get("create"):
+                        # Create a new battle at the selected hex
                         self.save_battle_dialog = SaveBattleDialog(
                             manager=self.manager,
-                            ally_placements=battle.allies,
-                            enemy_placements=battle.enemies,
-                            existing_battle_id=battle.id,
-                            hex_coords=battle.hex_coords,
+                            ally_placements=None,
+                            enemy_placements=[],  # Start with empty placements
+                            existing_battle_id=None,
+                            hex_coords=self.selected_hex,
                             show_test_button=False  # Only show save battle button
                         )
-                elif event.ui_element == self.context_buttons.get("delete"):
-                    # Delete the selected battle
-                    battle = self.world_map_view.get_battle_from_hex(self.selected_hex)
-                    if battle:
-                        battles.delete_battle(battle.id)
-                        self.selected_hex = None
-                        self.world_map_view.rebuild(get_battles())
-                        self.create_context_buttons()
-            # Handle save battle dialog events
-            if hasattr(self, 'save_battle_dialog'):
-                if event.type == pygame_gui.UI_BUTTON_PRESSED:
-                    if event.ui_element == self.save_battle_dialog.save_battle_button:
-                        self.save_battle_dialog.save_battle(is_test=False)
-                        self.save_battle_dialog.kill()
-                        delattr(self, 'save_battle_dialog')
-                        self.world_map_view.rebuild(get_battles())
-                        self.create_context_buttons()
-                    elif event.ui_element == self.save_battle_dialog.save_test_button:
-                        self.save_battle_dialog.save_battle(is_test=True)
-                        self.save_battle_dialog.kill()
-                        delattr(self, 'save_battle_dialog')
-                        self.world_map_view.rebuild(get_battles())
-                        self.create_context_buttons()
-                    elif event.ui_element == self.save_battle_dialog.cancel_button:
-                        self.save_battle_dialog.kill()
-                        delattr(self, 'save_battle_dialog')
+                    elif event.ui_element == self.context_buttons.get("edit"):
+                        # Edit the selected battle's name and tip
+                        battle = self.world_map_view.get_battle_from_hex(self.selected_hex)
+                        if battle:
+                            self.save_battle_dialog = SaveBattleDialog(
+                                manager=self.manager,
+                                ally_placements=battle.allies,
+                                enemy_placements=battle.enemies,
+                                existing_battle_id=battle.id,
+                                hex_coords=battle.hex_coords,
+                                show_test_button=False  # Only show save battle button
+                            )
+                    elif event.ui_element == self.context_buttons.get("delete"):
+                        # Delete the selected battle
+                        battle = self.world_map_view.get_battle_from_hex(self.selected_hex)
+                        if battle:
+                            battles.delete_battle(battle.id)
+                            self.selected_hex = None
+                            self.world_map_view.rebuild(get_battles())
+                            self.create_context_buttons()
+                    # Handle save battle dialog events
+                    elif hasattr(self, 'save_battle_dialog'):
+                        if event.ui_element == self.save_battle_dialog.save_battle_button:
+                            self.save_battle_dialog.save_battle(is_test=False)
+                            self.save_battle_dialog.kill()
+                            delattr(self, 'save_battle_dialog')
+                            self.world_map_view.rebuild(get_battles())
+                            self.create_context_buttons()
+                        elif event.ui_element == self.save_battle_dialog.save_test_button:
+                            self.save_battle_dialog.save_battle(is_test=True)
+                            self.save_battle_dialog.kill()
+                            delattr(self, 'save_battle_dialog')
+                            self.world_map_view.rebuild(get_battles())
+                            self.create_context_buttons()
+                        elif event.ui_element == self.save_battle_dialog.cancel_button:
+                            self.save_battle_dialog.kill()
+                            delattr(self, 'save_battle_dialog')
 
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_LEFT:
                 if not self.manager.get_hovering_any_element():
@@ -258,10 +260,10 @@ class CampaignEditorScene(Scene):
                         self.world_map_view.get_battle_from_hex(hovered_hex) is None
                     ):
                         self.move_target_hex = hovered_hex
-            # Only process camera events if no dialog is focused
-            if not hasattr(self, 'save_battle_dialog'):
-                self.world_map_view.camera.process_event(event)
-            self.manager.process_events(event)
+                # Only process camera events if no dialog is focused
+                if not hasattr(self, 'save_battle_dialog'):
+                    self.world_map_view.camera.process_event(event)
+                self.manager.process_events(event)
 
         states = defaultdict(HexState)
         if self.selected_hex is not None:

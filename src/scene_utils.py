@@ -7,6 +7,7 @@ import pygame
 import pygame.gfxdraw
 import pygame_gui
 import shapely
+from battles import Battle
 from camera import Camera
 from components.position import Position
 from components.sprite_sheet import SpriteSheet
@@ -15,6 +16,7 @@ from game_constants import gc
 from hex_grid import get_hex_vertices, axial_to_world
 from components.team import Team, TeamType
 from shapely.ops import nearest_points
+from progress_manager import progress_manager
 
 LARGE_NUMBER = 10000
 
@@ -325,3 +327,20 @@ def get_unit_placements(team_type: TeamType, hex_coords: Tuple[int, int]) -> Lis
 
 def mouse_over_ui(manager: pygame_gui.UIManager) -> bool:
     return manager.get_hovering_any_element()
+
+def has_unsaved_changes(battle: Battle) -> bool:
+    """Check if current unit placements differ from saved solution.
+    
+    Args:
+        hex_coords: The hex coordinates of the battle to check
+        
+    Returns:
+        True if there are unsaved changes, False otherwise
+    """
+    with use_world(battle.id):
+        saved_solution = progress_manager.solutions.get(battle.hex_coords)
+        current_set = set(battle.allies) if battle.allies is not None else set()
+        if saved_solution is None:
+            return len(current_set) > 0
+        saved_set = set(saved_solution.unit_placements)
+        return current_set != saved_set

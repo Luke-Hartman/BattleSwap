@@ -104,22 +104,25 @@ class CampaignScene(Scene):
             if event.type == pygame.QUIT:
                 return False
             
-            if event.type == pygame_gui.UI_BUTTON_PRESSED:
-                if event.ui_element == self.return_button:
-                    pygame.event.post(PreviousSceneEvent().to_event())
-                elif event.ui_element in (
-                    self.context_buttons.get("battle"),
-                    self.context_buttons.get("improve")
-                ):
-                    battle = self.world_map_view.get_battle_from_hex(self.selected_battle_hex)
-                    pygame.event.post(
-                        SetupBattleSceneEvent(
-                            world_map_view=self.world_map_view,
-                            battle_id=battle.id,
-                            sandbox_mode=False,
-                            developer_mode=False,
-                        ).to_event()
-                    )
+            self.handle_escape(event)
+
+            if event.type == pygame.USEREVENT:
+                if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+                    if event.ui_element == self.return_button:
+                        pygame.event.post(PreviousSceneEvent().to_event())
+                    elif event.ui_element in (
+                        self.context_buttons.get("battle"),
+                        self.context_buttons.get("improve")
+                    ):
+                        battle = self.world_map_view.get_battle_from_hex(self.selected_battle_hex)
+                        pygame.event.post(
+                            SetupBattleSceneEvent(
+                                world_map_view=self.world_map_view,
+                                battle_id=battle.id,
+                                sandbox_mode=False,
+                                developer_mode=False,
+                            ).to_event()
+                        )
 
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_LEFT:
                 # Only process clicks if not over UI elements

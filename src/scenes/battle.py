@@ -4,7 +4,7 @@ import pygame
 import pygame_gui
 from auto_battle import AutoBattle, BattleOutcome
 from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event
-from scene_utils import get_unit_placements, use_world
+from scene_utils import use_world, has_unsaved_changes
 from scenes.scene import Scene
 from scenes.events import PreviousSceneEvent
 from world_map_view import WorldMapView
@@ -48,6 +48,7 @@ class BattleScene(Scene):
         self.defeat_panel = None
         self.outcome_time = None
         self.panel_delay = 0.25  # Delay in seconds before showing panel
+        self.confirmation_dialog = None
 
         self.world_map_view.rebuild(self.world_map_view.battles.values())
 
@@ -57,13 +58,19 @@ class BattleScene(Scene):
                 hex_coords=self.battle.hex_coords
             )
 
+    def handle_return(self) -> None:
+        """Handle return button press or escape key."""
+        self.world_map_view.move_camera_above_battle(self.battle_id)
+        self.world_map_view.rebuild(self.world_map_view.battles.values())
+        pygame.event.post(PreviousSceneEvent().to_event())
+
     def create_victory_panel(self) -> None:
         """Create the victory panel with large text and buttons."""
-        panel_width = 400
-        panel_height = 200  # Reduced height since buttons are now side by side
+        panel_width = 230
+        panel_height = 200
         screen_width = pygame.display.Info().current_w
         screen_height = pygame.display.Info().current_h
-        
+
         self.victory_panel = pygame_gui.elements.UIPanel(
             relative_rect=pygame.Rect(
                 ((screen_width - panel_width) // 2, (screen_height - panel_height) // 2),
@@ -76,7 +83,7 @@ class BattleScene(Scene):
         pygame_gui.elements.UILabel(
             relative_rect=pygame.Rect(
                 (0, 20),
-                (panel_width, 100)
+                (panel_width, 60)
             ),
             text="Victory!",
             manager=self.manager,
@@ -87,40 +94,62 @@ class BattleScene(Scene):
             )
         )
 
-        button_width = 160  # Slightly narrower to fit side by side
+        button_width = 100
         button_height = 40
-        button_spacing = 20
-        start_y = 140
+        button_spacing = 10
+        start_y = 100
 
-        # Calculate x positions for the buttons
+        # Calculate positions for the wider save button
+        wide_button_width = button_width * 2 + button_spacing
+        save_button_x = (panel_width - wide_button_width) // 2
+
+        # Save button (top, wider)
+        has_changes = has_unsaved_changes(self.battle)
+        save_text = "Save changes" if has_changes else "No changes"
+        self.save_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect(
+                (save_button_x, start_y),
+                (wide_button_width, button_height)
+            ),
+            text=save_text,
+            manager=self.manager,
+            container=self.victory_panel
+        )
+        if not has_changes:
+            self.save_button.disable()
+
+        # Calculate x positions for the two bottom buttons
+        start_y += button_height + button_spacing
         left_button_x = (panel_width - (2 * button_width + button_spacing)) // 2
 
-        # Edit button (left)
-        self.edit_button = pygame_gui.elements.UIButton(
+        # Improve button (bottom left)
+        self.improve_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(
                 (left_button_x, start_y),
                 (button_width, button_height)
             ),
-            text="Edit Solution",
+            text="Improve",
             manager=self.manager,
             container=self.victory_panel
         )
 
-        # Save and continue button (right)
-        self.save_continue_button = pygame_gui.elements.UIButton(
+        # Continue button (bottom right)
+        self.continue_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(
                 (left_button_x + button_width + button_spacing, start_y),
                 (button_width, button_height)
             ),
-            text="Save and Continue",
+            text="Continue",
             manager=self.manager,
             container=self.victory_panel
         )
+        if self.battle.hex_coords not in progress_manager.solutions:
+            self.continue_button.disable()
 
     def create_defeat_panel(self) -> None:
-        """Create the defeat panel with large text and button."""
-        panel_width = 400
-        panel_height = 200
+        """Create the defeat panel with large text and buttons."""
+        panel_width = 250
+        panel_height = 150
         screen_width = pygame.display.Info().current_w
         screen_height = pygame.display.Info().current_h
         
@@ -136,7 +165,7 @@ class BattleScene(Scene):
         pygame_gui.elements.UILabel(
             relative_rect=pygame.Rect(
                 (0, 20),
-                (panel_width, 100)
+                (panel_width, 60)
             ),
             text="Defeated!",
             manager=self.manager,
@@ -147,12 +176,19 @@ class BattleScene(Scene):
             )
         )
 
-        # Try again button
-        button_width = 200
+        button_width = 100
         button_height = 40
+        button_spacing = 20
+        start_y = 100
+
+        # Calculate x positions for the two buttons
+        total_width = 2 * button_width + button_spacing
+        left_button_x = (panel_width - total_width) // 2
+
+        # Try Again button (left)
         self.try_again_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(
-                ((panel_width - button_width) // 2, 140),
+                (left_button_x, start_y),
                 (button_width, button_height)
             ),
             text="Try Again",
@@ -160,30 +196,74 @@ class BattleScene(Scene):
             container=self.defeat_panel
         )
 
+        # Leave button (right)
+        self.leave_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect(
+                (left_button_x + button_width + button_spacing, start_y),
+                (button_width, button_height)
+            ),
+            text="Leave",
+            manager=self.manager,
+            container=self.defeat_panel
+        )
+
+    def show_continue_confirmation(self) -> None:
+        """Show confirmation dialog for continuing with unsaved changes."""
+        self.confirmation_dialog = pygame_gui.windows.UIConfirmationDialog(
+            rect=pygame.Rect((pygame.display.Info().current_w/2 - 150, pygame.display.Info().current_h/2 - 100), (300, 200)),
+            manager=self.manager,
+            window_title="Confirmation",
+            action_long_desc="You have unsaved changes. Are you sure you want to continue?",
+            action_short_name="Continue",
+            blocking=True
+        )
+
     def update(self, time_delta: float, events: list[pygame.event.Event]) -> bool:
         """Update the battle scene."""
         for event in events:
             if event.type == pygame.QUIT:
                 return False
+            
+            if self.handle_confirmation_dialog_keys(event):
+                continue
+
+            self.handle_escape(event)
+                
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.return_button:
+                        self.handle_return()
+                        return super().update(time_delta, events)
+                    elif hasattr(self, 'improve_button') and event.ui_element == self.improve_button:
                         self.world_map_view.rebuild(self.world_map_view.battles.values())
                         pygame.event.post(PreviousSceneEvent().to_event())
                         return super().update(time_delta, events)
-                    elif hasattr(self, 'save_continue_button') and event.ui_element == self.save_continue_button:
+                    elif hasattr(self, 'save_button') and event.ui_element == self.save_button:
                         progress_manager.save_solution(Solution(hex_coords=self.battle.hex_coords, unit_placements=self.battle.allies))
-                        self.world_map_view.rebuild(progress_manager.get_battles_including_solutions())
-                        self.world_map_view.move_camera_above_battle(self.battle_id)
-                        pygame.event.post(PreviousSceneEvent(n=2).to_event())
-                        return super().update(time_delta, events)
-                    elif hasattr(self, 'edit_button') and event.ui_element == self.edit_button:
-                        self.world_map_view.rebuild(self.world_map_view.battles.values())
-                        pygame.event.post(PreviousSceneEvent().to_event())
-                        return super().update(time_delta, events)
+                        # Recreate the victory panel to update the save button state
+                        self.victory_panel.kill()
+                        self.create_victory_panel()
+                    elif hasattr(self, 'continue_button') and event.ui_element == self.continue_button:
+                        if has_unsaved_changes(self.battle):
+                            self.show_continue_confirmation()
+                        else:
+                            self.world_map_view.rebuild(progress_manager.get_battles_including_solutions())
+                            self.world_map_view.move_camera_above_battle(self.battle_id)
+                            pygame.event.post(PreviousSceneEvent(n=2).to_event())
+                            return super().update(time_delta, events)
                     elif hasattr(self, 'try_again_button') and event.ui_element == self.try_again_button:
                         self.world_map_view.rebuild(self.world_map_view.battles.values())
                         pygame.event.post(PreviousSceneEvent().to_event())
+                        return super().update(time_delta, events)
+                    elif hasattr(self, 'leave_button') and event.ui_element == self.leave_button:
+                        self.handle_return()
+                        return super().update(time_delta, events)
+
+                elif event.user_type == pygame_gui.UI_CONFIRMATION_DIALOG_CONFIRMED:
+                    if self.confirmation_dialog is not None and event.ui_element == self.confirmation_dialog:
+                        self.world_map_view.rebuild(progress_manager.get_battles_including_solutions())
+                        self.world_map_view.move_camera_above_battle(self.battle_id)
+                        pygame.event.post(PreviousSceneEvent(n=2).to_event())
                         return super().update(time_delta, events)
 
             self.world_map_view.camera.process_event(event)

@@ -65,15 +65,8 @@ while running:
     dt = clock.tick(time_manager.max_fps) / 1000
     events = pygame.event.get()
 
-    # Escape key quits the game
-    for event in events:
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                running = False
-    if not running:
-        break
     running = scene_manager.update(dt, events)
-
+    
     # # Render FPS counter
     # fps_text = fps_font.render(f'FPS: {int(clock.get_fps())}', True, (255, 255, 255))
     # fps_rect = fps_text.get_rect(topright=(screen.get_width() - 10, 10))

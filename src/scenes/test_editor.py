@@ -80,7 +80,7 @@ class TestEditorScene(Scene):
         )
 
         # Top row buttons
-        pygame_gui.elements.UIButton(
+        self.return_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((padding, padding), (100, button_height)),
             text="Return",
             manager=self.manager,
@@ -299,9 +299,11 @@ class TestEditorScene(Scene):
             if event.type == pygame.QUIT:
                 return False
             
+            self.handle_escape(event)
+            
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
-                    if event.ui_element.text == "Return":
+                    if event.ui_element == self.return_button:
                         pygame.event.post(PreviousSceneEvent().to_event())
                     elif event.ui_element.text == "New Sandbox":
                         pygame.event.post(
