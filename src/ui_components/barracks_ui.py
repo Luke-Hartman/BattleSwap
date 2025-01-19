@@ -5,9 +5,11 @@ import pygame_gui
 from pygame_gui.core import ObjectID
 from pygame_gui.elements import UIPanel, UIScrollingContainer, UIButton, UILabel
 
+import battles
 from components.unit_type import UnitType
 from entities.units import unit_theme_ids, unit_values
 from selected_unit_manager import selected_unit_manager
+from progress_manager import progress_manager
 
 class UnitCount(UIPanel):
     """A custom UI button that displays a unit icon and its count."""
@@ -91,6 +93,18 @@ class BarracksUI(UIPanel):
         # In sandbox mode, make all unit types available
         if sandbox_mode:
             self._units = {unit_type: float('inf') for unit_type in UnitType}
+        else:
+            # Add any unit types that have been encountered in solved battles with 0 count
+            encountered_units = set(starting_units.keys())
+            for hex_coords in progress_manager.solutions:
+                battle = battles.get_battle_coords(hex_coords)
+                for enemy_type, _ in battle.enemies:
+                    encountered_units.add(enemy_type)
+
+            # Add encountered units with 0 count if not already present
+            for unit_type in encountered_units:
+                if unit_type not in self._units:
+                    self._units[unit_type] = 0
         
         side_padding = 75
         panel_width = pygame.display.Info().current_w - 2 * side_padding
@@ -121,7 +135,8 @@ class BarracksUI(UIPanel):
         side_padding = 75
         panel_width = pygame.display.Info().current_w - 2 * side_padding
         
-        visible_unit_count = sum(1 for _, count in self._units.items() if count > 0)
+        # Count all units, including those with 0 count
+        visible_unit_count = len(self._units)
         total_width = visible_unit_count * (UnitCount.size + padding // 2) - padding // 2 if visible_unit_count > 0 else 0
         needs_scrollbar = total_width > panel_width - 2 * padding
         panel_height = 110 if needs_scrollbar else 85
@@ -155,19 +170,18 @@ class BarracksUI(UIPanel):
             key=lambda x: x[0].value
         )
         for unit_type, count in unit_order:
-            if count > 0:
-                item = UnitCount(
-                    x_pos=x_position,
-                    y_pos=y_offset,
-                    unit_type=unit_type,
-                    count=count,
-                    interactive=self.interactive,
-                    manager=self.manager,
-                    container=self.unit_container,
-                    infinite=self.sandbox_mode
-                )
-                self.unit_list_items.append(item)
-                x_position += item.size + padding // 2
+            item = UnitCount(
+                x_pos=x_position,
+                y_pos=y_offset,
+                unit_type=unit_type,
+                count=count,
+                interactive=self.interactive and count > 0,
+                manager=self.manager,
+                container=self.unit_container,
+                infinite=self.sandbox_mode
+            )
+            self.unit_list_items.append(item)
+            x_position += item.size + padding // 2
 
     def _rebuild(self) -> None:
         """Rebuild the entire UI when structure needs to change."""
