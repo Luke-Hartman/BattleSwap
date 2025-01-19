@@ -11,7 +11,8 @@ from entities.units import load_sprite_sheets
 from handlers.combat_handler import CombatHandler
 from handlers.sound_handler import SoundHandler
 from handlers.state_machine import StateMachine
-from scenes.scene_manager import SceneManager
+from scenes.scene_manager import scene_manager
+from selected_unit_manager import selected_unit_manager
 from time_manager import time_manager
 from visuals import load_visual_sheets
 from game_constants import gc
@@ -48,19 +49,17 @@ combat_handler = CombatHandler()
 state_machine = StateMachine()
 sound_handler = SoundHandler()
 
-# Main game loop
-running = True
-clock = pygame.time.Clock()
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--no_dev", action="store_true", default=False)
 args = parser.parse_args()
 
-scene_manager = SceneManager(
-    screen,
-    developer_mode=not args.no_dev
-)
+scene_manager.initialize(screen, developer_mode=not args.no_dev)
+selected_unit_manager.initialize(scene_manager.manager)
 
+# Main game loop
+running = True
+clock = pygame.time.Clock()
 while running:
     dt = clock.tick(time_manager.max_fps) / 1000
     events = pygame.event.get()

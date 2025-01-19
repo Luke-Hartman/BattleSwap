@@ -1,3 +1,4 @@
+"""Scene manager module for handling scene transitions."""
 import esper
 import pygame
 import pygame_gui
@@ -71,23 +72,30 @@ class SceneState:
 class SceneManager:
     """Handles transitions between scenes and catches events for changing scenes."""
 
-    def __init__(
-            self, 
-            screen: pygame.Surface,
-            developer_mode: bool = False,
-    ):
+    def __init__(self):
+        """Initialize the scene manager without screen/UI dependencies."""
+        self.screen: Optional[pygame.Surface] = None
+        self.manager: Optional[pygame_gui.UIManager] = None
+        self.developer_mode = False
+        self.current_scene: Optional[Any] = None
+        self.scene_stack: List[SceneState] = []
+
+    def initialize(self, screen: pygame.Surface, developer_mode: bool = False) -> None:
+        """Initialize with screen and UI dependencies."""
         self.screen = screen
         theme_path = str(get_resource_path('data/theme.json'))
         self.manager = pygame_gui.UIManager(
             (pygame.display.Info().current_w, pygame.display.Info().current_h), 
             theme_path
         )
-
-        self.current_scene = MainMenuScene(screen, self.manager, developer_mode)
-        self.scene_stack: List[SceneState] = []
+        self.developer_mode = developer_mode
+        self.current_scene = MainMenuScene(screen, self.manager, self.developer_mode)
 
     def cleanup(self, add_to_stack: bool = True) -> None:
         """Clean up the current scene and save its state."""
+        if not self.current_scene:
+            return
+
         if add_to_stack:
             if isinstance(self.current_scene, MainMenuScene):
                 self.scene_stack.append(SceneState(
@@ -95,7 +103,7 @@ class SceneManager:
                     params={
                         "screen": self.screen,
                         "manager": self.manager,
-                        "developer_mode": self.current_scene.developer_mode,
+                        "developer_mode": self.developer_mode,
                     }
                 ))
             elif isinstance(self.current_scene, TestEditorScene):
@@ -139,11 +147,15 @@ class SceneManager:
                 ))
 
         # Clean up UI and ECS
-        self.manager.clear_and_reset()
+        if self.manager:
+            self.manager.clear_and_reset()
         emit_event(STOP_ALL_SOUNDS, event=StopAllSoundsEvent())
             
     def update(self, time_delta: float, events: list[pygame.event.Event]) -> bool:
         """Update the current scene and handle scene transitions."""
+        if not self.current_scene:
+            return False
+
         for event in events:
             if event.type == PREVIOUS_SCENE_EVENT:
                 validated_event = PreviousSceneEvent.model_validate(event.dict)
@@ -223,3 +235,6 @@ class SceneManager:
                 )
         
         return self.current_scene.update(time_delta, events)
+
+# Create the singleton instance
+scene_manager = SceneManager()

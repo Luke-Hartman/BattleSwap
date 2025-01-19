@@ -3,11 +3,11 @@ from typing import Dict, List, Optional
 import pygame
 import pygame_gui
 from pygame_gui.core import ObjectID
-from pygame_gui.elements import UIPanel, UIScrollingContainer, UIButton, UILabel, UITextBox
+from pygame_gui.elements import UIPanel, UIScrollingContainer, UIButton, UILabel
 
 from components.unit_type import UnitType
 from entities.units import unit_theme_ids, unit_values
-from stats_cards import get_stats_card_text
+from selected_unit_manager import selected_unit_manager
 
 class UnitCount(UIPanel):
     """A custom UI button that displays a unit icon and its count."""
@@ -28,7 +28,6 @@ class UnitCount(UIPanel):
         self.unit_type = unit_type
         self.infinite = infinite
         self.manager = manager
-        self.stats_card_ui = None
         super().__init__(
             relative_rect=pygame.Rect((x_pos, y_pos), (self.size, self.size)),
             manager=manager,
@@ -56,38 +55,14 @@ class UnitCount(UIPanel):
     def handle_event(self, event: pygame.event.Event) -> bool:
         """Handle UI events for this unit count."""
         if event.type == pygame_gui.UI_BUTTON_ON_HOVERED and event.ui_element == self.button:
-            self._show_stats_card()
+            selected_unit_manager.selected_unit_type = self.unit_type
             return True
         elif event.type == pygame_gui.UI_BUTTON_ON_UNHOVERED and event.ui_element == self.button:
-            self._hide_stats_card()
+            selected_unit_manager.selected_unit_type = None
             return True
         return False
 
-    def _show_stats_card(self) -> None:
-        """Show the stats card for this unit."""
-        text = "\n".join(get_stats_card_text(self.unit_type))
-        self.stats_card_ui = UITextBox(
-            relative_rect=pygame.Rect(0, 0, 300, -1),
-            html_text=text,
-            wrap_to_height=True,
-            manager=self.manager
-        )
-        self.stats_card_ui.rect.midright = (
-            pygame.display.get_surface().get_width() - 10,
-            pygame.display.get_surface().get_height()/2
-        )
 
-    def _hide_stats_card(self) -> None:
-        """Hide the stats card if it exists."""
-        if self.stats_card_ui is not None:
-            self.stats_card_ui.kill()
-            self.stats_card_ui = None
-
-    def kill(self):
-        """Clean up the unit count UI elements."""
-        if self.stats_card_ui is not None:
-            self.stats_card_ui.kill()
-        super().kill()
 
 class BarracksUI(UIPanel):
     """UI component for managing available units in the barracks."""

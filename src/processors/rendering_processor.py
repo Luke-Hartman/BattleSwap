@@ -17,7 +17,6 @@ from components.hitbox import Hitbox
 from components.position import Position
 from components.range_indicator import RangeIndicator
 from components.sprite_sheet import SpriteSheet
-from components.stats_card import StatsCard
 from components.team import Team, TeamType
 from components.health import Health
 from components.unit_state import UnitState, State
@@ -34,7 +33,6 @@ class RenderingProcessor(esper.Processor):
         self.screen = screen
         self.camera = camera
         self.manager = manager
-        self.stats_card_ui = None
 
     def _get_rect_for_circle(self, center_x: float, center_y: float, radius: float) -> tuple[float, float, float, float]:
         """
@@ -112,7 +110,6 @@ class RenderingProcessor(esper.Processor):
                     outline_color=(200, 200, 200, 120)
                 )
 
-
         # Get all entities with necessary components
         entities = esper.get_components(Position, SpriteSheet)
 
@@ -172,20 +169,6 @@ class RenderingProcessor(esper.Processor):
                 # )
                 if unit_state.state != State.DEAD and health.current < health.maximum:
                     self.draw_health_bar(pos, health, team, hitbox)
-        
-        # Draw stats card on focused units
-        if self.stats_card_ui is not None:
-            self.stats_card_ui.kill()
-        for ent, (stats_card, focus) in esper.get_components(StatsCard, Focus):
-            text = "\n".join(stats_card.text)
-            # Use Pygame GUI to draw the text in the bottom right corner of the screen, above the barracks
-            self.stats_card_ui = pygame_gui.elements.UITextBox(
-                relative_rect=pygame.Rect(0, 0, 300, -1),
-                html_text=text,
-                wrap_to_height=True,
-                manager=self.manager
-            )
-            self.stats_card_ui.rect.midright = (self.screen.get_width() - 10, self.screen.get_height()/2)
 
         def draw_dashed_line(surface, color, start_pos, end_pos, width=1, dash_length=10, gap_length=5, t=0):
             start = pygame.Vector2(start_pos)
@@ -281,7 +264,7 @@ class RenderingProcessor(esper.Processor):
                         end_y=target_screen_pos[1],
                         color=gc.TEAM1_COLOR if team.type == TeamType.TEAM1 else gc.TEAM2_COLOR
                     )
-
+        
         # Clear focus on all units
         for ent, (focus,) in esper.get_components(Focus):
             esper.remove_component(ent, Focus)

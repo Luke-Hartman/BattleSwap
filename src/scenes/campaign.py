@@ -10,7 +10,6 @@ from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event
 from progress_manager import progress_manager
 from scenes.events import PreviousSceneEvent, SetupBattleSceneEvent
 from scenes.scene import Scene
-from camera import Camera
 from ui_components.barracks_ui import BarracksUI
 from ui_components.return_button import ReturnButton
 from ui_components.feedback_button import FeedbackButton

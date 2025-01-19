@@ -11,7 +11,7 @@ from auto_battle import AutoBattle
 from battles import Battle
 from components.position import Position
 from components.team import Team, TeamType
-from components.unit_type import UnitType
+from components.unit_type import UnitType, UnitTypeComponent
 from entities.units import create_unit
 from processors.animation_processor import AnimationProcessor
 from processors.orientation_processor import OrientationProcessor
@@ -33,6 +33,7 @@ from scene_utils import draw_polygon, use_world, get_hovered_unit
 from events import PLAY_SOUND, PlaySoundEvent, emit_event
 from time_manager import time_manager
 from components.focus import Focus
+from selected_unit_manager import selected_unit_manager
 
 
 class FillState(Enum):
@@ -125,6 +126,10 @@ class WorldMapView:
                 hovered_unit = get_hovered_unit(self.camera)
                 if hovered_unit is not None:
                     esper.add_component(hovered_unit, Focus())
+                    unit_type = esper.component_for_entity(hovered_unit, UnitTypeComponent).type
+                    selected_unit_manager.selected_unit_type = unit_type
+                else:
+                    selected_unit_manager.selected_unit_type = None
 
     # ------------------------------
     # Public API
