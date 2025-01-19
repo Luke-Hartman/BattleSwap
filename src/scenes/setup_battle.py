@@ -181,7 +181,7 @@ class SetupBattleScene(Scene):
             y=0,
             unit_type=value,
             team=placement_team,
-       )
+        )
         esper.remove_component(self.selected_partial_unit, UnitTypeComponent)
         esper.add_component(self.selected_partial_unit, Transparency(alpha=128))
     
@@ -266,6 +266,7 @@ class SetupBattleScene(Scene):
                 self.set_selected_unit_type(self.selected_unit_type, placement_team)
             position = esper.component_for_entity(self.selected_partial_unit, Position)
             position.x, position.y = placement_pos
+            esper.add_component(self.selected_partial_unit, Focus())
 
         for event in events:
             if event.type == pygame.QUIT:
