@@ -249,7 +249,8 @@ class WorldMapView:
     def _cleanup(self) -> None:
         esper.switch_world(self.default_world)
         for battle in self.battles.values():
-            esper.delete_world(battle.id)
+            if battle.id in esper.list_worlds():
+                esper.delete_world(battle.id)
 
     def __del__(self) -> None:
         self._cleanup()
