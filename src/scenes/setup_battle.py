@@ -258,17 +258,14 @@ class SetupBattleScene(Scene):
         )
         placement_team = TeamType.TEAM1 if placement_pos[0] < world_x else TeamType.TEAM2
 
-        # Update range indicator and stats card for hovered unit
+        # Update preview for selected unit
         if self.selected_partial_unit is not None:
             team = esper.component_for_entity(self.selected_partial_unit, Team)
             if team.type != placement_team:
                 # If the partial unit is no longer on the side it was created on, recreate it
                 self.set_selected_unit_type(self.selected_unit_type, placement_team)
-            esper.add_component(self.selected_partial_unit, Focus())
             position = esper.component_for_entity(self.selected_partial_unit, Position)
             position.x, position.y = placement_pos
-        elif hovered_unit is not None:
-            esper.add_component(hovered_unit, Focus())
 
         for event in events:
             if event.type == pygame.QUIT:
@@ -276,6 +273,7 @@ class SetupBattleScene(Scene):
 
             if self.handle_confirmation_dialog_keys(event):
                 continue
+
             self.handle_escape(event)
 
             if event.type == pygame.USEREVENT:

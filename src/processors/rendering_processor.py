@@ -238,8 +238,8 @@ class RenderingProcessor(esper.Processor):
             shift = perp * gc.TARGET_PREVIEW_SHIFT
             
             # Calculate arrow body and head positions
-            arrow_body = start + direction * gc.TARGET_PREVIEW_GAP_DISTANCE + shift
-            arrow_head = start + direction * (distance - gc.TARGET_PREVIEW_GAP_DISTANCE) + shift
+            arrow_body = start + direction * gc.TARGET_PREVIEW_GAP_DISTANCE * self.camera.scale + shift
+            arrow_head = start + direction * (distance - gc.TARGET_PREVIEW_GAP_DISTANCE * self.camera.scale) + shift
             draw_dashed_line(
                 self.screen,
                 color,

@@ -29,9 +29,10 @@ from hex_grid import (
 )
 from processors.targetting_processor import TargettingProcessor
 from processors.transparency_processor import TransparencyProcessor
-from scene_utils import draw_polygon, use_world
+from scene_utils import draw_polygon, use_world, get_hovered_unit
 from events import PLAY_SOUND, PlaySoundEvent, emit_event
 from time_manager import time_manager
+from components.focus import Focus
 
 
 class FillState(Enum):
@@ -114,6 +115,17 @@ class WorldMapView:
     def get_battle_from_hex(self, hex_coords: Tuple[int, int]) -> Optional[Battle]:
         return next((battle for battle in self.battles.values() if battle.hex_coords == hex_coords), None)
 
+    def focus_hovered_unit(self) -> None:
+        """Focus the unit under the mouse cursor."""
+        if not self.manager.get_hovering_any_element():
+            battle = self.get_battle_from_hex(self.get_hex_at_mouse_pos())
+            if battle is None:
+                return
+            with use_world(battle.id):
+                hovered_unit = get_hovered_unit(self.camera)
+                if hovered_unit is not None:
+                    esper.add_component(hovered_unit, Focus())
+
     # ------------------------------
     # Public API
     # ------------------------------
@@ -136,6 +148,8 @@ class WorldMapView:
         
         Only processes battles that are not in a fogged state.
         """
+        self.focus_hovered_unit()
+        
         for battle in self.battles.values():
             # Don't draw/update units for fogged battles
             if self.hex_states.get(battle.hex_coords, HexState()).fill == FillState.FOGGED:
