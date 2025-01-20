@@ -248,4 +248,15 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
             f"Range: {gc.WEREBEAR_ATTACK_RANGE}",
             f"AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
         ]
+    if unit_type == UnitType.ZOMBIE_BASIC_ZOMBIE:
+        return [
+            f"Name: Zombie",
+            f"Faction: Zombie",
+            f"Health: {gc.ZOMBIE_BASIC_ZOMBIE_HP}",
+            f"Attack: {gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_DAMAGE}",
+            f"DPS: {round(gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_DAMAGE/gc.ZOMBIE_BASIC_ZOMBIE_ANIMATION_ATTACK_DURATION, 2)}",
+            f"Speed: {gc.ZOMBIE_BASIC_ZOMBIE_MOVEMENT_SPEED}",
+            f"Range: {gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_RANGE}",
+            f"AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
+        ]
     raise NotImplementedError(unit_type)

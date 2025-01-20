@@ -169,6 +169,13 @@
             }
         }
     },
+    "#zombie_basic_zombie_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/ZombieBasicZombieIcon.png"
+            }
+        }
+    },
     "#tip_box": {
         "misc": {
             "text_horiz_alignment": "center"

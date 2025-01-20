@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import List
 import copy
 
+from components.team import TeamType
 from game_constants import gc
 
 @dataclass
@@ -40,6 +41,13 @@ class Healing(StatusEffect):
     dps: float
     """The amount of healing to apply per second."""
 
+@dataclass
+class ZombieInfection(StatusEffect):
+    """Status effect that causes a unit to revive as a zombie."""
+    
+    team: TeamType
+    """The team to revive as."""
+
 class StatusEffects:
     """Component that stores the status effects of a unit."""
     # TODO: This not really a following ECS best practice
@@ -50,6 +58,7 @@ class StatusEffects:
             CrusaderBannerBearerEmpowered: [],
             Fleeing: [],
             Healing: [],
+            ZombieInfection: [],
         }
 
     def add(self, status_effect: StatusEffect) -> None:
@@ -79,6 +88,9 @@ class StatusEffects:
         if self._status_by_type[Fleeing]:
             longest_fleeing = max(self._status_by_type[Fleeing], key=lambda e: e.time_remaining)
             active_effects.append(longest_fleeing)
+        if self._status_by_type[ZombieInfection]:
+            most_recent_zombie_infection = max(self._status_by_type[ZombieInfection], key=lambda e: e.time_remaining)
+            active_effects.append(most_recent_zombie_infection)
         active_effects.extend(self._status_by_type[Healing])
         return active_effects
 

@@ -2,7 +2,7 @@
 
 from components.dying import Dying
 from components.health import Health
-from components.status_effect import CrusaderBannerBearerEmpowered, Fleeing, Healing, Ignited, StatusEffects
+from components.status_effect import CrusaderBannerBearerEmpowered, Fleeing, Healing, Ignited, StatusEffects, ZombieInfection
 import esper
 
 from components.unit_state import State, UnitState
@@ -30,5 +30,8 @@ class StatusEffectProcessor(esper.Processor):
                     heal = status_effect.dps * dt
                     health = esper.component_for_entity(ent, Health)
                     health.current = min(health.current + heal, health.maximum)
+                elif isinstance(status_effect, ZombieInfection):
+                    # Handled in the dying processor
+                    pass
                 else:
                     raise ValueError(f"Unknown status effect: {status_effect}")
