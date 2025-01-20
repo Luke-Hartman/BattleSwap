@@ -260,10 +260,10 @@ class CampaignEditorScene(Scene):
                         self.world_map_view.get_battle_from_hex(hovered_hex) is None
                     ):
                         self.move_target_hex = hovered_hex
-                # Only process camera events if no dialog is focused
-                if not hasattr(self, 'save_battle_dialog'):
-                    self.world_map_view.camera.process_event(event)
-                self.manager.process_events(event)
+
+            if not hasattr(self, 'save_battle_dialog'):
+                self.world_map_view.camera.process_event(event)
+            self.manager.process_events(event)
 
         states = defaultdict(HexState)
         if self.selected_hex is not None:
