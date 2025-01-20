@@ -424,7 +424,7 @@ def create_core_duelist(x: int, y: int, team: TeamType) -> int:
     )
     esper.add_component(
         entity,
-        Destination(target_strategy=targetting_strategy, x_offset=gc.CORE_DUELIST_ATTACK_RANGE*2/3)
+        Destination(target_strategy=targetting_strategy, x_offset=gc.CORE_DUELIST_ATTACK_RANGE*7/8)
     )
     sound_effects = [
         (SoundEffect(filename=f"quick_sword_thrust{i}.wav", volume=0.75), 1.0)
