@@ -31,6 +31,7 @@ class StateMachine:
         dispatcher.connect(self.handle_destination_target_lost, signal=DESTINATION_TARGET_LOST)
         dispatcher.connect(self.handle_fleeing_started, signal=FLEEING_STARTED)
         dispatcher.connect(self.handle_fleeing_expired, signal=FLEEING_EXPIRED)
+
     def handle_ability_interrupted(self, event: AbilityInterruptedEvent):
         unit_state = esper.component_for_entity(event.entity, UnitState)
         unit_state.state = State.IDLE

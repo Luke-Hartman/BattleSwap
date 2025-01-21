@@ -71,7 +71,6 @@ class AbilityProcessor(esper.Processor):
                 dx = target_pos.x - pos.x
                 orientation.facing = FacingDirection.LEFT if dx < 0 else FacingDirection.RIGHT
                 
-                
 
 def check_condition(entity: int, condition: Condition, ability: Union[Ability, InstantAbility], target: Optional[int] = None) -> bool:
     """Check if the condition is met for the given ability."""

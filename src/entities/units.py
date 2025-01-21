@@ -2008,6 +2008,9 @@ def create_crusader_pikeman(x: int, y: int, team: TeamType) -> int:
         entity,
         Destination(target_strategy=targetting_strategy, x_offset=gc.CRUSADER_PIKEMAN_ATTACK_RANGE*4/5)
     )
+    PIKE_UP = 0
+    PIKE_DOWN = 1
+    esper.add_component(entity, Stance(stance=PIKE_UP))
     esper.add_component(
         entity,
         Abilities(
@@ -2021,10 +2024,33 @@ def create_crusader_pikeman(x: int, y: int, team: TeamType) -> int:
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=gc.CRUSADER_PIKEMAN_ATTACK_RANGE,
+                                    y_bias=10,
+                                ),
+                            ])
+                        ),
+                        SatisfiesUnitCondition(unit_condition=InStance(stance=PIKE_UP))
+                    ],
+                    persistent_conditions=[],
+                    effects={
+                        1: [
+                            StanceChange(stance=PIKE_DOWN),
+                        ]
+                    }
+                ),
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.CRUSADER_PIKEMAN_ATTACK_RANGE,
                                     y_bias=10
                                 ),
                             ])
-                        )
+                        ),
+                        SatisfiesUnitCondition(unit_condition=InStance(stance=PIKE_DOWN))
                     ],
                     persistent_conditions=[
                         HasTarget(
@@ -2035,7 +2061,8 @@ def create_crusader_pikeman(x: int, y: int, team: TeamType) -> int:
                                     y_bias=10
                                 ),
                             ])
-                        )
+                        ),
+                        SatisfiesUnitCondition(unit_condition=InStance(stance=PIKE_DOWN))
                     ],
                     effects={3: [
                         Damages(damage=gc.CRUSADER_PIKEMAN_ATTACK_DAMAGE, recipient=Recipient.TARGET),
@@ -2043,7 +2070,20 @@ def create_crusader_pikeman(x: int, y: int, team: TeamType) -> int:
                             (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
                         ]),
                     ]},
-                )
+                ),
+                # If this ability is triggered, then there must not be a valid unit to attack, so pike up.
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        SatisfiesUnitCondition(unit_condition=InStance(stance=PIKE_DOWN))
+                    ],
+                    persistent_conditions=[],
+                    effects={
+                        1: [
+                            StanceChange(stance=PIKE_UP),
+                        ]
+                    }
+                ),
             ]
         )
     )
@@ -2051,18 +2091,20 @@ def create_crusader_pikeman(x: int, y: int, team: TeamType) -> int:
         entity,
         SpriteSheet(
             surface=sprite_sheets[UnitType.CRUSADER_PIKEMAN],
-            frame_width=100,
-            frame_height=68,
-            scale=gc.MINIFOLKS_SCALE,
-            frames={AnimationType.IDLE: 4, AnimationType.WALKING: 5, AnimationType.ABILITY1: 7, AnimationType.DYING: 7},
-            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 2, AnimationType.DYING: 3},
+            frame_width=120,
+            frame_height=120,
+            scale=gc.TINY_RPG_SCALE,
+            frames={AnimationType.IDLE: 6, AnimationType.WALKING: 7, AnimationType.ABILITY1: 2, AnimationType.ABILITY2: 6, AnimationType.ABILITY3: 2, AnimationType.DYING: 3},
+            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 2, AnimationType.ABILITY2: 3, AnimationType.ABILITY3: 4, AnimationType.DYING: 5},
             animation_durations={
                 AnimationType.IDLE: gc.CRUSADER_PIKEMAN_ANIMATION_IDLE_DURATION,
                 AnimationType.WALKING: gc.CRUSADER_PIKEMAN_ANIMATION_WALKING_DURATION,
-                AnimationType.ABILITY1: gc.CRUSADER_PIKEMAN_ANIMATION_ATTACK_DURATION,
+                AnimationType.ABILITY1: gc.CRUSADER_PIKEMAN_ANIMATION_STANCE_CHANGE_DURATION,
+                AnimationType.ABILITY2: gc.CRUSADER_PIKEMAN_ANIMATION_ATTACK_DURATION,
+                AnimationType.ABILITY3: gc.CRUSADER_PIKEMAN_ANIMATION_STANCE_CHANGE_DURATION,
                 AnimationType.DYING: gc.CRUSADER_PIKEMAN_ANIMATION_DYING_DURATION,
             },
-            sprite_center_offset=(24, -16),
+            sprite_center_offset=(25, -30),
         )
     )
     esper.add_component(entity, WalkEffects({
