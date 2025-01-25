@@ -63,7 +63,7 @@ class AnimationProcessor(esper.Processor):
             frame_count = sprite_sheet.frames[anim_state.type]
             frame_duration = total_duration / frame_count
 
-            new_frame = int(anim_state.time_elapsed // frame_duration) % frame_count
+            new_frame = int(anim_state.time_elapsed // frame_duration)
             if new_frame != anim_state.current_frame or anim_state.time_elapsed == 0:
                 if anim_state.type == AnimationType.DYING and anim_state.current_frame == frame_count - 1:
                     # Stop the animation at the last frame for death animation
@@ -84,20 +84,22 @@ class AnimationProcessor(esper.Processor):
                 elif unit_state.state == State.ABILITY5 and anim_state.type == AnimationType.ABILITY5:
                     index = 4
 
-
                 if index is not None:
                     ability = esper.component_for_entity(ent, Abilities).abilities[index]
                     if ability.effects.get(anim_state.current_frame, None):
                         emit_event(ABILITY_ACTIVATED, event=AbilityActivatedEvent(ent, index, anim_state.current_frame))
-                    elif anim_state.time_elapsed >= total_duration:
-                        emit_event(ABILITY_COMPLETED, event=AbilityCompletedEvent(ent, index))
-                        # Sometimes there are rounding errors and the frame would loop to 0.
-                        anim_state.current_frame = frame_count - 1
-                        anim_state.time_elapsed = 0
                 elif anim_state.type == AnimationType.WALKING and esper.has_component(ent, WalkEffects):
                     walk_effects = esper.component_for_entity(ent, WalkEffects)
                     effects = walk_effects.effects.get(anim_state.current_frame, None)
                     if effects:
                         for effect in effects:
                             effect.apply(ent, ent, ent)
+                
+                if new_frame == frame_count:
+                    if index is not None:
+                        emit_event(ABILITY_COMPLETED, event=AbilityCompletedEvent(ent, index))
+                    # Stay on the last frame of the animation for one more tick.
+                    anim_state.current_frame = frame_count - 1
+                    # Reset the time so if the animation is supposed to loop it will start over.
+                    anim_state.time_elapsed = 0
             sprite_sheet.update_frame(anim_state.type, anim_state.current_frame)
