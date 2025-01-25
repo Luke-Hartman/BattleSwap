@@ -1322,78 +1322,106 @@
     "tip_voice_filename": null
   },
   {
-    "id": "1Gold Knight, 2Defenders vs 7Swordsman",
+    "id": "2Gold Knight vs 12Swordsman",
     "enemies": [
       [
         "CORE_SWORDSMAN",
         [
-          140,
-          10
+          125,
+          -25
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          141,
-          -16
+          125,
+          0
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          125,
+          -50
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          125,
+          25
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          150,
+          -50
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          150,
+          -25
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          150,
+          0
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          150,
+          25
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
           175,
-          -27
+          -50
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          173,
-          -3
+          175,
+          -25
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          173,
-          23
+          175,
+          0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          204,
-          -17
-        ]
-      ],
-      [
-        "CORE_SWORDSMAN",
-        [
-          203,
-          9
+          175,
+          25
         ]
       ]
     ],
     "allies": [
       [
-        "CRUSADER_DEFENDER",
+        "CRUSADER_GOLD_KNIGHT",
         [
-          -45,
-          -30
-        ]
-      ],
-      [
-        "CRUSADER_DEFENDER",
-        [
-          -46,
-          21
+          -25,
+          -25
         ]
       ],
       [
         "CRUSADER_GOLD_KNIGHT",
         [
-          -71,
-          -3
+          -25,
+          0
         ]
       ]
     ],
