@@ -133,6 +133,7 @@ class SceneManager:
                         "world_map_view": self.current_scene.world_map_view,
                         "battle_id": self.current_scene.battle_id,
                         "sandbox_mode": self.current_scene.sandbox_mode,
+                        "developer_mode": self.current_scene.developer_mode,
                     },
                 ))
             elif isinstance(self.current_scene, DeveloperToolsScene):
