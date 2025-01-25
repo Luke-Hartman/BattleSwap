@@ -93,6 +93,7 @@ class AnimationProcessor(esper.Processor):
                         emit_event(ABILITY_COMPLETED, event=AbilityCompletedEvent(ent, index))
                         # Sometimes there are rounding errors and the frame would loop to 0.
                         anim_state.current_frame = frame_count - 1
+                        anim_state.time_elapsed = 0
                 elif anim_state.type == AnimationType.WALKING and esper.has_component(ent, WalkEffects):
                     walk_effects = esper.component_for_entity(ent, WalkEffects)
                     effects = walk_effects.effects.get(anim_state.current_frame, None)
