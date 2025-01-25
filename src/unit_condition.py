@@ -10,6 +10,7 @@ import esper
 from components.ammo import Ammo
 from components.entity_memory import EntityMemory
 from components.health import Health
+from components.hitbox import Hitbox
 from components.orientation import Orientation
 from components.position import Position
 from components.stance import Stance
@@ -134,12 +135,23 @@ class MaximumDistanceFromEntity(UnitCondition):
     y_bias: Optional[float]
     """The y-bias to apply to the distance check."""
 
+    use_hitbox: bool = True
+    """Whether to use the hitbox to determine the distance."""
+
     def check(self, entity: int) -> bool:
         position = esper.try_component(self.entity, Position)
         other_position = esper.try_component(entity, Position)
         if position is None or other_position is None:
             return False
-        return position.distance(other_position, self.y_bias) <= self.distance
+        if self.use_hitbox:
+            other_hitbox = esper.try_component(entity, Hitbox)
+            if other_hitbox is None:
+                return False
+            radius = min(other_hitbox.height/2, other_hitbox.width/2)
+            distance = self.distance + radius
+        else:
+            distance = self.distance
+        return position.distance(other_position, self.y_bias) <= distance
 
 @dataclass
 class MinimumDistanceFromEntity(UnitCondition):
