@@ -142,6 +142,12 @@ class CollisionProcessor(esper.Processor):
 
             p_ent = sprite_to_ent[p_sprite]
             u_ent = sprite_to_ent[u_sprite]
+            
+            # Check if the unit satisfies the projectile's unit condition
+            projectile = esper.component_for_entity(p_ent, Projectile)
+            if not projectile.unit_condition.check(u_ent):
+                continue
+
             emit_event(PROJECTILE_HIT, event=ProjectileHitEvent(entity=p_ent, target=u_ent))
             collided_projectiles.add(p_sprite)
             esper.delete_entity(p_ent)

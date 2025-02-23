@@ -7,6 +7,8 @@ from typing import Callable, List, Optional, Tuple, Union
 
 import esper
 from pygame import Vector2
+import numpy as np
+from scipy.optimize import minimize
 
 from components.ammo import Ammo
 from components.angle import Angle
@@ -31,7 +33,8 @@ from components.velocity import Velocity
 from events import PLAY_SOUND, PlaySoundEvent, emit_event
 from visuals import Visual, create_visual_spritesheet
 from unit_condition import UnitCondition
-
+from game_constants import gc
+from components.airborne import Airborne
 
 class Recipient(Enum):
     """The recipient of an effect."""
@@ -226,6 +229,9 @@ class CreatesProjectile(Effect):
     projectile_offset_y: float
     """The y offset of the projectile from the parent's position, in pixels."""
 
+    unit_condition: "UnitCondition"
+    """Condition that determines which units can be hit by the projectile."""
+
     on_create: Optional[Callable[[int], None]] = None
     """Function to call when the projectile is created."""
 
@@ -258,7 +264,7 @@ class CreatesProjectile(Effect):
         esper.add_component(entity, Angle(angle=angle))
         esper.add_component(entity, Orientation(facing=parent_orientation.facing))
         esper.add_component(entity, Team(type=parent_team.type))
-        esper.add_component(entity, Projectile(effects=self.effects, owner=owner))
+        esper.add_component(entity, Projectile(effects=self.effects, owner=owner, unit_condition=self.unit_condition))
         esper.add_component(entity, create_visual_spritesheet(self.visual))
         esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
         if self.on_create:
@@ -417,6 +423,7 @@ class CreatesAttachedVisual(Effect):
         if self.unique_key:
             esper.add_component(entity, Unique(key=self.unique_key(target)))
 
+
 @dataclass
 class AttachToTarget(Effect):
     """Effect attaches the parent to the target."""
@@ -432,6 +439,7 @@ class AttachToTarget(Effect):
         assert target is not None
         esper.add_component(parent, Attached(entity=target, on_death=self.on_death, offset=self.offset))
 
+
 @dataclass
 class RememberTarget(Effect):
     """Effect stores the target in the parent's entity memory."""
@@ -441,6 +449,7 @@ class RememberTarget(Effect):
         assert target is not None
         esper.add_component(parent, EntityMemory(entity=target))
 
+
 @dataclass
 class Forget(Effect):
     """Effect forgets the remembered unit in the parent's entity memory."""
@@ -448,6 +457,7 @@ class Forget(Effect):
     def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
         assert parent is not None
         esper.remove_component(parent, EntityMemory)
+
 
 @dataclass
 class SoundEffect:
@@ -458,6 +468,7 @@ class SoundEffect:
 
     volume: float
     """The volume of the sound effect."""
+
 
 @dataclass
 class PlaySound(Effect):
@@ -476,6 +487,7 @@ class PlaySound(Effect):
             )[0]
         emit_event(PLAY_SOUND, event=PlaySoundEvent(filename=sound_effect.filename, volume=sound_effect.volume))
 
+
 @dataclass
 class StanceChange(Effect):
     """Effect changes the stance of the owner."""
@@ -486,6 +498,7 @@ class StanceChange(Effect):
     def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:    
         assert owner is not None
         esper.component_for_entity(owner, Stance).stance = self.stance
+
 
 @dataclass
 class IncreaseAmmo(Effect):
@@ -500,9 +513,151 @@ class IncreaseAmmo(Effect):
         ammo.current = max(min(ammo.current + self.amount, ammo.max), 0)
 
 
+def _calculate_minimum_angle(min_range: float, max_range: float, initial_velocity: float) -> float:
+    """Calculate the minimum launch angle needed to reach the minimum range.
+    
+    For a given range R and initial velocity v, the angle θ is given by:
+    R = (v^2/g) * sin(2θ)
+    
+    Solving for θ:
+    θ = (1/2) * arcsin(R*g/v^2)
+    
+    Args:
+        min_range: Minimum range to reach
+        max_range: Maximum range to reach (used for initial velocity calculation)
+        initial_velocity: Initial velocity magnitude
+        
+    Returns:
+        Minimum launch angle in radians
+    """
+    if min_range <= 0:
+        return 0.0
+        
+    sin_arg = (gc.GRAVITY * min_range) / (initial_velocity * initial_velocity)
+    if sin_arg >= 1.0:
+        # Minimum range is unreachable - use 45 degrees as fallback
+        return math.pi/4
+        
+    return 0.5 * math.asin(sin_arg)
+
+def _calculate_projectile_position(
+    start: Vector2,
+    launch_angle: float,  # vertical angle (theta)
+    direction_angle: float,  # horizontal angle (phi)
+    initial_velocity: float,
+) -> Tuple[Vector2, float]:
+    """Calculate where a projectile will land and how long it takes.
+    
+    Args:
+        start: Starting position
+        launch_angle: Angle of launch into the z dimension (radians)
+        direction_angle: Angle of launch in x-y plane (radians)
+        initial_velocity: Initial velocity magnitude
+        
+    Returns:
+        Tuple of (landing position as Vector2, time to land)
+    """
+    # Initial velocity components
+    vx = initial_velocity * math.cos(launch_angle) * math.cos(direction_angle)
+    vy = initial_velocity * math.cos(launch_angle) * math.sin(direction_angle)
+    vz = initial_velocity * math.sin(launch_angle)
+    
+    # Time to hit ground: 0 = vz*t - 0.5*g*t^2
+    # Using quadratic formula, we want the positive root
+    # t = (vz + sqrt(vz^2)) / g
+    time_to_land = (vz + math.sqrt(vz * vz)) / gc.GRAVITY
+    
+    # Calculate landing position
+    x = start.x + vx * time_to_land
+    y = start.y + vy * time_to_land
+    
+    return Vector2(x, y), time_to_land
+
+def calculate_target_position(
+    start: Vector2,
+    target_pos: Vector2,
+    max_range: float,
+    min_range: float,
+    max_angle: float,
+    target_velocity: Optional[Velocity] = None,
+    smart: bool = False,
+) -> Vector2:
+    """Calculate the optimal target position for a trajectory.
+    
+    Args:
+        start: Starting position
+        target_pos: Initial target position
+        max_range: Maximum range of the trajectory
+        min_range: Minimum range of the trajectory
+        max_angle: Maximum angle of the trajectory
+        target_velocity: Optional velocity of the target
+        smart: Whether the target position should be smart
+
+    Returns:
+        The calculated target position
+    """
+    if target_velocity is None:
+        return target_pos
+
+    if not smart:
+        return target_pos
+
+    assert 0 < max_angle <= math.pi/4
+
+    # Calculate initial velocity needed to reach max_range
+    # Using v = sqrt(g * R / sin(2θ)) where θ is max_angle
+    initial_velocity = math.sqrt(gc.GRAVITY * max_range / math.sin(2 * max_angle))
+    # Calculate minimum launch angle based on minimum range
+    min_launch_angle = _calculate_minimum_angle(min_range, max_range, initial_velocity)
+    
+    # Initial direction towards current target position
+    dx = target_pos.x - start.x
+    dy = target_pos.y - start.y
+    initial_direction = math.atan2(dy, dx)
+    initial_launch = max_angle
+    
+    def objective(x: np.ndarray) -> float:
+        """Calculate miss distance for given launch parameters."""
+        launch_angle, direction_angle = x
+        
+        # Calculate where projectile will land and when
+        projectile_pos, time_to_land = _calculate_projectile_position(
+            start, launch_angle, direction_angle, initial_velocity
+        )
+        
+        # Calculate where target will be when projectile lands
+        target_future = Vector2(
+            target_pos.x + target_velocity.x * time_to_land,
+            target_pos.y + target_velocity.y * time_to_land
+        )
+        
+        return (projectile_pos - target_future).length()
+    
+    # Try to find the optimal launch parameters
+    result = minimize(
+        objective,
+        x0=[initial_launch, initial_direction],  # Initial guess
+        method='SLSQP',
+        bounds=[
+            (min_launch_angle, max_angle),  # Launch angle between min and max
+            (-math.pi, math.pi),  # Direction angle between -180 and 180 degrees
+        ],
+        options={'ftol': 1e-3}  # Looser tolerance for game purposes
+    )
+    
+    if result.success:
+        # Use the optimal parameters to set the target position
+        launch_angle, direction_angle = result.x
+        target_pos, _ = _calculate_projectile_position(
+            start, launch_angle, direction_angle, initial_velocity
+        )
+        
+    return target_pos
+
+
 @dataclass
 class CreatesLobbed(Effect):
-    """Effect creates a lobbed entity towards the target from the parent."""
+    """Effect creates a lobbed entity towards the target."""
 
     effects: List[Effect]
     """The effects of the lobbed entity."""
@@ -515,6 +670,15 @@ class CreatesLobbed(Effect):
 
     offset: Tuple[float, float]
     """The offset of the lobbed entity from the parent's position."""
+
+    min_range: float = 0.0
+    """The minimum range of the lobbed entity."""
+
+    max_angle: float = math.pi/4
+    """The maximum angle of the lobbed entity."""
+
+    smart: bool = False
+    """Whether the lobbed entity should use smart targeting."""
 
     def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
         assert parent is not None
@@ -529,19 +693,97 @@ class CreatesLobbed(Effect):
         if parent_orientation is not None:
             offset.x *= parent_orientation.facing.value
             
+        # Calculate start position
+        start = Vector2(parent_position.x + offset.x, parent_position.y + offset.y)
+        target_pos = Vector2(target_position.x, target_position.y)
+        
+        # Calculate trajectory
+        target_pos = calculate_target_position(
+            start=start,
+            target_pos=target_pos,
+            max_range=self.max_range,
+            min_range=self.min_range,
+            max_angle=self.max_angle,
+            target_velocity=esper.try_component(target, Velocity),
+            smart=self.smart,
+        )
+            
         esper.add_component(
             entity,
             Lobbed(
-                start=Vector2(parent_position.x + offset.x, parent_position.y + offset.y),
-                target=Vector2(target_position.x, target_position.y),
+                start=start,
+                target=target_pos,
                 max_range=self.max_range,
-                effects=self.effects,
+                max_angle=self.max_angle,
+                effects=self.effects + [Land()],
                 owner=owner,
+                destroy_on_arrival=True,
             )
         )
-        esper.add_component(entity, Position(x=parent_position.x + offset.x, y=parent_position.y + offset.y))
+        esper.add_component(entity, Position(x=start.x, y=start.y))
         esper.add_component(entity, create_visual_spritesheet(self.visual))
         esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
         esper.add_component(entity, Team(type=parent_team.type))
         esper.add_component(entity, Orientation(facing=parent_orientation.facing))
 
+
+@dataclass
+class Jump(Effect):
+    """Effect makes the parent jump towards the target."""
+
+    effects: List[Effect]
+    """Effects to apply when landing."""
+
+    max_range: float
+    """The maximum range of the jump."""
+
+    min_range: float = 0.0
+    """The minimum range of the jump."""
+
+    max_angle: float = math.pi/4
+    """The maximum angle of the jump."""
+
+    def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
+        assert parent is not None
+        assert target is not None
+
+        parent_position = esper.component_for_entity(parent, Position)
+        target_position = esper.component_for_entity(target, Position)
+        
+        start = Vector2(parent_position.x, parent_position.y)
+        target_pos = Vector2(target_position.x, target_position.y)
+        
+        target_pos = calculate_target_position(
+            start=start,
+            target_pos=target_pos,
+            max_range=self.max_range,
+            min_range=self.min_range,
+            max_angle=self.max_angle,
+            target_velocity=esper.try_component(target, Velocity),
+            smart=True,
+        )
+        esper.add_component(
+            parent,
+            Lobbed(
+                start=start,
+                target=target_pos,
+                max_range=self.max_range,
+                max_angle=self.max_angle,
+                effects=self.effects + [Land()],
+                owner=owner,
+                destroy_on_arrival=False,
+            )
+        )
+        esper.add_component(parent, Airborne())
+        if esper.has_component(parent, Orientation):
+            orientation = esper.component_for_entity(parent, Orientation)
+            orientation.facing = FacingDirection.RIGHT if target_pos.x > parent_position.x else FacingDirection.LEFT
+
+
+class Land(Effect):
+    """Effect lands the parent."""
+
+    def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
+        assert parent is not None
+        if esper.has_component(parent, Airborne):
+            esper.remove_component(parent, Airborne)

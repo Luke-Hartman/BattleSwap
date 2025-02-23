@@ -257,6 +257,20 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
             f"DPS: {round(gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_DAMAGE/gc.ZOMBIE_BASIC_ZOMBIE_ANIMATION_ATTACK_DURATION, 2)}",
             f"Speed: {gc.ZOMBIE_BASIC_ZOMBIE_MOVEMENT_SPEED}",
             f"Range: {gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_RANGE}",
-            f"AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
+            "Special: Zombies infect units they hit, causing them to turn into zombies when they die.",
+            "AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
+        ]
+    if unit_type == UnitType.ZOMBIE_JUMPER:
+        return [
+            f"Name: Jumper",
+            f"Faction: Zombie",
+            f"Health: {gc.ZOMBIE_JUMPER_HP}",
+            f"Attack: {gc.ZOMBIE_JUMPER_ATTACK_DAMAGE}",
+            f"DPS: {round(gc.ZOMBIE_JUMPER_ATTACK_DAMAGE/gc.ZOMBIE_JUMPER_ANIMATION_ATTACK_DURATION, 2)}",
+            f"Speed: {gc.ZOMBIE_JUMPER_MOVEMENT_SPEED}",
+            f"Range: {gc.ZOMBIE_JUMPER_ATTACK_RANGE}",
+            "Special: Zombies infect units they hit, causing them to turn into zombies when they die.",
+            f"Special: Jumps to the nearest enemy, dealing {gc.ZOMBIE_JUMPER_JUMP_DAMAGE} damage. Has a range of {gc.ZOMBIE_JUMPER_MINIMUM_JUMP_RANGE}-{gc.ZOMBIE_JUMPER_MAXIMUM_JUMP_RANGE} units, and a cooldown of {gc.ZOMBIE_JUMPER_JUMP_COOLDOWN}s.",
+            f"AI: Targets nearby enemies, prioritizing enemies with low current health.",
         ]
     raise NotImplementedError(unit_type)

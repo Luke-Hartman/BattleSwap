@@ -6,6 +6,7 @@ updating unit velocities for pursuit, checking target range, and updating orient
 
 import esper
 import math
+from components.airborne import Airborne
 from components.destination import Destination
 from components.position import Position
 from components.team import Team, TeamType
@@ -21,6 +22,8 @@ class PursuingProcessor(esper.Processor):
     def process(self, dt: float):
         for ent, (unit_state, pos, movement, velocity, orientation, destination) in esper.get_components(UnitState, Position, Movement, Velocity, Orientation, Destination):
             target = destination.target_strategy.target
+            if esper.has_component(ent, Airborne):
+                continue
             if unit_state.state == State.PURSUING and target is None:
                 emit_event(DESTINATION_TARGET_LOST, event=DestinationTargetLostEvent(ent))
             if unit_state.state == State.PURSUING and target is not None:

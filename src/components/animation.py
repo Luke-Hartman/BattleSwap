@@ -19,6 +19,9 @@ class AnimationType(Enum):
     WALKING = auto()
     """The walking animation state."""
 
+    AIRBORNE = auto()
+    """The airborne animation state."""
+
     ABILITY1 = auto()
     """The highest priority ability animation state."""
 

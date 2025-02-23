@@ -8,8 +8,8 @@ from events import emit_event, LOBBED_ARRIVED, LobbedArrivedEvent
 
 def calculate_position(lobbed: Lobbed) -> Vector2:
     # Calculate initial velocity needed to reach max_range
-    # Using v = sqrt(g * R / sin(2θ)) where θ = 45° for max range
-    initial_velocity = math.sqrt(gc.GRAVITY * lobbed.max_range / math.sin(math.pi/2))
+    # Using v = sqrt(g * R / sin(2θ)) where θ = lobbed.max_angle
+    initial_velocity = math.sqrt(gc.GRAVITY * lobbed.max_range / math.sin(2 * lobbed.max_angle))
     
     # Get the horizontal distance and direction
     displacement = lobbed.target - lobbed.start
@@ -51,4 +51,7 @@ class LobbedProcessor:
             position.y = new_position.y
             if new_position == lobbed.target:
                 emit_event(LOBBED_ARRIVED, event=LobbedArrivedEvent(entity))
-                esper.delete_entity(entity)
+                if lobbed.destroy_on_arrival:
+                    esper.delete_entity(entity)
+                else:
+                    esper.remove_component(entity, Lobbed)

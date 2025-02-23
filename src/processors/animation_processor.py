@@ -14,6 +14,7 @@ from components.sprite_sheet import SpriteSheet
 from components.unit_state import UnitState, State
 from components.velocity import Velocity
 from components.walk_effects import WalkEffects
+from components.airborne import Airborne
 from events import ABILITY_ACTIVATED, ABILITY_COMPLETED, AbilityActivatedEvent, AbilityCompletedEvent, emit_event
 
 class AnimationProcessor(esper.Processor):
@@ -34,6 +35,7 @@ class AnimationProcessor(esper.Processor):
             else:
                 unit_state = UnitState(state=State.IDLE)
 
+            # First determine base animation from state
             new_anim_type = {
                 State.IDLE: AnimationType.IDLE,
                 State.PURSUING: AnimationType.WALKING,
@@ -45,6 +47,10 @@ class AnimationProcessor(esper.Processor):
                 State.ABILITY5: AnimationType.ABILITY5,
                 State.DEAD: AnimationType.DYING
             }[unit_state.state]
+
+            # Override with airborne animation if airborne
+            if esper.has_component(ent, Airborne) and new_anim_type != AnimationType.DYING:
+                new_anim_type = AnimationType.AIRBORNE
 
             if unit_state.state == State.PURSUING:
                 velocity = esper.component_for_entity(ent, Velocity)

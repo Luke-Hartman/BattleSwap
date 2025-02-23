@@ -18,6 +18,9 @@ class Lobbed:
     start: Vector2
     target: Vector2
     max_range: float
+    max_angle: float
     effects: List["Effect"]
     owner: Optional[int]
+    destroy_on_arrival: bool
     time_passed: float = 0.0
+

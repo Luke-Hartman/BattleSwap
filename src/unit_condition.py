@@ -17,6 +17,7 @@ from components.stance import Stance
 from components.team import Team, TeamType
 from components.unit_state import State, UnitState
 from components.unit_type import UnitType, UnitTypeComponent
+from components.airborne import Airborne
 
 class UnitCondition(ABC):
     """A condition that a unit may or may not meet."""
@@ -76,6 +77,13 @@ class Alive(UnitCondition):
     def check(self, entity: int) -> bool:
         unit_state = esper.try_component(entity, UnitState)
         return unit_state is not None and unit_state.state != State.DEAD
+
+@dataclass
+class Grounded(UnitCondition):
+    """The unit is grounded."""
+
+    def check(self, entity: int) -> bool:
+        return not esper.has_component(entity, Airborne)
 
 @dataclass
 class IsEntity(UnitCondition):

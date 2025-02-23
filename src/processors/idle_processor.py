@@ -1,4 +1,5 @@
 import esper
+from components.airborne import Airborne
 from components.destination import Destination
 from components.orientation import FacingDirection, Orientation
 from components.team import Team, TeamType
@@ -9,6 +10,8 @@ from events import emit_event, DestinationTargetAcquiredEvent, DESTINATION_TARGE
 class IdleProcessor(esper.Processor):
     def process(self, dt: float):
         for ent, (unit_state, velocity, destination, team, orientation) in esper.get_components(UnitState, Velocity, Destination, Team, Orientation):
+            if esper.has_component(ent, Airborne):
+                continue
             if unit_state.state == State.IDLE:
                 target = destination.target_strategy.target
                 if target is not None:

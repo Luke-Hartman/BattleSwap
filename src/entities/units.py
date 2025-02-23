@@ -33,9 +33,9 @@ from components.unit_type import UnitType, UnitTypeComponent
 from components.velocity import Velocity
 from components.health import Health
 from components.orientation import Orientation, FacingDirection
-from effects import AppliesStatusEffect, AttachToTarget, CreatesAoE, CreatesAttachedVisual, CreatesLobbed, CreatesProjectile, Damages, Forget, Heals, IncreaseAmmo, PlaySound, Recipient, SoundEffect, StanceChange, RememberTarget
+from effects import AppliesStatusEffect, AttachToTarget, CreatesAoE, CreatesAttachedVisual, CreatesLobbed, CreatesProjectile, Damages, Forget, Heals, IncreaseAmmo, Jump, PlaySound, Recipient, SoundEffect, StanceChange, RememberTarget
 from unit_condition import (
-    All, Alive, Always, AmmoEquals, Any, HealthBelowPercent, InStance, IsEntity, IsUnitType, MaximumDistanceFromDestination, MinimumDistanceFromEntity, Never, Not, OnTeam,
+    All, Alive, Always, AmmoEquals, Any, Grounded, HealthBelowPercent, InStance, IsEntity, IsUnitType, MaximumDistanceFromDestination, MinimumDistanceFromEntity, Never, Not, OnTeam,
     MaximumDistanceFromEntity, RememberedBy, RememberedSatisfies
 )
 from visuals import Visual
@@ -62,6 +62,7 @@ unit_theme_ids: Dict[UnitType, str] = {
     UnitType.CRUSADER_SOLDIER: "#crusader_soldier_icon",
     UnitType.WEREBEAR: "#werebear_icon",
     UnitType.ZOMBIE_BASIC_ZOMBIE: "#zombie_basic_zombie_icon",
+    UnitType.ZOMBIE_JUMPER: "#zombie_jumper_icon",
 }
 
 unit_icon_surfaces: Dict[UnitType, pygame.Surface] = {}
@@ -90,6 +91,7 @@ unit_values: Dict[UnitType, int] = {
     UnitType.CRUSADER_SOLDIER: 100,
     UnitType.WEREBEAR: 100,
     UnitType.ZOMBIE_BASIC_ZOMBIE: 100,
+    UnitType.ZOMBIE_JUMPER: 100,
 }
 
 def load_sprite_sheets():
@@ -116,6 +118,7 @@ def load_sprite_sheets():
         UnitType.CRUSADER_SOLDIER: "CrusaderSoldier.png",
         UnitType.WEREBEAR: "Werebear.png",
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombie.png",
+        UnitType.ZOMBIE_JUMPER: "ZombieBasicZombie.png",
     }
     for unit_type, filename in unit_filenames.items():
         path = os.path.join("assets", "units", filename)
@@ -173,6 +176,7 @@ def create_unit(x: int, y: int, unit_type: UnitType, team: TeamType) -> int:
         UnitType.CRUSADER_SOLDIER: create_crusader_soldier,
         UnitType.WEREBEAR: create_werebear,
         UnitType.ZOMBIE_BASIC_ZOMBIE: create_zombie_basic_zombie,
+        UnitType.ZOMBIE_JUMPER: create_zombie_jumper,
     }[unit_type](x, y, team)
 
 def unit_base_entity(
@@ -236,6 +240,7 @@ def create_core_archer(x: int, y: int, team: TeamType) -> int:
                         HasTarget(
                             unit_condition=All([
                                 Alive(),
+                                Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=gc.CORE_ARCHER_ATTACK_RANGE,
@@ -248,6 +253,7 @@ def create_core_archer(x: int, y: int, team: TeamType) -> int:
                         HasTarget(
                             unit_condition=All([
                                 Alive(),
+                                Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=gc.CORE_ARCHER_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
@@ -273,6 +279,7 @@ def create_core_archer(x: int, y: int, team: TeamType) -> int:
                                 visual=Visual.Arrow,
                                 projectile_offset_x=5*gc.MINIFOLKS_SCALE,
                                 projectile_offset_y=0,
+                                unit_condition=All([OnTeam(team=team.other()), Alive(), Grounded()]),
                             ),
                             PlaySound(
                                 sound_effects=[
@@ -342,6 +349,7 @@ def create_core_cavalry(x: int, y: int, team: TeamType) -> int:
                         HasTarget(
                             unit_condition=All([
                                 Alive(),
+                                Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=gc.CORE_CAVALRY_ATTACK_RANGE,
@@ -432,6 +440,7 @@ def create_core_duelist(x: int, y: int, team: TeamType) -> int:
                         HasTarget(
                             unit_condition=All([
                                 Alive(),
+                                Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=gc.CORE_DUELIST_ATTACK_RANGE,
@@ -444,6 +453,7 @@ def create_core_duelist(x: int, y: int, team: TeamType) -> int:
                         HasTarget(
                             unit_condition=All([
                                 Alive(),
+                                Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=gc.CORE_DUELIST_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
@@ -543,6 +553,7 @@ def create_core_swordsman(x: int, y: int, team: TeamType) -> int:
                         HasTarget(
                             unit_condition=All([
                                 Alive(),
+                                Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=gc.CORE_SWORDSMAN_ATTACK_RANGE,
@@ -632,6 +643,7 @@ def create_core_wizard(x: int, y: int, team: TeamType) -> int:
                         HasTarget(
                             unit_condition=All([
                                 Alive(),
+                                Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=gc.CORE_WIZARD_ATTACK_RANGE,
@@ -644,6 +656,7 @@ def create_core_wizard(x: int, y: int, team: TeamType) -> int:
                         HasTarget(
                             unit_condition=All([
                                 Alive(),
+                                Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=gc.CORE_WIZARD_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
@@ -677,7 +690,7 @@ def create_core_wizard(x: int, y: int, team: TeamType) -> int:
                                         visual=Visual.Explosion,
                                         duration=gc.CORE_WIZARD_FIREBALL_AOE_DURATION,
                                         scale=gc.CORE_WIZARD_FIREBALL_AOE_SCALE,
-                                        unit_condition=Alive(),
+                                        unit_condition=All([Alive(), Grounded()]),
                                         location=Recipient.PARENT,
                                     ),
                                     PlaySound(SoundEffect(filename="fireball_impact.wav", volume=0.50)),
@@ -685,6 +698,7 @@ def create_core_wizard(x: int, y: int, team: TeamType) -> int:
                                 visual=Visual.Fireball,
                                 projectile_offset_x=11*gc.MINIFOLKS_SCALE,
                                 projectile_offset_y=-4*gc.MINIFOLKS_SCALE,
+                                unit_condition=All([OnTeam(team=team.other()), Alive(), Grounded()]),
                             ),
                         ]
                     }
@@ -881,6 +895,7 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
                         HasTarget(
                             unit_condition=All([
                                 Alive(),
+                                Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=gc.CRUSADER_BLACK_KNIGHT_ATTACK_RANGE,
@@ -927,7 +942,7 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
                                     ],
                                     duration=gc.CRUSADER_BLACK_KNIGHT_FEAR_AOE_DURATION,
                                     scale=gc.CRUSADER_BLACK_KNIGHT_FEAR_AOE_SCALE,
-                                    unit_condition=All([Alive(), Not(IsEntity(entity=entity))]),
+                                    unit_condition=All([Alive(), Grounded(), Not(IsEntity(entity=entity))]),
                                     visual=Visual.CrusaderBlackKnightFear,
                                     location=Recipient.PARENT,
                                 ),
@@ -987,6 +1002,7 @@ def create_crusader_catapult(x: int, y: int, team: TeamType) -> int:
             [
                 OnTeam(team=team.other()),
                 Alive(),
+                Grounded(),
                 MaximumDistanceFromEntity(
                     entity=entity,
                     distance=gc.CRUSADER_CATAPULT_MAXIMUM_RANGE,
@@ -1012,7 +1028,7 @@ def create_crusader_catapult(x: int, y: int, team: TeamType) -> int:
                         HasTarget(unit_condition=Always())
                     ],
                     persistent_conditions=[
-                        HasTarget(unit_condition=Alive())
+                        HasTarget(unit_condition=All([Alive(), Grounded()]))
                     ],
                     effects={
                         2: [
@@ -1025,11 +1041,12 @@ def create_crusader_catapult(x: int, y: int, team: TeamType) -> int:
                                         visual=Visual.Explosion,
                                         duration=gc.CORE_WIZARD_FIREBALL_AOE_DURATION,
                                         scale=gc.CORE_WIZARD_FIREBALL_AOE_SCALE,
-                                        unit_condition=Alive(),
+                                        unit_condition=All([Alive(), Grounded()]),
                                         location=Recipient.PARENT,
                                     )
                                 ],
                                 max_range=gc.CRUSADER_CATAPULT_MAXIMUM_RANGE,
+                                min_range=gc.CRUSADER_CATAPULT_MINIMUM_RANGE,
                                 visual=Visual.Fireball,
                                 offset=(30, 0),
                             )
@@ -1197,6 +1214,7 @@ def create_crusader_commander(x: int, y: int, team: TeamType) -> int:
                         HasTarget(
                             unit_condition=All([
                                 Alive(),
+                                Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=gc.CRUSADER_COMMANDER_ATTACK_RANGE,
@@ -1314,6 +1332,7 @@ def create_crusader_crossbowman(x: int, y: int, team: TeamType) -> int:
                     HasTarget(
                         unit_condition=All([
                             Alive(),
+                            Grounded(),
                             MaximumDistanceFromEntity(
                                 entity=entity,
                                 distance=gc.CRUSADER_CROSSBOWMAN_ATTACK_RANGE,
@@ -1329,6 +1348,7 @@ def create_crusader_crossbowman(x: int, y: int, team: TeamType) -> int:
                     HasTarget(
                         unit_condition=All([
                             Alive(),
+                            Grounded(),
                             MaximumDistanceFromEntity(
                                 entity=entity,
                                 distance=gc.CRUSADER_CROSSBOWMAN_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
@@ -1346,7 +1366,8 @@ def create_crusader_crossbowman(x: int, y: int, team: TeamType) -> int:
                             ],
                             visual=Visual.Arrow,
                             projectile_offset_x=5*gc.MINIFOLKS_SCALE,
-                            projectile_offset_y=0
+                            projectile_offset_y=0,
+                            unit_condition=All([OnTeam(team=team.other()), Alive(), Grounded()]),
                         ),
                         IncreaseAmmo(amount=-1),
                         PlaySound(SoundEffect(filename="crossbow_firing.wav", volume=0.2)),
@@ -1483,6 +1504,7 @@ def create_crusader_defender(x: int, y: int, team: TeamType) -> int:
                         HasTarget(
                             unit_condition=All([
                                 Alive(),
+                                Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=gc.CRUSADER_DEFENDER_ATTACK_RANGE,
@@ -1570,6 +1592,7 @@ def create_crusader_gold_knight(x: int, y: int, team: TeamType) -> int:
                         HasTarget(
                             unit_condition=All([
                                 Alive(),
+                                Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=gc.CRUSADER_GOLD_KNIGHT_ATTACK_RANGE,
@@ -1590,7 +1613,8 @@ def create_crusader_gold_knight(x: int, y: int, team: TeamType) -> int:
                                 scale=gc.TINY_RPG_SCALE,
                                 unit_condition=All([
                                     OnTeam(team=team.other()),
-                                    Alive()
+                                    Alive(),
+                                    Grounded(),
                                 ]),
                                 visual=Visual.CrusaderGoldKnightAttack,
                                 location=Recipient.PARENT,
@@ -1643,7 +1667,7 @@ def create_crusader_guardian_angel(x: int, y: int, team: TeamType) -> int:
         rankings=[
             ByDistance(entity=entity, y_bias=None, ascending=True),
         ],
-        unit_condition=All([Not(IsUnitType(unit_type=UnitType.CRUSADER_GUARDIAN_ANGEL)), OnTeam(team=team), Alive()])
+        unit_condition=All([Not(IsUnitType(unit_type=UnitType.CRUSADER_GUARDIAN_ANGEL)), OnTeam(team=team), Alive(), Grounded()])
     )
     target_attached = TargetStrategy(
         rankings=[
@@ -1702,6 +1726,7 @@ def create_crusader_guardian_angel(x: int, y: int, team: TeamType) -> int:
                             unit_condition=Not(
                                 All([
                                     Alive(),
+                                    Grounded(),
                                     OnTeam(team=team),
                                 ])
                             )
@@ -1808,6 +1833,7 @@ def create_crusader_longbowman(x: int, y: int, team: TeamType) -> int:
                         HasTarget(
                             unit_condition=All([
                                 Alive(),
+                                Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=gc.CRUSADER_LONGBOWMAN_ATTACK_RANGE,
@@ -1820,6 +1846,7 @@ def create_crusader_longbowman(x: int, y: int, team: TeamType) -> int:
                         HasTarget(
                             unit_condition=All([
                                 Alive(),
+                                Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=gc.CRUSADER_LONGBOWMAN_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
@@ -1840,7 +1867,8 @@ def create_crusader_longbowman(x: int, y: int, team: TeamType) -> int:
                                 ],
                                 visual=Visual.Arrow,
                                 projectile_offset_x=5*gc.MINIFOLKS_SCALE,
-                                projectile_offset_y=0
+                                projectile_offset_y=0,
+                                unit_condition=All([OnTeam(team=team.other()), Alive(), Grounded()]),
                             ),
                             PlaySound(SoundEffect(filename="arrow_fired_from_longbow.wav", volume=0.50)),
                         ]
@@ -1928,6 +1956,7 @@ def create_crusader_paladin(x: int, y: int, team: TeamType) -> int:
                         HasTarget(
                             unit_condition=All([
                                 Alive(),
+                                Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=gc.CRUSADER_PALADIN_ATTACK_RANGE,
@@ -2021,6 +2050,7 @@ def create_crusader_pikeman(x: int, y: int, team: TeamType) -> int:
                         HasTarget(
                             unit_condition=All([
                                 Alive(),
+                                Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=gc.CRUSADER_PIKEMAN_ATTACK_RANGE,
@@ -2043,6 +2073,7 @@ def create_crusader_pikeman(x: int, y: int, team: TeamType) -> int:
                         HasTarget(
                             unit_condition=All([
                                 Alive(),
+                                Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=gc.CRUSADER_PIKEMAN_ATTACK_RANGE,
@@ -2149,6 +2180,7 @@ def create_crusader_red_knight(x: int, y: int, team: TeamType) -> int:
                         HasTarget(
                             unit_condition=All([
                                 Alive(),
+                                Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=gc.CRUSADER_RED_KNIGHT_SKILL_RANGE,
@@ -2176,7 +2208,8 @@ def create_crusader_red_knight(x: int, y: int, team: TeamType) -> int:
                             scale=gc.CRUSADER_RED_KNIGHT_SKILL_AOE_SCALE,
                             unit_condition=All([
                                 OnTeam(team=team.other()),
-                                Alive()
+                                Alive(),
+                                Grounded(),
                             ]),
                             location=Recipient.PARENT
                         )
@@ -2188,6 +2221,7 @@ def create_crusader_red_knight(x: int, y: int, team: TeamType) -> int:
                         HasTarget(
                             unit_condition=All([
                                 Alive(),
+                                Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=gc.CRUSADER_RED_KNIGHT_ATTACK_RANGE,
@@ -2343,6 +2377,7 @@ def create_crusader_soldier(x: int, y: int, team: TeamType) -> int:
                         HasTarget(
                             unit_condition=All([
                                 Alive(),
+                                Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=gc.CRUSADER_SOLDIER_MELEE_RANGE,
@@ -2354,7 +2389,6 @@ def create_crusader_soldier(x: int, y: int, team: TeamType) -> int:
                     persistent_conditions=[
                         HasTarget(
                             unit_condition=All([
-                                Alive(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=gc.CRUSADER_SOLDIER_MELEE_RANGE + gc.TARGETTING_GRACE_DISTANCE,
@@ -2380,6 +2414,7 @@ def create_crusader_soldier(x: int, y: int, team: TeamType) -> int:
                         HasTarget(
                             unit_condition=All([
                                 Alive(),
+                                Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=gc.CRUSADER_SOLDIER_RANGED_RANGE,
@@ -2392,6 +2427,7 @@ def create_crusader_soldier(x: int, y: int, team: TeamType) -> int:
                         HasTarget(
                             unit_condition=All([
                                 Alive(),
+                                Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=gc.CRUSADER_SOLDIER_RANGED_RANGE + gc.TARGETTING_GRACE_DISTANCE,
@@ -2418,6 +2454,7 @@ def create_crusader_soldier(x: int, y: int, team: TeamType) -> int:
                                 visual=Visual.Arrow,
                                 projectile_offset_x=5*gc.MINIFOLKS_SCALE,
                                 projectile_offset_y=0,
+                                unit_condition=All([OnTeam(team=team.other()), Alive(), Grounded()]),
                             ),
                             PlaySound(
                                 sound_effects=[
@@ -2492,6 +2529,7 @@ def create_werebear(x: int, y: int, team: TeamType) -> int:
                         HasTarget(
                             unit_condition=All([
                                 Alive(),
+                                Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=gc.WEREBEAR_ATTACK_RANGE,
@@ -2567,6 +2605,7 @@ def create_zombie_basic_zombie(x: int, y: int, team: TeamType) -> int:
                         HasTarget(
                             unit_condition=All([
                                 Alive(),
+                                Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_RANGE,
@@ -2612,6 +2651,161 @@ def create_zombie_basic_zombie(x: int, y: int, team: TeamType) -> int:
                 AnimationType.WALKING: gc.ZOMBIE_BASIC_ZOMBIE_ANIMATION_WALKING_DURATION,
                 AnimationType.ABILITY1: gc.ZOMBIE_BASIC_ZOMBIE_ANIMATION_ATTACK_DURATION,
                 AnimationType.DYING: gc.ZOMBIE_BASIC_ZOMBIE_ANIMATION_DYING_DURATION,
+            },
+            sprite_center_offset=(2, 8),
+        )
+    )
+    esper.add_component(entity, WalkEffects({
+        frame: [PlaySound(sound_effects=[
+            (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+        ])]
+        for frame in [1, 3]
+    }))
+    return entity
+
+def create_zombie_jumper(x: int, y: int, team: TeamType) -> int:
+    """Create a jumper zombie entity with all necessary components."""
+    entity = unit_base_entity(
+        x=x,
+        y=y,
+        team=team,
+        unit_type=UnitType.ZOMBIE_JUMPER,
+        movement_speed=gc.ZOMBIE_JUMPER_MOVEMENT_SPEED,
+        health=gc.ZOMBIE_JUMPER_HP,
+        hitbox=Hitbox(width=16, height=32),
+    )
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            WeightedRanking(
+                rankings={
+                    ByDistance(entity=entity, y_bias=None, ascending=True): 1,
+                    ByCurrentHealth(ascending=False): -0.6,
+                },
+            ),
+        ],
+        unit_condition=All([OnTeam(team=team.other()), Alive()])
+    )
+    esper.add_component(
+        entity,
+        Destination(target_strategy=targetting_strategy, x_offset=gc.ZOMBIE_JUMPER_ATTACK_RANGE*2/3)
+    )
+    esper.add_component(entity, RangeIndicator([gc.ZOMBIE_JUMPER_MINIMUM_JUMP_RANGE, gc.ZOMBIE_JUMPER_MAXIMUM_JUMP_RANGE]))
+    esper.add_component(
+        entity,
+        Abilities(
+            abilities=[
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        SatisfiesUnitCondition(Grounded()),
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                Grounded(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.ZOMBIE_JUMPER_ATTACK_RANGE,
+                                    y_bias=3
+                                ),
+                            ])
+                        )
+                    ],
+                    persistent_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.ZOMBIE_JUMPER_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    y_bias=3
+                                ),
+                            ])
+                        )
+                    ],
+                    effects={3: [
+                        Damages(damage=gc.ZOMBIE_JUMPER_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                        AppliesStatusEffect(
+                            status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team),
+                            recipient=Recipient.TARGET
+                        )
+                    ]},
+                ),
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        Cooldown(duration=gc.ZOMBIE_JUMPER_JUMP_COOLDOWN),
+                        SatisfiesUnitCondition(Grounded()),
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                Grounded(),
+                                MinimumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.ZOMBIE_JUMPER_MINIMUM_JUMP_RANGE,
+                                    y_bias=None
+                                ),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.ZOMBIE_JUMPER_MAXIMUM_JUMP_RANGE,
+                                    y_bias=None
+                                ),
+                            ])
+                        )
+                    ],
+                    persistent_conditions=[
+                        SatisfiesUnitCondition(Grounded()),
+                        HasTarget(
+                            unit_condition=All([
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.ZOMBIE_JUMPER_MAXIMUM_JUMP_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    y_bias=None
+                                ),
+                            ])
+                        )
+                    ],
+                    effects={0: [
+                        Jump(
+                            min_range=gc.ZOMBIE_JUMPER_MINIMUM_JUMP_RANGE,
+                            max_range=gc.ZOMBIE_JUMPER_MAXIMUM_JUMP_RANGE,
+                            max_angle=gc.ZOMBIE_JUMPER_MAXIMUM_JUMP_ANGLE,
+                            effects=[],
+                        )
+                    ]},
+                )
+            ]
+        )
+    )
+    esper.add_component(entity, ImmuneToZombieInfection())
+    esper.add_component(
+        entity,
+        SpriteSheet(
+            surface=sprite_sheets[UnitType.ZOMBIE_JUMPER],
+            frame_width=100,
+            frame_height=100,
+            scale=gc.TINY_RPG_SCALE,
+            frames={
+                AnimationType.IDLE: 3,
+                AnimationType.WALKING: 4,
+                AnimationType.ABILITY1: 5,
+                AnimationType.ABILITY2: 3,
+                AnimationType.DYING: 6,
+                AnimationType.AIRBORNE: 1,
+            },
+            rows={
+                AnimationType.IDLE: 0,
+                AnimationType.WALKING: 1,
+                AnimationType.ABILITY1: 2,
+                AnimationType.ABILITY2: 0,
+                AnimationType.DYING: 3,
+                AnimationType.AIRBORNE: 0,
+            },
+            animation_durations={
+                AnimationType.IDLE: gc.ZOMBIE_JUMPER_ANIMATION_IDLE_DURATION,
+                AnimationType.WALKING: gc.ZOMBIE_JUMPER_ANIMATION_WALKING_DURATION,
+                AnimationType.ABILITY1: gc.ZOMBIE_JUMPER_ANIMATION_ATTACK_DURATION,
+                AnimationType.ABILITY2: gc.ZOMBIE_JUMPER_ANIMATION_JUMPING_DURATION,
+                AnimationType.DYING: gc.ZOMBIE_JUMPER_ANIMATION_DYING_DURATION,
+                AnimationType.AIRBORNE: gc.ZOMBIE_JUMPER_ANIMATION_AIRBORNE_DURATION,
             },
             sprite_center_offset=(2, 8),
         )
