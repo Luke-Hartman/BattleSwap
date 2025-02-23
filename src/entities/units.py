@@ -23,8 +23,8 @@ from components.aura import Aura
 from components.position import Position
 from components.animation import AnimationState, AnimationType
 from components.sprite_sheet import SpriteSheet
-from components.status_effect import CrusaderBannerBearerEmpowered, Fleeing, Healing, Ignited, StatusEffects, ZombieInfection
-from target_strategy import ByCurrentHealth, ByDistance, ByMaxHealth, ByMissingHealth, TargetStrategy, WeightedRanking
+from components.status_effect import CrusaderBannerBearerEmpowered, Fleeing, Healing, DamageOverTime, StatusEffects, ZombieInfection
+from target_strategy import ByCurrentHealth, ByDistance, ByMaxHealth, ByMissingHealth, ConditionPenalty, TargetStrategy, WeightedRanking
 from components.destination import Destination
 from components.team import Team, TeamType
 from components.unit_state import State, UnitState
@@ -35,7 +35,7 @@ from components.health import Health
 from components.orientation import Orientation, FacingDirection
 from effects import AppliesStatusEffect, AttachToTarget, CreatesAoE, CreatesAttachedVisual, CreatesLobbed, CreatesProjectile, Damages, Forget, Heals, IncreaseAmmo, Jump, PlaySound, Recipient, SoundEffect, StanceChange, RememberTarget
 from unit_condition import (
-    All, Alive, Always, AmmoEquals, Any, Grounded, HealthBelowPercent, InStance, IsEntity, IsUnitType, MaximumDistanceFromDestination, MinimumDistanceFromEntity, Never, Not, OnTeam,
+    All, Alive, Always, AmmoEquals, Any, Grounded, HasComponent, HealthBelowPercent, InStance, Infected, IsEntity, IsUnitType, MaximumDistanceFromDestination, MinimumDistanceFromEntity, Never, Not, OnTeam,
     MaximumDistanceFromEntity, RememberedBy, RememberedSatisfies
 )
 from visuals import Visual
@@ -63,6 +63,7 @@ unit_theme_ids: Dict[UnitType, str] = {
     UnitType.WEREBEAR: "#werebear_icon",
     UnitType.ZOMBIE_BASIC_ZOMBIE: "#zombie_basic_zombie_icon",
     UnitType.ZOMBIE_JUMPER: "#zombie_jumper_icon",
+    UnitType.ZOMBIE_SPITTER: "#zombie_spitter_icon",
 }
 
 unit_icon_surfaces: Dict[UnitType, pygame.Surface] = {}
@@ -92,6 +93,7 @@ unit_values: Dict[UnitType, int] = {
     UnitType.WEREBEAR: 100,
     UnitType.ZOMBIE_BASIC_ZOMBIE: 100,
     UnitType.ZOMBIE_JUMPER: 100,
+    UnitType.ZOMBIE_SPITTER: 100,
 }
 
 def load_sprite_sheets():
@@ -119,6 +121,7 @@ def load_sprite_sheets():
         UnitType.WEREBEAR: "Werebear.png",
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombie.png",
         UnitType.ZOMBIE_JUMPER: "ZombieBasicZombie.png",
+        UnitType.ZOMBIE_SPITTER: "ZombieBasicZombie.png",
     }
     for unit_type, filename in unit_filenames.items():
         path = os.path.join("assets", "units", filename)
@@ -147,6 +150,8 @@ def load_sprite_sheets():
         UnitType.CRUSADER_SOLDIER: "CrusaderSoldierIcon.png",
         UnitType.WEREBEAR: "WerebearIcon.png",
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombieIcon.png",
+        UnitType.ZOMBIE_JUMPER: "ZombieBasicZombieIcon.png",
+        UnitType.ZOMBIE_SPITTER: "ZombieSpitterIcon.png",
     }
     for unit_type, filename in unit_icon_paths.items():
         path = os.path.join("assets", "icons", filename)
@@ -177,6 +182,7 @@ def create_unit(x: int, y: int, unit_type: UnitType, team: TeamType) -> int:
         UnitType.WEREBEAR: create_werebear,
         UnitType.ZOMBIE_BASIC_ZOMBIE: create_zombie_basic_zombie,
         UnitType.ZOMBIE_JUMPER: create_zombie_jumper,
+        UnitType.ZOMBIE_SPITTER: create_zombie_spitter,
     }[unit_type](x, y, team)
 
 def unit_base_entity(
@@ -679,13 +685,6 @@ def create_core_wizard(x: int, y: int, team: TeamType) -> int:
                                     CreatesAoE(
                                         effects=[
                                             Damages(damage=gc.CORE_WIZARD_ATTACK_DAMAGE, recipient=Recipient.TARGET),
-                                            AppliesStatusEffect(
-                                                status_effect=Ignited(
-                                                    dps=gc.CORE_WIZARD_IGNITE_DAMAGE/gc.CORE_WIZARD_IGNITE_DURATION,
-                                                    time_remaining=gc.CORE_WIZARD_IGNITE_DURATION
-                                                ),
-                                                recipient=Recipient.TARGET
-                                            ),
                                         ],
                                         visual=Visual.Explosion,
                                         duration=gc.CORE_WIZARD_FIREBALL_AOE_DURATION,
@@ -2196,7 +2195,7 @@ def create_crusader_red_knight(x: int, y: int, team: TeamType) -> int:
                             effects=[
                                 Damages(damage=gc.CRUSADER_RED_KNIGHT_SKILL_DAMAGE, recipient=Recipient.TARGET),
                                 AppliesStatusEffect(
-                                    status_effect=Ignited(
+                                    status_effect=DamageOverTime(
                                         dps=gc.CRUSADER_RED_KNIGHT_SKILL_IGNITE_DAMAGE/gc.CRUSADER_RED_KNIGHT_SKILL_IGNITED_DURATION,
                                         time_remaining=gc.CRUSADER_RED_KNIGHT_SKILL_IGNITED_DURATION
                                     ),
@@ -2816,4 +2815,154 @@ def create_zombie_jumper(x: int, y: int, team: TeamType) -> int:
         ])]
         for frame in [1, 3]
     }))
+    return entity
+
+def create_zombie_spitter(x: int, y: int, team: TeamType) -> int:
+    """Create a spitter entity with all necessary components."""
+    entity = unit_base_entity(
+        x=x,
+        y=y,
+        team=team,
+        unit_type=UnitType.ZOMBIE_SPITTER,
+        movement_speed=gc.ZOMBIE_SPITTER_MOVEMENT_SPEED,
+        health=gc.ZOMBIE_SPITTER_HP,
+        hitbox=Hitbox(
+            width=16,
+            height=32,
+        )
+    )
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            WeightedRanking(
+                rankings={
+                    ByDistance(entity=entity, y_bias=2, ascending=True): 1,
+                    ConditionPenalty(condition_to_check=Any([Infected(), HasComponent(ImmuneToZombieInfection)]), value=300): 1,
+                },
+                ascending=True,
+            ),
+        ],
+        unit_condition=All([OnTeam(team=team.other()), Alive()])
+    )
+    esper.add_component(
+        entity,
+        Destination(target_strategy=targetting_strategy, x_offset=0)
+    )
+    esper.add_component(entity, RangeIndicator(ranges=[gc.ZOMBIE_SPITTER_ATTACK_RANGE]))
+    esper.add_component(entity, ImmuneToZombieInfection())
+    esper.add_component(
+        entity,
+        Abilities(
+            abilities=[
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                Grounded(),
+                                Not(Infected()),
+                                Not(HasComponent(ImmuneToZombieInfection)),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.ZOMBIE_SPITTER_ATTACK_RANGE,
+                                    y_bias=None
+                                )
+                            ])
+                        )
+                    ],
+                    persistent_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                Grounded(),
+                                Not(Infected()),
+                                Not(HasComponent(ImmuneToZombieInfection)),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.ZOMBIE_SPITTER_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    y_bias=None
+                                )
+                            ])
+                        )
+                    ],
+                    effects={
+                        3: [
+                            CreatesProjectile(
+                                projectile_speed=gc.ZOMBIE_SPITTER_PROJECTILE_SPEED,
+                                effects=[
+                                    AppliesStatusEffect(
+                                        status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team),
+                                        recipient=Recipient.TARGET
+                                    ),
+                                    AppliesStatusEffect(
+                                        status_effect=DamageOverTime(
+                                            time_remaining=gc.ZOMBIE_INFECTION_DURATION,
+                                            dps=gc.ZOMBIE_SPITTER_ATTACK_DAMAGE/gc.ZOMBIE_INFECTION_DURATION,
+                                        ),
+                                        recipient=Recipient.TARGET
+                                    )
+                                ],
+                                visual=Visual.Arrow,
+                                projectile_offset_x=5*gc.MINIFOLKS_SCALE,
+                                projectile_offset_y=0,
+                                unit_condition=All([OnTeam(team=team.other()), Alive(), Grounded(), Not(Infected())]),
+                            ),
+                            PlaySound(SoundEffect(filename="zombie_spitter_attack.wav", volume=0.50)),
+                        ]
+                    },
+                ),
+                # Uses basic zombie attack otherwise
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                Grounded(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_RANGE,
+                                    y_bias=3
+                                ),
+                            ])
+                        )
+                    ],
+                    persistent_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    y_bias=3
+                                ),
+                            ])
+                        )
+                    ],
+                    effects={3: [
+                        Damages(damage=gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                        AppliesStatusEffect(
+                            status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team),
+                            recipient=Recipient.TARGET
+                        )
+                    ]},
+                )
+            ]
+        )
+    )
+    esper.add_component(entity, SpriteSheet(
+        surface=sprite_sheets[UnitType.ZOMBIE_SPITTER],
+        frame_width=100,
+        frame_height=100,
+        scale=gc.TINY_RPG_SCALE,
+        frames={AnimationType.IDLE: 3, AnimationType.WALKING: 4, AnimationType.ABILITY1: 5, AnimationType.ABILITY2: 5, AnimationType.DYING: 6},
+        rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 2, AnimationType.ABILITY2: 2, AnimationType.DYING: 3},
+        animation_durations={
+            AnimationType.IDLE: gc.ZOMBIE_SPITTER_ANIMATION_IDLE_DURATION,
+            AnimationType.WALKING: gc.ZOMBIE_SPITTER_ANIMATION_WALKING_DURATION,
+            AnimationType.ABILITY1: gc.ZOMBIE_SPITTER_ANIMATION_ATTACK_DURATION,
+            AnimationType.ABILITY2: gc.ZOMBIE_BASIC_ZOMBIE_ANIMATION_ATTACK_DURATION,
+            AnimationType.DYING: gc.ZOMBIE_SPITTER_ANIMATION_DYING_DURATION,
+        },
+        sprite_center_offset=(2, 8),
+    ))
     return entity

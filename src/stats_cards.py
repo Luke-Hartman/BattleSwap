@@ -68,7 +68,7 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
             f"Speed: {gc.CORE_WIZARD_MOVEMENT_SPEED}",
             f"Range: {gc.CORE_WIZARD_ATTACK_RANGE}",
             f"Projectile Speed: {gc.CORE_WIZARD_PROJECTILE_SPEED}",
-            f"Special: Fireball attack explodes, damaging all units in an AoE and igniting them for {gc.CORE_WIZARD_IGNITE_DAMAGE} over {gc.CORE_WIZARD_IGNITE_DURATION} seconds.",
+            f"Special: Fireball attack explodes, damaging all units in an area, including allies and the wizard itself.",
             f"AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
         ]
     if unit_type == UnitType.CRUSADER_BANNER_BEARER:
@@ -257,7 +257,7 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
             f"DPS: {round(gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_DAMAGE/gc.ZOMBIE_BASIC_ZOMBIE_ANIMATION_ATTACK_DURATION, 2)}",
             f"Speed: {gc.ZOMBIE_BASIC_ZOMBIE_MOVEMENT_SPEED}",
             f"Range: {gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_RANGE}",
-            "Special: Zombies infect units they hit, causing them to turn into zombies when they die.",
+            "Special: Zombies infect units they hit for {gc.ZOMBIE_INFECTION_DURATION} seconds, causing them to turn into zombies when they die.",
             "AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
         ]
     if unit_type == UnitType.ZOMBIE_JUMPER:
@@ -269,8 +269,25 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
             f"DPS: {round(gc.ZOMBIE_JUMPER_ATTACK_DAMAGE/gc.ZOMBIE_JUMPER_ANIMATION_ATTACK_DURATION, 2)}",
             f"Speed: {gc.ZOMBIE_JUMPER_MOVEMENT_SPEED}",
             f"Range: {gc.ZOMBIE_JUMPER_ATTACK_RANGE}",
-            "Special: Zombies infect units they hit, causing them to turn into zombies when they die.",
+            "Special: Zombies infect units they hit for {gc.ZOMBIE_INFECTION_DURATION} seconds, causing them to turn into zombies when they die.",
             f"Special: Jumps to the nearest enemy, dealing {gc.ZOMBIE_JUMPER_JUMP_DAMAGE} damage. Has a range of {gc.ZOMBIE_JUMPER_MINIMUM_JUMP_RANGE}-{gc.ZOMBIE_JUMPER_MAXIMUM_JUMP_RANGE} units, and a cooldown of {gc.ZOMBIE_JUMPER_JUMP_COOLDOWN}s.",
             f"AI: Targets nearby enemies, prioritizing enemies with low current health.",
+        ]
+    if unit_type == UnitType.ZOMBIE_SPITTER:
+        return [
+            f"Name: Spitter",
+            f"Faction: Zombie",
+            f"Health: {gc.ZOMBIE_SPITTER_HP}",
+            f"Poison DPS: {round(gc.ZOMBIE_SPITTER_ATTACK_DAMAGE/gc.ZOMBIE_INFECTION_DURATION, 2)}",
+            f"Maximum Poison DPS: {round(gc.ZOMBIE_SPITTER_ATTACK_DAMAGE/gc.ZOMBIE_SPITTER_ANIMATION_ATTACK_DURATION, 2)}",
+            f"Melee Damage: {gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_DAMAGE}",
+            f"Melee DPS: {round(gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_DAMAGE/gc.ZOMBIE_BASIC_ZOMBIE_ANIMATION_ATTACK_DURATION, 2)}",
+            f"Speed: {gc.ZOMBIE_SPITTER_MOVEMENT_SPEED}",
+            f"Range: {gc.ZOMBIE_SPITTER_ATTACK_RANGE}",
+            f"Projectile Speed: {gc.ZOMBIE_SPITTER_PROJECTILE_SPEED}",
+            f"Special: Spitters projectiles infect units they hit for {gc.ZOMBIE_INFECTION_DURATION} seconds, causing them to turn into zombies when they die.",
+            f"Special: Spitter projectiles can only collide with non-infected enemies.",
+            f"Special: Spitter projectiles deal {gc.ZOMBIE_SPITTER_ATTACK_DAMAGE} damage over {gc.ZOMBIE_INFECTION_DURATION} seconds.",
+            f"AI: Targets the nearest enemy, preferring units that are infectable and are at the same height on the y-axis",
         ]
     raise NotImplementedError(unit_type)

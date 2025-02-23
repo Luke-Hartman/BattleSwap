@@ -84,7 +84,7 @@ class Damages(Effect):
         # Apply buffs/debuffs from the owner to the damage
         damage = self.damage
         applied_gold_knight_empowered = False
-        if owner and esper.entity_exists(owner):
+        if owner:
             status_effects = esper.component_for_entity(owner, StatusEffects)
             for status_effect in status_effects.active_effects():
                 if isinstance(status_effect, CrusaderBannerBearerEmpowered) and not applied_gold_knight_empowered:

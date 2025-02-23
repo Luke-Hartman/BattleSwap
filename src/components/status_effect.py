@@ -21,7 +21,7 @@ class CrusaderBannerBearerEmpowered(StatusEffect):
     damage_percentage = gc.CRUSADER_COMMANDER_EMPOWERED_DAMAGE_PERCENTAGE
 
 @dataclass
-class Ignited(StatusEffect):
+class DamageOverTime(StatusEffect):
     """Status effect that deals damage over time."""
 
     dps: float
@@ -54,7 +54,7 @@ class StatusEffects:
 
     def __init__(self):
         self._status_by_type = {
-            Ignited: [],
+            DamageOverTime: [],
             CrusaderBannerBearerEmpowered: [],
             Fleeing: [],
             Healing: [],
@@ -80,8 +80,8 @@ class StatusEffects:
     def active_effects(self) -> List[StatusEffect]:
         """Get the active status effects."""
         active_effects = []
-        if self._status_by_type[Ignited]:
-            strongest_ignited = max(self._status_by_type[Ignited], key=lambda e: e.dps)
+        if self._status_by_type[DamageOverTime]:
+            strongest_ignited = max(self._status_by_type[DamageOverTime], key=lambda e: e.dps)
             active_effects.append(strongest_ignited)
         if self._status_by_type[CrusaderBannerBearerEmpowered]:
             active_effects.append(self._status_by_type[CrusaderBannerBearerEmpowered][0])

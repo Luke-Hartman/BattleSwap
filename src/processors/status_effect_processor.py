@@ -2,7 +2,7 @@
 
 from components.dying import Dying
 from components.health import Health
-from components.status_effect import CrusaderBannerBearerEmpowered, Fleeing, Healing, Ignited, StatusEffects, ZombieInfection
+from components.status_effect import CrusaderBannerBearerEmpowered, Fleeing, Healing, DamageOverTime, StatusEffects, ZombieInfection
 import esper
 
 from components.unit_state import State, UnitState
@@ -14,7 +14,7 @@ class StatusEffectProcessor(esper.Processor):
         for ent, (status_effects,) in esper.get_components(StatusEffects):
             status_effects.update(dt)
             for status_effect in status_effects.active_effects():
-                if isinstance(status_effect, Ignited):
+                if isinstance(status_effect, DamageOverTime):
                     damage = status_effect.dps * dt
                     health = esper.component_for_entity(ent, Health)
                     health.current = max(health.current - damage, 0)

@@ -74,13 +74,11 @@ class AbilityProcessor(esper.Processor):
 
 def check_condition(entity: int, condition: Condition, ability: Union[Ability, InstantAbility], target: Optional[int] = None) -> bool:
     """Check if the condition is met for the given ability."""
-    if not esper.entity_exists(entity):
-        return False
     if isinstance(condition, Cooldown):
         if ability.time_since_last_use < condition.duration:
             return False
     elif isinstance(condition, HasTarget):
-        if target is None or not esper.entity_exists(target):
+        if target is None:
             return False
         if not condition.unit_condition.check(target):
             return False

@@ -79,6 +79,17 @@ class ByCurrentHealth(Ranking):
         health = esper.component_for_entity(ent, Health)
         return health.current
 
+class ConditionPenalty(Ranking):
+
+    def __init__(self, condition_to_check: UnitCondition, value: float, ascending: bool = True):
+        # Note that self.unit_condition means something else
+        self.condition_to_check = condition_to_check
+        self.value = value
+        super().__init__(ascending=ascending)
+
+    def _key(self, ent: int) -> float:
+        return self.value if self.condition_to_check.check(ent) else 0
+
 class TargetStrategy:
     """Represents a target strategy."""
 

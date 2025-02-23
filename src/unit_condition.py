@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Type
 import math
 
 import esper
@@ -11,9 +11,11 @@ from components.ammo import Ammo
 from components.entity_memory import EntityMemory
 from components.health import Health
 from components.hitbox import Hitbox
+from components.immunity import ImmuneToZombieInfection
 from components.orientation import Orientation
 from components.position import Position
 from components.stance import Stance
+from components.status_effect import StatusEffects, ZombieInfection
 from components.team import Team, TeamType
 from components.unit_state import State, UnitState
 from components.unit_type import UnitType, UnitTypeComponent
@@ -277,3 +279,29 @@ class IsUnitType(UnitCondition):
     def check(self, entity: int) -> bool:
         unit_type = esper.try_component(entity, UnitTypeComponent)
         return unit_type is not None and unit_type.type == self.unit_type
+
+@dataclass
+class Infected(UnitCondition):
+    """The unit is infected with a zombie infection."""
+
+    def check_return_team(self, entity: int) -> Optional[TeamType]:
+        if not esper.has_component(entity, ImmuneToZombieInfection):
+            status_effects = esper.component_for_entity(entity, StatusEffects)
+            for effect in status_effects.active_effects():
+                if isinstance(effect, ZombieInfection):
+                    return effect.team
+        return None
+
+    def check(self, entity: int) -> bool:
+        return self.check_return_team(entity) is not None
+
+
+@dataclass
+class HasComponent(UnitCondition):
+    """The unit has the given component."""
+
+    component: Type
+    """The component to check against."""
+
+    def check(self, entity: int) -> bool:
+        return esper.has_component(entity, self.component)
