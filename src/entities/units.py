@@ -64,6 +64,7 @@ unit_theme_ids: Dict[UnitType, str] = {
     UnitType.ZOMBIE_BASIC_ZOMBIE: "#zombie_basic_zombie_icon",
     UnitType.ZOMBIE_JUMPER: "#zombie_jumper_icon",
     UnitType.ZOMBIE_SPITTER: "#zombie_spitter_icon",
+    UnitType.ZOMBIE_TANK: "#zombie_tank_icon",
 }
 
 unit_icon_surfaces: Dict[UnitType, pygame.Surface] = {}
@@ -94,6 +95,7 @@ unit_values: Dict[UnitType, int] = {
     UnitType.ZOMBIE_BASIC_ZOMBIE: 100,
     UnitType.ZOMBIE_JUMPER: 100,
     UnitType.ZOMBIE_SPITTER: 100,
+    UnitType.ZOMBIE_TANK: 100,
 }
 
 def load_sprite_sheets():
@@ -122,6 +124,7 @@ def load_sprite_sheets():
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombie.png",
         UnitType.ZOMBIE_JUMPER: "ZombieBasicZombie.png",
         UnitType.ZOMBIE_SPITTER: "ZombieBasicZombie.png",
+        UnitType.ZOMBIE_TANK: "ZombieBasicZombie.png",
     }
     for unit_type, filename in unit_filenames.items():
         path = os.path.join("assets", "units", filename)
@@ -152,6 +155,7 @@ def load_sprite_sheets():
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombieIcon.png",
         UnitType.ZOMBIE_JUMPER: "ZombieBasicZombieIcon.png",
         UnitType.ZOMBIE_SPITTER: "ZombieSpitterIcon.png",
+        UnitType.ZOMBIE_TANK: "ZombieTankIcon.png",
     }
     for unit_type, filename in unit_icon_paths.items():
         path = os.path.join("assets", "icons", filename)
@@ -183,6 +187,7 @@ def create_unit(x: int, y: int, unit_type: UnitType, team: TeamType) -> int:
         UnitType.ZOMBIE_BASIC_ZOMBIE: create_zombie_basic_zombie,
         UnitType.ZOMBIE_JUMPER: create_zombie_jumper,
         UnitType.ZOMBIE_SPITTER: create_zombie_spitter,
+        UnitType.ZOMBIE_TANK: create_zombie_tank,
     }[unit_type](x, y, team)
 
 def unit_base_entity(
@@ -2965,4 +2970,93 @@ def create_zombie_spitter(x: int, y: int, team: TeamType) -> int:
         },
         sprite_center_offset=(2, 8),
     ))
+    return entity
+
+def create_zombie_tank(x: int, y: int, team: TeamType) -> int:
+    """Create a tank zombie entity with all necessary components."""
+    entity = unit_base_entity(
+        x=x,
+        y=y,
+        team=team,
+        unit_type=UnitType.ZOMBIE_TANK,
+        movement_speed=gc.ZOMBIE_TANK_MOVEMENT_SPEED,
+        health=gc.ZOMBIE_TANK_HP,
+        hitbox=Hitbox(width=16, height=32),
+    )
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=2, ascending=True),
+        ],
+        unit_condition=All([OnTeam(team=team.other()), Alive()])
+    )
+    esper.add_component(
+        entity,
+        Destination(target_strategy=targetting_strategy, x_offset=gc.ZOMBIE_TANK_ATTACK_RANGE*2/3)
+    )
+    esper.add_component(
+        entity,
+        Abilities(
+            abilities=[
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                Grounded(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.ZOMBIE_TANK_ATTACK_RANGE,
+                                    y_bias=3
+                                ),
+                            ])
+                        )
+                    ],
+                    persistent_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.ZOMBIE_TANK_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    y_bias=3
+                                ),
+                            ])
+                        )
+                    ],
+                    effects={3: [
+                        Damages(damage=gc.ZOMBIE_TANK_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                        AppliesStatusEffect(
+                            status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team),
+                            recipient=Recipient.TARGET
+                        )
+                    ]},
+                )
+            ]
+        )
+    )
+    esper.add_component(entity, ImmuneToZombieInfection())
+    esper.add_component(
+        entity,
+        SpriteSheet(
+            surface=sprite_sheets[UnitType.ZOMBIE_TANK],
+            frame_width=100,
+            frame_height=100,
+            scale=2*gc.TINY_RPG_SCALE,
+            frames={AnimationType.IDLE: 3, AnimationType.WALKING: 4, AnimationType.ABILITY1: 5, AnimationType.DYING: 6},
+            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 2, AnimationType.DYING: 3},
+            animation_durations={
+                AnimationType.IDLE: gc.ZOMBIE_TANK_ANIMATION_IDLE_DURATION,
+                AnimationType.WALKING: gc.ZOMBIE_TANK_ANIMATION_WALKING_DURATION,
+                AnimationType.ABILITY1: gc.ZOMBIE_TANK_ANIMATION_ATTACK_DURATION,
+                AnimationType.DYING: gc.ZOMBIE_TANK_ANIMATION_DYING_DURATION,
+            },
+            sprite_center_offset=(2, 8),
+        )
+    )
+    esper.add_component(entity, WalkEffects({
+        frame: [PlaySound(sound_effects=[
+            (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+        ])]
+        for frame in [1, 3]
+    }))
     return entity

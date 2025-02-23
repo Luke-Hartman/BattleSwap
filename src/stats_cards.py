@@ -290,4 +290,16 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
             f"Special: Spitter projectiles deal {gc.ZOMBIE_SPITTER_ATTACK_DAMAGE} damage over {gc.ZOMBIE_INFECTION_DURATION} seconds.",
             f"AI: Targets the nearest enemy, preferring units that are infectable and are at the same height on the y-axis",
         ]
+    if unit_type == UnitType.ZOMBIE_TANK:
+        return [
+            f"Name: Tank",
+            f"Faction: Zombie",
+            f"Health: {gc.ZOMBIE_TANK_HP}",
+            f"Attack: {gc.ZOMBIE_TANK_ATTACK_DAMAGE}",
+            f"DPS: {round(gc.ZOMBIE_TANK_ATTACK_DAMAGE/gc.ZOMBIE_TANK_ANIMATION_ATTACK_DURATION, 2)}",
+            f"Speed: {gc.ZOMBIE_TANK_MOVEMENT_SPEED}",
+            f"Range: {gc.ZOMBIE_TANK_ATTACK_RANGE}",
+            "Special: Zombies infect units they hit for {gc.ZOMBIE_INFECTION_DURATION} seconds, causing them to turn into zombies when they die.",
+            "AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
+        ]
     raise NotImplementedError(unit_type)

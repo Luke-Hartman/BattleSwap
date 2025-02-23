@@ -27,6 +27,7 @@ class UnitType(str, Enum):
     ZOMBIE_BASIC_ZOMBIE = "ZOMBIE_BASIC_ZOMBIE"
     ZOMBIE_JUMPER = "ZOMBIE_JUMPER"
     ZOMBIE_SPITTER = "ZOMBIE_SPITTER"
+    ZOMBIE_TANK = "ZOMBIE_TANK"
 
 class UnitTypeComponent:
     """Component that stores the type of a unit."""
