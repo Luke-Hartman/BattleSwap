@@ -28,5 +28,5 @@ class DyingProcessor(esper.Processor):
                         team=zombie_infection.team,
                         unit_type=UnitType.ZOMBIE_BASIC_ZOMBIE
                     )
+                    esper.delete_entity(ent)
             esper.remove_component(ent, Dying)
-

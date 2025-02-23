@@ -33,6 +33,8 @@ class CombatHandler:
 
     def handle_ability_activated(self, event: AbilityActivatedEvent):
         owner = event.entity
+        if not esper.entity_exists(owner):
+            return
         abilities = esper.component_for_entity(owner, Abilities)
         ability = abilities.abilities[event.index]
         for effect in ability.effects[event.frame]:
@@ -43,6 +45,8 @@ class CombatHandler:
             )
     def handle_instant_ability_triggered(self, event: InstantAbilityTriggeredEvent):
         owner = event.entity
+        if not esper.entity_exists(owner):
+            return
         instant_abilities = esper.component_for_entity(owner, InstantAbilities)
         ability = instant_abilities.abilities[event.index]
         for effect in ability.effects:
@@ -55,6 +59,8 @@ class CombatHandler:
     def handle_projectile_hit(self, event: ProjectileHitEvent):
         projectile_ent = event.entity
         target_ent = event.target
+        if not esper.entity_exists(projectile_ent) or not esper.entity_exists(target_ent):
+            return
         projectile = esper.component_for_entity(projectile_ent, Projectile)
         for effect in projectile.effects:
             effect.apply(
@@ -66,6 +72,8 @@ class CombatHandler:
     def handle_aoe_hit(self, event: AoEHitEvent):
         aoe_ent = event.entity
         target_ent = event.target
+        if not esper.entity_exists(aoe_ent) or not esper.entity_exists(target_ent):
+            return
         aoe = esper.component_for_entity(aoe_ent, AoE)
         if target_ent in aoe.hit_entities:
             return
@@ -82,6 +90,8 @@ class CombatHandler:
     def handle_aura_hit(self, event: AuraHitEvent):
         aura_ent = event.entity
         target_ent = event.target
+        if not esper.entity_exists(aura_ent) or not esper.entity_exists(target_ent):
+            return
         aura = esper.component_for_entity(aura_ent, Aura)
         
         if aura.unit_condition.check(target_ent):
@@ -94,6 +104,8 @@ class CombatHandler:
 
     def handle_lobbed_arrived(self, event: LobbedArrivedEvent):
         lobbed_ent = event.entity
+        if not esper.entity_exists(lobbed_ent):
+            return
         lobbed = esper.component_for_entity(lobbed_ent, Lobbed)
         for effect in lobbed.effects:
             effect.apply(
