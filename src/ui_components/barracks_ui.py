@@ -14,7 +14,7 @@ from progress_manager import progress_manager
 class UnitCount(UIPanel):
     """A custom UI button that displays a unit icon and its count."""
     
-    size = 64
+    size = 80
     
     def __init__(self, 
         x_pos: int,
@@ -139,8 +139,8 @@ class BarracksUI(UIPanel):
         visible_unit_count = len(self._units)
         total_width = visible_unit_count * (UnitCount.size + padding // 2) - padding // 2 if visible_unit_count > 0 else 0
         needs_scrollbar = total_width > panel_width - 2 * padding
-        panel_height = 110 if needs_scrollbar else 85
-        
+        panel_height = UnitCount.size + 45 if needs_scrollbar else UnitCount.size + 20
+
         return needs_scrollbar, panel_height
 
     def _create_container(self, panel_width: int, panel_height: int, padding: int, needs_scrollbar: bool) -> None:
