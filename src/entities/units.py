@@ -3,10 +3,11 @@
 This module contains functions for creating different types of units with their corresponding components.
 """
 
+from enum import Enum
 import esper
 import pygame
 import os
-from typing import Dict
+from typing import Dict, List
 from components.ammo import Ammo
 from components.attached import Attached
 from components.hitbox import Hitbox
@@ -71,31 +72,72 @@ unit_icon_surfaces: Dict[UnitType, pygame.Surface] = {}
 
 sprite_sheets: Dict[UnitType, pygame.Surface] = {}
 
+class Faction(Enum):
+    CORE = 0
+    CRUSADERS = 1
+    ZOMBIES = 2
+    MISC = 3
+    
+    @staticmethod
+    def faction_of(unit_type: UnitType) -> "Faction":
+        return _unit_to_faction[unit_type]
+
+    @staticmethod
+    def units(faction: "Faction") -> List[UnitType]:
+        return [unit_type for unit_type, faction_value in _unit_to_faction.items() if faction_value == faction]
+
+_unit_to_faction = {
+    UnitType.CORE_ARCHER: Faction.CORE,
+    UnitType.CORE_CAVALRY: Faction.CORE,
+    UnitType.CORE_DUELIST: Faction.CORE,
+    UnitType.CORE_SWORDSMAN: Faction.CORE,
+    UnitType.CORE_WIZARD: Faction.CORE,
+    UnitType.CRUSADER_BANNER_BEARER: Faction.CRUSADERS,
+    UnitType.CRUSADER_BLACK_KNIGHT: Faction.CRUSADERS,
+    UnitType.CRUSADER_CATAPULT: Faction.CRUSADERS,
+    UnitType.CRUSADER_CLERIC: Faction.CRUSADERS,
+    UnitType.CRUSADER_COMMANDER: Faction.CRUSADERS,
+    UnitType.CRUSADER_CROSSBOWMAN: Faction.CRUSADERS,
+    UnitType.CRUSADER_DEFENDER: Faction.CRUSADERS,
+    UnitType.CRUSADER_GOLD_KNIGHT: Faction.CRUSADERS,
+    UnitType.CRUSADER_GUARDIAN_ANGEL: Faction.CRUSADERS,
+    UnitType.CRUSADER_LONGBOWMAN: Faction.CRUSADERS,
+    UnitType.CRUSADER_PALADIN: Faction.CRUSADERS,
+    UnitType.CRUSADER_PIKEMAN: Faction.CRUSADERS,
+    UnitType.CRUSADER_RED_KNIGHT: Faction.CRUSADERS,
+    UnitType.CRUSADER_SOLDIER: Faction.CRUSADERS,
+    UnitType.ZOMBIE_BASIC_ZOMBIE: Faction.ZOMBIES,
+    UnitType.ZOMBIE_JUMPER: Faction.ZOMBIES,
+    UnitType.ZOMBIE_SPITTER: Faction.ZOMBIES,
+    UnitType.ZOMBIE_TANK: Faction.ZOMBIES,
+    UnitType.WEREBEAR: Faction.MISC,
+}
+
 unit_values: Dict[UnitType, int] = {
     UnitType.CORE_ARCHER: 100,
-    UnitType.CORE_DUELIST: 100,
+    UnitType.CORE_DUELIST: 200,
     UnitType.CORE_CAVALRY: 100,
     UnitType.CORE_SWORDSMAN: 100,
-    UnitType.CORE_WIZARD: 100,
+    UnitType.CORE_WIZARD: 300,
     UnitType.CRUSADER_BANNER_BEARER: 100,
     UnitType.CRUSADER_BLACK_KNIGHT: 100,
     UnitType.CRUSADER_CATAPULT: 100,
-    UnitType.CRUSADER_CLERIC: 100,
+    UnitType.CRUSADER_CLERIC: 200,
     UnitType.CRUSADER_COMMANDER: 100,
-    UnitType.CRUSADER_CROSSBOWMAN: 100,
+    UnitType.CRUSADER_CROSSBOWMAN: 200,
     UnitType.CRUSADER_DEFENDER: 100,
-    UnitType.CRUSADER_GOLD_KNIGHT: 100,
-    UnitType.CRUSADER_GUARDIAN_ANGEL: 100,
+    UnitType.CRUSADER_GOLD_KNIGHT: 300,
+    UnitType.CRUSADER_GUARDIAN_ANGEL: 200,
     UnitType.CRUSADER_LONGBOWMAN: 100,
-    UnitType.CRUSADER_PALADIN: 100,
+    UnitType.CRUSADER_PALADIN: 300,
     UnitType.CRUSADER_PIKEMAN: 100,
     UnitType.CRUSADER_RED_KNIGHT: 100,
-    UnitType.CRUSADER_SOLDIER: 100,
+    UnitType.CRUSADER_SOLDIER: 150,
     UnitType.WEREBEAR: 100,
-    UnitType.ZOMBIE_BASIC_ZOMBIE: 100,
-    UnitType.ZOMBIE_JUMPER: 100,
-    UnitType.ZOMBIE_SPITTER: 100,
-    UnitType.ZOMBIE_TANK: 100,
+    UnitType.ZOMBIE_BASIC_ZOMBIE: 50,
+    UnitType.ZOMBIE_JUMPER: 200,
+    UnitType.ZOMBIE_SPITTER: 200,
+    UnitType.ZOMBIE_TANK: 300,
 }
 
 def load_sprite_sheets():
