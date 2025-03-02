@@ -990,7 +990,7 @@
     "is_test": false,
     "tip_voice_filename": null,
     "grades": {
-      "a_cutoff": 700,
+      "a_cutoff": 600,
       "b_cutoff": 1000,
       "c_cutoff": 1400,
       "d_cutoff": 1900
@@ -1070,7 +1070,7 @@
     "grades": {
       "a_cutoff": 600,
       "b_cutoff": 800,
-      "c_cutoff": 9000,
+      "c_cutoff": 900,
       "d_cutoff": 1100
     }
   },
@@ -1593,7 +1593,7 @@
     "is_test": false,
     "tip_voice_filename": null,
     "grades": {
-      "a_cutoff": 400,
+      "a_cutoff": 300,
       "b_cutoff": 600,
       "c_cutoff": 900,
       "d_cutoff": 1200
