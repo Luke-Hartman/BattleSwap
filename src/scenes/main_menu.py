@@ -6,7 +6,7 @@ from scenes.scene import Scene
 from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event
 from scenes.events import SettingsSceneEvent, SetupBattleSceneEvent, CampaignSceneEvent, DeveloperToolsSceneEvent
 from world_map_view import WorldMapView
-from progress_manager import progress_manager, reset_progress
+from progress_manager import progress_manager, reset_progress, has_incompatible_save
 
 class MainMenuScene(Scene):
     """Main menu scene with primary navigation options for the game."""
@@ -20,6 +20,17 @@ class MainMenuScene(Scene):
         self.developer_mode = developer_mode
         self.confirmation_dialog: Optional[pygame_gui.windows.UIConfirmationDialog] = None
         self.create_buttons(developer_mode)
+        
+        # Check for incompatible save file
+        if has_incompatible_save():
+            self.confirmation_dialog = pygame_gui.windows.UIConfirmationDialog(
+                rect=pygame.Rect((pygame.display.Info().current_w/2 - 200, pygame.display.Info().current_h/2 - 100), (400, 200)),
+                manager=self.manager,
+                window_title="Game Updated",
+                action_long_desc="The game has had breaking changes and your saved progress is no longer compatible. You'll need to reset your progress. Sorry for the inconvenience!",
+                action_short_name="Reset Progress",
+                blocking=True
+            )
 
     def create_buttons(self, developer_mode: bool) -> None:
         button_width = 300
@@ -196,7 +207,8 @@ class MainMenuScene(Scene):
                 elif event.user_type == pygame_gui.UI_CONFIRMATION_DIALOG_CONFIRMED:
                     if self.confirmation_dialog is not None:
                         if event.ui_element == self.confirmation_dialog:
-                            if self.confirmation_dialog.title_bar.text == "Reset Progress":
+                            if (self.confirmation_dialog.title_bar.text == "Reset Progress" or 
+                                self.confirmation_dialog.title_bar.text == "Game Updated"):
                                 reset_progress()
                             elif self.confirmation_dialog.title_bar.text == "Quit Game":
                                 return False

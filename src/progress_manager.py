@@ -13,6 +13,9 @@ from components.unit_type import UnitType
 from unit_values import unit_values
 from hex_grid import hex_neighbors
 
+# Current version of the progress manager
+# Increment this when making breaking changes to save file format
+CURRENT_VERSION = 1
 
 def calculate_points_for_units(units: List[Tuple[UnitType, Tuple[float, float]]]) -> int:
     """Calculate total points for a list of unit placements."""
@@ -54,6 +57,7 @@ class Solution(BaseModel):
 
 
 class ProgressManager(BaseModel):
+    version: int = CURRENT_VERSION
     solutions: Dict[Tuple[int, int], Solution] = {}
     game_completed: bool = False
 
@@ -207,6 +211,15 @@ def save_progress() -> None:
         json.dump(progress_manager.model_dump(), file, indent=4)
 
 
+def is_save_compatible(save_data: dict) -> bool:
+    """Check if the save file is compatible with current version.
+    
+    Returns:
+        bool: True if the save is compatible, False otherwise.
+    """
+    return save_data.get('version', 0) == CURRENT_VERSION
+
+
 def load_progress() -> None:
     """Load the progress from the JSON file or create default progress if the file doesn't exist."""
     global progress_manager
@@ -214,7 +227,12 @@ def load_progress() -> None:
     
     if progress_path.exists():
         with open(progress_path, "r") as file:
-            new_progress = ProgressManager.model_validate_json(file.read())
+            save_data = json.load(file)
+            if not is_save_compatible(save_data):
+                # Create new progress if version is incompatible
+                new_progress = ProgressManager()
+            else:
+                new_progress = ProgressManager.model_validate(save_data)
     else:
         new_progress = ProgressManager()
         # Save default progress
@@ -232,6 +250,23 @@ def reset_progress() -> None:
     global progress_manager
     progress_manager.solutions = {}
     save_progress()
+
+def has_incompatible_save() -> bool:
+    """Check if there is an incompatible save file.
+    
+    Returns:
+        bool: True if there is an incompatible save file, False otherwise.
+    """
+    progress_path = get_progress_path()
+    if not progress_path.exists():
+        return False
+        
+    try:
+        with open(progress_path, "r") as file:
+            save_data = json.load(file)
+            return not is_save_compatible(save_data)
+    except (json.JSONDecodeError, IOError):
+        return False
 
 # Initialize progress on module import
 load_progress()
