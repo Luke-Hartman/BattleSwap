@@ -322,7 +322,7 @@ def get_unit_placements(team_type: TeamType, hex_coords: Tuple[int, int]) -> Lis
     return [
         (unit_type.type, (round(pos.x - world_x), round(pos.y - world_y)))
         for ent, (unit_type, team, pos) in esper.get_components(UnitTypeComponent, Team, Position)
-        if team.type == team_type
+        if team.type == team_type and ent not in esper._dead_entities
     ]
 
 def mouse_over_ui(manager: pygame_gui.UIManager) -> bool:

@@ -3,6 +3,7 @@
 from typing import List
 from components.unit_type import UnitType
 from game_constants import gc
+from unit_values import unit_values
 
 def get_stats_card_text(unit_type: UnitType) -> List[str]:
     """Get the stats card text for a given unit type.
@@ -17,6 +18,7 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
         return [
             f"Name: Archer",
             f"Faction: Core",
+            f"Value: {unit_values[unit_type]}",
             f"Health: {gc.CORE_ARCHER_HP}",
             f"Attack: {gc.CORE_ARCHER_ATTACK_DAMAGE}",
             f"DPS: {round(gc.CORE_ARCHER_ATTACK_DAMAGE/gc.CORE_ARCHER_ANIMATION_ATTACK_DURATION, 2)}",
@@ -29,6 +31,7 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
         return [
             f"Name: Cavalry",
             f"Faction: Core",
+            f"Value: {unit_values[unit_type]}",
             f"Health: {gc.CORE_CAVALRY_HP}",
             f"Attack: {gc.CORE_CAVALRY_ATTACK_DAMAGE}",
             f"DPS: {round(gc.CORE_CAVALRY_ATTACK_DAMAGE/gc.CORE_CAVALRY_ANIMATION_ATTACK_DURATION, 2)}",
@@ -40,6 +43,7 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
         return [
             f"Name: Duelist",
             f"Faction: Core",
+            f"Value: {unit_values[unit_type]}",
             f"Health: {gc.CORE_DUELIST_HP}",
             f"Attack: {round(gc.CORE_DUELIST_ATTACK_DAMAGE/7, 2)} * 7",
             f"DPS: {round(gc.CORE_DUELIST_ATTACK_DAMAGE/gc.CORE_DUELIST_ANIMATION_ATTACK_DURATION, 2)}",
@@ -51,6 +55,7 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
         return [
             f"Name: Swordsman",
             f"Faction: Core",
+            f"Value: {unit_values[unit_type]}",
             f"Health: {gc.CORE_SWORDSMAN_HP}",
             f"Attack: {gc.CORE_SWORDSMAN_ATTACK_DAMAGE}",
             f"DPS: {round(gc.CORE_SWORDSMAN_ATTACK_DAMAGE/gc.CORE_SWORDSMAN_ANIMATION_ATTACK_DURATION, 2)}",
@@ -62,6 +67,7 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
         return [
             f"Name: Wizard",
             f"Faction: Core",
+            f"Value: {unit_values[unit_type]}",
             f"Health: {gc.CORE_WIZARD_HP}",
             f"Attack: {gc.CORE_WIZARD_ATTACK_DAMAGE}",
             f"DPS: {round(gc.CORE_WIZARD_ATTACK_DAMAGE/gc.CORE_WIZARD_ANIMATION_ATTACK_DURATION, 2)}",
@@ -75,6 +81,7 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
         return [
             f"Name: Banner Bearer",
             f"Faction: Crusader",
+            f"Value: {unit_values[unit_type]}",
             f"Health: {gc.CRUSADER_BANNER_BEARER_HP}",
             f"Speed: {gc.CRUSADER_BANNER_BEARER_MOVEMENT_SPEED}",
             f"Special: Banner Bearers have an aura which gives allied units {round(gc.CRUSADER_BANNER_BEARER_AURA_DAMAGE_PERCENTAGE*100)}% increased damage (does not stack with itself).",
@@ -84,6 +91,7 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
         return [
             f"Name: Black Knight",
             f"Faction: Crusader",
+            f"Value: {unit_values[unit_type]}",
             f"Health: {gc.CRUSADER_BLACK_KNIGHT_HP}",
             f"Attack: {gc.CRUSADER_BLACK_KNIGHT_ATTACK_DAMAGE}",
             f"DPS: {round(gc.CRUSADER_BLACK_KNIGHT_ATTACK_DAMAGE/gc.CRUSADER_BLACK_KNIGHT_ANIMATION_ATTACK_DURATION, 2)}",
@@ -97,6 +105,7 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
         return [
             f"Name: Catapult",
             f"Faction: Crusader",
+            f"Value: {unit_values[unit_type]}",
             f"Health: {gc.CRUSADER_CATAPULT_HP}",
             f"Attack: {gc.CRUSADER_CATAPULT_DAMAGE}",
             f"DPS: {round(gc.CRUSADER_CATAPULT_DAMAGE/gc.CRUSADER_CATAPULT_ANIMATION_ATTACK_DURATION, 2)}",
@@ -109,6 +118,7 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
         return [
             f"Name: Healer",
             f"Faction: Crusader",
+            f"Value: {unit_values[unit_type]}",
             f"Health: {gc.CRUSADER_CLERIC_HP}",
             f"Healing: {gc.CRUSADER_CLERIC_HEALING}",
             f"Healing DPS: {round(gc.CRUSADER_CLERIC_HEALING/gc.CRUSADER_CLERIC_ANIMATION_ATTACK_DURATION, 2)}",
@@ -120,6 +130,7 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
         return [
             f"Name: Commander",
             f"Faction: Crusader",
+            f"Value: {unit_values[unit_type]}",
             f"Health: {gc.CRUSADER_COMMANDER_HP}",
             f"Attack: {gc.CRUSADER_COMMANDER_ATTACK_DAMAGE}",
             f"DPS: {round(gc.CRUSADER_COMMANDER_ATTACK_DAMAGE/gc.CRUSADER_COMMANDER_ANIMATION_ATTACK_DURATION, 2)}",
@@ -131,6 +142,7 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
         return [
             f"Name: Crossbowman",
             f"Faction: Crusader",
+            f"Value: {unit_values[unit_type]}",
             f"Health: {gc.CRUSADER_CROSSBOWMAN_HP}",
             f"Attack: {gc.CRUSADER_CROSSBOWMAN_ATTACK_DAMAGE}",
             f"Firing DPS: {round(gc.CRUSADER_CROSSBOWMAN_ATTACK_DAMAGE/gc.CRUSADER_CROSSBOWMAN_ANIMATION_ATTACK_DURATION, 2)}",
@@ -144,6 +156,7 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
         return [
             f"Name: Defender",
             f"Faction: Crusader",
+            f"Value: {unit_values[unit_type]}",
             f"Health: {gc.CRUSADER_DEFENDER_HP}",
             f"Attack: {gc.CRUSADER_DEFENDER_ATTACK_DAMAGE}",
             f"DPS: {round(gc.CRUSADER_DEFENDER_ATTACK_DAMAGE/gc.CRUSADER_DEFENDER_ANIMATION_ATTACK_DURATION, 2)}",
@@ -156,6 +169,7 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
         return [
             f"Name: Gold Knight",
             f"Faction: Crusader",
+            f"Value: {unit_values[unit_type]}",
             f"Health: {gc.CRUSADER_GOLD_KNIGHT_HP}",
             f"Attack: {gc.CRUSADER_GOLD_KNIGHT_ATTACK_DAMAGE}",
             f"DPS: {round(gc.CRUSADER_GOLD_KNIGHT_ATTACK_DAMAGE/gc.CRUSADER_GOLD_KNIGHT_ANIMATION_ATTACK_DURATION, 2)}",
@@ -168,6 +182,7 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
         return [
             f"Name: Guardian Angel",
             f"Faction: Crusader",
+            f"Value: {unit_values[unit_type]}",
             f"Health: {gc.CRUSADER_GUARDIAN_ANGEL_HP}",
             f"Healing: {gc.CRUSADER_GUARDIAN_ANGEL_HEALING}",
             f"Healing DPS: {round(gc.CRUSADER_GUARDIAN_ANGEL_HEALING/gc.CRUSADER_GUARDIAN_ANGEL_HEAL_COOLDOWN, 2)}",
@@ -180,6 +195,7 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
         return [
             f"Name: Longbowman",
             f"Faction: Crusader",
+            f"Value: {unit_values[unit_type]}",
             f"Health: {gc.CRUSADER_LONGBOWMAN_HP}",
             f"Attack: {gc.CRUSADER_LONGBOWMAN_ATTACK_DAMAGE}",
             f"DPS: {round(gc.CRUSADER_LONGBOWMAN_ATTACK_DAMAGE/gc.CRUSADER_LONGBOWMAN_ANIMATION_ATTACK_DURATION, 2)}",
@@ -191,6 +207,7 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
         return [
             f"Name: Paladin",
             f"Faction: Crusader",
+            f"Value: {unit_values[unit_type]}",
             f"Health: {gc.CRUSADER_PALADIN_HP}",
             f"Attack: {gc.CRUSADER_PALADIN_ATTACK_DAMAGE}",
             f"DPS: {round(gc.CRUSADER_PALADIN_ATTACK_DAMAGE/gc.CRUSADER_PALADIN_ANIMATION_ATTACK_DURATION, 2)}",
@@ -203,6 +220,7 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
         return [
             f"Name: Pikeman",
             f"Faction: Crusader",
+            f"Value: {unit_values[unit_type]}",
             f"Health: {gc.CRUSADER_PIKEMAN_HP}",
             f"Attack: {gc.CRUSADER_PIKEMAN_ATTACK_DAMAGE}",
             f"DPS: {round(gc.CRUSADER_PIKEMAN_ATTACK_DAMAGE/gc.CRUSADER_PIKEMAN_ANIMATION_ATTACK_DURATION, 2)}",
@@ -214,6 +232,7 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
         return [
             f"Name: Red Knight",
             f"Faction: Crusader",
+            f"Value: {unit_values[unit_type]}",
             f"Health: {gc.CRUSADER_RED_KNIGHT_HP}",
             f"Attack: {gc.CRUSADER_RED_KNIGHT_ATTACK_DAMAGE}",
             f"DPS: {round(gc.CRUSADER_RED_KNIGHT_ATTACK_DAMAGE/gc.CRUSADER_RED_KNIGHT_ANIMATION_ATTACK_DURATION, 2)}",
@@ -226,6 +245,7 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
         return [
             f"Name: Soldier",
             f"Faction: Crusader",
+            f"Value: {unit_values[unit_type]}",
             f"Health: {gc.CRUSADER_SOLDIER_HP}",
             f"Melee Attack: {gc.CRUSADER_SOLDIER_MELEE_DAMAGE}",
             f"Melee DPS: {round(gc.CRUSADER_SOLDIER_MELEE_DAMAGE/gc.CRUSADER_SOLDIER_ANIMATION_MELEE_ATTACK_DURATION, 2)}",
@@ -241,6 +261,7 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
         return [
             f"Name: Werebear",
             f"Faction: Cursed Forest",
+            f"Value: {unit_values[unit_type]}",
             f"Health: {gc.WEREBEAR_HP}",
             f"Attack: {gc.WEREBEAR_ATTACK_DAMAGE}",
             f"DPS: {round(gc.WEREBEAR_ATTACK_DAMAGE/gc.WEREBEAR_ANIMATION_ATTACK_DURATION, 2)}",
@@ -252,6 +273,7 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
         return [
             f"Name: Zombie",
             f"Faction: Zombie",
+            f"Value: {unit_values[unit_type]}",
             f"Health: {gc.ZOMBIE_BASIC_ZOMBIE_HP}",
             f"Attack: {gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_DAMAGE}",
             f"DPS: {round(gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_DAMAGE/gc.ZOMBIE_BASIC_ZOMBIE_ANIMATION_ATTACK_DURATION, 2)}",
@@ -264,6 +286,7 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
         return [
             f"Name: Jumper",
             f"Faction: Zombie",
+            f"Value: {unit_values[unit_type]}",
             f"Health: {gc.ZOMBIE_JUMPER_HP}",
             f"Attack: {gc.ZOMBIE_JUMPER_ATTACK_DAMAGE}",
             f"DPS: {round(gc.ZOMBIE_JUMPER_ATTACK_DAMAGE/gc.ZOMBIE_JUMPER_ANIMATION_ATTACK_DURATION, 2)}",
@@ -277,6 +300,7 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
         return [
             f"Name: Spitter",
             f"Faction: Zombie",
+            f"Value: {unit_values[unit_type]}",
             f"Health: {gc.ZOMBIE_SPITTER_HP}",
             f"Poison DPS: {round(gc.ZOMBIE_SPITTER_ATTACK_DAMAGE/gc.ZOMBIE_INFECTION_DURATION, 2)}",
             f"Maximum Poison DPS: {round(gc.ZOMBIE_SPITTER_ATTACK_DAMAGE/gc.ZOMBIE_SPITTER_ANIMATION_ATTACK_DURATION, 2)}",
@@ -294,12 +318,13 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
         return [
             f"Name: Tank",
             f"Faction: Zombie",
+            f"Value: {unit_values[unit_type]}",
             f"Health: {gc.ZOMBIE_TANK_HP}",
             f"Attack: {gc.ZOMBIE_TANK_ATTACK_DAMAGE}",
             f"DPS: {round(gc.ZOMBIE_TANK_ATTACK_DAMAGE/gc.ZOMBIE_TANK_ANIMATION_ATTACK_DURATION, 2)}",
             f"Speed: {gc.ZOMBIE_TANK_MOVEMENT_SPEED}",
             f"Range: {gc.ZOMBIE_TANK_ATTACK_RANGE}",
-            "Special: Zombies infect units they hit for {gc.ZOMBIE_INFECTION_DURATION} seconds, causing them to turn into zombies when they die.",
+            f"Special: Zombies infect units they hit for {gc.ZOMBIE_INFECTION_DURATION} seconds, causing them to turn into zombies when they die.",
             "AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
         ]
     raise NotImplementedError(unit_type)

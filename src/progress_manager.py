@@ -10,7 +10,22 @@ from platformdirs import user_config_dir
 
 import battles
 from components.unit_type import UnitType
+from unit_values import unit_values
 from hex_grid import hex_neighbors
+
+
+def calculate_points_for_units(units: List[Tuple[UnitType, Tuple[float, float]]]) -> int:
+    """Calculate total points for a list of unit placements."""
+    return sum(unit_values[unit_type] for unit_type, _ in units)
+
+
+def calculate_total_available_points() -> int:
+    """Calculate total points available from starting units and completed battles."""
+    points = sum(unit_values[unit_type] * count for unit_type, count in battles.starting_units.items())
+    for battle in battles.get_battles():
+        if battle.hex_coords in progress_manager.solutions:
+            points += sum(unit_values[unit_type] for unit_type, _ in battle.enemies)
+    return points
 
 
 class Solution(BaseModel):
@@ -40,6 +55,7 @@ class Solution(BaseModel):
 
 class ProgressManager(BaseModel):
     solutions: Dict[Tuple[int, int], Solution] = {}
+    game_completed: bool = False
 
     @field_serializer('solutions')
     def serialize_solutions(self, solutions: Dict[Tuple[int, int], Solution]) -> Dict[str, Any]:
@@ -54,6 +70,57 @@ class ProgressManager(BaseModel):
                 result[coords] = Solution.model_validate(solution_data)
             return result
         return value
+
+    def calculate_battle_grade(self, battle: battles.Battle) -> Optional[str]:
+        """Calculate grade for a specific battle based on units used."""
+        if not battle.grades or battle.hex_coords not in self.solutions:
+            return None
+        solution = self.solutions[battle.hex_coords]
+        points_used = calculate_points_for_units(solution.unit_placements)
+        return battle.grades.get_grade(points_used)
+    
+    def calculate_overall_grade(self) -> str:
+        """Calculate overall grade based on total points used across all completed battles."""
+        points_used = 0
+        total_a_cutoff = 0
+        total_b_cutoff = 0
+        total_c_cutoff = 0
+        total_d_cutoff = 0
+        
+        for battle in battles.get_battles():
+            if not battle.grades or battle.hex_coords not in self.solutions:
+                continue
+            solution = self.solutions[battle.hex_coords]
+            points_used += calculate_points_for_units(solution.unit_placements)
+            total_a_cutoff += battle.grades.a_cutoff
+            total_b_cutoff += battle.grades.b_cutoff
+            total_c_cutoff += battle.grades.c_cutoff
+            total_d_cutoff += battle.grades.d_cutoff
+            
+        # If no battles completed yet, return "-"
+        if total_d_cutoff == 0:
+            return "-"
+            
+        if points_used <= total_a_cutoff:
+            return 'A'
+        elif points_used <= total_b_cutoff:
+            return 'B'
+        elif points_used <= total_c_cutoff:
+            return 'C'
+        elif points_used <= total_d_cutoff:
+            return 'D'
+        return 'F'
+
+    def get_overall_grade_cutoffs(self) -> Dict[str, int]:
+        """Get the total grade cutoffs across all completed battles."""
+        total_cutoffs = defaultdict(int)
+        for battle in battles.get_battles():
+            if battle.grades and battle.hex_coords in self.solutions:
+                total_cutoffs['a'] += battle.grades.a_cutoff
+                total_cutoffs['b'] += battle.grades.b_cutoff
+                total_cutoffs['c'] += battle.grades.c_cutoff
+                total_cutoffs['d'] += battle.grades.d_cutoff
+        return dict(total_cutoffs)
 
     def available_units(self, current_battle: Optional[battles.Battle]) -> Dict[UnitType, int]:
         """Get the available units for the player."""
@@ -109,6 +176,15 @@ class ProgressManager(BaseModel):
         self.solutions[solution.hex_coords] = solution
         save_progress()
 
+    def should_show_congratulations(self) -> bool:
+        return all(
+            battle.hex_coords in self.solutions for battle in battles.get_battles()
+            if not battle.is_test
+        ) and not self.game_completed
+
+    def mark_congratulations_shown(self) -> None:
+        self.game_completed = True
+        save_progress()
 
 def get_progress_path() -> Path:
     """Get the path to the progress file."""

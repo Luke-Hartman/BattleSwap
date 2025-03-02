@@ -27,6 +27,25 @@ starting_units: Dict[UnitType, int] = {
     UnitType.CORE_DUELIST: 1
 }
 
+class BattleGrades(BaseModel):
+    """Grade cutoffs for a battle."""
+    a_cutoff: int
+    b_cutoff: int
+    c_cutoff: int
+    d_cutoff: int
+
+    def get_grade(self, points_used: int) -> str:
+        """Get the grade for a given number of points used."""
+        if points_used <= self.a_cutoff:
+            return 'A'
+        elif points_used <= self.b_cutoff:
+            return 'B'
+        elif points_used <= self.c_cutoff:
+            return 'C'
+        elif points_used <= self.d_cutoff:
+            return 'D'
+        return 'F'
+
 class Battle(BaseModel):
     """A battle configuration."""
     id: str
@@ -36,6 +55,7 @@ class Battle(BaseModel):
     hex_coords: Optional[Tuple[int, int]]
     is_test: bool
     tip_voice_filename: Optional[str] = None
+    grades: Optional[BattleGrades] = None
 
 def get_battle_id(battle_id: str) -> Battle:
     """Retrieve a battle by its ID."""

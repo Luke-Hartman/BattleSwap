@@ -9,7 +9,7 @@ from scenes.scene import Scene
 from scenes.events import PreviousSceneEvent
 from world_map_view import WorldMapView
 from ui_components.return_button import ReturnButton
-from progress_manager import progress_manager, Solution
+from progress_manager import progress_manager, Solution, calculate_points_for_units
 from ui_components.time_controls import TimeControls
 
 class BattleScene(Scene):
@@ -58,11 +58,11 @@ class BattleScene(Scene):
                 hex_coords=self.battle.hex_coords
             )
 
-    def handle_return(self) -> None:
+    def handle_return(self, n: int = 1) -> None:
         """Handle return button press or escape key."""
         self.world_map_view.move_camera_above_battle(self.battle_id)
         self.world_map_view.rebuild(self.world_map_view.battles.values())
-        pygame.event.post(PreviousSceneEvent().to_event())
+        pygame.event.post(PreviousSceneEvent(n=n).to_event())
 
     def create_victory_panel(self) -> None:
         """Create the victory panel with large text and buttons."""
@@ -105,7 +105,20 @@ class BattleScene(Scene):
 
         # Save button (top, wider)
         has_changes = has_unsaved_changes(self.battle)
-        save_text = "Save changes" if has_changes else "No changes"
+        save_text = "Save" if has_changes else "No changes"
+        
+        # Prepare tooltip with score information
+        current_points = calculate_points_for_units(self.battle.allies or [])
+        current_grade = self.battle.grades.get_grade(current_points) if self.battle.grades else None
+        
+        if self.battle.hex_coords in progress_manager.solutions:
+            previous_solution = progress_manager.solutions[self.battle.hex_coords]
+            previous_points = calculate_points_for_units(previous_solution.unit_placements)
+            previous_grade = self.battle.grades.get_grade(previous_points) if self.battle.grades else None
+            tooltip = f"{previous_points} ({previous_grade}) to {current_points} ({current_grade})"
+        else:
+            tooltip = f"{current_points} ({current_grade})"
+
         self.save_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(
                 (save_button_x, start_y),
@@ -113,8 +126,10 @@ class BattleScene(Scene):
             ),
             text=save_text,
             manager=self.manager,
-            container=self.victory_panel
+            container=self.victory_panel,
+            tool_tip_text=tooltip,
         )
+        self.save_button.tool_tip_delay = 0.1
         if not has_changes:
             self.save_button.disable()
 
@@ -256,14 +271,14 @@ class BattleScene(Scene):
                         pygame.event.post(PreviousSceneEvent().to_event())
                         return super().update(time_delta, events)
                     elif hasattr(self, 'leave_button') and event.ui_element == self.leave_button:
-                        self.handle_return()
+                        self.world_map_view.rebuild(progress_manager.get_battles_including_solutions())
+                        self.handle_return(n=2)
                         return super().update(time_delta, events)
 
                 elif event.user_type == pygame_gui.UI_CONFIRMATION_DIALOG_CONFIRMED:
                     if self.confirmation_dialog is not None and event.ui_element == self.confirmation_dialog:
                         self.world_map_view.rebuild(progress_manager.get_battles_including_solutions())
-                        self.world_map_view.move_camera_above_battle(self.battle_id)
-                        pygame.event.post(PreviousSceneEvent(n=2).to_event())
+                        self.handle_return(n=2)
                         return super().update(time_delta, events)
 
             self.world_map_view.camera.process_event(event)

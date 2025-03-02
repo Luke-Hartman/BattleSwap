@@ -21,6 +21,8 @@ from ui_components.return_button import ReturnButton
 from ui_components.feedback_button import FeedbackButton
 from world_map_view import BorderState, FillState, WorldMapView, HexState
 from scene_utils import use_world
+from ui_components.grades_panel import GradesPanel
+from ui_components.congratulations_panel import CongratulationsPanel
 
 class CampaignScene(Scene):
     """A 2D hex grid world map for progressing through the campaign."""
@@ -51,10 +53,30 @@ class CampaignScene(Scene):
                 progress_manager.available_units(None),
                 interactive=False,
                 sandbox_mode=False,
+                current_battle=None,
+            )
+            # Create grades panel to the right of barracks, aligned at the bottom
+            barracks_bottom = self.barracks.rect.bottom
+            self.grades_panel = GradesPanel(
+                relative_rect=pygame.Rect(
+                    (pygame.display.Info().current_w - 295, barracks_bottom - 100),
+                    (215, 100)
+                ),
+                manager=self.manager,
+                current_battle=None
             )
         else:
             self.barracks = None
+            self.grades_panel = None
         
+        # Check if we should show congratulations
+        if progress_manager.should_show_congratulations():
+            self.congratulations_panel = CongratulationsPanel(
+                manager=self.manager,
+            )
+        else:
+            self.congratulations_panel = None
+
         self.create_ui()
 
     def create_ui(self) -> None:
@@ -77,7 +99,7 @@ class CampaignScene(Scene):
 
         button_width = 120
         button_height = 40
-        bottom_margin = 20 + 84 if self.barracks is not None else 20
+        bottom_margin = 20 + (self.barracks.rect.height - 25) if self.barracks is not None else 20
         
         # Calculate position for single centered button
         screen_rect = self.screen.get_rect()
@@ -110,6 +132,10 @@ class CampaignScene(Scene):
             if event.type == pygame.QUIT:
                 return False
             
+            # Handle congratulations panel events first if it exists
+            if self.congratulations_panel is not None and self.congratulations_panel.handle_event(event):
+                continue
+
             self.handle_escape(event)
 
             # Add enter key handling
@@ -164,20 +190,33 @@ class CampaignScene(Scene):
                         else:
                             self.selected_battle_hex = clicked_hex
                             self.create_context_buttons()
+                            # Update grades panel with selected battle
+                            if self.grades_panel is not None:
+                                self.grades_panel.update_battle(battle)
                     else:
                         self.selected_battle_hex = None
                         self.create_context_buttons()
+                        # Update grades panel with no battle
+                        if self.grades_panel is not None:
+                            self.grades_panel.update_battle(None)
 
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_RIGHT:
                 self.selected_battle_hex = None
                 self.create_context_buttons()
+                # Update grades panel with no battle
+                if self.grades_panel is not None:
+                    self.grades_panel.update_battle(None)
 
             if event.type == pygame.MOUSEMOTION or (event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_RIGHT):
                 # Don't process hex hovering if we're over a UI element
                 if self.manager.get_hovering_any_element():
                     self.hovered_battle_hex = None
+                    # If no selected battle, update grades panel to show no battle
+                    if self.grades_panel is not None and self.selected_battle_hex is None:
+                        self.grades_panel.update_battle(None)
                 else:
                     hovered_hex = self.world_map_view.get_hex_at_mouse_pos()
+                    old_hovered_hex = self.hovered_battle_hex
                     self.hovered_battle_hex = None
                     
                     # Only hover available battle hexes that aren't selected
@@ -186,12 +225,24 @@ class CampaignScene(Scene):
                         hovered_hex in progress_manager.available_battles()
                     ):
                         self.hovered_battle_hex = hovered_hex
+                        
+                    # Update grades panel if hover state changed and no battle is selected
+                    if (self.grades_panel is not None and 
+                        self.selected_battle_hex is None and 
+                        old_hovered_hex != self.hovered_battle_hex):
+                        if self.hovered_battle_hex is not None:
+                            battle = self.world_map_view.get_battle_from_hex(self.hovered_battle_hex)
+                            self.grades_panel.update_battle(battle)
+                        else:
+                            self.grades_panel.update_battle(None)
 
             self.world_map_view.camera.process_event(event)
             self.manager.process_events(event)
             self.feedback_button.handle_event(event)
             if self.barracks is not None:
                 self.barracks.handle_event(event)
+            if self.grades_panel is not None:
+                self.grades_panel.handle_event(event)
         # Update hex states while preserving fog of war
         available_battles = progress_manager.available_battles()
         states = defaultdict(HexState)

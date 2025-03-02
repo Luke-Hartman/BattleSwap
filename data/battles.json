@@ -22,7 +22,13 @@
       0
     ],
     "is_test": false,
-    "tip_voice_filename": "defeat_the_swordsman.wav"
+    "tip_voice_filename": "defeat_the_swordsman.wav",
+    "grades": {
+      "a_cutoff": 100,
+      "b_cutoff": 150,
+      "c_cutoff": 200,
+      "d_cutoff": 300
+    }
   },
   {
     "id": "Defeat the Cavalry!",
@@ -46,7 +52,13 @@
       0
     ],
     "is_test": false,
-    "tip_voice_filename": null
+    "tip_voice_filename": null,
+    "grades": {
+      "a_cutoff": 100,
+      "b_cutoff": 125,
+      "c_cutoff": 150,
+      "d_cutoff": 200
+    }
   },
   {
     "id": "Defeat the Archers!",
@@ -75,7 +87,13 @@
       0
     ],
     "is_test": false,
-    "tip_voice_filename": null
+    "tip_voice_filename": null,
+    "grades": {
+      "a_cutoff": 100,
+      "b_cutoff": 125,
+      "c_cutoff": 150,
+      "d_cutoff": 200
+    }
   },
   {
     "id": "Defeat the Wizard!",
@@ -97,7 +115,13 @@
       0
     ],
     "is_test": false,
-    "tip_voice_filename": null
+    "tip_voice_filename": null,
+    "grades": {
+      "a_cutoff": 100,
+      "b_cutoff": 150,
+      "c_cutoff": 200,
+      "d_cutoff": 300
+    }
   },
   {
     "id": "Behold the Wizard's Power!",
@@ -154,7 +178,13 @@
       -1
     ],
     "is_test": false,
-    "tip_voice_filename": null
+    "tip_voice_filename": null,
+    "grades": {
+      "a_cutoff": 300,
+      "b_cutoff": 400,
+      "c_cutoff": 500,
+      "d_cutoff": 600
+    }
   },
   {
     "id": "Line of Swordsmen",
@@ -191,7 +221,13 @@
       1
     ],
     "is_test": false,
-    "tip_voice_filename": null
+    "tip_voice_filename": null,
+    "grades": {
+      "a_cutoff": 200,
+      "b_cutoff": 225,
+      "c_cutoff": 250,
+      "d_cutoff": 300
+    }
   },
   {
     "id": "Let's Ride!",
@@ -230,11 +266,17 @@
       "Take the cavalry out before reinforcements arrive!"
     ],
     "hex_coords": [
-      4,
-      -1
+      1,
+      1
     ],
     "is_test": false,
-    "tip_voice_filename": null
+    "tip_voice_filename": null,
+    "grades": {
+      "a_cutoff": 300,
+      "b_cutoff": 325,
+      "c_cutoff": 350,
+      "d_cutoff": 400
+    }
   },
   {
     "id": "Two Squads",
@@ -291,7 +333,13 @@
       0
     ],
     "is_test": false,
-    "tip_voice_filename": null
+    "tip_voice_filename": null,
+    "grades": {
+      "a_cutoff": 400,
+      "b_cutoff": 450,
+      "c_cutoff": 500,
+      "d_cutoff": 600
+    }
   },
   {
     "id": "Double Duelists",
@@ -328,7 +376,13 @@
       1
     ],
     "is_test": false,
-    "tip_voice_filename": null
+    "tip_voice_filename": null,
+    "grades": {
+      "a_cutoff": 300,
+      "b_cutoff": 350,
+      "c_cutoff": 400,
+      "d_cutoff": 500
+    }
   },
   {
     "id": "A Balanced Army",
@@ -409,7 +463,13 @@
       0
     ],
     "is_test": false,
-    "tip_voice_filename": null
+    "tip_voice_filename": null,
+    "grades": {
+      "a_cutoff": 600,
+      "b_cutoff": 700,
+      "c_cutoff": 800,
+      "d_cutoff": 900
+    }
   },
   {
     "id": "Defenders and Rangers",
@@ -460,7 +520,13 @@
       0
     ],
     "is_test": false,
-    "tip_voice_filename": null
+    "tip_voice_filename": null,
+    "grades": {
+      "a_cutoff": 400,
+      "b_cutoff": 500,
+      "c_cutoff": 600,
+      "d_cutoff": 700
+    }
   },
   {
     "id": "Pikemen and Healers",
@@ -511,7 +577,13 @@
       -1
     ],
     "is_test": false,
-    "tip_voice_filename": null
+    "tip_voice_filename": null,
+    "grades": {
+      "a_cutoff": 200,
+      "b_cutoff": 300,
+      "c_cutoff": 500,
+      "d_cutoff": 700
+    }
   },
   {
     "id": "Defeat the Paladin!",
@@ -548,7 +620,13 @@
       -1
     ],
     "is_test": false,
-    "tip_voice_filename": null
+    "tip_voice_filename": null,
+    "grades": {
+      "a_cutoff": 300,
+      "b_cutoff": 350,
+      "c_cutoff": 400,
+      "d_cutoff": 500
+    }
   },
   {
     "id": "Defeat the Commander",
@@ -591,7 +669,13 @@
       0
     ],
     "is_test": false,
-    "tip_voice_filename": null
+    "tip_voice_filename": null,
+    "grades": {
+      "a_cutoff": 300,
+      "b_cutoff": 350,
+      "c_cutoff": 400,
+      "d_cutoff": 500
+    }
   },
   {
     "id": "The Crusade",
@@ -629,7 +713,13 @@
       -1
     ],
     "is_test": false,
-    "tip_voice_filename": null
+    "tip_voice_filename": null,
+    "grades": {
+      "a_cutoff": 400,
+      "b_cutoff": 500,
+      "c_cutoff": 700,
+      "d_cutoff": 900
+    }
   },
   {
     "id": "Shield and Spear",
@@ -693,7 +783,13 @@
       0
     ],
     "is_test": false,
-    "tip_voice_filename": null
+    "tip_voice_filename": null,
+    "grades": {
+      "a_cutoff": 600,
+      "b_cutoff": 700,
+      "c_cutoff": 800,
+      "d_cutoff": 900
+    }
   },
   {
     "id": "Defeat the Gold Knight!",
@@ -737,7 +833,13 @@
       1
     ],
     "is_test": false,
-    "tip_voice_filename": null
+    "tip_voice_filename": null,
+    "grades": {
+      "a_cutoff": 300,
+      "b_cutoff": 400,
+      "c_cutoff": 500,
+      "d_cutoff": 600
+    }
   },
   {
     "id": "Reinforcements",
@@ -787,7 +889,13 @@
       1
     ],
     "is_test": false,
-    "tip_voice_filename": null
+    "tip_voice_filename": null,
+    "grades": {
+      "a_cutoff": 300,
+      "b_cutoff": 400,
+      "c_cutoff": 525,
+      "d_cutoff": 700
+    }
   },
   {
     "id": "I need a medic!",
@@ -880,57 +988,13 @@
       0
     ],
     "is_test": false,
-    "tip_voice_filename": null
-  },
-  {
-    "id": "The Lone Swordsman?",
-    "enemies": [
-      [
-        "CORE_SWORDSMAN",
-        [
-          125,
-          0
-        ]
-      ],
-      [
-        "CORE_SWORDSMAN",
-        [
-          125,
-          0
-        ]
-      ],
-      [
-        "CORE_SWORDSMAN",
-        [
-          125,
-          0
-        ]
-      ],
-      [
-        "CORE_SWORDSMAN",
-        [
-          125,
-          0
-        ]
-      ],
-      [
-        "CORE_SWORDSMAN",
-        [
-          125,
-          0
-        ]
-      ]
-    ],
-    "allies": null,
-    "tip": [
-      "The lone swordsman...?"
-    ],
-    "hex_coords": [
-      2,
-      2
-    ],
-    "is_test": false,
-    "tip_voice_filename": null
+    "tip_voice_filename": null,
+    "grades": {
+      "a_cutoff": 700,
+      "b_cutoff": 1000,
+      "c_cutoff": 1400,
+      "d_cutoff": 1900
+    }
   },
   {
     "id": "Strong Leadership",
@@ -1002,7 +1066,13 @@
       1
     ],
     "is_test": false,
-    "tip_voice_filename": null
+    "tip_voice_filename": null,
+    "grades": {
+      "a_cutoff": 600,
+      "b_cutoff": 800,
+      "c_cutoff": 9000,
+      "d_cutoff": 1100
+    }
   },
   {
     "id": "The Meat Grinder",
@@ -1038,7 +1108,13 @@
       1
     ],
     "is_test": false,
-    "tip_voice_filename": null
+    "tip_voice_filename": null,
+    "grades": {
+      "a_cutoff": 300,
+      "b_cutoff": 450,
+      "c_cutoff": 600,
+      "d_cutoff": 900
+    }
   },
   {
     "id": "Fear Him.",
@@ -1060,7 +1136,13 @@
       -1
     ],
     "is_test": false,
-    "tip_voice_filename": null
+    "tip_voice_filename": null,
+    "grades": {
+      "a_cutoff": 200,
+      "b_cutoff": 250,
+      "c_cutoff": 300,
+      "d_cutoff": 300
+    }
   },
   {
     "id": "1Archer vs 1Swordsman",
@@ -1087,7 +1169,8 @@
     ],
     "hex_coords": null,
     "is_test": true,
-    "tip_voice_filename": null
+    "tip_voice_filename": null,
+    "grades": null
   },
   {
     "id": "1Duelist vs 3 Consecutive Swordsman",
@@ -1128,7 +1211,8 @@
     ],
     "hex_coords": null,
     "is_test": true,
-    "tip_voice_filename": null
+    "tip_voice_filename": null,
+    "grades": null
   },
   {
     "id": "1Pikeman, 1Defender vs 2Swordsman",
@@ -1169,7 +1253,8 @@
     ],
     "hex_coords": null,
     "is_test": true,
-    "tip_voice_filename": null
+    "tip_voice_filename": null,
+    "grades": null
   },
   {
     "id": "1Cavalry vs 2Archer",
@@ -1203,7 +1288,8 @@
     ],
     "hex_coords": null,
     "is_test": true,
-    "tip_voice_filename": null
+    "tip_voice_filename": null,
+    "grades": null
   },
   {
     "id": "1Swordsman vs 1Cavalry",
@@ -1230,7 +1316,8 @@
     ],
     "hex_coords": null,
     "is_test": true,
-    "tip_voice_filename": null
+    "tip_voice_filename": null,
+    "grades": null
   },
   {
     "id": "1Cavalry vs 1Wizard",
@@ -1257,7 +1344,8 @@
     ],
     "hex_coords": null,
     "is_test": true,
-    "tip_voice_filename": null
+    "tip_voice_filename": null,
+    "grades": null
   },
   {
     "id": "1Wizard vs 6Archer Group",
@@ -1319,7 +1407,8 @@
     ],
     "hex_coords": null,
     "is_test": true,
-    "tip_voice_filename": null
+    "tip_voice_filename": null,
+    "grades": null
   },
   {
     "id": "2Gold Knight vs 12Swordsman",
@@ -1430,6 +1519,133 @@
     ],
     "hex_coords": null,
     "is_test": true,
-    "tip_voice_filename": null
+    "tip_voice_filename": null,
+    "grades": null
+  },
+  {
+    "id": "The Wizards",
+    "enemies": [
+      [
+        "CORE_SWORDSMAN",
+        [
+          125,
+          50
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          125,
+          -175
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          125,
+          -125
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          125,
+          0
+        ]
+      ],
+      [
+        "CORE_WIZARD",
+        [
+          250,
+          -125
+        ]
+      ],
+      [
+        "CORE_WIZARD",
+        [
+          250,
+          0
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          375,
+          -250
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          375,
+          125
+        ]
+      ]
+    ],
+    "allies": null,
+    "tip": [
+      "Wizards are unreliable allies."
+    ],
+    "hex_coords": [
+      4,
+      -1
+    ],
+    "is_test": false,
+    "tip_voice_filename": null,
+    "grades": {
+      "a_cutoff": 400,
+      "b_cutoff": 600,
+      "c_cutoff": 900,
+      "d_cutoff": 1200
+    }
+  },
+  {
+    "id": "Preview",
+    "enemies": [
+      [
+        "ZOMBIE_TANK",
+        [
+          25,
+          -250
+        ]
+      ],
+      [
+        "ZOMBIE_TANK",
+        [
+          25,
+          -125
+        ]
+      ],
+      [
+        "ZOMBIE_TANK",
+        [
+          25,
+          0
+        ]
+      ],
+      [
+        "ZOMBIE_TANK",
+        [
+          25,
+          125
+        ]
+      ]
+    ],
+    "allies": null,
+    "tip": [
+      "Zombies coming soon!"
+    ],
+    "hex_coords": [
+      10,
+      0
+    ],
+    "is_test": false,
+    "tip_voice_filename": null,
+    "grades": {
+      "a_cutoff": 400,
+      "b_cutoff": 600,
+      "c_cutoff": 900,
+      "d_cutoff": 1200
+    }
   }
 ]

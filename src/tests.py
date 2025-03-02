@@ -35,8 +35,16 @@ def run_tests() -> bool:
         return False
     return True
 
+def check_all_battles_have_grades() -> bool:
+    """Check that all battles have grades."""
+    failed = False
+    for battle in get_battles():
+        if battle.grades is None and not battle.is_test:
+            print(f"Battle {battle.id} has no grades", file=sys.stderr)
+            failed = True
+    return not failed
 
 if __name__ == "__main__":
-    success = run_tests()
+    success = run_tests() and check_all_battles_have_grades()
     sys.exit(0 if success else 1)
 

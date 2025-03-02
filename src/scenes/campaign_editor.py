@@ -15,6 +15,7 @@ from ui_components.return_button import ReturnButton
 from world_map_view import BorderState, FillState, WorldMapView, HexState
 from ui_components.tip_box import TipBox
 from ui_components.save_battle_dialog import SaveBattleDialog
+from ui_components.grades_panel import GradesPanel
 
 class CampaignEditorScene(Scene):
     """Scene for editing the campaign."""
@@ -41,6 +42,18 @@ class CampaignEditorScene(Scene):
         # Store UI elements for battle info
         self.battle_id_label: Optional[pygame_gui.elements.UILabel] = None
         self.tip_box: Optional[TipBox] = None
+        
+        # Create grades panel at the bottom right
+        self.grades_panel = GradesPanel(
+            relative_rect=pygame.Rect(
+                (pygame.display.Info().current_w - 295, pygame.display.Info().current_h - 150),
+                (215, 100)
+            ),
+            manager=self.manager,
+            current_battle=None,
+            is_setup_mode=False  # We're not in setup mode in the editor
+        )
+        
         self.create_ui()
 
     def create_ui(self) -> None:
@@ -72,6 +85,9 @@ class CampaignEditorScene(Scene):
             )
             # Create tip box
             self.tip_box = TipBox(self.manager, battle)
+            
+        # Update grades panel with current battle
+        self.grades_panel.update_battle(battle)
 
     def create_context_buttons(self) -> None:
         """Create context-sensitive buttons based on selected hex."""
@@ -264,6 +280,8 @@ class CampaignEditorScene(Scene):
             if not hasattr(self, 'save_battle_dialog'):
                 self.world_map_view.camera.process_event(event)
             self.manager.process_events(event)
+            if self.grades_panel is not None:
+                self.grades_panel.handle_event(event)
 
         states = defaultdict(HexState)
         if self.selected_hex is not None:

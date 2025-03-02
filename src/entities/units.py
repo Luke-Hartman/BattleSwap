@@ -113,33 +113,6 @@ _unit_to_faction = {
     UnitType.WEREBEAR: Faction.MISC,
 }
 
-unit_values: Dict[UnitType, int] = {
-    UnitType.CORE_ARCHER: 100,
-    UnitType.CORE_DUELIST: 200,
-    UnitType.CORE_CAVALRY: 100,
-    UnitType.CORE_SWORDSMAN: 100,
-    UnitType.CORE_WIZARD: 300,
-    UnitType.CRUSADER_BANNER_BEARER: 100,
-    UnitType.CRUSADER_BLACK_KNIGHT: 100,
-    UnitType.CRUSADER_CATAPULT: 100,
-    UnitType.CRUSADER_CLERIC: 200,
-    UnitType.CRUSADER_COMMANDER: 100,
-    UnitType.CRUSADER_CROSSBOWMAN: 200,
-    UnitType.CRUSADER_DEFENDER: 100,
-    UnitType.CRUSADER_GOLD_KNIGHT: 300,
-    UnitType.CRUSADER_GUARDIAN_ANGEL: 200,
-    UnitType.CRUSADER_LONGBOWMAN: 100,
-    UnitType.CRUSADER_PALADIN: 300,
-    UnitType.CRUSADER_PIKEMAN: 100,
-    UnitType.CRUSADER_RED_KNIGHT: 100,
-    UnitType.CRUSADER_SOLDIER: 150,
-    UnitType.WEREBEAR: 100,
-    UnitType.ZOMBIE_BASIC_ZOMBIE: 50,
-    UnitType.ZOMBIE_JUMPER: 200,
-    UnitType.ZOMBIE_SPITTER: 200,
-    UnitType.ZOMBIE_TANK: 300,
-}
-
 def load_sprite_sheets():
     """Load all sprite sheets and unit icons."""
     unit_filenames = {

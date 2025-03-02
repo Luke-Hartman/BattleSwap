@@ -7,9 +7,10 @@ from pygame_gui.elements import UIPanel, UIScrollingContainer, UIButton, UILabel
 
 import battles
 from components.unit_type import UnitType
-from entities.units import unit_theme_ids, unit_values, Faction
+from entities.units import unit_theme_ids, Faction
 from selected_unit_manager import selected_unit_manager
 from progress_manager import progress_manager
+from unit_values import unit_values
 
 
 class UnitCount(UIPanel):
@@ -51,6 +52,13 @@ class UnitCount(UIPanel):
             container=self,
             object_id=ObjectID(class_id="@unit_count_text"),
         )
+        self.value_label = UILabel(
+            relative_rect=pygame.Rect((0, 0), (self.size, 25)),
+            text=str(unit_values[unit_type]),
+            manager=manager,
+            container=self,
+            object_id=ObjectID(class_id="@unit_count_text"),
+        )
         if not interactive:
             self.button.disable()
 
@@ -73,11 +81,13 @@ class BarracksUI(UITabContainer):
             starting_units: Dict[UnitType, int],
             interactive: bool,
             sandbox_mode: bool,
+            current_battle: Optional[battles.Battle] = None,
     ):
         self.manager = manager
         self._units = starting_units.copy()
         self.interactive = interactive
         self.sandbox_mode = sandbox_mode
+        self.current_battle = current_battle
         self.selected_unit_type: Optional[UnitType] = None
         
         if sandbox_mode:
@@ -100,10 +110,10 @@ class BarracksUI(UITabContainer):
         }
         
         side_padding = 75
-        panel_width = pygame.display.Info().current_w - 2 * side_padding
+        panel_width = pygame.display.Info().current_w - 2 * side_padding - 220  # Reduced width to make room for grades panel
         padding = 10
         
-        needs_scrollbar, content_height = self._calculate_panel_dimensions()
+        needs_scrollbar, content_height = self._calculate_panel_dimensions(panel_width)
         
         super().__init__(
             relative_rect=pygame.Rect(
@@ -142,10 +152,8 @@ class BarracksUI(UITabContainer):
         
         self._populate_units(padding, needs_scrollbar)
 
-    def _calculate_panel_dimensions(self) -> tuple[bool, int]:
+    def _calculate_panel_dimensions(self, panel_width: int) -> tuple[bool, int]:
         padding = 10
-        side_padding = 75
-        panel_width = pygame.display.Info().current_w - 2 * side_padding
         
         max_units = max(
             len(Faction.units(faction))
@@ -192,7 +200,7 @@ class BarracksUI(UITabContainer):
                 item.kill()
             self.unit_list_items_by_faction[faction] = []
         
-        needs_scrollbar, content_height = self._calculate_panel_dimensions()
+        needs_scrollbar, content_height = self._calculate_panel_dimensions(self.rect.width)
         
         for faction in self.available_factions:
             tab_index = self.faction_to_tab_index[faction]
@@ -245,6 +253,7 @@ class BarracksUI(UITabContainer):
             
         tab_id = current_tab["text"].lower() + "_tab"
         active_faction = next(f for f in Faction if f.name.lower() + '_tab' == tab_id)
+                
         for item in self.unit_list_items_by_faction[active_faction]:
             if item.handle_event(event):
                 return True

@@ -28,6 +28,7 @@ from ui_components.tip_box import TipBox
 from voice import play_intro
 from world_map_view import FillState, HexState, WorldMapView
 from scene_utils import draw_grid, get_center_line, get_placement_pos, get_hovered_unit, get_unit_placements, get_legal_placement_area, has_unsaved_changes, mouse_over_ui
+from ui_components.grades_panel import GradesPanel
 
 
 class SetupBattleScene(Scene):
@@ -69,7 +70,7 @@ class SetupBattleScene(Scene):
                 hex_coords=(0, 0),
                 allies=[],
                 enemies=[],
-                is_test=False,
+                is_test=True,
             )
             world_map_view = WorldMapView(
                 screen=self.screen,
@@ -121,7 +122,20 @@ class SetupBattleScene(Scene):
             starting_units={} if self.sandbox_mode else progress_manager.available_units(battle),
             interactive=True,
             sandbox_mode=self.sandbox_mode,
+            current_battle=battle,
         )
+
+        # Create grades panel to the right of barracks, aligned at the bottom
+        barracks_bottom = self.barracks.rect.bottom
+        self.grades_panel = GradesPanel(
+            relative_rect=pygame.Rect(
+                (pygame.display.Info().current_w - 295, barracks_bottom - 100),
+                (215, 100)
+            ),
+            manager=self.manager,
+            current_battle=battle,
+            is_setup_mode=not self.battle.is_test,  # Only use setup mode for non-test battles
+        ) if not self.sandbox_mode else None
 
         self.selected_partial_unit: Optional[int] = None
 
@@ -197,6 +211,8 @@ class SetupBattleScene(Scene):
         self.barracks.remove_unit(self.selected_unit_type)
         if self.barracks.units[self.selected_unit_type] == 0:
             self.set_selected_unit_type(None, TeamType.TEAM1)
+        if self.grades_panel is not None:
+            self.grades_panel.update_battle(self.battle)
     
     def remove_unit(self, unit_id: int) -> None:
         """Delete a unit of the selected type."""
@@ -207,6 +223,8 @@ class SetupBattleScene(Scene):
         )
         unit_type = esper.component_for_entity(unit_id, UnitTypeComponent).type
         self.barracks.add_unit(unit_type)
+        if self.grades_panel is not None:
+            self.grades_panel.update_battle(self.battle)
 
     def show_exit_confirmation(self) -> None:
         """Show confirmation dialog for exiting with unsaved changes."""
@@ -369,6 +387,8 @@ class SetupBattleScene(Scene):
             self.manager.process_events(event)
             self.feedback_button.handle_event(event)
             self.barracks.handle_event(event)
+            if self.grades_panel is not None:
+                self.grades_panel.handle_event(event)
 
         # Only update camera if no dialog is focused
         if self.save_dialog is None or not self.save_dialog.dialog.alive():
