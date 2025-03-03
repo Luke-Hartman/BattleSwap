@@ -1,4 +1,5 @@
 """Provides the BarracksUI component for managing available units."""
+import time
 from typing import Dict, List, Optional
 import pygame
 import pygame_gui
@@ -29,6 +30,8 @@ class UnitCount(UIPanel):
         container: Optional[pygame_gui.core.UIContainer] = None,
     ):
         self.unit_type = unit_type
+        self.count = count
+        self.interactive = interactive
         self.infinite = infinite
         self.manager = manager
         super().__init__(
@@ -60,6 +63,26 @@ class UnitCount(UIPanel):
             object_id=ObjectID(class_id="@unit_count_text"),
         )
         if not interactive:
+            self.button.disable()
+            
+    def update_count(self, count: int) -> None:
+        """Update the count without recreating the entire UI element."""
+        if self.count == count:
+            return
+            
+        self.count = count
+        if self.count_label:
+            self.count_label.set_text("inf" if self.infinite else str(count))
+        
+    def set_interactive(self, interactive: bool) -> None:
+        """Update the interactive state without recreating the element."""
+        if self.interactive == interactive:
+            return
+            
+        self.interactive = interactive
+        if interactive:
+            self.button.enable()
+        else:
             self.button.disable()
 
     def handle_event(self, event: pygame.event.Event) -> bool:
@@ -194,37 +217,77 @@ class BarracksUI(UITabContainer):
                 x_position += item.size + padding // 2
 
     def _rebuild(self) -> None:
-        for faction in self.available_factions:
-            self.unit_containers[faction].kill()
-            for item in self.unit_list_items_by_faction[faction]:
-                item.kill()
-            self.unit_list_items_by_faction[faction] = []
+        current_units = {unit_type: count for unit_type, count in self._units.items()}
         
+        if not hasattr(self, '_previous_dimensions'):
+            self._previous_dimensions = None
+            
         needs_scrollbar, content_height = self._calculate_panel_dimensions(self.rect.width)
+        current_dimensions = (self.rect.width, content_height)
         
-        for faction in self.available_factions:
-            tab_index = self.faction_to_tab_index[faction]
-            container_rect = pygame.Rect(
-                (10, 10),
-                (self.rect.width - 20, content_height - 20)
-            )
-            container = UIScrollingContainer(
-                relative_rect=container_rect,
-                manager=self.manager,
-                container=self.get_tab_container(tab_index),
-                allow_scroll_y=False
-            )
-            self.unit_containers[faction] = container
-        
-        self._populate_units(10, needs_scrollbar)
+        if self._previous_dimensions != current_dimensions:
+            for faction in self.available_factions:
+                self.unit_containers[faction].kill()
+                for item in self.unit_list_items_by_faction[faction]:
+                    item.kill()
+                self.unit_list_items_by_faction[faction] = []
+            
+            for faction in self.available_factions:
+                tab_index = self.faction_to_tab_index[faction]
+                container_rect = pygame.Rect(
+                    (10, 10),
+                    (self.rect.width - 20, content_height - 20)
+                )
+                container = UIScrollingContainer(
+                    relative_rect=container_rect,
+                    manager=self.manager,
+                    container=self.get_tab_container(tab_index),
+                    allow_scroll_y=False
+                )
+                self.unit_containers[faction] = container
+            
+            self._populate_units(10, needs_scrollbar)
+            self._previous_dimensions = current_dimensions
+        else:
+            for faction in self.available_factions:
+                faction_units = {
+                    unit_type: count for unit_type, count in current_units.items()
+                    if Faction.faction_of(unit_type) == faction
+                }
+                
+                for item in self.unit_list_items_by_faction[faction]:
+                    unit_type = item.unit_type
+                    if unit_type in faction_units:
+                        count = faction_units[unit_type]
+                        item.update_count(count)
+                        item.set_interactive(self.interactive and count > 0)
+
 
     def add_unit(self, unit_type: UnitType) -> None:
+        """Add a unit of the specified type to the barracks."""
         self._units[unit_type] += 1
+        
+        faction = Faction.faction_of(unit_type)
+        for item in self.unit_list_items_by_faction[faction]:
+            if item.unit_type == unit_type:
+                item.update_count(self._units[unit_type])
+                item.set_interactive(self.interactive and self._units[unit_type] > 0)
+                return
+        
         self._rebuild()
 
     def remove_unit(self, unit_type: UnitType) -> None:
+        """Remove a unit of the specified type from the barracks."""
         assert self._units[unit_type] > 0
         self._units[unit_type] -= 1
+        
+        faction = Faction.faction_of(unit_type)
+        for item in self.unit_list_items_by_faction[faction]:
+            if item.unit_type == unit_type:
+                item.update_count(self._units[unit_type])
+                item.set_interactive(self.interactive and self._units[unit_type] > 0)
+                return
+                
         self._rebuild()
 
     def select_unit_type(self, unit_type: Optional[UnitType]) -> None:
