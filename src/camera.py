@@ -42,6 +42,13 @@ class Camera:
         self._elapsed = 0.0
         self._distance = 0.0
 
+        # Right-click drag state
+        self._is_dragging = False
+        self._drag_start_x = 0.0
+        self._drag_start_y = 0.0
+        self._drag_start_world_x = 0.0
+        self._drag_start_world_y = 0.0
+
     @property
     def zoom(self) -> float:
         """The current zoom level. 1.0 is the default view."""
@@ -152,6 +159,22 @@ class Camera:
                 lower_zooms = [z for z in self._zoom_levels if z < self._zoom]
                 next_zoom = max(lower_zooms) if lower_zooms else self._zoom
             self._set_zoom(next_zoom)
+            return True
+        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_RIGHT:
+            self._is_dragging = True
+            self._drag_start_x, self._drag_start_y = pygame.mouse.get_pos()
+            self._drag_start_world_x = self.x
+            self._drag_start_world_y = self.y
+            return True
+        elif event.type == pygame.MOUSEBUTTONUP and event.button == pygame.BUTTON_RIGHT:
+            self._is_dragging = False
+            return True
+        elif event.type == pygame.MOUSEMOTION and self._is_dragging:
+            current_x, current_y = pygame.mouse.get_pos()
+            dx = (current_x - self._drag_start_x) / self._zoom
+            dy = (current_y - self._drag_start_y) / self._zoom
+            self.x = self._drag_start_world_x - dx
+            self.y = self._drag_start_world_y - dy
             return True
         if event.type in [pygame.KEYDOWN, pygame.KEYUP] and event.key in [
                 pygame.K_LEFT, pygame.K_a,
