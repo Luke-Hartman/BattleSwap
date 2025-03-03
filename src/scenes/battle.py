@@ -11,6 +11,7 @@ from world_map_view import WorldMapView
 from ui_components.return_button import ReturnButton
 from progress_manager import progress_manager, Solution, calculate_points_for_units
 from ui_components.time_controls import TimeControls
+from time_manager import time_manager
 
 class BattleScene(Scene):
     """The scene for the battle."""
@@ -233,6 +234,30 @@ class BattleScene(Scene):
             blocking=True
         )
 
+    def render_paused_text(self) -> None:
+        """Render giant PAUSED text across the screen when the game is paused."""
+        if time_manager._is_paused:
+            # Create semi-transparent overlay
+            overlay = pygame.Surface((self.screen.get_width(), self.screen.get_height()), pygame.SRCALPHA)
+            overlay.fill((0, 0, 0, 128))  # Semi-transparent black
+            self.screen.blit(overlay, (0, 0))
+            
+            # Use pygame's default font system
+            pygame.font.init()
+            large_font = pygame.font.SysFont('Arial', 72, bold=True)
+            
+            # Render PAUSED text
+            paused_text = large_font.render("PAUSED", True, (255, 255, 255))
+            text_rect = paused_text.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() // 2))
+            
+            # Add shadow effect for better visibility
+            shadow_text = large_font.render("PAUSED", True, (0, 0, 0))
+            shadow_rect = shadow_text.get_rect(center=(text_rect.centerx + 3, text_rect.centery + 3))
+            self.screen.blit(shadow_text, shadow_rect)
+            
+            # Draw the main text
+            self.screen.blit(paused_text, text_rect)
+
     def update(self, time_delta: float, events: list[pygame.event.Event]) -> bool:
         """Update the battle scene."""
         for event in events:
@@ -311,4 +336,8 @@ class BattleScene(Scene):
 
         self.manager.update(time_delta)
         self.manager.draw_ui(self.screen)
+        
+        # Render PAUSED text if the game is paused
+        self.render_paused_text()
+        
         return super().update(time_delta, events)
