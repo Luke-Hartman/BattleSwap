@@ -8,7 +8,7 @@ from entities.units import load_sprite_sheets
 from handlers.combat_handler import CombatHandler
 from handlers.state_machine import StateMachine
 from visuals import load_visual_sheets
-
+from unit_values import unit_values
 
 def run_tests() -> bool:
     """Run all test battles and return True if all tests pass."""
@@ -33,18 +33,27 @@ def run_tests() -> bool:
     if failed:
         print(f"Failed tests: {failed}", file=sys.stderr)
         return False
-    return True
 
-def check_all_battles_have_grades() -> bool:
-    """Check that all battles have grades."""
     failed = False
     for battle in get_battles():
         if battle.grades is None and not battle.is_test:
             print(f"Battle {battle.id} has no grades", file=sys.stderr)
             failed = True
+        if battle.best_solution is not None and battle.grades is not None:
+            points_used = sum(unit_values[unit_type] for unit_type, _ in battle.best_solution)
+            if points_used != battle.grades.a_cutoff:
+                print(f"Battle {battle.id} has a best_solution that doesn't match the A grade cutoff. "
+                      f"Points: {points_used}, A cutoff: {battle.grades.a_cutoff}", file=sys.stderr)
+                failed = True
+            # Run a simulation to check that the best_solution is a valid solution
+            outcome = simulate_battle(battle.best_solution, battle.enemies, max_duration=float("inf"))
+            print(f"{battle.id}: {outcome}")
+            if outcome != BattleOutcome.TEAM1_VICTORY:
+                print(f"Battle {battle.id} has a best_solution that doesn't win.")
+                failed = True
     return not failed
 
 if __name__ == "__main__":
-    success = run_tests() and check_all_battles_have_grades()
+    success = run_tests()
     sys.exit(0 if success else 1)
 

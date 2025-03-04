@@ -45,30 +45,31 @@ class AutoBattle:
         max_duration: float,
         hex_coords: Tuple[int, int],
     ):
-        def _add_if_new(processor: esper.Processor):
-            if esper.get_processor(type(processor)) is None:
-                esper.add_processor(processor)
+        def _add_or_replace(processor: esper.Processor):
+            if esper.get_processor(type(processor)) is not None:
+                esper.remove_processor(type(processor))
+            esper.add_processor(processor)
 
-        _add_if_new(TargettingProcessor())
-        _add_if_new(IdleProcessor())
-        _add_if_new(FleeingProcessor())
-        _add_if_new(AbilityProcessor())
-        _add_if_new(PursuingProcessor())
-        _add_if_new(DeadProcessor())
-        _add_if_new(AuraProcessor())
-        _add_if_new(MovementProcessor())
-        _add_if_new(LobbedProcessor())
-        _add_if_new(CollisionProcessor(hex_coords))
-        _add_if_new(AttachedProcessor())
-        _add_if_new(ExpirationProcessor())
-        _add_if_new(StatusEffectProcessor())
-        _add_if_new(AnimationProcessor())
-        _add_if_new(PositionProcessor())
-        _add_if_new(NudgeProcessor())
-        _add_if_new(OrientationProcessor())
-        _add_if_new(RotationProcessor())
-        _add_if_new(UniqueProcessor())
-        _add_if_new(DyingProcessor())
+        _add_or_replace(TargettingProcessor())
+        _add_or_replace(IdleProcessor())
+        _add_or_replace(FleeingProcessor())
+        _add_or_replace(AbilityProcessor())
+        _add_or_replace(PursuingProcessor())
+        _add_or_replace(DeadProcessor())
+        _add_or_replace(AuraProcessor())
+        _add_or_replace(MovementProcessor())
+        _add_or_replace(LobbedProcessor())
+        _add_or_replace(CollisionProcessor(hex_coords))
+        _add_or_replace(AttachedProcessor())
+        _add_or_replace(ExpirationProcessor())
+        _add_or_replace(StatusEffectProcessor())
+        _add_or_replace(AnimationProcessor())
+        _add_or_replace(PositionProcessor())
+        _add_or_replace(NudgeProcessor())
+        _add_or_replace(OrientationProcessor())
+        _add_or_replace(RotationProcessor())
+        _add_or_replace(UniqueProcessor())
+        _add_or_replace(DyingProcessor())
         self.remaining_time = max_duration
         self.battle_outcome = None
 

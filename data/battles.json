@@ -5,8 +5,8 @@
       [
         "CORE_SWORDSMAN",
         [
-          75,
-          0
+          75.0,
+          0.0
         ]
       ]
     ],
@@ -28,7 +28,16 @@
       "b_cutoff": 150,
       "c_cutoff": 200,
       "d_cutoff": 300
-    }
+    },
+    "best_solution": [
+      [
+        "CORE_ARCHER",
+        [
+          -238.0,
+          -2.0
+        ]
+      ]
+    ]
   },
   {
     "id": "Defeat the Cavalry!",
@@ -36,8 +45,8 @@
       [
         "CORE_CAVALRY",
         [
-          625,
-          0
+          625.0,
+          0.0
         ]
       ]
     ],
@@ -58,7 +67,16 @@
       "b_cutoff": 125,
       "c_cutoff": 150,
       "d_cutoff": 200
-    }
+    },
+    "best_solution": [
+      [
+        "CORE_SWORDSMAN",
+        [
+          -25.0,
+          12.0
+        ]
+      ]
+    ]
   },
   {
     "id": "Defeat the Archers!",
@@ -66,15 +84,15 @@
       [
         "CORE_ARCHER",
         [
-          300,
-          375
+          300.0,
+          375.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          300,
-          -375
+          300.0,
+          -375.0
         ]
       ]
     ],
@@ -93,7 +111,16 @@
       "b_cutoff": 125,
       "c_cutoff": 150,
       "d_cutoff": 200
-    }
+    },
+    "best_solution": [
+      [
+        "CORE_CAVALRY",
+        [
+          -25.0,
+          -374.9999999999999
+        ]
+      ]
+    ]
   },
   {
     "id": "Defeat the Wizard!",
@@ -101,8 +128,8 @@
       [
         "CORE_WIZARD",
         [
-          250,
-          0
+          250.0,
+          0.0
         ]
       ]
     ],
@@ -121,7 +148,16 @@
       "b_cutoff": 150,
       "c_cutoff": 200,
       "d_cutoff": 300
-    }
+    },
+    "best_solution": [
+      [
+        "CORE_ARCHER",
+        [
+          -25.0,
+          4.0
+        ]
+      ]
+    ]
   },
   {
     "id": "Behold the Wizard's Power!",
@@ -129,43 +165,43 @@
       [
         "CORE_ARCHER",
         [
-          150,
-          25
+          150.0,
+          25.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          150,
-          0
+          150.0,
+          0.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          150,
-          -25
+          150.0,
+          -25.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          128,
-          -12
+          128.0,
+          -12.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          128,
-          12
+          128.0,
+          12.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          107,
-          0
+          107.0,
+          0.0
         ]
       ]
     ],
@@ -184,7 +220,16 @@
       "b_cutoff": 400,
       "c_cutoff": 500,
       "d_cutoff": 600
-    }
+    },
+    "best_solution": [
+      [
+        "CORE_WIZARD",
+        [
+          -357.10161513775483,
+          4.0
+        ]
+      ]
+    ]
   },
   {
     "id": "Line of Swordsmen",
@@ -192,22 +237,22 @@
       [
         "CORE_SWORDSMAN",
         [
-          250,
-          300
+          250.0,
+          300.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          250,
-          -300
+          250.0,
+          -300.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          250,
-          0
+          250.0,
+          0.0
         ]
       ]
     ],
@@ -227,7 +272,23 @@
       "b_cutoff": 225,
       "c_cutoff": 250,
       "d_cutoff": 300
-    }
+    },
+    "best_solution": [
+      [
+        "CORE_ARCHER",
+        [
+          -25.0,
+          -435.0
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          -45.10161513775438,
+          -416.0
+        ]
+      ]
+    ]
   },
   {
     "id": "Let's Ride!",
@@ -235,29 +296,29 @@
       [
         "CORE_CAVALRY",
         [
-          150,
-          25
+          150.0,
+          25.0
         ]
       ],
       [
         "CORE_CAVALRY",
         [
-          150,
-          -25
+          150.0,
+          -25.0
         ]
       ],
       [
         "CORE_CAVALRY",
         [
-          625,
-          25
+          625.0,
+          25.0
         ]
       ],
       [
         "CORE_CAVALRY",
         [
-          625,
-          -25
+          625.0,
+          -25.0
         ]
       ]
     ],
@@ -276,7 +337,30 @@
       "b_cutoff": 325,
       "c_cutoff": 350,
       "d_cutoff": 400
-    }
+    },
+    "best_solution": [
+      [
+        "CORE_SWORDSMAN",
+        [
+          -25.0,
+          -25.0
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -25.0,
+          -50.0
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -25.0,
+          3.0
+        ]
+      ]
+    ]
   },
   {
     "id": "Two Squads",
@@ -284,43 +368,43 @@
       [
         "CORE_SWORDSMAN",
         [
-          250,
-          -300
+          250.0,
+          -300.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          375,
-          300
+          375.0,
+          300.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          375,
-          350
+          375.0,
+          350.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          375,
-          -325
+          375.0,
+          -325.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          250,
-          325
+          250.0,
+          325.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          375,
-          -275
+          375.0,
+          -275.0
         ]
       ]
     ],
@@ -339,7 +423,37 @@
       "b_cutoff": 450,
       "c_cutoff": 500,
       "d_cutoff": 600
-    }
+    },
+    "best_solution": [
+      [
+        "CORE_CAVALRY",
+        [
+          -25.0,
+          -400.0
+        ]
+      ],
+      [
+        "CORE_CAVALRY",
+        [
+          -25.0,
+          -375.0
+        ]
+      ],
+      [
+        "CORE_CAVALRY",
+        [
+          -25.0,
+          -350.0
+        ]
+      ],
+      [
+        "CORE_CAVALRY",
+        [
+          -25.0,
+          -319.9999999999999
+        ]
+      ]
+    ]
   },
   {
     "id": "Double Duelists",
@@ -347,22 +461,22 @@
       [
         "CORE_DUELIST",
         [
-          50,
-          -350
+          50.0,
+          -350.0
         ]
       ],
       [
         "CORE_DUELIST",
         [
-          50,
-          -300
+          50.0,
+          -300.0
         ]
       ],
       [
         "CORE_CAVALRY",
         [
-          150,
-          300
+          150.0,
+          300.0
         ]
       ]
     ],
@@ -382,7 +496,30 @@
       "b_cutoff": 350,
       "c_cutoff": 400,
       "d_cutoff": 500
-    }
+    },
+    "best_solution": [
+      [
+        "CORE_ARCHER",
+        [
+          -50.0,
+          775.0
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          -69.75880567290278,
+          759.7247347664029
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          -25.401738885868326,
+          770.6528163122371
+        ]
+      ]
+    ]
   },
   {
     "id": "A Balanced Army",
@@ -390,64 +527,64 @@
       [
         "CORE_SWORDSMAN",
         [
-          100,
-          -25
+          100.0,
+          -25.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          100,
-          25
+          100.0,
+          25.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          175,
-          0
+          175.0,
+          0.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          200,
-          -25
+          200.0,
+          -25.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          75,
-          0
+          75.0,
+          0.0
         ]
       ],
       [
         "CORE_CAVALRY",
         [
-          125,
-          100
+          125.0,
+          100.0
         ]
       ],
       [
         "CORE_CAVALRY",
         [
-          125,
-          -100
+          125.0,
+          -100.0
         ]
       ],
       [
         "CORE_CAVALRY",
         [
-          250,
-          0
+          250.0,
+          0.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          200,
-          25
+          200.0,
+          25.0
         ]
       ]
     ],
@@ -469,7 +606,51 @@
       "b_cutoff": 700,
       "c_cutoff": 800,
       "d_cutoff": 900
-    }
+    },
+    "best_solution": [
+      [
+        "CORE_ARCHER",
+        [
+          -700.0,
+          -400.0
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          -700.0,
+          -375.0
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          -700.0,
+          -350.0
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          -675.0,
+          -375.0
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          -675.0,
+          -400.0
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          -659.2311347066398,
+          -419.3927269189394
+        ]
+      ]
+    ]
   },
   {
     "id": "Defenders and Rangers",
@@ -477,36 +658,36 @@
       [
         "CRUSADER_DEFENDER",
         [
-          350,
-          100
+          350.0,
+          100.0
         ]
       ],
       [
         "CRUSADER_DEFENDER",
         [
-          350,
-          0
+          350.0,
+          0.0
         ]
       ],
       [
         "CRUSADER_DEFENDER",
         [
-          350,
-          -100
+          350.0,
+          -100.0
         ]
       ],
       [
         "CRUSADER_LONGBOWMAN",
         [
-          400,
-          250
+          400.0,
+          250.0
         ]
       ],
       [
         "CRUSADER_LONGBOWMAN",
         [
-          400,
-          -250
+          400.0,
+          -250.0
         ]
       ]
     ],
@@ -526,7 +707,37 @@
       "b_cutoff": 500,
       "c_cutoff": 600,
       "d_cutoff": 700
-    }
+    },
+    "best_solution": [
+      [
+        "CORE_CAVALRY",
+        [
+          -25.0,
+          431.00000000000006
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -98.84387633061124,
+          -96.0
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -111.8294782939829,
+          -74.67163041145038
+        ]
+      ],
+      [
+        "CORE_CAVALRY",
+        [
+          -25.0,
+          -439.00000000000006
+        ]
+      ]
+    ]
   },
   {
     "id": "Pikemen and Healers",
@@ -534,36 +745,36 @@
       [
         "CRUSADER_PIKEMAN",
         [
-          325,
-          100
+          325.0,
+          100.0
         ]
       ],
       [
         "CRUSADER_PIKEMAN",
         [
-          325,
-          0
+          325.0,
+          0.0
         ]
       ],
       [
         "CRUSADER_PIKEMAN",
         [
-          325,
-          -100
+          325.0,
+          -100.0
         ]
       ],
       [
         "CRUSADER_CLERIC",
         [
-          450,
-          75
+          450.0,
+          75.0
         ]
       ],
       [
         "CRUSADER_CLERIC",
         [
-          450,
-          -75
+          450.0,
+          -75.0
         ]
       ]
     ],
@@ -583,7 +794,16 @@
       "b_cutoff": 300,
       "c_cutoff": 500,
       "d_cutoff": 700
-    }
+    },
+    "best_solution": [
+      [
+        "CRUSADER_LONGBOWMAN",
+        [
+          -268.02355330306,
+          -407.0
+        ]
+      ]
+    ]
   },
   {
     "id": "Defeat the Paladin!",
@@ -591,22 +811,22 @@
       [
         "CORE_CAVALRY",
         [
-          275,
-          50
+          275.0,
+          50.0
         ]
       ],
       [
         "CORE_CAVALRY",
         [
-          275,
-          -50
+          275.0,
+          -50.0
         ]
       ],
       [
         "CRUSADER_PALADIN",
         [
-          250,
-          0
+          250.0,
+          0.0
         ]
       ]
     ],
@@ -626,7 +846,30 @@
       "b_cutoff": 350,
       "c_cutoff": 400,
       "d_cutoff": 500
-    }
+    },
+    "best_solution": [
+      [
+        "CORE_SWORDSMAN",
+        [
+          -692.8203230275503,
+          -123.94290609321024
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -692.8203230275503,
+          -98.94290609321024
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -692.8203230275503,
+          -73.94290609321024
+        ]
+      ]
+    ]
   },
   {
     "id": "Defeat the Commander",
@@ -634,29 +877,29 @@
       [
         "CRUSADER_DEFENDER",
         [
-          350,
-          -25
+          350.0,
+          -25.0
         ]
       ],
       [
         "CRUSADER_DEFENDER",
         [
-          325,
-          0
+          325.0,
+          0.0
         ]
       ],
       [
         "CRUSADER_DEFENDER",
         [
-          350,
-          25
+          350.0,
+          25.0
         ]
       ],
       [
         "CRUSADER_COMMANDER",
         [
-          375,
-          0
+          375.0,
+          0.0
         ]
       ]
     ],
@@ -675,7 +918,16 @@
       "b_cutoff": 350,
       "c_cutoff": 400,
       "d_cutoff": 500
-    }
+    },
+    "best_solution": [
+      [
+        "CORE_WIZARD",
+        [
+          -46.12516844081438,
+          -253.0
+        ]
+      ]
+    ]
   },
   {
     "id": "The Crusade",
@@ -683,22 +935,22 @@
       [
         "CRUSADER_PALADIN",
         [
-          325,
-          200
+          325.0,
+          200.0
         ]
       ],
       [
         "CRUSADER_PALADIN",
         [
-          325,
-          0
+          325.0,
+          0.0
         ]
       ],
       [
         "CRUSADER_PALADIN",
         [
-          325,
-          -200
+          325.0,
+          -200.0
         ]
       ]
     ],
@@ -719,7 +971,37 @@
       "b_cutoff": 500,
       "c_cutoff": 700,
       "d_cutoff": 900
-    }
+    },
+    "best_solution": [
+      [
+        "CORE_SWORDSMAN",
+        [
+          -25.0,
+          200.0
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -25.0,
+          225.0
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -25.0,
+          175.0
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -25.0,
+          150.0
+        ]
+      ]
+    ]
   },
   {
     "id": "Shield and Spear",
@@ -727,50 +1009,50 @@
       [
         "CRUSADER_DEFENDER",
         [
-          325,
-          100
+          325.0,
+          100.0
         ]
       ],
       [
         "CRUSADER_DEFENDER",
         [
-          325,
-          0
+          325.0,
+          0.0
         ]
       ],
       [
         "CRUSADER_DEFENDER",
         [
-          325,
-          -100
+          325.0,
+          -100.0
         ]
       ],
       [
         "CRUSADER_PIKEMAN",
         [
-          375,
-          50
+          375.0,
+          50.0
         ]
       ],
       [
         "CRUSADER_PIKEMAN",
         [
-          375,
-          -50
+          375.0,
+          -50.0
         ]
       ],
       [
         "CRUSADER_LONGBOWMAN",
         [
-          500,
-          200
+          500.0,
+          200.0
         ]
       ],
       [
         "CRUSADER_LONGBOWMAN",
         [
-          500,
-          -200
+          500.0,
+          -200.0
         ]
       ]
     ],
@@ -789,7 +1071,8 @@
       "b_cutoff": 700,
       "c_cutoff": 800,
       "d_cutoff": 900
-    }
+    },
+    "best_solution": null
   },
   {
     "id": "Defeat the Gold Knight!",
@@ -797,29 +1080,29 @@
       [
         "CRUSADER_GOLD_KNIGHT",
         [
-          175,
-          0
+          175.0,
+          0.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          275,
-          -75
+          275.0,
+          -75.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          325,
-          0
+          325.0,
+          0.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          275,
-          75
+          275.0,
+          75.0
         ]
       ]
     ],
@@ -839,7 +1122,23 @@
       "b_cutoff": 400,
       "c_cutoff": 500,
       "d_cutoff": 600
-    }
+    },
+    "best_solution": [
+      [
+        "CRUSADER_CLERIC",
+        [
+          -69.02355330306,
+          -4.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -25.0,
+          -3.0
+        ]
+      ]
+    ]
   },
   {
     "id": "Reinforcements",
@@ -847,36 +1146,36 @@
       [
         "CRUSADER_GOLD_KNIGHT",
         [
-          75,
-          -300
+          75.0,
+          -300.0
         ]
       ],
       [
         "CRUSADER_DEFENDER",
         [
-          50,
-          -325
+          50.0,
+          -325.0
         ]
       ],
       [
         "CRUSADER_DEFENDER",
         [
-          50,
-          -275
+          50.0,
+          -275.0
         ]
       ],
       [
         "CORE_CAVALRY",
         [
-          600,
-          -25
+          600.0,
+          -25.0
         ]
       ],
       [
         "CORE_CAVALRY",
         [
-          600,
-          25
+          600.0,
+          25.0
         ]
       ]
     ],
@@ -895,7 +1194,23 @@
       "b_cutoff": 400,
       "c_cutoff": 525,
       "d_cutoff": 700
-    }
+    },
+    "best_solution": [
+      [
+        "CRUSADER_CLERIC",
+        [
+          -52.66419935816339,
+          716.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -27.164199358163387,
+          689.0
+        ]
+      ]
+    ]
   },
   {
     "id": "I need a medic!",
@@ -903,78 +1218,78 @@
       [
         "CORE_SWORDSMAN",
         [
-          100,
-          0
+          100.0,
+          0.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          150,
-          -50
+          150.0,
+          -50.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          200,
-          0
+          200.0,
+          0.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          150,
-          50
+          150.0,
+          50.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          150,
-          0
+          150.0,
+          0.0
         ]
       ],
       [
         "CRUSADER_CLERIC",
         [
-          625,
-          -50
+          625.0,
+          -50.0
         ]
       ],
       [
         "CRUSADER_CLERIC",
         [
-          575,
-          -50
+          575.0,
+          -50.0
         ]
       ],
       [
         "CRUSADER_CLERIC",
         [
-          575,
-          50
+          575.0,
+          50.0
         ]
       ],
       [
         "CRUSADER_CLERIC",
         [
-          625,
-          50
+          625.0,
+          50.0
         ]
       ],
       [
         "CRUSADER_PALADIN",
         [
-          625,
-          375
+          625.0,
+          375.0
         ]
       ],
       [
         "CRUSADER_PALADIN",
         [
-          625,
-          -375
+          625.0,
+          -375.0
         ]
       ]
     ],
@@ -994,7 +1309,30 @@
       "b_cutoff": 1000,
       "c_cutoff": 1400,
       "d_cutoff": 1900
-    }
+    },
+    "best_solution": [
+      [
+        "CORE_DUELIST",
+        [
+          -58.76581449591504,
+          47.0
+        ]
+      ],
+      [
+        "CRUSADER_PIKEMAN",
+        [
+          -66.98266176746802,
+          23.419888613334162
+        ]
+      ],
+      [
+        "ZOMBIE_TANK",
+        [
+          -25.0,
+          35.0
+        ]
+      ]
+    ]
   },
   {
     "id": "Strong Leadership",
@@ -1002,57 +1340,57 @@
       [
         "CRUSADER_COMMANDER",
         [
-          325,
-          -50
+          325.0,
+          -50.0
         ]
       ],
       [
         "CRUSADER_COMMANDER",
         [
-          325,
-          50
+          325.0,
+          50.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          400,
-          -100
+          400.0,
+          -100.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          400,
-          0
+          400.0,
+          0.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          400,
-          100
+          400.0,
+          100.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          275,
-          -75
+          275.0,
+          -75.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          275,
-          75
+          275.0,
+          75.0
         ]
       ],
       [
         "CRUSADER_DEFENDER",
         [
-          225,
-          0
+          225.0,
+          0.0
         ]
       ]
     ],
@@ -1072,7 +1410,37 @@
       "b_cutoff": 800,
       "c_cutoff": 900,
       "d_cutoff": 1100
-    }
+    },
+    "best_solution": [
+      [
+        "CORE_CAVALRY",
+        [
+          -25.0,
+          -646.0000000000001
+        ]
+      ],
+      [
+        "CRUSADER_PIKEMAN",
+        [
+          -50.0,
+          -50.0
+        ]
+      ],
+      [
+        "CRUSADER_PIKEMAN",
+        [
+          -50.0,
+          -25.0
+        ]
+      ],
+      [
+        "ZOMBIE_TANK",
+        [
+          -25.0,
+          -31.0
+        ]
+      ]
+    ]
   },
   {
     "id": "The Meat Grinder",
@@ -1080,22 +1448,22 @@
       [
         "CRUSADER_GOLD_KNIGHT",
         [
-          75,
-          -50
+          75.0,
+          -50.0
         ]
       ],
       [
         "CRUSADER_GOLD_KNIGHT",
         [
-          75,
-          50
+          75.0,
+          50.0
         ]
       ],
       [
         "CRUSADER_GOLD_KNIGHT",
         [
-          75,
-          0
+          75.0,
+          0.0
         ]
       ]
     ],
@@ -1114,7 +1482,23 @@
       "b_cutoff": 450,
       "c_cutoff": 600,
       "d_cutoff": 900
-    }
+    },
+    "best_solution": [
+      [
+        "CRUSADER_CLERIC",
+        [
+          -227.30484541326405,
+          0.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -25.0,
+          -7.0
+        ]
+      ]
+    ]
   },
   {
     "id": "Fear Him.",
@@ -1122,8 +1506,8 @@
       [
         "CRUSADER_BLACK_KNIGHT",
         [
-          250,
-          0
+          250.0,
+          0.0
         ]
       ]
     ],
@@ -1142,7 +1526,23 @@
       "b_cutoff": 250,
       "c_cutoff": 300,
       "d_cutoff": 300
-    }
+    },
+    "best_solution": [
+      [
+        "CORE_SWORDSMAN",
+        [
+          -25.0,
+          0.0
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -25.0,
+          25.0
+        ]
+      ]
+    ]
   },
   {
     "id": "1Archer vs 1Swordsman",
@@ -1150,8 +1550,8 @@
       [
         "CORE_SWORDSMAN",
         [
-          194,
-          -39
+          194.0,
+          -39.0
         ]
       ]
     ],
@@ -1159,8 +1559,8 @@
       [
         "CORE_ARCHER",
         [
-          -306,
-          -28
+          -306.0,
+          -28.0
         ]
       ]
     ],
@@ -1170,7 +1570,8 @@
     "hex_coords": null,
     "is_test": true,
     "tip_voice_filename": null,
-    "grades": null
+    "grades": null,
+    "best_solution": null
   },
   {
     "id": "1Duelist vs 3 Consecutive Swordsman",
@@ -1178,22 +1579,22 @@
       [
         "CORE_SWORDSMAN",
         [
-          618,
-          -2
+          618.0,
+          -2.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          70,
-          -3
+          70.0,
+          -3.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          386,
-          2
+          386.0,
+          2.0
         ]
       ]
     ],
@@ -1201,8 +1602,8 @@
       [
         "CORE_DUELIST",
         [
-          -244,
-          1
+          -244.0,
+          1.0
         ]
       ]
     ],
@@ -1212,7 +1613,8 @@
     "hex_coords": null,
     "is_test": true,
     "tip_voice_filename": null,
-    "grades": null
+    "grades": null,
+    "best_solution": null
   },
   {
     "id": "1Pikeman, 1Defender vs 2Swordsman",
@@ -1220,15 +1622,15 @@
       [
         "CORE_SWORDSMAN",
         [
-          94,
-          4
+          94.0,
+          4.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          96,
-          -24
+          96.0,
+          -24.0
         ]
       ]
     ],
@@ -1236,15 +1638,15 @@
       [
         "CRUSADER_DEFENDER",
         [
-          -235,
-          11
+          -235.0,
+          11.0
         ]
       ],
       [
         "CRUSADER_PIKEMAN",
         [
-          -259,
-          10
+          -259.0,
+          10.0
         ]
       ]
     ],
@@ -1254,7 +1656,8 @@
     "hex_coords": null,
     "is_test": true,
     "tip_voice_filename": null,
-    "grades": null
+    "grades": null,
+    "best_solution": null
   },
   {
     "id": "1Cavalry vs 2Archer",
@@ -1262,15 +1665,15 @@
       [
         "CORE_ARCHER",
         [
-          380,
-          -373
+          380.0,
+          -373.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          373,
-          335
+          373.0,
+          335.0
         ]
       ]
     ],
@@ -1278,8 +1681,8 @@
       [
         "CORE_CAVALRY",
         [
-          -226,
-          -350
+          -226.0,
+          -350.0
         ]
       ]
     ],
@@ -1289,7 +1692,8 @@
     "hex_coords": null,
     "is_test": true,
     "tip_voice_filename": null,
-    "grades": null
+    "grades": null,
+    "best_solution": null
   },
   {
     "id": "1Swordsman vs 1Cavalry",
@@ -1297,8 +1701,8 @@
       [
         "CORE_CAVALRY",
         [
-          94,
-          -16
+          94.0,
+          -16.0
         ]
       ]
     ],
@@ -1306,8 +1710,8 @@
       [
         "CORE_SWORDSMAN",
         [
-          -76,
-          -13
+          -76.0,
+          -13.0
         ]
       ]
     ],
@@ -1317,7 +1721,8 @@
     "hex_coords": null,
     "is_test": true,
     "tip_voice_filename": null,
-    "grades": null
+    "grades": null,
+    "best_solution": null
   },
   {
     "id": "1Cavalry vs 1Wizard",
@@ -1325,8 +1730,8 @@
       [
         "CORE_WIZARD",
         [
-          418,
-          -36
+          418.0,
+          -36.0
         ]
       ]
     ],
@@ -1334,8 +1739,8 @@
       [
         "CORE_CAVALRY",
         [
-          -369,
-          -36
+          -369.0,
+          -36.0
         ]
       ]
     ],
@@ -1345,7 +1750,8 @@
     "hex_coords": null,
     "is_test": true,
     "tip_voice_filename": null,
-    "grades": null
+    "grades": null,
+    "best_solution": null
   },
   {
     "id": "1Wizard vs 6Archer Group",
@@ -1353,43 +1759,43 @@
       [
         "CORE_ARCHER",
         [
-          352,
-          -70
+          352.0,
+          -70.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          318,
-          -41
+          318.0,
+          -41.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          361,
-          -34
+          361.0,
+          -34.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          328,
-          -12
+          328.0,
+          -12.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          365,
-          -3
+          365.0,
+          -3.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          285,
-          -18
+          285.0,
+          -18.0
         ]
       ]
     ],
@@ -1397,8 +1803,8 @@
       [
         "CORE_WIZARD",
         [
-          -469,
-          -31
+          -469.0,
+          -31.0
         ]
       ]
     ],
@@ -1408,7 +1814,8 @@
     "hex_coords": null,
     "is_test": true,
     "tip_voice_filename": null,
-    "grades": null
+    "grades": null,
+    "best_solution": null
   },
   {
     "id": "2Gold Knight vs 12Swordsman",
@@ -1416,85 +1823,85 @@
       [
         "CORE_SWORDSMAN",
         [
-          125,
-          -25
+          125.0,
+          -25.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          125,
-          0
+          125.0,
+          0.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          125,
-          -50
+          125.0,
+          -50.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          125,
-          25
+          125.0,
+          25.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          150,
-          -50
+          150.0,
+          -50.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          150,
-          -25
+          150.0,
+          -25.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          150,
-          0
+          150.0,
+          0.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          150,
-          25
+          150.0,
+          25.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          175,
-          -50
+          175.0,
+          -50.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          175,
-          -25
+          175.0,
+          -25.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          175,
-          0
+          175.0,
+          0.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          175,
-          25
+          175.0,
+          25.0
         ]
       ]
     ],
@@ -1502,15 +1909,15 @@
       [
         "CRUSADER_GOLD_KNIGHT",
         [
-          -25,
-          -25
+          -25.0,
+          -25.0
         ]
       ],
       [
         "CRUSADER_GOLD_KNIGHT",
         [
-          -25,
-          0
+          -25.0,
+          0.0
         ]
       ]
     ],
@@ -1520,7 +1927,8 @@
     "hex_coords": null,
     "is_test": true,
     "tip_voice_filename": null,
-    "grades": null
+    "grades": null,
+    "best_solution": null
   },
   {
     "id": "The Wizards",
@@ -1528,61 +1936,76 @@
       [
         "CORE_SWORDSMAN",
         [
-          125,
-          50
+          125.0,
+          50.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          125,
-          -175
+          125.0,
+          -175.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          125,
-          -125
+          125.0,
+          -125.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          125,
-          0
+          125.0,
+          0.0
         ]
       ],
       [
         "CORE_WIZARD",
         [
-          250,
-          -125
+          250.0,
+          -125.0
         ]
       ],
       [
         "CORE_WIZARD",
         [
-          250,
-          0
+          250.0,
+          0.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          375,
-          -250
+          375.0,
+          -250.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          375,
-          125
+          375.0,
+          125.0
         ]
       ]
     ],
-    "allies": null,
+    "allies": [
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -300.74226119285595,
+          -63.0
+        ]
+      ],
+      [
+        "CRUSADER_CLERIC",
+        [
+          -362.74226119285595,
+          -62.0
+        ]
+      ]
+    ],
     "tip": [
       "Wizards are unreliable allies."
     ],
@@ -1597,7 +2020,23 @@
       "b_cutoff": 600,
       "c_cutoff": 900,
       "d_cutoff": 1200
-    }
+    },
+    "best_solution": [
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -300.74226119285595,
+          -63.0
+        ]
+      ],
+      [
+        "CRUSADER_CLERIC",
+        [
+          -362.74226119285595,
+          -62.0
+        ]
+      ]
+    ]
   },
   {
     "id": "Preview",
@@ -1605,33 +2044,55 @@
       [
         "ZOMBIE_TANK",
         [
-          25,
-          -250
+          25.0,
+          -250.0
         ]
       ],
       [
         "ZOMBIE_TANK",
         [
-          25,
-          -125
+          25.0,
+          -125.0
         ]
       ],
       [
         "ZOMBIE_TANK",
         [
-          25,
-          0
+          25.0,
+          0.0
         ]
       ],
       [
         "ZOMBIE_TANK",
         [
-          25,
-          125
+          25.0,
+          125.0
         ]
       ]
     ],
-    "allies": null,
+    "allies": [
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -27.622323428380696,
+          -237.03852218662243
+        ]
+      ],
+      [
+        "CORE_DUELIST",
+        [
+          -49.64536484909331,
+          -248.86513421707335
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -25.0,
+          -261.8926421506952
+        ]
+      ]
+    ],
     "tip": [
       "Zombies coming soon!"
     ],
@@ -1646,6 +2107,29 @@
       "b_cutoff": 600,
       "c_cutoff": 900,
       "d_cutoff": 1200
-    }
+    },
+    "best_solution": [
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -27.622323428380696,
+          -237.03852218662243
+        ]
+      ],
+      [
+        "CORE_DUELIST",
+        [
+          -49.64536484909331,
+          -248.86513421707335
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -25.0,
+          -261.8926421506952
+        ]
+      ]
+    ]
   }
 ]

@@ -12,6 +12,7 @@ from ui_components.return_button import ReturnButton
 from progress_manager import progress_manager, Solution, calculate_points_for_units
 from ui_components.time_controls import TimeControls
 from time_manager import time_manager
+from battles import Battle, update_battle
 
 class BattleScene(Scene):
     """The scene for the battle."""
@@ -22,7 +23,8 @@ class BattleScene(Scene):
         manager: pygame_gui.UIManager,
         world_map_view: WorldMapView,
         battle_id: str,
-        sandbox_mode: bool = False
+        sandbox_mode: bool = False,
+        developer_mode: bool = False
     ):
         """Initialize the battle scene.
 
@@ -33,6 +35,7 @@ class BattleScene(Scene):
             world_map_view: The world map view.
             battle_id: The id of the battle to load.
             sandbox_mode: Whether this battle is in sandbox mode.
+            developer_mode: Whether the game is in developer mode.
         """
         emit_event(CHANGE_MUSIC, event=ChangeMusicEvent(
             filename="Battle Theme.wav",
@@ -43,6 +46,7 @@ class BattleScene(Scene):
         self.battle_id = battle_id
         self.battle = self.world_map_view.battles[self.battle_id]
         self.sandbox_mode = sandbox_mode
+        self.developer_mode = developer_mode
         self.return_button = ReturnButton(self.manager)
         self.time_controls = TimeControls(self.manager)
         self.victory_panel = None
@@ -279,6 +283,31 @@ class BattleScene(Scene):
                         pygame.event.post(PreviousSceneEvent().to_event())
                         return super().update(time_delta, events)
                     elif hasattr(self, 'save_button') and event.ui_element == self.save_button:
+                        # Check if the current solution could be a best solution
+                        if (self.developer_mode and 
+                            self.battle.allies is not None and 
+                            self.battle.grades is not None and 
+                            len(self.battle.allies) > 0):
+                            
+                            # Get the current points used
+                            current_points = calculate_points_for_units(self.battle.allies)
+                            
+                            # If there's a best solution, compare with it
+                            if self.battle.best_solution is None or current_points < calculate_points_for_units(self.battle.best_solution):
+                                new_battle = Battle(
+                                    id=self.battle.id,
+                                    enemies=self.battle.enemies,
+                                    allies=None,
+                                    tip=self.battle.tip,
+                                    hex_coords=self.battle.hex_coords,
+                                    is_test=self.battle.is_test,
+                                    tip_voice_filename=self.battle.tip_voice_filename,
+                                    grades=self.battle.grades,
+                                    best_solution=self.battle.allies
+                                )
+                                update_battle(self.battle, new_battle)
+                        
+                        # Save the solution
                         progress_manager.save_solution(Solution(hex_coords=self.battle.hex_coords, unit_placements=self.battle.allies))
                         # Recreate the victory panel to update the save button state
                         self.victory_panel.kill()

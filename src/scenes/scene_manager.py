@@ -177,6 +177,7 @@ class SceneManager:
                     world_map_view=validated_event.world_map_view,
                     battle_id=validated_event.battle_id,
                     sandbox_mode=validated_event.sandbox_mode,
+                    developer_mode=self.developer_mode,
                 )
             elif event.type == SETUP_BATTLE_SCENE_EVENT:
                 self.cleanup()

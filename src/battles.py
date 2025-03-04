@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 from pydantic import BaseModel
-
+from unit_values import unit_values
 from entities.units import UnitType
 
 def get_resource_path(relative_path: str) -> Path:
@@ -49,13 +49,14 @@ class BattleGrades(BaseModel):
 class Battle(BaseModel):
     """A battle configuration."""
     id: str
-    enemies: List[Tuple[UnitType, Tuple[int, int]]]
-    allies: Optional[List[Tuple[UnitType, Tuple[int, int]]]]
+    enemies: List[Tuple[UnitType, Tuple[float, float]]]
+    allies: Optional[List[Tuple[UnitType, Tuple[float, float]]]]
     tip: List[str]
     hex_coords: Optional[Tuple[int, int]]
     is_test: bool
     tip_voice_filename: Optional[str] = None
     grades: Optional[BattleGrades] = None
+    best_solution: Optional[List[Tuple[UnitType, Tuple[float, float]]]] = None
 
 def get_battle_id(battle_id: str) -> Battle:
     """Retrieve a battle by its ID."""
@@ -158,14 +159,33 @@ def add_battle(battle: Battle) -> None:
 
 def update_battle(previous_battle: Battle, updated_battle: Battle) -> None:
     """Update a battle in the list and save changes."""
+    # Find the battle to update
+    target_battle = None
+    target_index = -1
+    
+    for i, battle in enumerate(_battles):
+        if battle.id == previous_battle.id:
+            target_battle = battle
+            target_index = i
+            break
+    
+    if target_battle is None:
+        raise ValueError(f"Battle with id {previous_battle.id} not found")
+    
+    # Preserve the existing best_solution if not provided in the updated battle
+    if updated_battle.best_solution is None:
+        updated_battle.best_solution = target_battle.best_solution
+
+    # If existing battle doesn't have a best_solution, use the updated battle's best_solution
+    if target_battle.best_solution is None:
+        target_battle.best_solution = updated_battle.best_solution
+    
+    # Update the battle
     if previous_battle.id == updated_battle.id:
-        for i, battle in enumerate(_battles):
-            if battle.id == updated_battle.id:
-                _battles[i] = updated_battle
+        _battles[target_index] = updated_battle
     else:
-        for i, battle in enumerate(_battles):
-            if battle.id == previous_battle.id:
-                _battles[i] = updated_battle
+        _battles[target_index] = updated_battle
+    
     _save_battles(_battles)
 
 def delete_battle(battle_id: str) -> None:

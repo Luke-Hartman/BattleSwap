@@ -317,10 +317,10 @@ def use_world(world_id: str) -> Generator[None, None, None]:
     finally:
         esper.switch_world(starting_world)
 
-def get_unit_placements(team_type: TeamType, hex_coords: Tuple[int, int]) -> List[Tuple[UnitType, Tuple[int, int]]]:
+def get_unit_placements(team_type: TeamType, hex_coords: Tuple[int, int]) -> List[Tuple[UnitType, Tuple[float, float]]]:
     world_x, world_y = axial_to_world(*hex_coords)
     return [
-        (unit_type.type, (round(pos.x - world_x), round(pos.y - world_y)))
+        (unit_type.type, (pos.x - world_x, pos.y - world_y))
         for ent, (unit_type, team, pos) in esper.get_components(UnitTypeComponent, Team, Position)
         if team.type == team_type and ent not in esper._dead_entities
     ]
