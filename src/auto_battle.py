@@ -1,5 +1,5 @@
 from enum import Enum, auto
-from typing import Optional
+from typing import Optional, Tuple, List
 
 import esper
 
@@ -8,7 +8,6 @@ from components.team import Team, TeamType
 from components.unit_state import State, UnitState
 from components.unit_type import UnitType, UnitTypeComponent
 
-from typing import List, Tuple
 from processors.ability_processor import AbilityProcessor
 from processors.attached_processor import AttachedProcessor
 from processors.aura_processor import AuraProcessor
@@ -103,18 +102,44 @@ def simulate_battle(
     ally_placements: List[Tuple[UnitType, Tuple[int, int]]],
     enemy_placements: List[Tuple[UnitType, Tuple[int, int]]],
     max_duration: float,
+    delete_world: bool = True,
+    world_name: str = "simulation",
 ) -> BattleOutcome:
+    """Simulate a battle between two teams.
+    
+    Args:
+        ally_placements: List of (unit_type, position) tuples for team 1.
+        enemy_placements: List of (unit_type, position) tuples for team 2.
+        max_duration: Maximum duration for the battle in seconds.
+        delete_world: Whether to delete the simulation world after the battle.
+            Set to False if you want to inspect the final state or run multiple
+            simulations in the same world.
+        world_name: Name of the simulation world.
+    
+    Returns:
+        The outcome of the battle.
+    """
     previous_world = esper.current_world
-    esper.switch_world("simulation")
+    esper.switch_world(world_name)
+    
+    # Create units for both teams
     for unit_type, position in ally_placements:
         create_unit(x=position[0], y=position[1], unit_type=unit_type, team=TeamType.TEAM1)
     for unit_type, position in enemy_placements:
         create_unit(x=position[0], y=position[1], unit_type=unit_type, team=TeamType.TEAM2)
+    
+    # Run the battle simulation
     outcome = None
     auto_battle = AutoBattle(max_duration, hex_coords=(0, 0))
     while outcome is None:
         esper.process(1/60)
         outcome = auto_battle.update(1/60)
+    
+    # Switch back to the previous world
     esper.switch_world(previous_world)
-    esper.delete_world("simulation")
+    
+    # Delete the simulation world if requested
+    if delete_world:
+        esper.delete_world(world_name)
+    
     return outcome
