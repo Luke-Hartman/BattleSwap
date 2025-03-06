@@ -142,6 +142,8 @@ def load_sprite_sheets():
         UnitType.ZOMBIE_TANK: "ZombieBasicZombie.png",
     }
     for unit_type, filename in unit_filenames.items():
+        if unit_type in sprite_sheets:
+            continue
         path = os.path.join("assets", "units", filename)
         sprite_sheets[unit_type] = pygame.image.load(path).convert_alpha()
 
@@ -173,6 +175,8 @@ def load_sprite_sheets():
         UnitType.ZOMBIE_TANK: "ZombieTankIcon.png",
     }
     for unit_type, filename in unit_icon_paths.items():
+        if unit_type in unit_icon_surfaces:
+            continue
         path = os.path.join("assets", "icons", filename)
         unit_icon_surfaces[unit_type] = pygame.image.load(path).convert_alpha()
 

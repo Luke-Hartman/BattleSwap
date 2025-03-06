@@ -38,6 +38,8 @@ def load_visual_sheets():
         Visual.Ignited: os.path.join("assets", "effects", "Ignited.png"),
     }
     for visual, path in visual_paths.items():
+        if visual in visual_sheets:
+            continue
         visual_sheets[visual] = pygame.image.load(path).convert_alpha()
 
 def create_visual_spritesheet(

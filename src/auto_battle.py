@@ -1,5 +1,5 @@
 from enum import Enum, auto
-from typing import Optional, Tuple, List
+from typing import Any, Callable, Optional, Tuple, List, Union
 
 import esper
 
@@ -102,25 +102,22 @@ def simulate_battle(
     ally_placements: List[Tuple[UnitType, Tuple[int, int]]],
     enemy_placements: List[Tuple[UnitType, Tuple[int, int]]],
     max_duration: float,
-    delete_world: bool = True,
-    world_name: str = "simulation",
-) -> BattleOutcome:
+    post_battle_callback: Optional[Callable[[BattleOutcome], Any]] = None,
+) -> Union[BattleOutcome, Tuple[BattleOutcome, Any]]:
     """Simulate a battle between two teams.
     
     Args:
         ally_placements: List of (unit_type, position) tuples for team 1.
         enemy_placements: List of (unit_type, position) tuples for team 2.
         max_duration: Maximum duration for the battle in seconds.
-        delete_world: Whether to delete the simulation world after the battle.
-            Set to False if you want to inspect the final state or run multiple
-            simulations in the same world.
-        world_name: Name of the simulation world.
+        post_battle_callback: Optional callback to be called after the battle.
     
     Returns:
-        The outcome of the battle.
+        The outcome of the battle, or a tuple of (outcome, post_battle_callback_result)
+        if the callback is provided.
     """
     previous_world = esper.current_world
-    esper.switch_world(world_name)
+    esper.switch_world("simulation")
     
     # Create units for both teams
     for unit_type, position in ally_placements:
@@ -135,11 +132,38 @@ def simulate_battle(
         esper.process(1/60)
         outcome = auto_battle.update(1/60)
     
+    if post_battle_callback is not None:
+        post_battle_callback_result = post_battle_callback(outcome)
+    else:
+        post_battle_callback_result = None
+
     # Switch back to the previous world
     esper.switch_world(previous_world)
+    esper.delete_world("simulation")
     
-    # Delete the simulation world if requested
-    if delete_world:
-        esper.delete_world(world_name)
-    
-    return outcome
+    if post_battle_callback is not None:
+        return outcome, post_battle_callback_result
+    else:
+        return outcome
+
+def simulate_battle_with_dependencies(
+    ally_placements: List[Tuple[UnitType, Tuple[int, int]]],
+    enemy_placements: List[Tuple[UnitType, Tuple[int, int]]],
+    max_duration: float,
+    post_battle_callback: Optional[Callable[[BattleOutcome], Any]] = None,
+) -> Union[BattleOutcome, Tuple[BattleOutcome, Any]]:
+    import os
+    import pygame
+    from handlers.combat_handler import CombatHandler
+    from handlers.state_machine import StateMachine
+    from visuals import load_visual_sheets
+    from entities.units import load_sprite_sheets
+
+    os.environ['SDL_VIDEODRIVER'] = 'dummy'
+    pygame.display.init()
+    pygame.display.set_mode((800, 600))
+    load_sprite_sheets()
+    load_visual_sheets()
+    combat_handler = CombatHandler()
+    state_machine = StateMachine()
+    return simulate_battle(ally_placements, enemy_placements, max_duration, post_battle_callback)

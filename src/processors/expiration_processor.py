@@ -12,4 +12,4 @@ class ExpirationProcessor(esper.Processor):
         for entity, expiration in esper.get_component(Expiration):
             expiration.time_left -= dt
             if expiration.time_left <= 0:
-                esper.delete_entity(entity, immediate=True)
+                esper.delete_entity(entity)

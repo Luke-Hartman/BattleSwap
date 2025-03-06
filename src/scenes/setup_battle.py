@@ -186,7 +186,7 @@ class SetupBattleScene(Scene):
         self._selected_unit_type = value
         self.barracks.select_unit_type(value)
         if self.selected_partial_unit is not None:
-            esper.delete_entity(self.selected_partial_unit, immediate=True)
+            esper.delete_entity(self.selected_partial_unit)
         if value is None:
             self.selected_partial_unit = None
             return

@@ -15,4 +15,4 @@ class UniqueProcessor:
             new_unique = min(uniques, key=lambda x: x[1].time_elapsed)
             for ent, unique in uniques:
                 if ent != new_unique[0]:
-                    esper.delete_entity(ent, immediate=True)
+                    esper.delete_entity(ent)

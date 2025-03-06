@@ -37,6 +37,10 @@ class FleeingProcessor(esper.Processor):
                 dx = pos.x - afraid_of_pos.x
                 dy = pos.y - afraid_of_pos.y
                 distance = pos.distance(afraid_of_pos, y_bias=None)
+                if distance == 0:
+                    dx = 1
+                    dy = 0
+                    distance = 1
                 velocity.x = dx / distance * gc.FLEEING_SPEED
                 velocity.y = dy / distance * gc.FLEEING_SPEED
                 orientation.facing = FacingDirection.LEFT if dx < 0 else FacingDirection.RIGHT
