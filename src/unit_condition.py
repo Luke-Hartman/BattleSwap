@@ -60,7 +60,10 @@ class All(UnitCondition):
     """The conditions to check."""
 
     def check(self, entity: int) -> bool:
-        return all(condition.check(entity) for condition in self.conditions)
+        for condition in self.conditions:
+            if not condition.check(entity):
+                return False
+        return True
 
 @dataclass
 class Any(UnitCondition):

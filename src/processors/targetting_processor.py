@@ -25,7 +25,7 @@ class TargettingProcessor(esper.Processor):
     def _update_target(self, ent: int, unit_state: UnitState, target_strategy: TargetStrategy):
         """Update the target for the given entity."""
         # Consider new targets
-        if unit_state.state in [State.IDLE, State.PURSUING]:
+        if unit_state.state == State.IDLE or unit_state.state == State.PURSUING:
             target_strategy.find_target()
         elif unit_state.state == State.DEAD:
             target_strategy.target = None

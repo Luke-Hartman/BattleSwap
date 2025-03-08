@@ -105,14 +105,22 @@ class TargetStrategy:
     def find_target(self) -> Optional[int]:
         """Find the target for the given entity."""
         self.target = None
-        eligible_targets: List[Tuple[int, Tuple[float, ...]]] = []
+        best_target = None
+        best_scores = None
+        
         for other_entity, (_,) in esper.get_components(Position):
             if not self.unit_condition.check(other_entity):
                 continue
-            eligible_targets.append((other_entity, tuple(ranking.key(other_entity) for ranking in self.rankings)))
-        eligible_targets.sort(key=lambda x: x[1])
-        if eligible_targets:
-            self.target = eligible_targets[0][0]
+
+            # Calculate scores for this entity
+            current_scores = tuple(ranking.key(other_entity) for ranking in self.rankings)
+            
+            # If this is the first valid target or it's better than the current best
+            if best_scores is None or current_scores < best_scores:
+                best_target = other_entity
+                best_scores = current_scores
+        
+        self.target = best_target
         return self.target
 
     @property

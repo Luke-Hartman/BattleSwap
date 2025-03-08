@@ -17,6 +17,45 @@ from unit_values import unit_values
 import numpy as np
 import multiprocessing
 
+# ALLOWED_UNIT_TYPES = [
+#     UnitType.CORE_ARCHER,
+#     UnitType.CORE_CAVALRY,
+#     UnitType.CORE_DUELIST,
+#     UnitType.CORE_SWORDSMAN,
+#     UnitType.CORE_WIZARD,
+#     UnitType.CRUSADER_BLACK_KNIGHT,
+#     UnitType.CRUSADER_CLERIC,
+#     UnitType.CRUSADER_COMMANDER,
+#     UnitType.CRUSADER_DEFENDER,
+#     UnitType.CRUSADER_GOLD_KNIGHT,
+#     UnitType.CRUSADER_LONGBOWMAN,
+#     UnitType.CRUSADER_PALADIN,
+#     UnitType.CRUSADER_PIKEMAN,
+#     UnitType.ZOMBIE_TANK,
+# ]
+ALLOWED_UNIT_TYPES = [
+    UnitType.CORE_ARCHER,
+    UnitType.CORE_CAVALRY,
+    UnitType.CORE_DUELIST,
+    UnitType.CORE_SWORDSMAN,
+    UnitType.CORE_WIZARD,
+    UnitType.CRUSADER_BANNER_BEARER,
+    UnitType.CRUSADER_BLACK_KNIGHT,
+    UnitType.CRUSADER_CATAPULT,
+    UnitType.CRUSADER_CLERIC,
+    UnitType.CRUSADER_CROSSBOWMAN,
+    UnitType.CRUSADER_DEFENDER,
+    UnitType.CRUSADER_GOLD_KNIGHT,
+    UnitType.CRUSADER_GUARDIAN_ANGEL,
+    UnitType.CRUSADER_LONGBOWMAN,
+    UnitType.CRUSADER_PALADIN,
+    UnitType.CRUSADER_PIKEMAN,
+    UnitType.CRUSADER_SOLDIER,
+    UnitType.ZOMBIE_JUMPER,
+    UnitType.ZOMBIE_SPITTER,
+    UnitType.ZOMBIE_TANK,
+]
+
 @total_ordering
 class Fitness:
 
@@ -90,6 +129,7 @@ class Individual:
                 team2_health=_get_team_health(TeamType.TEAM2)
             )
         )
+        self._fitness = fitness_result
         return fitness_result
 
     def evaluate(
@@ -186,24 +226,22 @@ def _get_random_legal_position(team_type: TeamType) -> Tuple[float, float]:
 
 def _get_random_legal_unit_type() -> UnitType:
     return random.choice(
-        [
-            UnitType.CORE_ARCHER,
-            UnitType.CORE_CAVALRY,
-            UnitType.CORE_DUELIST,
-            UnitType.CORE_SWORDSMAN,
-            UnitType.CORE_WIZARD,
-            UnitType.CRUSADER_BLACK_KNIGHT,
-            UnitType.CRUSADER_CLERIC,
-            UnitType.CRUSADER_COMMANDER,
-            UnitType.CRUSADER_DEFENDER,
-            UnitType.CRUSADER_GOLD_KNIGHT,
-            UnitType.CRUSADER_LONGBOWMAN,
-            UnitType.CRUSADER_PALADIN,
-            UnitType.CRUSADER_PIKEMAN,
-            UnitType.ZOMBIE_TANK,
-            
-        ]
+        ALLOWED_UNIT_TYPES
     )
+
+def generate_random_army(target_cost: int) -> List[Tuple[UnitType, Tuple[int, int]]]:
+    current_cost = 0
+    unit_placements = []
+    while current_cost != target_cost:
+        if current_cost > target_cost:
+            delete_index = random.randint(0, len(unit_placements) - 1)
+            current_cost -= unit_values[unit_placements[delete_index][0]]
+            unit_placements = unit_placements[:delete_index] + unit_placements[delete_index + 1:]
+        else:
+            unit_type = _get_random_legal_unit_type()
+            unit_placements.append((unit_type, _get_random_legal_position(TeamType.TEAM1)))
+            current_cost += unit_values[unit_type]
+    return unit_placements
 
 class Mutation(ABC):
 
@@ -243,9 +281,11 @@ class RandomizeUnitPosition(Mutation):
 class RandomizeUnitType(Mutation):
 
     def __call__(self, individual: Individual) -> Individual:
-        new_unit = _get_random_legal_unit_type()
         index = random.randint(0, len(individual.unit_placements) - 1)
         unit_to_mutate = individual.unit_placements[index]
+        new_unit = _get_random_legal_unit_type()
+        while new_unit == unit_to_mutate[0] or unit_values[new_unit] > unit_values[unit_to_mutate[0]]:
+            new_unit = _get_random_legal_unit_type()
         new_unit_placements = individual.unit_placements[:index] + [(new_unit, unit_to_mutate[1])] + individual.unit_placements[index + 1:]
         return Individual(new_unit_placements)
 
@@ -272,6 +312,20 @@ class PerturbPosition(Mutation):
         new_position = (unit_to_mutate[1][0] + random.gauss(0, self.noise_scale), unit_to_mutate[1][1] + random.gauss(0, self.noise_scale))
         new_unit_placements = individual.unit_placements[:index] + [(unit_to_mutate[0], new_position)] + individual.unit_placements[index + 1:]
         return Individual(new_unit_placements)
+
+
+class ReplaceSubarmy(Mutation):
+
+    def __call__(self, individual: Individual) -> Individual:
+        original_score = individual.points
+        kept_unit_placements = list(individual.unit_placements)
+        random.shuffle(kept_unit_placements)
+        index = random.randint(0, len(kept_unit_placements) - 1)
+        kept_unit_placements = kept_unit_placements[:index]
+        new_score = sum(unit_values[unit_type] for unit_type, _ in kept_unit_placements)
+
+        new_subarmy = generate_random_army(original_score - new_score)
+        return Individual(kept_unit_placements + new_subarmy)
 
 
 class All(Mutation):
@@ -404,7 +458,8 @@ class EvolutionStrategy(Evolution):
         mutations: List[Mutation],
         parents_per_generation: int,
         children_per_generation: int,
-        mutation_adaptation_rate: float = 0.2,
+        mutation_adaptation_rate: float = 0.1,
+        category_cap: int = 3,
     ):
         self.mutations = mutations
         self.parents_per_generation = parents_per_generation
@@ -414,6 +469,7 @@ class EvolutionStrategy(Evolution):
             for mutation in mutations
         }
         self.mutation_adaptation_rate = mutation_adaptation_rate
+        self.category_cap = category_cap
     def __call__(self, population: Population, enemy_placements: List[Tuple[UnitType, Tuple[int, int]]]) -> Population:
         parents = population.individuals
 
@@ -432,10 +488,20 @@ class EvolutionStrategy(Evolution):
         parents_and_children = Population(list(next_generation))
         parents_and_children.evaluate(enemy_placements)
 
-        # Select to next generation
-        next_population = Population(
-            sorted(parents_and_children.individuals, key=lambda x: x.fitness, reverse=True)[:self.parents_per_generation]
-        )
+        # Select the next generation
+        individuals = []
+        category_counts = defaultdict(int)
+        for individual in sorted(parents_and_children.individuals, key=lambda x: x.fitness, reverse=True):
+            category = tuple(sorted(Counter(
+                unit_type for unit_type, _ in individual.unit_placements
+            ).items()))
+            if category_counts[category] < self.category_cap:
+                individuals.append(individual)
+                category_counts[category] += 1
+            if len(individuals) >= self.parents_per_generation:
+                break
+
+        next_population = Population(individuals)
 
         # Update mutation rates
         mutation_successes = defaultdict(int)
@@ -460,32 +526,27 @@ def random_population(
     size: int,
     target_cost: int,
 ) -> Population:
-    individuals = []
-    while len(individuals) < size:
-        unit_placements = []
-        while sum(unit_values[unit_type] for unit_type, _ in unit_placements) < target_cost:
-            unit_type = _get_random_legal_unit_type()
-            unit_placements.append((unit_type, _get_random_legal_position(TeamType.TEAM1)))
-        individuals.append(Individual(unit_placements))
-    return Population(individuals)
+    return Population([
+        Individual(generate_random_army(target_cost))
+        for _ in range(size)
+    ])
 
-if __name__ == "__main__":
+def main():
     enemy_placements = get_battle_id("A Balanced Army").enemies
-    population = random_population(size=20, target_cost=900)
+    population = random_population(size=3, target_cost=900)
     population.evaluate(enemy_placements)
     evolution = EvolutionStrategy(
         mutations=[
-            AddRandomUnit(),
             RemoveRandomUnit(),
             PerturbPosition(noise_scale=10),
             PerturbPosition(noise_scale=100),
             RandomizeUnitPosition(),
+            ReplaceSubarmy(),
             RandomizeUnitType(),
-            All([RandomizeUnitPosition(), RandomizeUnitType()]),
         ],
-        parents_per_generation=20,
-        children_per_generation=100,
-        mutation_adaptation_rate=0.2,
+        parents_per_generation=3,
+        children_per_generation=10,
+        mutation_adaptation_rate=0.1,
     )
     generation = 0
     while True:
@@ -495,3 +556,19 @@ if __name__ == "__main__":
         population = evolution(population, enemy_placements)
         print(evolution.mutation_rates)
         generation += 1
+
+if __name__ == "__main__":
+    main()
+    # import cProfile
+    # import pstats
+
+    # # Run the profiler
+    # profiler = cProfile.Profile()
+    # profiler.enable()
+    # main()
+    # profiler.disable()
+
+    # # Print the stats
+    # stats = pstats.Stats(profiler)
+    # stats.sort_stats('cumulative')
+    # stats.print_stats()

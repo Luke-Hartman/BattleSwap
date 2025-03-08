@@ -13,13 +13,13 @@ class Position:
     Represents the position of an entity in the game world.
 
     Attributes:
-        x (int): The x-coordinate of the entity's position, in pixels.
-        y (int): The y-coordinate of the entity's position, in pixels.
+        x (float): The x-coordinate of the entity's position, in pixels.
+        y (float): The y-coordinate of the entity's position, in pixels.
     """
-    x: int
+    x: float
     """The x-coordinate of the entity's position, in pixels."""
 
-    y: int
+    y: float
     """The y-coordinate of the entity's position, in pixels."""
 
     def distance(self, other: 'Position', y_bias: Optional[float]) -> float:

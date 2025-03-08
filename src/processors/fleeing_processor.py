@@ -4,6 +4,7 @@ Fleeing units run away from a specific entity, and they ignore their destination
 """
 
 import esper
+from components.movement import Movement
 from game_constants import gc
 from components.orientation import FacingDirection, Orientation
 from components.position import Position
@@ -16,7 +17,7 @@ class FleeingProcessor(esper.Processor):
     """Processor responsible for fleeing units."""
 
     def process(self, dt: float):
-        for ent, (unit_state, pos, velocity, orientation, status_effects) in esper.get_components(UnitState, Position, Velocity, Orientation, StatusEffects):
+        for ent, (unit_state, pos, velocity, movement, orientation, status_effects) in esper.get_components(UnitState, Position, Velocity, Movement, Orientation, StatusEffects):
             if unit_state.state == State.DEAD:
                 continue
             if unit_state.state != State.FLEEING:
@@ -41,6 +42,7 @@ class FleeingProcessor(esper.Processor):
                     dx = 1
                     dy = 0
                     distance = 1
-                velocity.x = dx / distance * gc.FLEEING_SPEED
-                velocity.y = dy / distance * gc.FLEEING_SPEED
+                fleeing_speed = min(gc.FLEEING_SPEED, movement.speed)
+                velocity.x = dx / distance * fleeing_speed
+                velocity.y = dy / distance * fleeing_speed
                 orientation.facing = FacingDirection.LEFT if dx < 0 else FacingDirection.RIGHT

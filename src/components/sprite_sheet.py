@@ -36,9 +36,13 @@ class SpriteSheet(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.start_frames = start_frames
         self.layer = layer
+        self._processed_frames = {}
 
     def update_frame(self, animation_type: AnimationType, frame: int):
         """Update the sprite's image to the specified frame of the animation."""
+        if (animation_type, frame) in self._processed_frames:
+            self.image, self.sprite_center_offset, self.rect = self._processed_frames[(animation_type, frame)]
+            return
         row = self.rows[animation_type]
         if self.start_frames is not None:
             frame = self.start_frames.get(animation_type, 0) + frame
@@ -61,3 +65,4 @@ class SpriteSheet(pygame.sprite.Sprite):
             self.rect.centerx + self.sprite_center_offset[0],
             self.rect.centery + self.sprite_center_offset[1]
         )
+        self._processed_frames[(animation_type, frame)] = (self.image, self.sprite_center_offset, self.rect)
