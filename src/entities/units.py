@@ -10,6 +10,7 @@ import os
 from typing import Dict, List
 from components.ammo import Ammo
 from components.attached import Attached
+from components.entity_memory import EntityMemory
 from components.hitbox import Hitbox
 from components.immunity import ImmuneToZombieInfection
 from components.instant_ability import InstantAbilities, InstantAbility
@@ -1760,7 +1761,10 @@ def create_crusader_guardian_angel(x: int, y: int, team: TeamType) -> int:
                                     OnTeam(team=team),
                                 ])
                             )
-                        )
+                        ),
+                        SatisfiesUnitCondition(
+                            HasComponent(EntityMemory),
+                        ),
                     ],
                     effects=[
                         Forget(),
