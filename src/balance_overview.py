@@ -46,7 +46,7 @@ class AllBattlesPlotter:
 
     def save_html(self, filename: str):
         os.makedirs(os.path.dirname(filename), exist_ok=True)
-        with open(filename, "w") as f:
+        with open(filename, "w", encoding="utf-8") as f:
             f.write(self.create_plot())
 
 
@@ -59,9 +59,9 @@ def run_balance_overview():
     print("Starting balance overview analysis...")
 
     PARENTS_PER_GENERATION = 30
-    CHILDREN_PER_GENERATION = 10
+    CHILDREN_PER_GENERATION = 30
     MUTATION_ADAPTATION_RATE = 0.1
-    CATEGORY_CAP = 5
+    CATEGORY_CAP = 4
     TOURNAMENT_SIZE = 2
     MINIMUM_POINTS = 600
 

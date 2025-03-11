@@ -123,6 +123,10 @@ class Individual:
     def __str__(self) -> str:
         counts = Counter(unit_type for unit_type, _ in self.unit_placements)
         return ", ".join(f"{count} {unit_type}" for unit_type, count in counts.items())
+    
+    @property
+    def needs_evaluation(self) -> bool:
+        return self._fitness is None or self._constants_hash_when_evaluated != get_game_constants_hash()
 
     @property
     def fitness(self) -> Fitness:
@@ -133,7 +137,7 @@ class Individual:
     def short_str(self) -> str:
         return ", ".join(f"{count} {unit_type}" for unit_type, count in sorted(Counter(unit_type for unit_type, _ in self.unit_placements).items()))
     
-    def _evaluate(
+    def evaluate(
         self,
         max_duration: float,
     ) -> Fitness:
@@ -160,19 +164,8 @@ class Individual:
             )
         )
         self._fitness = fitness_result
+        self._constants_hash_when_evaluated = get_game_constants_hash()
         return fitness_result
-
-    def evaluate(
-        self,
-        max_duration: float = 120.0
-    ) -> Fitness:
-        current_constants_hash = get_game_constants_hash()
-        
-        # Re-evaluate if fitness is None or if game constants have changed
-        if self._fitness is None or self._constants_hash_when_evaluated != current_constants_hash:
-            self._fitness = self._evaluate(max_duration)
-            self._constants_hash_when_evaluated = current_constants_hash
-        return self._fitness
 
     def __str__(self) -> str:
         return self.short_str()
@@ -186,20 +179,47 @@ class Individual:
 def _evaluate(individual: Individual, max_duration: float):
     return individual.evaluate(max_duration)
 
+# Add this at the module level
+_global_process_pool = None
+
+def get_process_pool(num_processes=None):
+    """Get or create the global process pool."""
+    global _global_process_pool
+    if _global_process_pool is None:
+        if num_processes is None:
+            num_processes = multiprocessing.cpu_count()
+        _global_process_pool = multiprocessing.Pool(processes=num_processes)
+    return _global_process_pool
+
+def cleanup_process_pool():
+    """Clean up the global process pool when the program exits."""
+    global _global_process_pool
+    if _global_process_pool is not None:
+        _global_process_pool.close()
+        _global_process_pool.join()
+        _global_process_pool = None
+
 class Population:
     def __init__(self, individuals: List[Individual]):
         self.individuals = individuals
 
     def evaluate(self, max_duration: float = 120.0):
-        # Each individual will check if it needs to be re-evaluated based on game constants
-        num_jobs = min(len(self.individuals), multiprocessing.cpu_count())
-        with multiprocessing.Pool(processes=num_jobs) as pool:
-            # Use starmap to evaluate each individual and collect their fitness
-            results = pool.starmap(_evaluate, [(ind, max_duration) for ind in self.individuals])
-
-        # Update the fitness for each individual in the main process
-        for ind, fitness in zip(self.individuals, results):
-            ind._fitness = fitness
+        individuals_to_evaluate = [ind for ind in self.individuals if ind.needs_evaluation]
+        
+        if not individuals_to_evaluate:
+            return
+        
+        if len(individuals_to_evaluate) > 1:
+            pool = get_process_pool()
+            results = pool.starmap(_evaluate, [(ind, max_duration) for ind in individuals_to_evaluate])
+            
+            # Update the fitness for each individual in the main process
+            for ind, fitness in zip(individuals_to_evaluate, results):
+                ind._fitness = fitness
+        else:
+            # For a single individual, avoid the overhead of using the pool
+            for ind in individuals_to_evaluate:
+                ind._fitness = ind.evaluate(max_duration)
 
     @property
     def best_individuals(self) -> List[Individual]:
@@ -621,7 +641,7 @@ class Plotter(ABC):
 
     def save_plot(self, path: str):
         os.makedirs(os.path.dirname(path), exist_ok=True)
-        with open(path, "w") as f:
+        with open(path, "w", encoding="utf-8") as f:
             f.write(self.create_plot())
 
 
@@ -812,28 +832,31 @@ def main():
             UnitCountsPlotter(),
             GradeDistributionPlotter(),
         ],
-        heading=f"Battle: {BATTLE_ID}",
     )
     
     # Plot initial population
     plotter.update(population)
     
     generation = 1  # Start at 1 since we've plotted generation 0
-    while True:
-        print(f"Generation {generation}")
-        
-        # Evolve the population
-        population = evolution(population)
-        
-        # Print status
-        print(population)
-        print(evolution.mutation_rates)
-        
-        # Update the plot with the evolved population
-        plotter.update(population)
-        plotter.save_plot(f"plots/battle.html")
-        
-        generation += 1
+    try:
+        while True:
+            print(f"Generation {generation}")
+            
+            # Evolve the population
+            population = evolution(population)
+            
+            # Print status
+            print(population)
+            print(evolution.mutation_rates)
+            
+            # Update the plot with the evolved population
+            plotter.update(population)
+            plotter.save_plot(f"plots/battle.html")
+            
+            generation += 1
+    finally:
+        # Make sure to clean up the process pool when done
+        cleanup_process_pool()
 
 if __name__ == "__main__":
     main()
