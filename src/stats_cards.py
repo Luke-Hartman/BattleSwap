@@ -27,7 +27,18 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
             f"Projectile Speed: {gc.CORE_ARCHER_PROJECTILE_SPEED}",
             f"AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
         ]
-    if unit_type == UnitType.CORE_CAVALRY:
+    elif unit_type == UnitType.CORE_BARBARIAN:
+        return [
+            f"Name: Barbarian",
+            f"Faction: Core",
+            f"Value: {unit_values[unit_type]}",
+            f"Health: {gc.CORE_BARBARIAN_HP}",
+            f"Attack: {gc.CORE_BARBARIAN_ATTACK_DAMAGE}",
+            f"DPS: {round(gc.CORE_BARBARIAN_ATTACK_DAMAGE/gc.CORE_BARBARIAN_ANIMATION_ATTACK_DURATION, 2)}",
+            f"Speed: {gc.CORE_BARBARIAN_MOVEMENT_SPEED}",
+            f"Range: {gc.CORE_BARBARIAN_ATTACK_RANGE}",
+        ]
+    elif unit_type == UnitType.CORE_CAVALRY:
         return [
             f"Name: Cavalry",
             f"Faction: Core",

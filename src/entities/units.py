@@ -44,6 +44,7 @@ from visuals import Visual
 
 unit_theme_ids: Dict[UnitType, str] = {
     UnitType.CORE_ARCHER: "#core_archer_icon", 
+    UnitType.CORE_BARBARIAN: "#core_barbarian_icon",
     UnitType.CORE_CAVALRY: "#core_cavalry_icon",
     UnitType.CORE_DUELIST: "#core_duelist_icon",
     UnitType.CORE_SWORDSMAN: "#core_swordsman_icon",
@@ -89,6 +90,7 @@ class Faction(Enum):
 
 _unit_to_faction = {
     UnitType.CORE_ARCHER: Faction.CORE,
+    UnitType.CORE_BARBARIAN: Faction.CORE,
     UnitType.CORE_CAVALRY: Faction.CORE,
     UnitType.CORE_DUELIST: Faction.CORE,
     UnitType.CORE_SWORDSMAN: Faction.CORE,
@@ -118,6 +120,7 @@ def load_sprite_sheets():
     """Load all sprite sheets and unit icons."""
     unit_filenames = {
         UnitType.CORE_ARCHER: "CoreArcher.png", 
+        UnitType.CORE_BARBARIAN: "CoreBarbarian.png",
         UnitType.CORE_CAVALRY: "CoreCavalry.png",
         UnitType.CORE_DUELIST: "CoreDuelist.png",
         UnitType.CORE_SWORDSMAN: "CoreSwordsman.png", 
@@ -151,6 +154,7 @@ def load_sprite_sheets():
     # Load unit icons
     unit_icon_paths: Dict[UnitType, str] = {
         UnitType.CORE_ARCHER: "CoreArcherIcon.png",
+        UnitType.CORE_BARBARIAN: "CoreBarbarianIcon.png",
         UnitType.CORE_CAVALRY: "CoreCavalryIcon.png",
         UnitType.CORE_DUELIST: "CoreDuelistIcon.png",
         UnitType.CORE_SWORDSMAN: "CoreSwordsmanIcon.png",
@@ -185,6 +189,7 @@ def create_unit(x: int, y: int, unit_type: UnitType, team: TeamType) -> int:
     """Create a unit entity with all necessary components."""
     return {
         UnitType.CORE_ARCHER: create_core_archer,
+        UnitType.CORE_BARBARIAN: create_core_barbarian,
         UnitType.CORE_CAVALRY: create_core_cavalry,
         UnitType.CORE_DUELIST: create_core_duelist,
         UnitType.CORE_SWORDSMAN: create_core_swordsman,
@@ -343,6 +348,96 @@ def create_core_archer(x: int, y: int, team: TeamType) -> int:
             (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
         ])]
         for frame in [1, 4]
+    }))
+    return entity
+
+def create_core_barbarian(x: int, y: int, team: TeamType) -> int:
+    """Create a barbarian entity with all necessary components."""
+    entity = unit_base_entity(
+        x=x,
+        y=y,
+        team=team,
+        unit_type=UnitType.CORE_BARBARIAN,
+        movement_speed=gc.CORE_BARBARIAN_MOVEMENT_SPEED,
+        health=gc.CORE_BARBARIAN_HP,
+        hitbox=Hitbox(
+            width=20,
+            height=38,
+        )
+    )
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=4, ascending=True),
+        ],
+        unit_condition=All([OnTeam(team=team.other()), Alive()])
+    )
+    esper.add_component(
+        entity,
+        Destination(target_strategy=targetting_strategy, x_offset=gc.CORE_BARBARIAN_ATTACK_RANGE*2/3)
+    )
+    esper.add_component(
+        entity,
+        Abilities(
+            abilities=[
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                Grounded(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.CORE_BARBARIAN_ATTACK_RANGE,
+                                    y_bias=2
+                                ),
+                            ])
+                        )
+                    ],
+                    persistent_conditions=[],
+                    effects={
+                        6: [
+                            CreatesAoE(
+                                effects=[
+                                    Damages(damage=gc.CORE_BARBARIAN_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                                ],
+                                duration=gc.CORE_BARBARIAN_ANIMATION_ATTACK_DURATION*4/12,
+                                scale=gc.TINY_RPG_SCALE,
+                                unit_condition=All([
+                                    OnTeam(team=team.other()),
+                                    Alive(),
+                                    Grounded(),
+                                ]),
+                                visual=Visual.CoreBarbarianAttack,
+                                location=Recipient.PARENT,
+                            ),
+                            PlaySound(SoundEffect(filename="deep_swoosh.wav", volume=0.70)),
+                        ]
+                    },
+                )
+            ]
+        )
+    )
+    esper.add_component(entity, SpriteSheet(
+        surface=sprite_sheets[UnitType.CORE_BARBARIAN],
+        frame_width=100,
+        frame_height=100,
+        scale=gc.TINY_RPG_SCALE,
+        frames={AnimationType.IDLE: 6, AnimationType.WALKING: 9, AnimationType.ABILITY1: 12, AnimationType.DYING: 4},
+        rows={AnimationType.IDLE: 1, AnimationType.WALKING: 4, AnimationType.ABILITY1: 10, AnimationType.DYING: 19},
+        animation_durations={
+            AnimationType.IDLE: gc.CORE_BARBARIAN_ANIMATION_IDLE_DURATION,
+            AnimationType.WALKING: gc.CORE_BARBARIAN_ANIMATION_WALKING_DURATION,
+            AnimationType.ABILITY1: gc.CORE_BARBARIAN_ANIMATION_ATTACK_DURATION,
+            AnimationType.DYING: gc.CORE_BARBARIAN_ANIMATION_DYING_DURATION,
+        },
+        sprite_center_offset=(-2, 2),
+    ))
+    esper.add_component(entity, WalkEffects({
+        frame: [PlaySound(sound_effects=[
+            (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+        ])]
+        for frame in [2, 5]
     }))
     return entity
 
@@ -909,6 +1004,7 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
         entity,
         Destination(target_strategy=targetting_strategy, x_offset=gc.CRUSADER_BLACK_KNIGHT_ATTACK_RANGE*2/3)
     )
+    esper.add_component(entity, Armor(flat_reduction=gc.ARMOR_FLAT_DAMAGE_REDUCTION, percent_reduction=gc.ARMOR_PERCENT_DAMAGE_REDUCTION))
     esper.add_component(
         entity,
         Abilities(
@@ -1351,6 +1447,7 @@ def create_crusader_crossbowman(x: int, y: int, team: TeamType) -> int:
             max=gc.CRUSADER_CROSSBOWMAN_MAX_AMMO
         )
     )
+    esper.add_component(entity, Armor(flat_reduction=gc.ARMOR_FLAT_DAMAGE_REDUCTION, percent_reduction=gc.ARMOR_PERCENT_DAMAGE_REDUCTION))
     esper.add_component(entity, RangeIndicator(ranges=[gc.CRUSADER_CROSSBOWMAN_ATTACK_RANGE]))
     RELOADING = 0
     FIRING = 1
@@ -1525,6 +1622,7 @@ def create_crusader_defender(x: int, y: int, team: TeamType) -> int:
         entity,
         Destination(target_strategy=targetting_strategy, x_offset=gc.CRUSADER_DEFENDER_ATTACK_RANGE*2/3)
     )
+    esper.add_component(entity, Armor(flat_reduction=gc.ARMOR_FLAT_DAMAGE_REDUCTION, percent_reduction=gc.ARMOR_PERCENT_DAMAGE_REDUCTION))
     esper.add_component(
         entity,
         Abilities(
@@ -1565,7 +1663,6 @@ def create_crusader_defender(x: int, y: int, team: TeamType) -> int:
             ]
         )
     )
-    esper.add_component(entity, Armor(flat_reduction=gc.CRUSADER_DEFENDER_ARMOR_FLAT_REDUCTION, percent_reduction=gc.CRUSADER_DEFENDER_ARMOR_PERCENT_REDUCTION))
     esper.add_component(entity, SpriteSheet(
         surface=sprite_sheets[UnitType.CRUSADER_DEFENDER],
         frame_width=32,
@@ -1613,6 +1710,7 @@ def create_crusader_gold_knight(x: int, y: int, team: TeamType) -> int:
         entity,
         Destination(target_strategy=targetting_strategy, x_offset=gc.CRUSADER_GOLD_KNIGHT_ATTACK_RANGE*2/3)
     )
+    esper.add_component(entity, Armor(flat_reduction=gc.ARMOR_FLAT_DAMAGE_REDUCTION, percent_reduction=gc.ARMOR_PERCENT_DAMAGE_REDUCTION))
     esper.add_component(
         entity,
         Abilities(
@@ -1961,6 +2059,7 @@ def create_crusader_paladin(x: int, y: int, team: TeamType) -> int:
         entity,
         Destination(target_strategy=targetting_strategy, x_offset=gc.CRUSADER_PALADIN_ATTACK_RANGE*2/3)
     )
+    esper.add_component(entity, Armor(flat_reduction=gc.ARMOR_FLAT_DAMAGE_REDUCTION, percent_reduction=gc.ARMOR_PERCENT_DAMAGE_REDUCTION))
     esper.add_component(
         entity,
         Abilities(
@@ -2351,6 +2450,7 @@ def create_crusader_soldier(x: int, y: int, team: TeamType) -> int:
         RangeIndicator(ranges=[gc.CRUSADER_SOLDIER_RANGED_RANGE])
     )
     esper.add_component(entity, Stance(stance=RANGED))
+    esper.add_component(entity, Armor(flat_reduction=gc.ARMOR_FLAT_DAMAGE_REDUCTION, percent_reduction=gc.ARMOR_PERCENT_DAMAGE_REDUCTION))
     esper.add_component(
         entity,
         InstantAbilities(

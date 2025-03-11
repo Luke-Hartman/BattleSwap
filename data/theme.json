@@ -76,10 +76,10 @@
             }
         }
     },
-    "#core_duelist_icon": {
+    "#core_barbarian_icon": {
         "images": {
             "normal_image": {
-                "path": "assets/icons/CoreDuelistIcon.png"
+                "path": "assets/icons/CoreBarbarianIcon.png"
             }
         }
     },
@@ -87,6 +87,13 @@
         "images": {
             "normal_image": {
                 "path": "assets/icons/CoreCavalryIcon.png"
+            }
+        }
+    },
+    "#core_duelist_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/CoreDuelistIcon.png"
             }
         }
     },

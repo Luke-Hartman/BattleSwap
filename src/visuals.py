@@ -13,6 +13,7 @@ from components.sprite_sheet import SpriteSheet
 from game_constants import gc
 class Visual(Enum):
     Arrow = auto()
+    CoreBarbarianAttack = auto()
     CrusaderBlackKnightFear = auto()
     CrusaderGoldKnightAttack = auto()
     CrusaderRedKnightFireSlash = auto()
@@ -28,6 +29,7 @@ def load_visual_sheets():
     """Load all visual sprite sheets."""
     visual_paths = {
         Visual.Arrow: os.path.join("assets", "effects", "HumansProjectiles.png"),
+        Visual.CoreBarbarianAttack: os.path.join("assets", "units", "CoreBarbarian.png"),
         Visual.CrusaderBlackKnightFear: os.path.join("assets", "effects", "Black_Knight_Fear.png"),
         Visual.CrusaderGoldKnightAttack: os.path.join("assets", "effects", "CrusaderGoldKnightAttackEffect.png"),
         Visual.CrusaderRedKnightFireSlash: os.path.join("assets", "effects", "Knight-Attack03_Effect.png"),
@@ -84,6 +86,25 @@ def create_visual_spritesheet(
             rows={AnimationType.IDLE: 0},
             animation_durations={AnimationType.IDLE: duration},
             sprite_center_offset=(0, 0),
+            start_frames={AnimationType.IDLE: frames[0]},
+            layer=layer
+        )
+    elif visual == Visual.CoreBarbarianAttack:
+        if duration is None:
+            duration = 0.2
+        if scale is None:
+            scale = gc.TINY_RPG_SCALE
+        if frames is None:
+            frames = (6, 10)
+        return SpriteSheet(
+            surface=visual_sheets[visual],
+            frame_width=100,
+            frame_height=100,
+            scale=scale,
+            frames={AnimationType.IDLE: frames[1] - frames[0]},
+            rows={AnimationType.IDLE: 11},
+            animation_durations={AnimationType.IDLE: duration},
+            sprite_center_offset=(-2, 2),
             start_frames={AnimationType.IDLE: frames[0]},
             layer=layer
         )

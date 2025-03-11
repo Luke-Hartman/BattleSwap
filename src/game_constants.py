@@ -7,6 +7,8 @@ from JSON configuration.
 
 import os
 import sys
+import hashlib
+import json
 from pathlib import Path
 from pydantic import BaseModel
 
@@ -57,6 +59,8 @@ class GameConstants(BaseModel):
     DEFAULT_AURA_PERIOD: float
     FLEEING_SPEED: float
     MAX_ARMOR_DAMAGE_REDUCTION: float
+    ARMOR_FLAT_DAMAGE_REDUCTION: float
+    ARMOR_PERCENT_DAMAGE_REDUCTION: float
     
     # Core Units
     # Archer
@@ -69,6 +73,16 @@ class GameConstants(BaseModel):
     CORE_ARCHER_ANIMATION_WALKING_DURATION: float
     CORE_ARCHER_ANIMATION_ATTACK_DURATION: float
     CORE_ARCHER_ANIMATION_DYING_DURATION: float
+    
+    # Barbarian
+    CORE_BARBARIAN_HP: float
+    CORE_BARBARIAN_ATTACK_RANGE: float
+    CORE_BARBARIAN_ATTACK_DAMAGE: float
+    CORE_BARBARIAN_MOVEMENT_SPEED: float
+    CORE_BARBARIAN_ANIMATION_IDLE_DURATION: float
+    CORE_BARBARIAN_ANIMATION_WALKING_DURATION: float
+    CORE_BARBARIAN_ANIMATION_ATTACK_DURATION: float
+    CORE_BARBARIAN_ANIMATION_DYING_DURATION: float
     
     # Duelist
     CORE_DUELIST_HP: float
@@ -186,8 +200,6 @@ class GameConstants(BaseModel):
 
     # Defender
     CRUSADER_DEFENDER_HP: float
-    CRUSADER_DEFENDER_ARMOR_FLAT_REDUCTION: float
-    CRUSADER_DEFENDER_ARMOR_PERCENT_REDUCTION: float
     CRUSADER_DEFENDER_ATTACK_RANGE: float
     CRUSADER_DEFENDER_ATTACK_DAMAGE: float
     CRUSADER_DEFENDER_MOVEMENT_SPEED: float
@@ -359,6 +371,18 @@ class GameConstants(BaseModel):
         frozen = False
 
 gc = None
+
+def get_game_constants_hash() -> str:
+    """Calculate a hash of the current game constants."""
+    if gc is None:
+        reload_game_constants()
+    
+    # Convert the model to a dictionary and then to a JSON string
+    gc_dict = gc.model_dump()
+    gc_json = json.dumps(gc_dict, sort_keys=True)
+    
+    # Calculate the hash
+    return hashlib.md5(gc_json.encode()).hexdigest()
 
 def reload_game_constants() -> None:
     """Reload the game constants from the JSON file."""

@@ -14,6 +14,7 @@ from components.unit_state import State, UnitState
 from components.unit_type import UnitType
 from scene_utils import get_legal_placement_area
 from unit_values import unit_values
+from game_constants import get_game_constants_hash
 import plotly.graph_objects as go
 from pathlib import Path
 import os
@@ -39,6 +40,7 @@ import multiprocessing
 # ]
 ALLOWED_UNIT_TYPES = [
     UnitType.CORE_ARCHER,
+    UnitType.CORE_BARBARIAN,
     UnitType.CORE_CAVALRY,
     UnitType.CORE_DUELIST,
     UnitType.CORE_SWORDSMAN,
@@ -112,6 +114,7 @@ class Individual:
         self.battle_id = battle_id
         self.unit_placements = sorted(unit_placements)
         self._fitness = None
+        self._constants_hash_when_evaluated = None
     
     @property
     def points(self) -> float:
@@ -163,8 +166,12 @@ class Individual:
         self,
         max_duration: float = 120.0
     ) -> Fitness:
-        if self._fitness is None:
+        current_constants_hash = get_game_constants_hash()
+        
+        # Re-evaluate if fitness is None or if game constants have changed
+        if self._fitness is None or self._constants_hash_when_evaluated != current_constants_hash:
             self._fitness = self._evaluate(max_duration)
+            self._constants_hash_when_evaluated = current_constants_hash
         return self._fitness
 
     def __str__(self) -> str:
@@ -184,6 +191,7 @@ class Population:
         self.individuals = individuals
 
     def evaluate(self, max_duration: float = 120.0):
+        # Each individual will check if it needs to be re-evaluated based on game constants
         num_jobs = min(len(self.individuals), multiprocessing.cpu_count())
         with multiprocessing.Pool(processes=num_jobs) as pool:
             # Use starmap to evaluate each individual and collect their fitness
