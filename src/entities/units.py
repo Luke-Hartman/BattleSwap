@@ -1264,14 +1264,11 @@ def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
                     ],
                     effects={
                         2: [
-                            AppliesStatusEffect(
-                                status_effect=Healing(time_remaining=2, dps=gc.CRUSADER_CLERIC_HEALING/2),
-                                recipient=Recipient.TARGET
-                            ),
+                            Heals(amount=gc.CRUSADER_CLERIC_HEALING, recipient=Recipient.TARGET),
                             CreatesAttachedVisual(
                                 visual=Visual.Healing,
                                 animation_duration=1,
-                                expiration_duration=2,
+                                expiration_duration=1,
                                 scale=2,
                                 random_starting_frame=True,
                                 layer=1,

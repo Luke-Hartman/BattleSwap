@@ -114,7 +114,6 @@ class Individual:
         self.battle_id = battle_id
         self.unit_placements = sorted(unit_placements)
         self._fitness = None
-        self._constants_hash_when_evaluated = None
     
     @property
     def points(self) -> float:
@@ -124,9 +123,8 @@ class Individual:
         counts = Counter(unit_type for unit_type, _ in self.unit_placements)
         return ", ".join(f"{count} {unit_type}" for unit_type, count in counts.items())
     
-    @property
     def needs_evaluation(self) -> bool:
-        return self._fitness is None or self._constants_hash_when_evaluated != get_game_constants_hash()
+        return self._fitness is None
 
     @property
     def fitness(self) -> Fitness:
@@ -164,7 +162,6 @@ class Individual:
             )
         )
         self._fitness = fitness_result
-        self._constants_hash_when_evaluated = get_game_constants_hash()
         return fitness_result
 
     def __str__(self) -> str:
@@ -204,8 +201,20 @@ class Population:
         self.individuals = individuals
 
     def evaluate(self, max_duration: float = 120.0):
-        individuals_to_evaluate = [ind for ind in self.individuals if ind.needs_evaluation]
-        
+        game_constants_hash = get_game_constants_hash()
+        game_constants_hash_changed = False
+        individuals_to_evaluate = []
+        for ind in self.individuals:
+            if ind.needs_evaluation():
+                individuals_to_evaluate.append(ind)
+            elif getattr(ind, "_constants_hash", game_constants_hash) != game_constants_hash:
+                individuals_to_evaluate.append(ind)
+                game_constants_hash_changed = True
+
+        if game_constants_hash_changed:
+            print(f"Game constants hash changed to {game_constants_hash}")
+            cleanup_process_pool()
+
         if not individuals_to_evaluate:
             return
         
@@ -216,11 +225,12 @@ class Population:
             # Update the fitness for each individual in the main process
             for ind, fitness in zip(individuals_to_evaluate, results):
                 ind._fitness = fitness
+                ind._constants_hash = game_constants_hash
         else:
             # For a single individual, avoid the overhead of using the pool
             for ind in individuals_to_evaluate:
                 ind._fitness = ind.evaluate(max_duration)
-
+                ind._constants_hash = game_constants_hash
     @property
     def best_individuals(self) -> List[Individual]:
         best_score = max(ind.fitness for ind in self.individuals).points
@@ -665,14 +675,13 @@ class UnitCountsPlotter(Plotter):
         
         for unit_type in ALLOWED_UNIT_TYPES:
             counts = self.unit_counts_history[unit_type]
-            if any(counts):  # Only add line if unit type has been used
-                fig.add_trace(go.Scatter(
-                    x=list(range(len(counts))),
-                    y=counts,
-                    name=unit_type.name,
-                    mode='lines',
-                    hovertemplate='%{fullData.name}<extra></extra>',
-                ))
+            fig.add_trace(go.Scatter(
+                x=list(range(len(counts))),
+                y=counts,
+                name=unit_type.name,
+                mode='lines',
+                hovertemplate='%{fullData.name}<extra></extra>',
+            ))
         
         fig.update_layout(
             title="Unit Type Population Over Generations",
@@ -688,7 +697,34 @@ class UnitCountsPlotter(Plotter):
             margin=dict(r=150)  # Add right margin for legend
         )
         return fig.to_html()
-    
+
+
+class UnitValuesPlotter(Plotter):
+
+    def __init__(self):
+        self.unit_values_history = defaultdict(list)
+
+    def update(self, population: Population):
+        total_unit_values = defaultdict(int)
+        for ind in population.individuals:
+            for unit_type, _ in ind.unit_placements:
+                total_unit_values[unit_type] += unit_values[unit_type]
+        for unit_type in ALLOWED_UNIT_TYPES:
+            self.unit_values_history[unit_type].append(total_unit_values[unit_type])
+
+    def create_plot(self) -> str:
+        fig = go.Figure()
+        for unit_type in ALLOWED_UNIT_TYPES:
+            counts = self.unit_values_history[unit_type]
+            fig.add_trace(go.Scatter(
+                x=list(range(len(counts))),
+                y=counts,
+                name=unit_type.name,
+                mode='lines',
+                hovertemplate='%{fullData.name}<extra></extra>',
+            ))
+        return fig.to_html()
+
 
 class GradeDistributionPlotter(Plotter):
 
@@ -716,7 +752,7 @@ class GradeDistributionPlotter(Plotter):
 
     def create_plot(self) -> str:
         """Create and save the grade distribution plot."""
-        fig = go.Figure()   
+        fig = go.Figure()
         
         # Define grade order and colors
         # For each grade, create a trace showing count over generations
@@ -830,6 +866,7 @@ def main():
     plotter = PlotGroup(
         plotters=[
             UnitCountsPlotter(),
+            UnitValuesPlotter(),
             GradeDistributionPlotter(),
         ],
     )
@@ -846,8 +883,8 @@ def main():
             population = evolution(population)
             
             # Print status
-            print(population)
-            print(evolution.mutation_rates)
+            # print(population)
+            # print(evolution.mutation_rates)
             
             # Update the plot with the evolved population
             plotter.update(population)

@@ -174,7 +174,7 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
             f"Speed: {gc.CRUSADER_DEFENDER_MOVEMENT_SPEED}",
             f"Range: {gc.CRUSADER_DEFENDER_ATTACK_RANGE}",
             f"AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
-            f"Special: Defenders have {gc.CRUSADER_DEFENDER_ARMOR_FLAT_REDUCTION}% flat armor (applied first), followed by {round(gc.CRUSADER_DEFENDER_ARMOR_PERCENT_REDUCTION*100)}% percent armor, reducing damage taken by up to {round(gc.MAX_ARMOR_DAMAGE_REDUCTION*100)}%.",
+            f"Special: Defenders have {gc.ARMOR_FLAT_DAMAGE_REDUCTION} flat armor (applied first), followed by {round(gc.ARMOR_PERCENT_DAMAGE_REDUCTION*100)}% percent armor, reducing damage taken by up to {round(gc.MAX_ARMOR_DAMAGE_REDUCTION*100)}%.",
         ]
     if unit_type == UnitType.CRUSADER_GOLD_KNIGHT:
         return [

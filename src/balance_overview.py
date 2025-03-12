@@ -6,7 +6,7 @@ from typing import Dict
 from battles import get_battle_id, get_battles
 from battle_solver import (
     ALLOWED_UNIT_TYPES, EvolutionStrategy, AddRandomUnit, GradeDistributionPlotter, MoveNextToAlly, PlotGroup, Plotter, Population, RemoveRandomUnit, 
-    PerturbPosition, RandomizeUnitPosition, RandomizeUnitType, ReplaceSubarmy, TournamentSelection, UniformSelection, UnitCountsPlotter, random_population
+    PerturbPosition, RandomizeUnitPosition, RandomizeUnitType, ReplaceSubarmy, TournamentSelection, UniformSelection, UnitCountsPlotter, UnitValuesPlotter, random_population
 )
 from unit_values import unit_values
 
@@ -59,10 +59,10 @@ def run_balance_overview():
     print("Starting balance overview analysis...")
 
     PARENTS_PER_GENERATION = 30
-    CHILDREN_PER_GENERATION = 30
+    CHILDREN_PER_GENERATION = 10
     MUTATION_ADAPTATION_RATE = 0.1
-    CATEGORY_CAP = 4
-    TOURNAMENT_SIZE = 2
+    CATEGORY_CAP = 5
+    TOURNAMENT_SIZE = None
     MINIMUM_POINTS = 600
 
     # Setup evolution strategy with the same parameters as the main script
@@ -111,6 +111,7 @@ def run_balance_overview():
         overview_plotter=PlotGroup(
             plotters=[
                 UnitCountsPlotter(),
+                UnitValuesPlotter(),
                 GradeDistributionPlotter(),
             ],
         ),

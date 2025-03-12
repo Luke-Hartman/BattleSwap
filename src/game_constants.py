@@ -374,9 +374,7 @@ gc = None
 
 def get_game_constants_hash() -> str:
     """Calculate a hash of the current game constants."""
-    if gc is None:
-        reload_game_constants()
-    
+    reload_game_constants()
     # Convert the model to a dictionary and then to a JSON string
     gc_dict = gc.model_dump()
     gc_json = json.dumps(gc_dict, sort_keys=True)
