@@ -110,6 +110,7 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
             f"Range: {gc.CRUSADER_BLACK_KNIGHT_ATTACK_RANGE}",
             f"Fear Duration: {gc.CRUSADER_BLACK_KNIGHT_FLEE_DURATION}",
             f"Special: Killing blows inflict fear on all other units in an AoE around the black knight.",
+            f"Special: Is armoured. Has {gc.ARMOR_FLAT_DAMAGE_REDUCTION} flat armor (applied first), followed by {round(gc.ARMOR_PERCENT_DAMAGE_REDUCTION*100)}% percent armor, reducing damage taken by up to {round(gc.MAX_ARMOR_DAMAGE_REDUCTION*100)}%.",
             f"AI: Targets nearby enemies, prioritizing enemies with low current health.",
         ]
     if unit_type == UnitType.CRUSADER_CATAPULT:
@@ -174,7 +175,7 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
             f"Speed: {gc.CRUSADER_DEFENDER_MOVEMENT_SPEED}",
             f"Range: {gc.CRUSADER_DEFENDER_ATTACK_RANGE}",
             f"AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
-            f"Special: Defenders have {gc.ARMOR_FLAT_DAMAGE_REDUCTION} flat armor (applied first), followed by {round(gc.ARMOR_PERCENT_DAMAGE_REDUCTION*100)}% percent armor, reducing damage taken by up to {round(gc.MAX_ARMOR_DAMAGE_REDUCTION*100)}%.",
+            f"Special: Is armoured. Has {gc.ARMOR_FLAT_DAMAGE_REDUCTION} flat armor (applied first), followed by {round(gc.ARMOR_PERCENT_DAMAGE_REDUCTION*100)}% percent armor, reducing damage taken by up to {round(gc.MAX_ARMOR_DAMAGE_REDUCTION*100)}%.",
         ]
     if unit_type == UnitType.CRUSADER_GOLD_KNIGHT:
         return [
@@ -188,6 +189,7 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
             f"Range: {gc.CRUSADER_GOLD_KNIGHT_ATTACK_RANGE}",
             f"AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
             f"Special: Gold Knights hit all enemies in the radius of their attack, and heal for {gc.CRUSADER_GOLD_KNIGHT_ATTACK_HEAL} per enemy hit.",
+            f"Special: Is armoured. Has {gc.ARMOR_FLAT_DAMAGE_REDUCTION} flat armor (applied first), followed by {round(gc.ARMOR_PERCENT_DAMAGE_REDUCTION*100)}% percent armor, reducing damage taken by up to {round(gc.MAX_ARMOR_DAMAGE_REDUCTION*100)}%.",
         ]
     if unit_type == UnitType.CRUSADER_GUARDIAN_ANGEL:
         return [
@@ -226,6 +228,7 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
             f"Range: {gc.CRUSADER_PALADIN_ATTACK_RANGE}",
             f"AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
             f"Special: Heals self by {round(gc.CRUSADER_PALADIN_SKILL_HEAL_PERCENT*100)}% when their health is below {round(gc.CRUSADER_PALADIN_SKILL_HEALTH_PERCENT_THRESHOLD*100)}%, cooldown {gc.CRUSADER_PALADIN_SKILL_COOLDOWN}s. (Heal per second is at most {round(gc.CRUSADER_PALADIN_SKILL_HEAL_PERCENT * gc.CRUSADER_PALADIN_HP/gc.CRUSADER_PALADIN_SKILL_COOLDOWN, 2)} per second)",
+            f"Special: Is armoured. Has {gc.ARMOR_FLAT_DAMAGE_REDUCTION} flat armor (applied first), followed by {round(gc.ARMOR_PERCENT_DAMAGE_REDUCTION*100)}% percent armor, reducing damage taken by up to {round(gc.MAX_ARMOR_DAMAGE_REDUCTION*100)}%.",
         ]
     if unit_type == UnitType.CRUSADER_PIKEMAN:
         return [
@@ -267,6 +270,7 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
             f"Speed: {gc.CRUSADER_SOLDIER_MOVEMENT_SPEED}",
             f"AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
             f"Special: Soldiers switch from ranged attacks to melee attacks when their target is within {gc.CRUSADER_SOLDIER_SWITCH_STANCE_RANGE} units of them, and switch back to ranged attacks when their target is out of range.",
+            f"Special: Is armoured. Has {gc.ARMOR_FLAT_DAMAGE_REDUCTION} flat armor (applied first), followed by {round(gc.ARMOR_PERCENT_DAMAGE_REDUCTION*100)}% percent armor, reducing damage taken by up to {round(gc.MAX_ARMOR_DAMAGE_REDUCTION*100)}%.",
         ]
     if unit_type == UnitType.WEREBEAR:
         return [
