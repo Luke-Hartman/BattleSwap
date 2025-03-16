@@ -849,24 +849,17 @@
     },
     "best_solution": [
       [
-        "CORE_SWORDSMAN",
+        "CRUSADER_DEFENDER",
         [
-          -692.8203230275503,
-          -123.94290609321024
+          -623.4805313780653,
+          -77.69096967953965
         ]
       ],
       [
-        "CORE_SWORDSMAN",
+        "CORE_DUELIST",
         [
           -692.8203230275503,
-          -98.94290609321024
-        ]
-      ],
-      [
-        "CORE_SWORDSMAN",
-        [
-          -692.8203230275503,
-          -73.94290609321024
+          -102.0
         ]
       ]
     ]
@@ -923,8 +916,8 @@
       [
         "CORE_WIZARD",
         [
-          -46.12516844081438,
-          -253.0
+          -71.12516844081438,
+          -275.0
         ]
       ]
     ]
@@ -974,31 +967,17 @@
     },
     "best_solution": [
       [
-        "CORE_SWORDSMAN",
+        "CRUSADER_PALADIN",
         [
           -25.0,
-          200.0
+          254.0
         ]
       ],
       [
-        "CORE_SWORDSMAN",
+        "CRUSADER_PIKEMAN",
         [
-          -25.0,
-          225.0
-        ]
-      ],
-      [
-        "CORE_SWORDSMAN",
-        [
-          -25.0,
-          175.0
-        ]
-      ],
-      [
-        "CORE_SWORDSMAN",
-        [
-          -25.0,
-          150.0
+          -39.04455869100639,
+          274.67155985251577
         ]
       ]
     ]
@@ -1125,17 +1104,10 @@
     },
     "best_solution": [
       [
-        "CRUSADER_CLERIC",
-        [
-          -69.02355330306,
-          -4.0
-        ]
-      ],
-      [
-        "CRUSADER_DEFENDER",
+        "CRUSADER_BLACK_KNIGHT",
         [
           -25.0,
-          -3.0
+          -115.0
         ]
       ]
     ]
@@ -1312,24 +1284,31 @@
     },
     "best_solution": [
       [
-        "CORE_DUELIST",
+        "CORE_SWORDSMAN",
         [
-          -58.76581449591504,
-          47.0
+          -675.0,
+          50.0
         ]
       ],
       [
-        "CRUSADER_PIKEMAN",
+        "CORE_SWORDSMAN",
         [
-          -66.98266176746802,
-          23.419888613334162
+          -675.0,
+          75.0
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -675.0,
+          100.0
         ]
       ],
       [
         "ZOMBIE_TANK",
         [
-          -25.0,
-          35.0
+          -434.76581449591504,
+          65.0
         ]
       ]
     ]
@@ -1413,31 +1392,24 @@
     },
     "best_solution": [
       [
-        "CORE_CAVALRY",
+        "ZOMBIE_TANK",
         [
           -25.0,
-          -646.0000000000001
-        ]
-      ],
-      [
-        "CRUSADER_PIKEMAN",
-        [
-          -50.0,
-          -50.0
-        ]
-      ],
-      [
-        "CRUSADER_PIKEMAN",
-        [
-          -50.0,
           -25.0
         ]
       ],
       [
-        "ZOMBIE_TANK",
+        "CORE_DUELIST",
+        [
+          -85.94549146836471,
+          -23.0
+        ]
+      ],
+      [
+        "CORE_CAVALRY",
         [
           -25.0,
-          -31.0
+          -595.0
         ]
       ]
     ]
@@ -1990,22 +1962,7 @@
         ]
       ]
     ],
-    "allies": [
-      [
-        "CRUSADER_DEFENDER",
-        [
-          -300.74226119285595,
-          -63.0
-        ]
-      ],
-      [
-        "CRUSADER_CLERIC",
-        [
-          -362.74226119285595,
-          -62.0
-        ]
-      ]
-    ],
+    "allies": null,
     "tip": [
       "Wizards are unreliable allies."
     ],
@@ -2023,17 +1980,10 @@
     },
     "best_solution": [
       [
-        "CRUSADER_DEFENDER",
+        "CRUSADER_PALADIN",
         [
-          -300.74226119285595,
-          -63.0
-        ]
-      ],
-      [
-        "CRUSADER_CLERIC",
-        [
-          -362.74226119285595,
-          -62.0
+          -241.74226119285595,
+          -65.0
         ]
       ]
     ]

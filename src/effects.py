@@ -12,6 +12,7 @@ from scipy.optimize import minimize
 
 from components.ammo import Ammo
 from components.angle import Angle
+from components.angular_velocity import AngularVelocity
 from components.animation import AnimationState, AnimationType
 from components.aoe import AoE
 from components.armor import Armor
@@ -425,6 +426,54 @@ class CreatesAttachedVisual(Effect):
 
 
 @dataclass
+class CreatePermanentVisual(Effect):
+    """Effect creates a visual effect at the location of the recipient that is permanent."""
+
+    recipient: Recipient
+    """The recipient of the effect."""
+
+    visual: Visual
+    """The visual of the effect."""
+
+    animation_duration: float
+    """The duration of the animation of the effect."""
+
+    scale: float
+    """The scale of the effect."""
+
+    offset: Optional[Callable[[int], Tuple[int, int]]] = None
+    """The offset of the effect from the target's position."""
+
+    random_starting_frame: bool = False
+    """Whether the effect should start on a random frame."""
+
+    layer: int = 0
+    """The layer of the effect."""
+
+    def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
+        if self.recipient == Recipient.OWNER:
+            assert owner is not None
+            recipient = owner
+        elif self.recipient == Recipient.PARENT:
+            assert parent is not None
+            recipient = parent
+        elif self.recipient == Recipient.TARGET:
+            assert target is not None
+            recipient = target
+        recipient_position = esper.component_for_entity(recipient, Position)
+        team = esper.component_for_entity(recipient, Team)
+        entity = esper.create_entity()
+        esper.add_component(entity, Position(x=recipient_position.x, y=recipient_position.y))
+        esper.add_component(entity, Team(type=team.type))
+        esper.add_component(entity, create_visual_spritesheet(visual=self.visual, scale=self.scale, layer=self.layer))
+        if self.random_starting_frame:
+            time_elapsed = random.random() * self.animation_duration
+        else:
+            time_elapsed = 0
+        esper.add_component(entity, AnimationState(type=AnimationType.IDLE, time_elapsed=time_elapsed))
+
+
+@dataclass
 class AttachToTarget(Effect):
     """Effect attaches the parent to the target."""
 
@@ -680,6 +729,9 @@ class CreatesLobbed(Effect):
     smart: bool = False
     """Whether the lobbed entity should use smart targeting."""
 
+    angular_velocity: float = 0.0
+    """The rotation of the lobbed entity."""
+
     def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
         assert parent is not None
         assert target is not None
@@ -725,6 +777,9 @@ class CreatesLobbed(Effect):
         esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
         esper.add_component(entity, Team(type=parent_team.type))
         esper.add_component(entity, Orientation(facing=parent_orientation.facing))
+        if self.angular_velocity != 0:
+            esper.add_component(entity, AngularVelocity(self.angular_velocity * parent_orientation.facing.value))
+        esper.add_component(entity, Angle(angle=0))
 
 
 @dataclass

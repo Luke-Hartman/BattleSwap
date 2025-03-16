@@ -137,7 +137,7 @@ class MaxHealthAbove(UnitCondition):
 
 @dataclass
 class MaximumDistanceFromEntity(UnitCondition):
-    """The unit is within a certain distance from the given entity."""
+    """The unit is within a certain distance to any point on the given entity."""
 
     entity: int
     """The entity to check against."""
@@ -156,19 +156,21 @@ class MaximumDistanceFromEntity(UnitCondition):
         other_position = esper.try_component(entity, Position)
         if position is None or other_position is None:
             return False
-        if self.use_hitbox:
-            other_hitbox = esper.try_component(entity, Hitbox)
-            if other_hitbox is None:
-                return False
-            radius = min(other_hitbox.height/2, other_hitbox.width/2)
-            distance = self.distance + radius
-        else:
-            distance = self.distance
-        return position.distance(other_position, self.y_bias) <= distance
+        if self.use_hitbox and (other_hitbox := esper.try_component(entity, Hitbox)):
+            half_width = other_hitbox.width / 2
+            half_height = other_hitbox.height / 2
+            
+            # You can find the nearest point on the other's hitbox by clamping the entity's position
+            # to the other's hitbox
+            nearest_x = max(other_position.x - half_width, min(position.x, other_position.x + half_width))
+            nearest_y = max(other_position.y - half_height, min(position.y, other_position.y + half_height))
+            other_position = Position(nearest_x, nearest_y)
+
+        return position.distance(other_position, self.y_bias) <= self.distance
 
 @dataclass
 class MinimumDistanceFromEntity(UnitCondition):
-    """The unit is at least  a certain distance from the given entity."""
+    """The unit is at least a certain distance from every point on the given entity."""
 
     entity: int
     """The entity to check against."""
@@ -179,12 +181,31 @@ class MinimumDistanceFromEntity(UnitCondition):
     y_bias: Optional[float]
     """The y-bias to apply to the distance check."""
 
+    use_hitbox: bool = True
+    """Whether to use the hitbox to determine the distance."""
+
     def check(self, entity: int) -> bool:
         position = esper.try_component(self.entity, Position)
         other_position = esper.try_component(entity, Position)
         if position is None or other_position is None:
             return False
-        return position.distance(other_position, self.y_bias) >= self.distance
+        if self.use_hitbox and (other_hitbox := esper.try_component(entity, Hitbox)):
+            half_width = other_hitbox.width / 2
+            half_height = other_hitbox.height / 2
+
+            # other_position is the midpoint between position and opposite_position 
+            offset_x = position.x - other_position.x
+            offset_y = position.y - other_position.y
+            opposite_position = Position(
+                other_position.x - offset_x,
+                other_position.y - offset_y
+            )
+
+            # The farthest point on the other's hitbox can be found by clamping opposite_position to the hitbox
+            farthest_x = max(other_position.x - half_width, min(opposite_position.x, other_position.x + half_width))
+            farthest_y = max(other_position.y - half_height, min(opposite_position.y, other_position.y + half_height))
+            other_position = Position(farthest_x, farthest_y)
+        return position.distance(other_position, self.y_bias) > self.distance
 
 @dataclass
 class MaximumAngleFromEntity(UnitCondition):
@@ -197,6 +218,7 @@ class MaximumAngleFromEntity(UnitCondition):
     """The maximum angle (in radians) within which the condition is met."""
 
     def check(self, entity: int) -> bool:
+        # TODO: Use hitbox
         position = esper.try_component(self.entity, Position)
         other_position = esper.try_component(entity, Position)
         if position is None or other_position is None:
@@ -210,7 +232,7 @@ class MaximumAngleFromEntity(UnitCondition):
 
 @dataclass
 class MaximumDistanceFromDestination(UnitCondition):
-    """The unit is within a certain distance from their destination."""
+    """The unit's position is within a certain distance from their destination."""
 
     distance: float
     """The maximum distance within which the condition is met."""

@@ -6,11 +6,7 @@ from game_constants import gc
 from components.lobbed import Lobbed
 from events import emit_event, LOBBED_ARRIVED, LobbedArrivedEvent
 
-def calculate_position(lobbed: Lobbed) -> Vector2:
-    # Calculate initial velocity needed to reach max_range
-    # Using v = sqrt(g * R / sin(2θ)) where θ = lobbed.max_angle
-    initial_velocity = math.sqrt(gc.GRAVITY * lobbed.max_range / math.sin(2 * lobbed.max_angle))
-    
+def calculate_position(lobbed: Lobbed) -> Vector2:    
     # Get the horizontal distance and direction
     displacement = lobbed.target - lobbed.start
     distance = displacement.length()
@@ -20,14 +16,14 @@ def calculate_position(lobbed: Lobbed) -> Vector2:
     # Calculate launch angle needed to hit target
     # θ = 1/2 * arcsin(g * d / v^2)
     launch_angle = 0.5 * math.asin(
-        min(1.0, gc.GRAVITY * distance / (initial_velocity * initial_velocity))
+        min(1.0, gc.GRAVITY * distance / (lobbed.initial_velocity * lobbed.initial_velocity))
     )
     
     # Decompose initial velocity into components
     direction = displacement.normalize()
-    vx = initial_velocity * math.cos(launch_angle) * direction.x
-    vy = initial_velocity * math.cos(launch_angle) * direction.y
-    vz = initial_velocity * math.sin(launch_angle)
+    vx = lobbed.initial_velocity * math.cos(launch_angle) * direction.x
+    vy = lobbed.initial_velocity * math.cos(launch_angle) * direction.y
+    vz = lobbed.initial_velocity * math.sin(launch_angle)
     
     # Calculate current position
     x = lobbed.start.x + vx * lobbed.time_passed

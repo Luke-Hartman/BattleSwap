@@ -35,7 +35,7 @@ from components.unit_type import UnitType, UnitTypeComponent
 from components.velocity import Velocity
 from components.health import Health
 from components.orientation import Orientation, FacingDirection
-from effects import AppliesStatusEffect, AttachToTarget, CreatesAoE, CreatesAttachedVisual, CreatesLobbed, CreatesProjectile, Damages, Forget, Heals, IncreaseAmmo, Jump, PlaySound, Recipient, SoundEffect, StanceChange, RememberTarget
+from effects import AppliesStatusEffect, AttachToTarget, CreatePermanentVisual, CreatesAoE, CreatesAttachedVisual, CreatesLobbed, CreatesProjectile, Damages, Forget, Heals, IncreaseAmmo, Jump, PlaySound, Recipient, SoundEffect, StanceChange, RememberTarget
 from unit_condition import (
     All, Alive, Always, AmmoEquals, Any, Grounded, HasComponent, HealthBelowPercent, InStance, Infected, IsEntity, IsUnitType, MaximumDistanceFromDestination, MinimumDistanceFromEntity, Never, Not, OnTeam,
     MaximumDistanceFromEntity, RememberedBy, RememberedSatisfies
@@ -127,7 +127,7 @@ def load_sprite_sheets():
         UnitType.CORE_WIZARD: "CoreWizard.png",
         UnitType.CRUSADER_BANNER_BEARER: "Kirby.png",
         UnitType.CRUSADER_BLACK_KNIGHT: "CrusaderBlackKnight.png",
-        UnitType.CRUSADER_CATAPULT: "kirby_library/ReKirby_01.png",
+        UnitType.CRUSADER_CATAPULT: "CrusaderCatapult.png",
         UnitType.CRUSADER_CLERIC: "CrusaderCleric.png",
         UnitType.CRUSADER_COMMANDER: "CrusaderCommander.png",
         UnitType.CRUSADER_CROSSBOWMAN: "CrusaderCrossbowman.png",
@@ -985,7 +985,7 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
         movement_speed=gc.CRUSADER_BLACK_KNIGHT_MOVEMENT_SPEED,
         health=gc.CRUSADER_BLACK_KNIGHT_HP,
         hitbox=Hitbox(
-            width=50,
+            width=30,
             height=54,
         )
     )
@@ -1110,8 +1110,8 @@ def create_crusader_catapult(x: int, y: int, team: TeamType) -> int:
         movement_speed=0,
         health=gc.CRUSADER_CATAPULT_HP,
         hitbox=Hitbox(
-            width=16,
-            height=36,
+            width=100,
+            height=20,
         )
     )
     targetting_strategy = TargetStrategy(
@@ -1145,32 +1145,51 @@ def create_crusader_catapult(x: int, y: int, team: TeamType) -> int:
                 Ability(
                     target_strategy=targetting_strategy,
                     trigger_conditions=[
-                        HasTarget(unit_condition=Always())
+                        HasTarget(unit_condition=Always()),
+                        Cooldown(gc.CRUSADER_CATAPULT_COOLDOWN),
                     ],
                     persistent_conditions=[
                         HasTarget(unit_condition=All([Alive(), Grounded()]))
                     ],
                     effects={
-                        2: [
+                        0: [
+                            PlaySound(SoundEffect(filename="catapult_firing.wav", volume=0.50)),
+                        ],
+                        1: [
                             CreatesLobbed(
                                 effects=[
                                     CreatesAoE(
                                         effects=[
                                             Damages(damage=gc.CRUSADER_CATAPULT_DAMAGE, recipient=Recipient.TARGET)
                                         ],
-                                        visual=Visual.Explosion,
-                                        duration=gc.CORE_WIZARD_FIREBALL_AOE_DURATION,
-                                        scale=gc.CORE_WIZARD_FIREBALL_AOE_SCALE,
+                                        visual=Visual.CrusaderCatapultBallExplosion,
+                                        duration=gc.CRUSADER_CATAPULT_AOE_DURATION,
+                                        scale=gc.TINY_RPG_SCALE,
                                         unit_condition=All([Alive(), Grounded()]),
                                         location=Recipient.PARENT,
-                                    )
+                                    ),
+                                    CreatePermanentVisual(
+                                        recipient=Recipient.PARENT,
+                                        visual=Visual.CrusaderCatapultBallRemains,
+                                        scale=gc.TINY_RPG_SCALE,
+                                        layer=-1,
+                                        animation_duration=1,
+                                    ),
+                                    PlaySound(SoundEffect(filename="boulder_impact.wav", volume=0.60)),
                                 ],
                                 max_range=gc.CRUSADER_CATAPULT_MAXIMUM_RANGE,
                                 min_range=gc.CRUSADER_CATAPULT_MINIMUM_RANGE,
-                                visual=Visual.Fireball,
-                                offset=(30, 0),
-                            )
-                        ]
+                                visual=Visual.CrusaderCatapultBall,
+                                offset=(-50, -65),
+                                angular_velocity=3,
+                            ),
+                        ],
+                        4: [
+                            PlaySound(SoundEffect(filename="catapult_reload_creak.wav", volume=0.50)),
+                        ],
+                        6: [
+                            PlaySound(SoundEffect(filename="catapult_reload_slam.wav", volume=0.50)),
+                        ],
                     }
                 )
             ]
@@ -1178,24 +1197,25 @@ def create_crusader_catapult(x: int, y: int, team: TeamType) -> int:
     )
     esper.add_component(entity, SpriteSheet(
         surface=sprite_sheets[UnitType.CRUSADER_CATAPULT],
-        frame_width=100,
-        frame_height=100,
+        frame_width=128,
+        frame_height=288//3,
         scale=gc.TINY_RPG_SCALE,
-        frames={AnimationType.IDLE: 6, 
-                AnimationType.WALKING: 6, # Just for fleeing
-                AnimationType.ABILITY1: 5, 
+        frames={AnimationType.IDLE: 1, 
+                AnimationType.WALKING: 1,
+                AnimationType.ABILITY1: 10, 
                 AnimationType.DYING: 3},
         rows={AnimationType.IDLE: 0, 
                AnimationType.WALKING: 0,
-               AnimationType.ABILITY1: 5, 
-               AnimationType.DYING: 7},
+               AnimationType.ABILITY1: 0, 
+               AnimationType.DYING: 2},
         animation_durations={
             AnimationType.IDLE: gc.CRUSADER_CATAPULT_ANIMATION_IDLE_DURATION,
             AnimationType.WALKING: gc.CRUSADER_CATAPULT_ANIMATION_IDLE_DURATION,
             AnimationType.ABILITY1: gc.CRUSADER_CATAPULT_ANIMATION_ATTACK_DURATION,
             AnimationType.DYING: gc.CRUSADER_CATAPULT_ANIMATION_DYING_DURATION,
         },
-        sprite_center_offset=(2, 9),
+        sprite_center_offset=(-10, -7),
+        flip_frames=True,
     ))
     return entity
 
@@ -2042,7 +2062,7 @@ def create_crusader_paladin(x: int, y: int, team: TeamType) -> int:
         movement_speed=gc.CRUSADER_PALADIN_MOVEMENT_SPEED,
         health=gc.CRUSADER_PALADIN_HP,
         hitbox=Hitbox(
-            width=50,
+            width=30,
             height=54,
         )
     )

@@ -293,7 +293,7 @@ class BattleScene(Scene):
                             current_points = calculate_points_for_units(self.battle.allies)
                             
                             # If there's a best solution, compare with it
-                            if self.battle.best_solution is None or current_points < calculate_points_for_units(self.battle.best_solution):
+                            if self.battle.best_solution is None or current_points <= calculate_points_for_units(self.battle.best_solution):
                                 new_battle = Battle(
                                     id=self.battle.id,
                                     enemies=self.battle.enemies,

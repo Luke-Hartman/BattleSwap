@@ -15,6 +15,9 @@ class Visual(Enum):
     Arrow = auto()
     CoreBarbarianAttack = auto()
     CrusaderBlackKnightFear = auto()
+    CrusaderCatapultBall = auto()
+    CrusaderCatapultBallExplosion = auto()
+    CrusaderCatapultBallRemains = auto()
     CrusaderGoldKnightAttack = auto()
     CrusaderRedKnightFireSlash = auto()
     Explosion = auto()
@@ -31,6 +34,9 @@ def load_visual_sheets():
         Visual.Arrow: os.path.join("assets", "effects", "HumansProjectiles.png"),
         Visual.CoreBarbarianAttack: os.path.join("assets", "units", "CoreBarbarian.png"),
         Visual.CrusaderBlackKnightFear: os.path.join("assets", "effects", "Black_Knight_Fear.png"),
+        Visual.CrusaderCatapultBall: os.path.join("assets", "effects", "CrusaderCatapultBall.png"),
+        Visual.CrusaderCatapultBallExplosion: os.path.join("assets", "effects", "CrusaderCatapultBall.png"),
+        Visual.CrusaderCatapultBallRemains: os.path.join("assets", "effects", "CrusaderCatapultBall.png"),
         Visual.CrusaderGoldKnightAttack: os.path.join("assets", "effects", "CrusaderGoldKnightAttackEffect.png"),
         Visual.CrusaderRedKnightFireSlash: os.path.join("assets", "effects", "Knight-Attack03_Effect.png"),
         Visual.Explosion: os.path.join("assets", "effects", "explosiontip1_32x32.png"),
@@ -105,6 +111,63 @@ def create_visual_spritesheet(
             rows={AnimationType.IDLE: 11},
             animation_durations={AnimationType.IDLE: duration},
             sprite_center_offset=(-2, 2),
+            start_frames={AnimationType.IDLE: frames[0]},
+            layer=layer
+        )
+    elif visual == Visual.CrusaderCatapultBall:
+        if duration is None:
+            duration = 0.2
+        if scale is None:
+            scale = gc.TINY_RPG_SCALE
+        if frames is None:
+            frames = (0, 1)
+        return SpriteSheet(
+            surface=visual_sheets[visual],
+            frame_width=128,
+            frame_height=96,
+            scale=scale,
+            frames={AnimationType.IDLE: frames[1] - frames[0]},
+            rows={AnimationType.IDLE: 0},
+            animation_durations={AnimationType.IDLE: duration},
+            sprite_center_offset=(0, 0),
+            start_frames={AnimationType.IDLE: frames[0]},
+            layer=layer
+        )
+    elif visual == Visual.CrusaderCatapultBallExplosion:
+        if duration is None:
+            duration = 0.5
+        if scale is None:
+            scale = gc.TINY_RPG_SCALE
+        if frames is None:
+            frames = (1, 5)
+        return SpriteSheet(
+            surface=visual_sheets[visual],
+            frame_width=128,
+            frame_height=96,
+            scale=scale,
+            frames={AnimationType.IDLE: frames[1] - frames[0]},
+            rows={AnimationType.IDLE: 0},
+            animation_durations={AnimationType.IDLE: duration},
+            sprite_center_offset=(0, 0),
+            start_frames={AnimationType.IDLE: frames[0]},
+            layer=layer
+        )
+    elif visual == Visual.CrusaderCatapultBallRemains:
+        if duration is None:
+            duration = 0.5
+        if scale is None:
+            scale = gc.TINY_RPG_SCALE
+        if frames is None:
+            frames = (5, 6)
+        return SpriteSheet(
+            surface=visual_sheets[visual],
+            frame_width=128,
+            frame_height=96,
+            scale=scale,
+            frames={AnimationType.IDLE: frames[1] - frames[0]},
+            rows={AnimationType.IDLE: 0},
+            animation_durations={AnimationType.IDLE: duration},
+            sprite_center_offset=(0, 0),
             start_frames={AnimationType.IDLE: frames[0]},
             layer=layer
         )

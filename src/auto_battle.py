@@ -19,7 +19,7 @@ from processors.fleeing_processor import FleeingProcessor
 from processors.idle_processor import IdleProcessor
 from processors.animation_processor import AnimationProcessor
 from processors.lobbed_processor import LobbedProcessor
-from processors.movement_processor import MovementProcessor
+from processors.velocity_processor import VelocityProcessor
 from processors.nudge_processor import NudgeProcessor
 from processors.orientation_processor import OrientationProcessor
 from processors.position_processor import PositionProcessor
@@ -56,7 +56,7 @@ class AutoBattle:
         _add_or_replace(PursuingProcessor())
         _add_or_replace(DeadProcessor())
         _add_or_replace(AuraProcessor())
-        _add_or_replace(MovementProcessor())
+        _add_or_replace(VelocityProcessor())
         _add_or_replace(LobbedProcessor())
         _add_or_replace(CollisionProcessor(hex_coords))
         _add_or_replace(AttachedProcessor())
