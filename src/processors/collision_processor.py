@@ -7,19 +7,16 @@ detecting collisions between projectiles and units of opposing teams.
 from typing import Tuple
 import esper
 import pygame
-import numpy as np
-from scipy.spatial import KDTree
-from shapely import Polygon
 from components.position import Position
-from game_constants import gc
-from components.aoe import AoE
+from components.aoe import VisualAoE, CircleAoE
 from components.projectile import Projectile
 from components.sprite_sheet import SpriteSheet
 from components.team import Team, TeamType
 from components.unit_state import UnitState, State
 from components.hitbox import Hitbox
-from events import AOE_HIT, AoEHitEvent, ProjectileHitEvent, PROJECTILE_HIT, emit_event
+from events import CIRCLE_AOE_HIT, VISUAL_AOE_HIT, CircleAoEHitEvent, ProjectileHitEvent, PROJECTILE_HIT, VisualAoEHitEvent, emit_event
 from hex_grid import get_hex_bounds
+from unit_condition import MaximumDistanceFromEntity
 
 class CollisionProcessor(esper.Processor):
     """Processor responsible for detecting collisions between projectiles and units of opposing teams."""
@@ -32,10 +29,10 @@ class CollisionProcessor(esper.Processor):
         team2_projectiles = pygame.sprite.Group()
         team1_units = pygame.sprite.Group()
         team2_units = pygame.sprite.Group()
-        aoe_sprites = pygame.sprite.Group()
+        visual_aoe_sprites = pygame.sprite.Group()
+        circle_aoe_ents = []
         sprite_to_ent = {}
 
-        # Separate entities by team and type (projectiles, AoEs, or units)
         for ent, (sprite, team) in esper.get_components(SpriteSheet, Team):
             sprite_to_ent[sprite] = ent
             if esper.has_component(ent, Projectile):
@@ -43,8 +40,8 @@ class CollisionProcessor(esper.Processor):
                     team1_projectiles.add(sprite)
                 else:
                     team2_projectiles.add(sprite)
-            elif esper.has_component(ent, AoE):
-                aoe_sprites.add(sprite)
+            elif esper.has_component(ent, VisualAoE):
+                visual_aoe_sprites.add(sprite)
             elif esper.has_component(ent, UnitState):
                 unit_state = esper.component_for_entity(ent, UnitState)
                 if unit_state.state != State.DEAD:
@@ -53,8 +50,11 @@ class CollisionProcessor(esper.Processor):
                     else:
                         team2_units.add(sprite)
         
+        for ent, (_) in esper.get_components(CircleAoE):
+            circle_aoe_ents.append(ent)
+        
         # For all sprites, update their collision masks
-        for sprite in [*team1_projectiles, *team2_projectiles, *team1_units, *team2_units, *aoe_sprites]:
+        for sprite in [*team1_projectiles, *team2_projectiles, *team1_units, *team2_units]:
             sprite.mask = pygame.mask.from_surface(sprite.image, threshold=10)
 
         # Handle collisions between team1 projectiles and team2 units
@@ -63,14 +63,22 @@ class CollisionProcessor(esper.Processor):
         # Handle collisions between team2 projectiles and team1 units
         self.process_unit_projectile_collisions(team2_projectiles, team1_units, sprite_to_ent)
 
-        # Handle collisions between AoEs and units
-        self.process_aoe_unit_collisions(aoe_sprites, team1_units, sprite_to_ent)
-        self.process_aoe_unit_collisions(aoe_sprites, team2_units, sprite_to_ent)
+        # Handle collisions between Visual AOEs and units
+        self.process_visual_aoe_unit_collisions(visual_aoe_sprites, team1_units, sprite_to_ent)
+        self.process_visual_aoe_unit_collisions(visual_aoe_sprites, team2_units, sprite_to_ent)
+        
+        # Handle collisions between Circle AOEs and units
+        self.process_circle_aoe_unit_collisions(circle_aoe_ents, team1_units, sprite_to_ent)
+        self.process_circle_aoe_unit_collisions(circle_aoe_ents, team2_units, sprite_to_ent)
 
         # Remove off-battlefield projectiles
         for projectile in [*team1_projectiles, *team2_projectiles]:
             if not self.battlefield_rect.colliderect(projectile.rect):
                 esper.delete_entity(sprite_to_ent[projectile])
+
+        # Remove all circle aoes
+        for aoe_ent in circle_aoe_ents:
+            esper.delete_entity(aoe_ent)
 
     def check_sprite_group_collisions(self, group1: pygame.sprite.Group, group2: pygame.sprite.Group) -> list[tuple[pygame.sprite.Sprite, pygame.sprite.Sprite]]:
         """Check collisions between two sprite groups."""
@@ -152,17 +160,44 @@ class CollisionProcessor(esper.Processor):
             collided_projectiles.add(p_sprite)
             esper.delete_entity(p_ent)
 
-    def process_aoe_unit_collisions(
+    def process_visual_aoe_unit_collisions(
         self,
         aoe_sprites: pygame.sprite.Group,
         u_sprites: pygame.sprite.Group,
         sprite_to_ent: dict
     ):
-        """Handle collisions between AoEs and units."""
+        """Handle collisions between visual AOEs and units."""
         collisions = self.check_sprite_group_collisions(aoe_sprites, u_sprites)
+
         for aoe_sprite, u_sprite in collisions:
-            if not self.check_hitbox_collision(aoe_sprite, u_sprite, sprite_to_ent):
-                continue
             aoe_ent = sprite_to_ent[aoe_sprite]
             u_ent = sprite_to_ent[u_sprite]
-            emit_event(AOE_HIT, event=AoEHitEvent(entity=aoe_ent, target=u_ent))
+            aoe = esper.component_for_entity(aoe_ent, VisualAoE)
+
+            if u_ent in aoe.hit_entities:
+                continue
+            if not aoe.unit_condition.check(u_ent):
+                continue
+            aoe.hit_entities.append(u_ent)
+            emit_event(VISUAL_AOE_HIT, event=VisualAoEHitEvent(entity=aoe_ent, target=u_ent))
+
+    def process_circle_aoe_unit_collisions(
+        self,
+        circle_aoe_ents: list[int],
+        u_sprites: pygame.sprite.Group,
+        sprite_to_ent: dict
+    ):
+        """Handle collisions between CircleAoEs and units."""
+        # Process all CircleAoEs
+        for aoe_ent in circle_aoe_ents:
+            aoe = esper.component_for_entity(aoe_ent, CircleAoE)
+            range_condition = MaximumDistanceFromEntity(aoe_ent, distance=aoe.radius, y_bias=None, use_hitbox=True)
+            # Check all units
+            for u_sprite in u_sprites:
+                u_ent = sprite_to_ent[u_sprite]
+                # Check unit condition
+                if not aoe.unit_condition.check(u_ent):
+                    continue
+                if not range_condition.check(u_ent):
+                    continue
+                emit_event(CIRCLE_AOE_HIT, event=CircleAoEHitEvent(entity=aoe_ent, target=u_ent))

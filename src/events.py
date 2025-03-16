@@ -34,15 +34,6 @@ class AbilityTriggeredEvent:
     index: int
 
 @dataclass
-class AoEHitEvent:
-    """Event triggered when an AoE hits a unit.
-    
-    Note that this doesn't mean the AoE will actually affect the unit.
-    """
-    entity: int
-    target: int
-
-@dataclass
 class AuraHitEvent:
     """Event triggered when an aura hits a unit.
     
@@ -62,6 +53,15 @@ class ChangeMusicVolumeEvent:
     """Event triggered to change the music volume."""
     volume: float
     """The new volume to set."""
+
+@dataclass
+class CircleAoEHitEvent:
+    """Event triggered when a CircleAoE hits a unit.
+    
+    Note that this doesn't mean the AoE will actually affect the unit.
+    """
+    entity: int
+    target: int
 
 @dataclass
 class DeathEvent:
@@ -129,15 +129,24 @@ class StateChangedEvent:
 class StopAllSoundsEvent:
     """Event triggered to stop all sounds."""
 
+@dataclass
+class VisualAoEHitEvent:
+    """Event triggered when a VisualAoE hits a unit.
+    
+    Note that this doesn't mean the AoE will actually affect the unit.
+    """
+    entity: int
+    target: int
+
 # Define signal names for each event
 ABILITY_ACTIVATED = 'ability_activated'
 ABILITY_COMPLETED = 'ability_completed'
 ABILITY_INTERRUPTED = 'ability_interrupted'
 ABILITY_TRIGGERED = 'ability_triggered'
-AOE_HIT = 'aoe_hit'
 AURA_HIT = 'aura_hit'
 CHANGE_MUSIC = 'change_music'
 CHANGE_MUSIC_VOLUME = 'change_music_volume'
+CIRCLE_AOE_HIT = 'circle_aoe_hit'
 DEATH = 'death'
 DESTINATION_TARGET_ACQUIRED = 'destination_target_acquired'
 DESTINATION_TARGET_LOST = 'destination_target_lost'
@@ -150,6 +159,7 @@ PLAY_VOICE = 'play_voice'
 PROJECTILE_HIT = 'projectile_hit'
 STATE_CHANGED = 'state_changed'
 STOP_ALL_SOUNDS = 'stop_all_sounds'
+VISUAL_AOE_HIT = 'visual_aoe_hit'
 
 def emit_event(event_type, **kwargs):
     """Emit an event using pydispatch."""

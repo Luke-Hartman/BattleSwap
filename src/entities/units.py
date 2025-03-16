@@ -35,7 +35,12 @@ from components.unit_type import UnitType, UnitTypeComponent
 from components.velocity import Velocity
 from components.health import Health
 from components.orientation import Orientation, FacingDirection
-from effects import AppliesStatusEffect, AttachToTarget, CreatePermanentVisual, CreatesAoE, CreatesAttachedVisual, CreatesLobbed, CreatesProjectile, Damages, Forget, Heals, IncreaseAmmo, Jump, PlaySound, Recipient, SoundEffect, StanceChange, RememberTarget
+from effects import (
+    AppliesStatusEffect, AttachToTarget, CreatesVisual, 
+    CreatesAttachedVisual, CreatesLobbed, CreatesProjectile, Damages, 
+    Forget, Heals, IncreaseAmmo, Jump, PlaySound, Recipient, 
+    SoundEffect, StanceChange, RememberTarget, CreatesVisualAoE, CreatesCircleAoE
+)
 from unit_condition import (
     All, Alive, Always, AmmoEquals, Any, Grounded, HasComponent, HealthBelowPercent, InStance, Infected, IsEntity, IsUnitType, MaximumDistanceFromDestination, MinimumDistanceFromEntity, Never, Not, OnTeam,
     MaximumDistanceFromEntity, RememberedBy, RememberedSatisfies
@@ -397,7 +402,7 @@ def create_core_barbarian(x: int, y: int, team: TeamType) -> int:
                     persistent_conditions=[],
                     effects={
                         6: [
-                            CreatesAoE(
+                            CreatesVisualAoE(
                                 effects=[
                                     Damages(damage=gc.CORE_BARBARIAN_ATTACK_DAMAGE, recipient=Recipient.TARGET),
                                 ],
@@ -802,15 +807,21 @@ def create_core_wizard(x: int, y: int, team: TeamType) -> int:
                             CreatesProjectile(
                                 projectile_speed=gc.CORE_WIZARD_PROJECTILE_SPEED,
                                 effects=[
-                                    CreatesAoE(
+                                    CreatesCircleAoE(
                                         effects=[
                                             Damages(damage=gc.CORE_WIZARD_ATTACK_DAMAGE, recipient=Recipient.TARGET),
                                         ],
-                                        visual=Visual.Explosion,
-                                        duration=gc.CORE_WIZARD_FIREBALL_AOE_DURATION,
-                                        scale=gc.CORE_WIZARD_FIREBALL_AOE_SCALE,
+                                        radius=45.0,
                                         unit_condition=All([Alive(), Grounded()]),
                                         location=Recipient.PARENT,
+                                    ),
+                                    CreatesVisual(
+                                        recipient=Recipient.PARENT,
+                                        visual=Visual.Explosion,
+                                        animation_duration=gc.CORE_WIZARD_FIREBALL_AOE_DURATION,
+                                        scale=gc.CORE_WIZARD_FIREBALL_AOE_SCALE,
+                                        duration=gc.CORE_WIZARD_FIREBALL_AOE_DURATION,
+                                        layer=2,
                                     ),
                                     PlaySound(SoundEffect(filename="fireball_impact.wav", volume=0.50)),
                                 ],
@@ -1040,7 +1051,7 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
                             damage=gc.CRUSADER_BLACK_KNIGHT_ATTACK_DAMAGE,
                             recipient=Recipient.TARGET,
                             on_kill_effects=[
-                                CreatesAoE(
+                                CreatesVisualAoE(
                                     effects=[
                                         AppliesStatusEffect(
                                             status_effect=Fleeing(
@@ -1158,21 +1169,27 @@ def create_crusader_catapult(x: int, y: int, team: TeamType) -> int:
                         1: [
                             CreatesLobbed(
                                 effects=[
-                                    CreatesAoE(
+                                    CreatesCircleAoE(
                                         effects=[
                                             Damages(damage=gc.CRUSADER_CATAPULT_DAMAGE, recipient=Recipient.TARGET)
                                         ],
-                                        visual=Visual.CrusaderCatapultBallExplosion,
-                                        duration=gc.CRUSADER_CATAPULT_AOE_DURATION,
-                                        scale=gc.TINY_RPG_SCALE,
+                                        radius=25.0,
                                         unit_condition=All([Alive(), Grounded()]),
                                         location=Recipient.PARENT,
                                     ),
-                                    CreatePermanentVisual(
+                                    CreatesVisual(
+                                        recipient=Recipient.PARENT,
+                                        visual=Visual.CrusaderCatapultBallExplosion,
+                                        animation_duration=gc.CRUSADER_CATAPULT_AOE_DURATION,
+                                        scale=gc.TINY_RPG_SCALE,
+                                        duration=gc.CRUSADER_CATAPULT_AOE_DURATION,
+                                        layer=2,
+                                    ),
+                                    CreatesVisual(
                                         recipient=Recipient.PARENT,
                                         visual=Visual.CrusaderCatapultBallRemains,
                                         scale=gc.TINY_RPG_SCALE,
-                                        layer=-1,
+                                        layer=0,
                                         animation_duration=1,
                                     ),
                                     PlaySound(SoundEffect(filename="boulder_impact.wav", volume=0.60)),
@@ -1750,7 +1767,7 @@ def create_crusader_gold_knight(x: int, y: int, team: TeamType) -> int:
                     persistent_conditions=[],
                     effects={
                         0: [
-                            CreatesAoE(
+                            CreatesVisualAoE(
                                 effects=[
                                     Damages(damage=gc.CRUSADER_GOLD_KNIGHT_ATTACK_DAMAGE, recipient=Recipient.TARGET),
                                     Heals(amount=gc.CRUSADER_GOLD_KNIGHT_ATTACK_HEAL, recipient=Recipient.OWNER)
@@ -2342,7 +2359,7 @@ def create_crusader_red_knight(x: int, y: int, team: TeamType) -> int:
                     ],
                     persistent_conditions=[],
                     effects={7: [
-                        CreatesAoE(
+                        CreatesVisualAoE(
                             effects=[
                                 Damages(damage=gc.CRUSADER_RED_KNIGHT_SKILL_DAMAGE, recipient=Recipient.TARGET),
                                 AppliesStatusEffect(

@@ -55,7 +55,7 @@ def create_visual_spritesheet(
         duration: Optional[float] = None,
         scale: Optional[float] = None,
         frames: Optional[Tuple[int, int]] = None,
-        layer: int = 0
+        layer: int = 1
 ) -> SpriteSheet:
     """Get the sprite sheet for a visual."""
     if visual == Visual.Arrow:

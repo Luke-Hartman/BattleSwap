@@ -14,7 +14,7 @@ from components.ammo import Ammo
 from components.angle import Angle
 from components.angular_velocity import AngularVelocity
 from components.animation import AnimationState, AnimationType
-from components.aoe import AoE
+from components.aoe import CircleAoE, VisualAoE
 from components.armor import Armor
 from components.attached import Attached
 from components.aura import Aura
@@ -141,8 +141,8 @@ class Heals(Effect):
 
 
 @dataclass
-class CreatesAoE(Effect):
-    """Effect creates an AoE at the location of the parent."""
+class CreatesVisualAoE(Effect):
+    """Effect creates a VisualAoE at the location of the parent."""
 
     effects: List[Effect]
     """The effect of the AoE."""
@@ -186,16 +186,17 @@ class CreatesAoE(Effect):
         orientation = esper.try_component(recipient, Orientation)
         esper.add_component(entity, Position(x=position.x, y=position.y))
         esper.add_component(entity, Team(type=team.type))
-        esper.add_component(entity, AoE(
+        esper.add_component(entity, VisualAoE(
             effects=self.effects,
             owner=owner,
-            unit_condition=self.unit_condition
+            unit_condition=self.unit_condition,
         ))
         esper.add_component(entity, create_visual_spritesheet(
             visual=self.visual,
             scale=self.scale,
             duration=self.duration + 1/30,
-            frames=self.visual_frames
+            frames=self.visual_frames,
+            layer=2,
         ))
         esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
         esper.add_component(entity, Expiration(time_left=self.duration))
@@ -203,6 +204,47 @@ class CreatesAoE(Effect):
             esper.add_component(entity, Orientation(facing=orientation.facing))
         if self.on_create:
             self.on_create(entity)
+
+
+@dataclass
+class CreatesCircleAoE(Effect):
+    """Effect creates a CircleAoE at the specified location."""
+
+    effects: List[Effect]
+    """The effect of the AoE."""
+
+    radius: float
+    """The radius of the CircleAoE."""
+
+    unit_condition: "UnitCondition"
+    """Condition that determines which units are affected by the AoE."""
+
+    location: Recipient
+    """The location of the AoE."""
+
+    def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
+        entity = esper.create_entity()
+        if self.location == Recipient.OWNER:
+            assert owner is not None
+            recipient = owner
+        elif self.location == Recipient.PARENT:
+            assert parent is not None
+            recipient = parent
+        elif self.location == Recipient.TARGET:
+            assert target is not None
+            recipient = target
+        else:
+            raise ValueError(f"Invalid location: {self.location}")
+        position = esper.component_for_entity(recipient, Position)
+        team = esper.component_for_entity(recipient, Team)
+        esper.add_component(entity, Position(x=position.x, y=position.y))
+        esper.add_component(entity, Team(type=team.type))
+        esper.add_component(entity, CircleAoE(
+            effects=self.effects,
+            owner=owner,
+            unit_condition=self.unit_condition,
+            radius=self.radius
+        ))
 
 
 @dataclass
@@ -266,7 +308,7 @@ class CreatesProjectile(Effect):
         esper.add_component(entity, Orientation(facing=parent_orientation.facing))
         esper.add_component(entity, Team(type=parent_team.type))
         esper.add_component(entity, Projectile(effects=self.effects, owner=owner, unit_condition=self.unit_condition))
-        esper.add_component(entity, create_visual_spritesheet(self.visual))
+        esper.add_component(entity, create_visual_spritesheet(self.visual, layer=1))
         esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
         if self.on_create:
             self.on_create(entity)
@@ -426,8 +468,8 @@ class CreatesAttachedVisual(Effect):
 
 
 @dataclass
-class CreatePermanentVisual(Effect):
-    """Effect creates a visual effect at the location of the recipient that is permanent."""
+class CreatesVisual(Effect):
+    """Effect creates a visual effect at the location of the recipient with an optional duration."""
 
     recipient: Recipient
     """The recipient of the effect."""
@@ -436,10 +478,13 @@ class CreatePermanentVisual(Effect):
     """The visual of the effect."""
 
     animation_duration: float
-    """The duration of the animation of the effect."""
+    """The duration of the animation loop."""
 
     scale: float
     """The scale of the effect."""
+
+    duration: Optional[float] = None
+    """The duration of the effect. If None, the effect is permanent."""
 
     offset: Optional[Callable[[int], Tuple[int, int]]] = None
     """The offset of the effect from the target's position."""
@@ -460,17 +505,31 @@ class CreatePermanentVisual(Effect):
         elif self.recipient == Recipient.TARGET:
             assert target is not None
             recipient = target
+        else:
+            raise ValueError(f"Invalid recipient: {self.recipient}")
+            
         recipient_position = esper.component_for_entity(recipient, Position)
         team = esper.component_for_entity(recipient, Team)
         entity = esper.create_entity()
+        
         esper.add_component(entity, Position(x=recipient_position.x, y=recipient_position.y))
         esper.add_component(entity, Team(type=team.type))
-        esper.add_component(entity, create_visual_spritesheet(visual=self.visual, scale=self.scale, layer=self.layer))
+        esper.add_component(entity, create_visual_spritesheet(
+            visual=self.visual,
+            duration=self.duration,
+            scale=self.scale,
+            layer=self.layer
+        ))
+        
         if self.random_starting_frame:
             time_elapsed = random.random() * self.animation_duration
         else:
             time_elapsed = 0
+        
         esper.add_component(entity, AnimationState(type=AnimationType.IDLE, time_elapsed=time_elapsed))
+        if self.duration is not None:
+            esper.add_component(entity, Expiration(time_left=self.duration))
+
 
 
 @dataclass
@@ -773,7 +832,7 @@ class CreatesLobbed(Effect):
             )
         )
         esper.add_component(entity, Position(x=start.x, y=start.y))
-        esper.add_component(entity, create_visual_spritesheet(self.visual))
+        esper.add_component(entity, create_visual_spritesheet(self.visual, layer=1))
         esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
         esper.add_component(entity, Team(type=parent_team.type))
         esper.add_component(entity, Orientation(facing=parent_orientation.facing))

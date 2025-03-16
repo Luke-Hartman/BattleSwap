@@ -6,17 +6,16 @@ handling attack/skill/AoE/etc logic and applying damage/healing from attacks/ski
 
 import esper
 from components.ability import Abilities
-from components.aoe import AoE
+from components.aoe import VisualAoE, CircleAoE
 from components.aura import Aura
 from components.instant_ability import InstantAbilities
 from components.lobbed import Lobbed
 from components.projectile import Projectile
 from events import (
     LOBBED_ARRIVED, AbilityActivatedEvent, ABILITY_ACTIVATED,
-    AoEHitEvent, AOE_HIT,
     AuraHitEvent, AURA_HIT, LobbedArrivedEvent,
     ProjectileHitEvent, PROJECTILE_HIT,
-    InstantAbilityTriggeredEvent, INSTANT_ABILITY_TRIGGERED,
+    InstantAbilityTriggeredEvent, INSTANT_ABILITY_TRIGGERED, VisualAoEHitEvent, CircleAoEHitEvent, VISUAL_AOE_HIT, CIRCLE_AOE_HIT
 )
 from pydispatch import dispatcher
 
@@ -27,7 +26,8 @@ class CombatHandler:
         dispatcher.connect(self.handle_ability_activated, signal=ABILITY_ACTIVATED)
         dispatcher.connect(self.handle_instant_ability_triggered, signal=INSTANT_ABILITY_TRIGGERED)
         dispatcher.connect(self.handle_projectile_hit, signal=PROJECTILE_HIT)
-        dispatcher.connect(self.handle_aoe_hit, signal=AOE_HIT)
+        dispatcher.connect(self.handle_visual_aoe_hit, signal=VISUAL_AOE_HIT)
+        dispatcher.connect(self.handle_circle_aoe_hit, signal=CIRCLE_AOE_HIT)
         dispatcher.connect(self.handle_aura_hit, signal=AURA_HIT)
         dispatcher.connect(self.handle_lobbed_arrived, signal=LOBBED_ARRIVED)
 
@@ -63,27 +63,32 @@ class CombatHandler:
                 target=target_ent
             )
 
-    def handle_aoe_hit(self, event: AoEHitEvent):
+    def handle_visual_aoe_hit(self, event: VisualAoEHitEvent):
         aoe_ent = event.entity
         target_ent = event.target
-        aoe = esper.component_for_entity(aoe_ent, AoE)
-        if target_ent in aoe.hit_entities:
-            return
-        
-        if aoe.unit_condition.check(target_ent):
-            aoe.hit_entities.append(target_ent)
-            for effect in aoe.effects:
-                effect.apply(
-                    owner=aoe.owner,
-                    parent=aoe_ent,
-                    target=target_ent
-                )
+        aoe = esper.component_for_entity(aoe_ent, VisualAoE)
+        for effect in aoe.effects:
+            effect.apply(
+                owner=aoe.owner,
+                parent=aoe_ent,
+                target=target_ent
+            )
+    
+    def handle_circle_aoe_hit(self, event: CircleAoEHitEvent):
+        aoe_ent = event.entity
+        target_ent = event.target
+        aoe = esper.component_for_entity(aoe_ent, CircleAoE)
+        for effect in aoe.effects:
+            effect.apply(
+                owner=aoe.owner,
+                parent=aoe_ent,
+                target=target_ent
+            )
 
     def handle_aura_hit(self, event: AuraHitEvent):
         aura_ent = event.entity
         target_ent = event.target
         aura = esper.component_for_entity(aura_ent, Aura)
-        
         if aura.unit_condition.check(target_ent):
             for effect in aura.effects:
                 effect.apply(
@@ -101,4 +106,3 @@ class CombatHandler:
                 parent=lobbed_ent,
                 target=None,
             )
-
