@@ -10,6 +10,7 @@ Also triggers events based on frame changes.
 import esper
 from components.ability import Abilities
 from components.animation import AnimationState, AnimationType
+from components.destination import Destination
 from components.movement import Movement
 from components.smooth_movement import SmoothMovement
 from components.sprite_sheet import SpriteSheet
@@ -53,6 +54,15 @@ class AnimationProcessor(esper.Processor):
             # Override with airborne animation if airborne
             if esper.has_component(ent, Airborne) and new_anim_type != AnimationType.DYING:
                 new_anim_type = AnimationType.AIRBORNE
+
+            if unit_state.state == State.PURSUING:
+                if esper.has_component(ent, Destination):
+                    destination = esper.component_for_entity(ent, Destination)
+                    if destination.target_strategy.target is not None:
+                        velocity = esper.component_for_entity(ent, Velocity)
+                        target_velocity = esper.component_for_entity(destination.target_strategy.target, Velocity)
+                        if velocity.x == velocity.y == target_velocity.x == target_velocity.y == 0:
+                            new_anim_type = AnimationType.IDLE
 
             if anim_state.type != new_anim_type:
                 anim_state.type = new_anim_type

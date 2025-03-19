@@ -96,7 +96,7 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
             f"Health: {gc.CRUSADER_BANNER_BEARER_HP}",
             f"Speed: {gc.CRUSADER_BANNER_BEARER_AURA_MOVEMENT_SPEED}",
             f"Special: Banner Bearers have an aura which grants allied units {round(gc.CRUSADER_BANNER_BEARER_AURA_DAMAGE_PERCENTAGE*100)}% increased damage (does not stack with itself).",
-            f"Special: Banner Bearers have an aura which overrides the movement speed of allied units to be {round(gc.CRUSADER_BANNER_BEARER_AURA_MOVEMENT_SPEED).",
+            f"Special: Banner Bearers have an aura which overrides the movement speed of allied units to be {round(gc.CRUSADER_BANNER_BEARER_AURA_MOVEMENT_SPEED)}.",
             f"AI: Follows the nearest ally until it dies, then follows the next nearest ally.",
         ]
     if unit_type == UnitType.CRUSADER_BLACK_KNIGHT:
