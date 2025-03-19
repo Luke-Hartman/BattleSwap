@@ -73,11 +73,13 @@ class AnimationProcessor(esper.Processor):
                     # If the unit is moving faster/slower than it's normal movement speed, scale the animation speed
                     velocity = esper.component_for_entity(ent, Velocity)
                     movement = esper.component_for_entity(ent, Movement)
-                    scale = (velocity.x**2 + velocity.y**2)**0.5 / movement.speed
+                    if movement.speed != 0:
+                        scale = (velocity.x**2 + velocity.y**2)**0.5 / movement.speed
+                    else:
+                        scale = 1
                     anim_state.time_elapsed += dt * scale
                 else:
                     anim_state.time_elapsed += dt
-                anim_state.time_elapsed += dt
 
             # Update the animation frame based on the current time
             total_duration = sprite_sheet.animation_durations[anim_state.type]
