@@ -306,10 +306,10 @@ def _get_random_legal_unit_type() -> UnitType:
         ALLOWED_UNIT_TYPES
     )
 
-def generate_random_army(target_cost: int) -> List[Tuple[UnitType, Tuple[int, int]]]:
+def generate_random_army(target_cost: int, max_decrease: int = 100) -> List[Tuple[UnitType, Tuple[int, int]]]:
     current_cost = 0
     unit_placements = []
-    while not (target_cost - 100 < current_cost <= target_cost):
+    while not (target_cost - max_decrease <= current_cost <= target_cost):
         if current_cost > target_cost:
             delete_index = random.randint(0, len(unit_placements) - 1)
             current_cost -= unit_values[unit_placements[delete_index][0]]
@@ -357,12 +357,21 @@ class RandomizeUnitPosition(Mutation):
 
 class RandomizeUnitType(Mutation):
 
+    def __init__(self, max_decrease: int = 100):
+        self.max_decrease = max_decrease
+
     def __call__(self, individual: Individual) -> Individual:
         index = random.randint(0, len(individual.unit_placements) - 1)
         unit_to_mutate = individual.unit_placements[index]
-        new_unit = _get_random_legal_unit_type()
-        while new_unit == unit_to_mutate[0] or unit_values[new_unit] > unit_values[unit_to_mutate[0]]:
-            new_unit = _get_random_legal_unit_type()
+        current_value = unit_values[unit_to_mutate[0]]
+        legal_options = [
+            unit_type
+            for unit_type in ALLOWED_UNIT_TYPES
+            if unit_type != unit_to_mutate[0] and current_value - self.max_decrease <= unit_values[unit_type] <= current_value
+        ]
+        if not legal_options:
+            return individual
+        new_unit = random.choice(legal_options)
         new_unit_placements = individual.unit_placements[:index] + [(new_unit, unit_to_mutate[1])] + individual.unit_placements[index + 1:]
         return Individual(individual.battle_id, new_unit_placements)
 
@@ -393,6 +402,9 @@ class PerturbPosition(Mutation):
 
 class ReplaceSubarmy(Mutation):
 
+    def __init__(self, max_decrease: int = 100):
+        self.max_decrease = max_decrease
+
     def __call__(self, individual: Individual) -> Individual:
         original_score = individual.points
         kept_unit_placements = list(individual.unit_placements)
@@ -401,7 +413,7 @@ class ReplaceSubarmy(Mutation):
         kept_unit_placements = kept_unit_placements[:index]
         new_score = sum(unit_values[unit_type] for unit_type, _ in kept_unit_placements)
 
-        new_subarmy = generate_random_army(original_score - new_score)
+        new_subarmy = generate_random_army(original_score - new_score, self.max_decrease)
         return Individual(individual.battle_id, kept_unit_placements + new_subarmy)
 
 
