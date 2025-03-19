@@ -18,7 +18,13 @@ class StatusEffect:
 class CrusaderBannerBearerEmpowered(StatusEffect):
     """Status effect buffs damage."""
 
-    damage_percentage = gc.CRUSADER_COMMANDER_EMPOWERED_DAMAGE_PERCENTAGE
+    damage_percentage = gc.CRUSADER_BANNER_BEARER_AURA_DAMAGE_PERCENTAGE
+
+@dataclass
+class CrusaderBannerBearerMovementSpeedBuff(StatusEffect):
+    """Status effect that sets movement speed."""
+
+    movement_speed = gc.CRUSADER_BANNER_BEARER_AURA_MOVEMENT_SPEED
 
 @dataclass
 class DamageOverTime(StatusEffect):
@@ -56,6 +62,7 @@ class StatusEffects:
         self._status_by_type = {
             DamageOverTime: [],
             CrusaderBannerBearerEmpowered: [],
+            CrusaderBannerBearerMovementSpeedBuff: [],
             Fleeing: [],
             Healing: [],
             ZombieInfection: [],
@@ -85,6 +92,8 @@ class StatusEffects:
             active_effects.append(strongest_ignited)
         if self._status_by_type[CrusaderBannerBearerEmpowered]:
             active_effects.append(self._status_by_type[CrusaderBannerBearerEmpowered][0])
+        if self._status_by_type[CrusaderBannerBearerMovementSpeedBuff]:
+            active_effects.append(self._status_by_type[CrusaderBannerBearerMovementSpeedBuff][0])
         if self._status_by_type[Fleeing]:
             longest_fleeing = max(self._status_by_type[Fleeing], key=lambda e: e.time_remaining)
             active_effects.append(longest_fleeing)

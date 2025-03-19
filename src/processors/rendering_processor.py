@@ -231,7 +231,7 @@ class RenderingProcessor(esper.Processor):
                 width=1,
                 dash_length=gc.TARGET_PREVIEW_DASH_LENGTH,
                 gap_length=gc.TARGET_PREVIEW_GAP_LENGTH,
-                t=pygame.time.get_ticks() / gc.TARGET_PREVIEW_TICK_RATE
+                t=-pygame.time.get_ticks() / gc.TARGET_PREVIEW_TICK_RATE
             )
 
         # Draw arrows from focused units to their targets

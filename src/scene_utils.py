@@ -9,6 +9,7 @@ import pygame_gui
 import shapely
 from battles import Battle
 from camera import Camera
+from components.placing import Placing
 from components.position import Position
 from components.sprite_sheet import SpriteSheet
 from components.unit_type import UnitType, UnitTypeComponent
@@ -144,6 +145,8 @@ def get_hovered_unit(camera: Camera) -> Optional[int]:
     candidate_unit_id = None
     highest_y = -float('inf')
     for ent, (sprite, pos, _) in esper.get_components(SpriteSheet, Position, UnitTypeComponent):
+        if esper.has_component(ent, Placing):
+            continue
         if sprite.rect.collidepoint(world_mouse_pos):
             relative_mouse_pos = (
                 world_mouse_pos[0] - sprite.rect.x,
@@ -237,7 +240,9 @@ def get_legal_placement_area(
     if include_units:
         unit_positions = []
         with use_world(battle_id):
-            for _, (pos, _) in esper.get_components(Position, UnitTypeComponent):
+            for ent, (pos, _) in esper.get_components(Position, UnitTypeComponent):
+                if esper.has_component(ent, Placing):
+                    continue
                 unit_positions.append((pos.x, pos.y))
         legal_area = _get_legal_placement_area_helper(legal_area, tuple(unit_positions))
     return legal_area
@@ -322,7 +327,7 @@ def get_unit_placements(team_type: TeamType, hex_coords: Tuple[int, int]) -> Lis
     return [
         (unit_type.type, (pos.x - world_x, pos.y - world_y))
         for ent, (unit_type, team, pos) in esper.get_components(UnitTypeComponent, Team, Position)
-        if team.type == team_type and ent not in esper._dead_entities
+        if team.type == team_type and ent not in esper._dead_entities and not esper.has_component(ent, Placing)
     ]
 
 def mouse_over_ui(manager: pygame_gui.UIManager) -> bool:

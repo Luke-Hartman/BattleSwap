@@ -6,6 +6,7 @@ import pygame_gui
 import shapely
 import battles
 from components.focus import Focus
+from components.placing import Placing
 from components.position import Position
 from components.team import Team, TeamType
 from components.transparent import Transparency
@@ -196,7 +197,10 @@ class SetupBattleScene(Scene):
             unit_type=value,
             team=placement_team,
         )
-        esper.remove_component(self.selected_partial_unit, UnitTypeComponent)
+        esper.add_component(self.selected_partial_unit, Placing())
+        # This shouldn't be needed anymore, but it used to be here, and so bugs
+        # might be related to it not being disabled.
+        # esper.remove_component(self.selected_partial_unit, UnitTypeComponent)
         esper.add_component(self.selected_partial_unit, Transparency(alpha=128))
     
     def create_unit_of_selected_type(self, placement_pos: Tuple[int, int], team: TeamType) -> None:
@@ -275,16 +279,6 @@ class SetupBattleScene(Scene):
             required_team=None if self.sandbox_mode else TeamType.TEAM1,
         )
         placement_team = TeamType.TEAM1 if placement_pos[0] < world_x else TeamType.TEAM2
-
-        # Update preview for selected unit
-        if self.selected_partial_unit is not None:
-            team = esper.component_for_entity(self.selected_partial_unit, Team)
-            if team.type != placement_team:
-                # If the partial unit is no longer on the side it was created on, recreate it
-                self.set_selected_unit_type(self.selected_unit_type, placement_team)
-            position = esper.component_for_entity(self.selected_partial_unit, Position)
-            position.x, position.y = placement_pos
-            esper.add_component(self.selected_partial_unit, Focus())
 
         for event in events:
             if event.type == pygame.QUIT:
@@ -389,6 +383,16 @@ class SetupBattleScene(Scene):
             self.barracks.handle_event(event)
             if self.grades_panel is not None:
                 self.grades_panel.handle_event(event)
+
+        # Update preview for selected unit
+        if self.selected_partial_unit is not None:
+            team = esper.component_for_entity(self.selected_partial_unit, Team)
+            if team.type != placement_team:
+                # If the partial unit is no longer on the side it was created on, recreate it
+                self.set_selected_unit_type(self.selected_unit_type, placement_team)
+            position = esper.component_for_entity(self.selected_partial_unit, Position)
+            position.x, position.y = placement_pos
+            esper.add_component(self.selected_partial_unit, Focus())
 
         # Only update camera if no dialog is focused
         if self.save_dialog is None or not self.save_dialog.dialog.alive():

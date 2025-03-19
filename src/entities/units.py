@@ -11,11 +11,14 @@ from typing import Dict, List
 from components.ammo import Ammo
 from components.attached import Attached
 from components.entity_memory import EntityMemory
+from components.follower import Follower
 from components.hitbox import Hitbox
+from components.immobile import Immobile
 from components.immunity import ImmuneToZombieInfection
 from components.instant_ability import InstantAbilities, InstantAbility
 from components.no_nudge import NoNudge
 from components.range_indicator import RangeIndicator
+from components.smooth_movement import SmoothMovement
 from components.stance import Stance
 from components.walk_effects import WalkEffects
 from game_constants import gc
@@ -25,7 +28,7 @@ from components.aura import Aura
 from components.position import Position
 from components.animation import AnimationState, AnimationType
 from components.sprite_sheet import SpriteSheet
-from components.status_effect import CrusaderBannerBearerEmpowered, Fleeing, Healing, DamageOverTime, StatusEffects, ZombieInfection
+from components.status_effect import CrusaderBannerBearerEmpowered, Fleeing, Healing, DamageOverTime, StatusEffects, ZombieInfection, CrusaderBannerBearerMovementSpeedBuff
 from target_strategy import ByCurrentHealth, ByDistance, ByMaxHealth, ByMissingHealth, ConditionPenalty, TargetStrategy, WeightedRanking
 from components.destination import Destination
 from components.team import Team, TeamType
@@ -866,51 +869,37 @@ def create_crusader_banner_bearer(x: int, y: int, team: TeamType) -> int:
         y=y,
         team=team,
         unit_type=UnitType.CRUSADER_BANNER_BEARER,
-        movement_speed=gc.CRUSADER_BANNER_BEARER_MOVEMENT_SPEED,
+        movement_speed=gc.CRUSADER_BANNER_BEARER_AURA_MOVEMENT_SPEED,
         health=gc.CRUSADER_BANNER_BEARER_HP,
         hitbox=Hitbox(
             width=16,
             height=36,
         )
     )
-    find_target_to_follow = TargetStrategy(
+    esper.add_component(entity, Follower())
+    targetting_strategy = TargetStrategy(
         rankings=[
-            ByDistance(entity=entity, y_bias=None, ascending=True),
+            WeightedRanking(
+                rankings={
+                    ByDistance(entity=entity, y_bias=None, ascending=True): 1,
+                    ConditionPenalty(condition_to_check=RememberedBy(entity=entity), value=-10000): 1,
+                }
+            ),
         ],
         unit_condition=All(
             [
-                Not(
-                    Any(
-                        [
-                            IsUnitType(unit_type=UnitType.CRUSADER_BANNER_BEARER),
-                            IsUnitType(unit_type=UnitType.CRUSADER_GUARDIAN_ANGEL),
-                        ]
-                    ),
-                ),
-                OnTeam(team=team),
-                Alive()
-            ]
-        )
-    )
-    follow_target = TargetStrategy(
-        rankings=[
-            ByDistance(entity=entity, y_bias=None, ascending=True),
-        ],
-        unit_condition=All(
-            [
-                RememberedBy(entity=entity),
                 Alive(),
                 OnTeam(team=team),
+                Not(HasComponent(component=Follower)),
             ]
         )
     )
     esper.add_component(
         entity,
         Destination(
-            target_strategy=follow_target,
-            x_offset=gc.CRUSADER_BANNER_BEARER_AURA_RADIUS/2,
+            target_strategy=targetting_strategy,
+            x_offset=gc.CRUSADER_BANNER_BEARER_AURA_RADIUS/3,
             use_team_x_offset=True,
-            min_distance=1
         )
     )
     esper.add_component(
@@ -918,7 +907,7 @@ def create_crusader_banner_bearer(x: int, y: int, team: TeamType) -> int:
         InstantAbilities(
             abilities=[
                 InstantAbility(
-                    target_strategy=find_target_to_follow,
+                    target_strategy=targetting_strategy,
                     trigger_conditions=[
                         HasTarget(
                             unit_condition=Always()
@@ -952,12 +941,15 @@ def create_crusader_banner_bearer(x: int, y: int, team: TeamType) -> int:
                 AppliesStatusEffect(
                     status_effect=CrusaderBannerBearerEmpowered(time_remaining=gc.DEFAULT_AURA_PERIOD),
                     recipient=Recipient.TARGET
+                ),
+                AppliesStatusEffect(
+                    status_effect=CrusaderBannerBearerMovementSpeedBuff(time_remaining=gc.DEFAULT_AURA_PERIOD),
+                    recipient=Recipient.TARGET
                 )
             ],
             period=gc.DEFAULT_AURA_PERIOD,
             owner_condition=Alive(),
             unit_condition=All([
-                Not(IsEntity(entity=entity)),
                 OnTeam(team=team),
                 Alive()
             ]),
@@ -1125,6 +1117,7 @@ def create_crusader_catapult(x: int, y: int, team: TeamType) -> int:
             height=20,
         )
     )
+    esper.add_component(entity, Immobile())
     targetting_strategy = TargetStrategy(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
@@ -1250,25 +1243,44 @@ def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
             height=36,
         )
     )
-    targetting_strategy = TargetStrategy(
+    esper.add_component(entity, Follower())
+    target_leader = TargetStrategy(
+        rankings=[
+            WeightedRanking(
+                rankings={
+                    ByDistance(entity=entity, y_bias=None, ascending=True): 1,
+                    ConditionPenalty(condition_to_check=RememberedBy(entity=entity), value=-10000): 1,
+                }
+            ),
+        ],
+        unit_condition=All(
+            [
+                Alive(),
+                OnTeam(team=team),
+                Not(HasComponent(component=Follower)),
+            ]
+        )
+    )
+    target_ally_to_heal = TargetStrategy(
         rankings=[
             WeightedRanking(
                 rankings={
                     ByDistance(entity=entity, y_bias=None, ascending=True): 1,
                     ByMissingHealth(ascending=False): 0.6,
+                    ConditionPenalty(condition_to_check=IsEntity(entity=entity), value=10000): 1,
                 },
-                unit_condition=All([OnTeam(team=team), Alive(), Not(IsEntity(entity=entity)), HealthBelowPercent(percent=1)])
+                unit_condition=All([OnTeam(team=team), Alive(), HealthBelowPercent(percent=1)])
             ),
             ByDistance(entity=entity, y_bias=None, ascending=True),
         ],
-        unit_condition=All([OnTeam(team=team), Alive(), Not(IsEntity(entity=entity))])
+        unit_condition=All([OnTeam(team=team), Alive()])
     )
     esper.add_component(
         entity,
         Destination(
-            target_strategy=targetting_strategy,
-            x_offset=0,
-            min_distance=gc.CRUSADER_CLERIC_ATTACK_RANGE*2/3
+            target_strategy=target_leader,
+            x_offset=gc.CRUSADER_CLERIC_ATTACK_RANGE*2/3,
+            use_team_x_offset=True,
         )
     )
     esper.add_component(
@@ -1277,10 +1289,40 @@ def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
     )
     esper.add_component(
         entity,
+        InstantAbilities(
+            abilities=[
+                InstantAbility(
+                    target_strategy=target_leader,
+                    trigger_conditions=[
+                        HasTarget(
+                            unit_condition=Always()
+                        ),
+                        SatisfiesUnitCondition(
+                            Not(
+                                RememberedSatisfies(
+                                    condition=All(
+                                        [
+                                            Alive(),
+                                            OnTeam(team=team),
+                                        ]
+                                    )
+                                )
+                            )
+                        )
+                    ],
+                    effects=[
+                        RememberTarget(),
+                    ]
+                )
+            ]
+        )
+    )
+    esper.add_component(
+        entity,
         Abilities(
             abilities=[
                 Ability(
-                    target_strategy=targetting_strategy,
+                    target_strategy=target_ally_to_heal,
                     trigger_conditions=[
                         HasTarget(
                             unit_condition=All([
@@ -1413,6 +1455,10 @@ def create_crusader_commander(x: int, y: int, team: TeamType) -> int:
             effects=[
                 AppliesStatusEffect(
                     status_effect=CrusaderBannerBearerEmpowered(time_remaining=gc.DEFAULT_AURA_PERIOD),
+                    recipient=Recipient.TARGET
+                ),
+                AppliesStatusEffect(
+                    status_effect=CrusaderBannerBearerMovementSpeedBuff(time_remaining=gc.DEFAULT_AURA_PERIOD),
                     recipient=Recipient.TARGET
                 )
             ],
@@ -1826,17 +1872,24 @@ def create_crusader_guardian_angel(x: int, y: int, team: TeamType) -> int:
             height=22,
         )
     )
+    esper.add_component(entity, SmoothMovement())
+    esper.add_component(entity, Follower())
     targetting_strategy = TargetStrategy(
         rankings=[
-            ByDistance(entity=entity, y_bias=None, ascending=True),
+            WeightedRanking(
+                rankings={
+                    ByDistance(entity=entity, y_bias=None, ascending=True): 1,
+                    ConditionPenalty(condition_to_check=RememberedBy(entity=entity), value=-10000): 1,
+                }
+            ),
         ],
-        unit_condition=All([Not(IsUnitType(unit_type=UnitType.CRUSADER_GUARDIAN_ANGEL)), OnTeam(team=team), Alive(), Grounded()])
-    )
-    target_attached = TargetStrategy(
-        rankings=[
-            ByDistance(entity=entity, y_bias=None, ascending=True),
-        ],
-        unit_condition=RememberedBy(entity=entity)
+        unit_condition=All(
+            [
+                Alive(),
+                OnTeam(team=team),
+                Not(HasComponent(component=Follower)),
+            ]
+        )
     )
     esper.add_component(
         entity,
@@ -1844,12 +1897,8 @@ def create_crusader_guardian_angel(x: int, y: int, team: TeamType) -> int:
             target_strategy=targetting_strategy,
             x_offset=gc.CRUSADER_GUARDIAN_ANGEL_ATTACHMENT_RANGE,
             use_team_x_offset=True,
-            min_distance=0.01
         )
     )
-    NOT_ATTACHED = 0
-    ATTACHED = 1
-    esper.add_component(entity, Stance(NOT_ATTACHED))
     esper.add_component(entity, NoNudge())
     esper.add_component(
         entity,
@@ -1858,59 +1907,39 @@ def create_crusader_guardian_angel(x: int, y: int, team: TeamType) -> int:
                 InstantAbility(
                     target_strategy=targetting_strategy,
                     trigger_conditions=[
-                        SatisfiesUnitCondition(unit_condition=InStance(NOT_ATTACHED)),
                         HasTarget(
-                            unit_condition=All([
-                                Not(IsUnitType(unit_type=UnitType.CRUSADER_GUARDIAN_ANGEL)),
-                                OnTeam(team=team),
-                                Alive()
-                            ])
+                            unit_condition=Always()
                         ),
-                        SatisfiesUnitCondition(unit_condition=MaximumDistanceFromDestination(distance=5))
+                        SatisfiesUnitCondition(
+                            Not(
+                                RememberedSatisfies(
+                                    condition=All(
+                                        [
+                                            Alive(),
+                                            OnTeam(team=team),
+                                        ]
+                                    )
+                                )
+                            )
+                        )
                     ],
                     effects=[
-                        StanceChange(ATTACHED),
-                        AttachToTarget(
-                            offset=(
-                                -gc.CRUSADER_GUARDIAN_ANGEL_ATTACHMENT_RANGE
-                                if team == TeamType.TEAM1
-                                else gc.CRUSADER_GUARDIAN_ANGEL_ATTACHMENT_RANGE,
-                                0
-                            ),
-                            on_death=lambda e: esper.remove_component(e, Attached),
-                        ),
-                        RememberTarget()
+                        RememberTarget(),
                     ]
                 ),
                 InstantAbility(
-                    target_strategy=target_attached,
-                    trigger_conditions=[
-                        HasTarget(
-                            unit_condition=Not(
-                                All([
-                                    Alive(),
-                                    Grounded(),
-                                    OnTeam(team=team),
-                                ])
-                            )
-                        ),
-                        SatisfiesUnitCondition(
-                            HasComponent(EntityMemory),
-                        ),
-                    ],
-                    effects=[
-                        Forget(),
-                        StanceChange(NOT_ATTACHED),
-                    ],
-                ),
-                InstantAbility(
-                    target_strategy=target_attached,
+                    target_strategy=targetting_strategy,
                     trigger_conditions=[
                         Cooldown(duration=gc.CRUSADER_GUARDIAN_ANGEL_HEAL_COOLDOWN),
                         HasTarget(
                             unit_condition=All([
                                 OnTeam(team=team),
                                 RememberedBy(entity=entity),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.CRUSADER_GUARDIAN_ANGEL_ATTACHMENT_RANGE*2,
+                                    y_bias=None
+                                ),
                                 Alive()
                             ])
                         )

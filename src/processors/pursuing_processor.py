@@ -9,6 +9,7 @@ import math
 from components.airborne import Airborne
 from components.destination import Destination
 from components.position import Position
+from components.status_effect import CrusaderBannerBearerMovementSpeedBuff, StatusEffects
 from components.team import Team, TeamType
 from components.unit_state import UnitState, State
 from components.movement import Movement
@@ -46,9 +47,14 @@ class PursuingProcessor(esper.Processor):
                     if dt == 0:
                         speed = 0
                     else:
+                        status_effects = esper.try_component(ent, StatusEffects)
+                        speed = movement.speed
+                        for effect in status_effects.active_effects():
+                            if isinstance(effect, CrusaderBannerBearerMovementSpeedBuff):
+                                speed = effect.movement_speed
                         speed = min(
                             destination_distance/dt, # 30 ticks per second
-                            movement.speed
+                            speed
                         )
                     velocity.x = (destination_dx / destination_distance) * speed
                     velocity.y = (destination_dy / destination_distance) * speed

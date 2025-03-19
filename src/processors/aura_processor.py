@@ -11,8 +11,8 @@ class AuraProcessor(esper.Processor):
 
     def process(self, dt: float):
         for ent, (aura, position) in esper.get_components(Aura, Position):
-            aura.time_elapsed += dt
             if aura.time_elapsed % aura.period < dt and aura.owner_condition.check(aura.owner):
                 for other_ent, (other_position,) in esper.get_components(Position):
                     if position.distance(other_position, y_bias=None) <= aura.radius:
                         emit_event(AURA_HIT, event=AuraHitEvent(entity=ent, target=other_ent))
+            aura.time_elapsed += dt

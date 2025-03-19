@@ -10,6 +10,8 @@ Also triggers events based on frame changes.
 import esper
 from components.ability import Abilities
 from components.animation import AnimationState, AnimationType
+from components.movement import Movement
+from components.smooth_movement import SmoothMovement
 from components.sprite_sheet import SpriteSheet
 from components.unit_state import UnitState, State
 from components.velocity import Velocity
@@ -52,16 +54,19 @@ class AnimationProcessor(esper.Processor):
             if esper.has_component(ent, Airborne) and new_anim_type != AnimationType.DYING:
                 new_anim_type = AnimationType.AIRBORNE
 
-            if unit_state.state == State.PURSUING:
-                velocity = esper.component_for_entity(ent, Velocity)
-                if velocity.x == 0 and velocity.y == 0:
-                    new_anim_type = AnimationType.IDLE
-
             if anim_state.type != new_anim_type:
                 anim_state.type = new_anim_type
                 anim_state.current_frame = 0
                 anim_state.time_elapsed = 0
             else:
+                if anim_state.type == AnimationType.WALKING and not esper.has_component(ent, SmoothMovement):
+                    # If the unit is moving faster/slower than it's normal movement speed, scale the animation speed
+                    velocity = esper.component_for_entity(ent, Velocity)
+                    movement = esper.component_for_entity(ent, Movement)
+                    scale = (velocity.x**2 + velocity.y**2)**0.5 / movement.speed
+                    anim_state.time_elapsed += dt * scale
+                else:
+                    anim_state.time_elapsed += dt
                 anim_state.time_elapsed += dt
 
             # Update the animation frame based on the current time
