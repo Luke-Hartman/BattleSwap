@@ -39,7 +39,7 @@ from components.velocity import Velocity
 from components.health import Health
 from components.orientation import Orientation, FacingDirection
 from effects import (
-    AppliesStatusEffect, AttachToTarget, CreatesVisual, 
+    AppliesStatusEffect, AttachToTarget, CreatesUnit, CreatesVisual, 
     CreatesAttachedVisual, CreatesLobbed, CreatesProjectile, Damages, 
     Forget, Heals, IncreaseAmmo, Jump, PlaySound, Recipient, 
     SoundEffect, StanceChange, RememberTarget, CreatesVisualAoE, CreatesCircleAoE
@@ -49,6 +49,7 @@ from unit_condition import (
     MaximumDistanceFromEntity, RememberedBy, RememberedSatisfies
 )
 from visuals import Visual
+from components.dying import OnDeathEffect
 
 unit_theme_ids: Dict[UnitType, str] = {
     UnitType.CORE_ARCHER: "#core_archer_icon", 
@@ -57,8 +58,8 @@ unit_theme_ids: Dict[UnitType, str] = {
     UnitType.CORE_DUELIST: "#core_duelist_icon",
     UnitType.CORE_SWORDSMAN: "#core_swordsman_icon",
     UnitType.CORE_WIZARD: "#core_wizard_icon",
-    UnitType.CRUSADER_BLACK_KNIGHT: "#crusader_black_knight_icon",
     UnitType.CRUSADER_BANNER_BEARER: "#crusader_banner_bearer_icon",
+    UnitType.CRUSADER_BLACK_KNIGHT: "#crusader_black_knight_icon",
     UnitType.CRUSADER_CATAPULT: "#crusader_catapult_icon",
     UnitType.CRUSADER_CLERIC: "#crusader_cleric_icon",
     UnitType.CRUSADER_COMMANDER: "#crusader_commander_icon",
@@ -73,6 +74,7 @@ unit_theme_ids: Dict[UnitType, str] = {
     UnitType.CRUSADER_SOLDIER: "#crusader_soldier_icon",
     UnitType.WEREBEAR: "#werebear_icon",
     UnitType.ZOMBIE_BASIC_ZOMBIE: "#zombie_basic_zombie_icon",
+    UnitType.ZOMBIE_BRUTE: "#zombie_brute_icon",
     UnitType.ZOMBIE_JUMPER: "#zombie_jumper_icon",
     UnitType.ZOMBIE_SPITTER: "#zombie_spitter_icon",
     UnitType.ZOMBIE_TANK: "#zombie_tank_icon",
@@ -118,6 +120,7 @@ _unit_to_faction = {
     UnitType.CRUSADER_RED_KNIGHT: Faction.CRUSADERS,
     UnitType.CRUSADER_SOLDIER: Faction.CRUSADERS,
     UnitType.ZOMBIE_BASIC_ZOMBIE: Faction.ZOMBIES,
+    UnitType.ZOMBIE_BRUTE: Faction.ZOMBIES,
     UnitType.ZOMBIE_JUMPER: Faction.ZOMBIES,
     UnitType.ZOMBIE_SPITTER: Faction.ZOMBIES,
     UnitType.ZOMBIE_TANK: Faction.ZOMBIES,
@@ -149,6 +152,7 @@ def load_sprite_sheets():
         UnitType.CRUSADER_SOLDIER: "CrusaderSoldier.png",
         UnitType.WEREBEAR: "Werebear.png",
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombie.png",
+        UnitType.ZOMBIE_BRUTE: "ZombieBasicZombie.png",
         UnitType.ZOMBIE_JUMPER: "ZombieBasicZombie.png",
         UnitType.ZOMBIE_SPITTER: "ZombieBasicZombie.png",
         UnitType.ZOMBIE_TANK: "ZombieBasicZombie.png",
@@ -183,6 +187,7 @@ def load_sprite_sheets():
         UnitType.CRUSADER_SOLDIER: "CrusaderSoldierIcon.png",
         UnitType.WEREBEAR: "WerebearIcon.png",
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombieIcon.png",
+        UnitType.ZOMBIE_BRUTE: "ZombieBruteIcon.png",
         UnitType.ZOMBIE_JUMPER: "ZombieBasicZombieIcon.png",
         UnitType.ZOMBIE_SPITTER: "ZombieSpitterIcon.png",
         UnitType.ZOMBIE_TANK: "ZombieTankIcon.png",
@@ -218,6 +223,7 @@ def create_unit(x: int, y: int, unit_type: UnitType, team: TeamType) -> int:
         UnitType.CRUSADER_SOLDIER: create_crusader_soldier,
         UnitType.WEREBEAR: create_werebear,
         UnitType.ZOMBIE_BASIC_ZOMBIE: create_zombie_basic_zombie,
+        UnitType.ZOMBIE_BRUTE: create_zombie_brute,
         UnitType.ZOMBIE_JUMPER: create_zombie_jumper,
         UnitType.ZOMBIE_SPITTER: create_zombie_spitter,
         UnitType.ZOMBIE_TANK: create_zombie_tank,
@@ -2860,6 +2866,154 @@ def create_zombie_basic_zombie(x: int, y: int, team: TeamType) -> int:
     }))
     return entity
 
+def create_zombie_brute(x: int, y: int, team: TeamType) -> int:
+    """Create a brute zombie entity with all necessary components."""
+    entity = unit_base_entity(
+        x=x,
+        y=y,
+        team=team,
+        unit_type=UnitType.ZOMBIE_BRUTE,
+        movement_speed=gc.ZOMBIE_BRUTE_MOVEMENT_SPEED,
+        health=gc.ZOMBIE_BRUTE_HP,
+        hitbox=Hitbox(width=24, height=48),
+    )
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=2, ascending=True),
+        ],
+        unit_condition=All([OnTeam(team=team.other()), Alive()])
+    )
+    esper.add_component(
+        entity,
+        Destination(target_strategy=targetting_strategy, x_offset=gc.ZOMBIE_BRUTE_ATTACK_RANGE*2/3)
+    )
+    esper.add_component(entity, Ammo(1, 1))
+    
+    # Add on death effect to spawn zombies if ammo is 1
+    esper.add_component(
+        entity,
+        OnDeathEffect(
+            effects=[
+                CreatesUnit(
+                    unit_type=UnitType.ZOMBIE_BASIC_ZOMBIE,
+                    team=team,
+                    offset=(0, 10),
+                    recipient=Recipient.OWNER,
+                ),
+                CreatesUnit(
+                    unit_type=UnitType.ZOMBIE_BASIC_ZOMBIE,
+                    team=team,
+                    offset=(0, -10),
+                    recipient=Recipient.OWNER,
+                ),
+            ],
+            condition=AmmoEquals(1)
+        )
+    )
+    
+    esper.add_component(
+        entity,
+        Abilities(
+            abilities=[
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        SatisfiesUnitCondition(Not(AmmoEquals(0))),
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.ZOMBIE_BRUTE_ZOMBIE_DROP_RANGE,
+                                    y_bias=None,
+                                ),
+                            ])
+                        )
+                    ],
+                    persistent_conditions=[],
+                    effects={
+                        3: [
+                            CreatesUnit(
+                                unit_type=UnitType.ZOMBIE_BASIC_ZOMBIE,
+                                team=team,
+                                offset=(0, 10),
+                                recipient=Recipient.OWNER,
+                            ),
+                            CreatesUnit(
+                                unit_type=UnitType.ZOMBIE_BASIC_ZOMBIE,
+                                team=team,
+                                offset=(0, -10),
+                                recipient=Recipient.OWNER,
+                            ),
+                            IncreaseAmmo(amount=-1),
+                        ],
+                    }
+                ),
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                Grounded(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.ZOMBIE_BRUTE_ATTACK_RANGE,
+                                    y_bias=3
+                                ),
+                            ])
+                        )
+                    ],
+                    persistent_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.ZOMBIE_BRUTE_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    y_bias=3
+                                ),
+                            ])
+                        )
+                    ],
+                    effects={3: [
+                        Damages(damage=gc.ZOMBIE_BRUTE_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                        AppliesStatusEffect(
+                            status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team),
+                            recipient=Recipient.TARGET
+                        )
+                    ]},
+                )
+            ]
+        )
+    )
+    esper.add_component(entity, ImmuneToZombieInfection())
+    esper.add_component(
+        entity,
+        SpriteSheet(
+            surface=sprite_sheets[UnitType.ZOMBIE_BRUTE],
+            frame_width=100,
+            frame_height=100,
+            scale=1.5*gc.TINY_RPG_SCALE,
+            frames={AnimationType.IDLE: 3, AnimationType.WALKING: 4, AnimationType.ABILITY1: 5, AnimationType.ABILITY2: 5, AnimationType.DYING: 6},
+            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 2, AnimationType.ABILITY2: 2, AnimationType.DYING: 3},
+            animation_durations={
+                AnimationType.IDLE: gc.ZOMBIE_BRUTE_ANIMATION_IDLE_DURATION,
+                AnimationType.WALKING: gc.ZOMBIE_BRUTE_ANIMATION_WALKING_DURATION,
+                AnimationType.ABILITY1: gc.ZOMBIE_BRUTE_ANIMATION_ATTACK_DURATION,
+                AnimationType.ABILITY2: gc.ZOMBIE_BRUTE_ANIMATION_ATTACK_DURATION,
+                AnimationType.DYING: gc.ZOMBIE_BRUTE_ANIMATION_DYING_DURATION,
+            },
+            sprite_center_offset=(2, 8),
+        )
+    )
+    esper.add_component(entity, WalkEffects({
+        frame: [PlaySound(sound_effects=[
+            (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+        ])]
+        for frame in [1, 3]
+    }))
+    return entity
+
 def create_zombie_jumper(x: int, y: int, team: TeamType) -> int:
     """Create a jumper zombie entity with all necessary components."""
     entity = unit_base_entity(
@@ -3174,7 +3328,7 @@ def create_zombie_tank(x: int, y: int, team: TeamType) -> int:
         unit_type=UnitType.ZOMBIE_TANK,
         movement_speed=gc.ZOMBIE_TANK_MOVEMENT_SPEED,
         health=gc.ZOMBIE_TANK_HP,
-        hitbox=Hitbox(width=16, height=32),
+        hitbox=Hitbox(width=32, height=64),
     )
     targetting_strategy = TargetStrategy(
         rankings=[

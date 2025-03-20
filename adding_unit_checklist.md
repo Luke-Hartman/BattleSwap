@@ -10,7 +10,7 @@ When adding a new unit, make all of the following changes:
     - Create a new function for the unit (in alphabetical order) matching the function in create_unit.
         - If instructed to make a new unit work similarly to an existing unit, use the existing unit's function and stats as a reference, but don't re-use any of the existing unit's code. For example, if re-using the core swordsman's sprite and stats, still create new entries for the new unit's sprite and stats and use those instead of the core swordsman's. Unless instructed otherwise, use the same numerical values for the new unit as the existing unit.
     - Add the unit's type to the `unit_theme_ids` dictionary.
-    - Add the unit's type to the `unit_values` dictionary.
+    - Add the unit's type to the `unit_values` dictionary in unit_values.py.
     - Add the unit's type to the `unit_icon_surfaces` dictionary.
     - Add the unit's type to the `unit_filenames` dictionary.
     - Add the unit's type to the `unit_icon_paths` dictionary.

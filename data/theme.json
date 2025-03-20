@@ -223,6 +223,13 @@
             }
         }
     },
+    "#zombie_brute_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/ZombieBruteIcon.png"
+            }
+        }
+    },
     "#zombie_jumper_icon": {
         "images": {
             "normal_image": {

@@ -343,4 +343,18 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
             f"Special: Zombies infect units they hit for {gc.ZOMBIE_INFECTION_DURATION} seconds, causing them to turn into zombies when they die.",
             "AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
         ]
+    if unit_type == UnitType.ZOMBIE_BRUTE:
+        return [
+            f"Name: Brute",
+            f"Faction: Zombie",
+            f"Value: {unit_values[unit_type]}",
+            f"Health: {gc.ZOMBIE_BRUTE_HP}",
+            f"Attack: {gc.ZOMBIE_BRUTE_ATTACK_DAMAGE}",
+            f"DPS: {round(gc.ZOMBIE_BRUTE_ATTACK_DAMAGE/gc.ZOMBIE_BRUTE_ANIMATION_ATTACK_DURATION, 2)}",
+            f"Speed: {gc.ZOMBIE_BRUTE_MOVEMENT_SPEED}",
+            f"Range: {gc.ZOMBIE_BRUTE_ATTACK_RANGE}",
+            f"Special: Zombies infect units they hit for {gc.ZOMBIE_INFECTION_DURATION} seconds, causing them to turn into zombies when they die.",
+            f"Special: Drops two basic zombies the first time an enemy is nearby or on death (whichever comes first).",
+            "AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
+        ]
     raise NotImplementedError(unit_type)

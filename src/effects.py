@@ -28,8 +28,9 @@ from components.position import Position
 from components.projectile import Projectile
 from components.stance import Stance
 from components.status_effect import CrusaderBannerBearerEmpowered, StatusEffect, StatusEffects
-from components.team import Team
+from components.team import Team, TeamType
 from components.unique import Unique
+from components.unit_type import UnitType
 from components.velocity import Velocity
 from events import PLAY_SOUND, PlaySoundEvent, emit_event
 from visuals import Visual, create_visual_spritesheet
@@ -893,7 +894,6 @@ class Jump(Effect):
             orientation = esper.component_for_entity(parent, Orientation)
             orientation.facing = FacingDirection.RIGHT if target_pos.x > parent_position.x else FacingDirection.LEFT
 
-
 class Land(Effect):
     """Effect lands the parent."""
 
@@ -901,3 +901,43 @@ class Land(Effect):
         assert parent is not None
         if esper.has_component(parent, Airborne):
             esper.remove_component(parent, Airborne)
+
+@dataclass
+class CreatesUnit(Effect):
+    """Effect creates a unit by the location of the recipient."""
+
+    recipient: Recipient
+    """The recipient of the effect."""
+    
+    unit_type: UnitType
+    """The unit type to create."""
+
+    team: TeamType
+    """The team of the unit."""
+
+    offset: Tuple[int, int]
+    """The offset of the unit from the recipient's position."""
+    
+    def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
+        if self.recipient == Recipient.OWNER:
+            assert owner is not None
+            recipient = owner
+        elif self.recipient == Recipient.PARENT:
+            assert parent is not None
+            recipient = parent
+        elif self.recipient == Recipient.TARGET:
+            assert target is not None
+            recipient = target
+        else:
+            raise ValueError(f"Invalid recipient: {self.recipient}")
+        
+        from entities.units import create_unit
+
+        position = esper.component_for_entity(recipient, Position)
+        entity = create_unit(
+            x=position.x + self.offset[0],
+            y=position.y + self.offset[1],
+            unit_type=self.unit_type,
+            team=self.team,
+        )
+        esper.add_component(entity, Team(type=self.team))

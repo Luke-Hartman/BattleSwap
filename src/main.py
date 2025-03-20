@@ -15,7 +15,6 @@ from scenes.scene_manager import scene_manager
 from selected_unit_manager import selected_unit_manager
 from time_manager import time_manager
 from visuals import load_visual_sheets
-from game_constants import gc
 import steam
 
 # Initialize Pygame
