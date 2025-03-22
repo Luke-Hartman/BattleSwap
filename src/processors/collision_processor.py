@@ -54,7 +54,7 @@ class CollisionProcessor(esper.Processor):
             circle_aoe_ents.append(ent)
         
         # For all sprites, update their collision masks
-        for sprite in [*team1_projectiles, *team2_projectiles, *team1_units, *team2_units]:
+        for sprite in [*team1_projectiles, *team2_projectiles, *team1_units, *team2_units, *visual_aoe_sprites]:
             sprite.mask = pygame.mask.from_surface(sprite.image, threshold=10)
 
         # Handle collisions between team1 projectiles and team2 units
@@ -177,6 +177,8 @@ class CollisionProcessor(esper.Processor):
             if u_ent in aoe.hit_entities:
                 continue
             if not aoe.unit_condition.check(u_ent):
+                continue
+            if not self.check_hitbox_collision(aoe_sprite, u_sprite, sprite_to_ent):
                 continue
             aoe.hit_entities.append(u_ent)
             emit_event(VISUAL_AOE_HIT, event=VisualAoEHitEvent(entity=aoe_ent, target=u_ent))
