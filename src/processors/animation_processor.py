@@ -11,6 +11,7 @@ import esper
 from components.ability import Abilities
 from components.animation import AnimationState, AnimationType
 from components.destination import Destination
+from components.forced_movement import ForcedMovement
 from components.movement import Movement
 from components.smooth_movement import SmoothMovement
 from components.sprite_sheet import SpriteSheet
@@ -54,6 +55,12 @@ class AnimationProcessor(esper.Processor):
             # Override with airborne animation if airborne
             if esper.has_component(ent, Airborne) and new_anim_type != AnimationType.DYING:
                 new_anim_type = AnimationType.AIRBORNE
+
+            # Override with first frame of IDLE animation if forced movement
+            if esper.has_component(ent, ForcedMovement):
+                new_anim_type = AnimationType.IDLE
+                anim_state.current_frame = 0
+                anim_state.time_elapsed = 0
 
             if unit_state.state == State.PURSUING:
                 if esper.has_component(ent, Destination):

@@ -138,6 +138,18 @@ class VisualAoEHitEvent:
     entity: int
     target: int
 
+@dataclass
+class GrabStartedEvent:
+    """Event triggered when a unit starts being grabbed."""
+    entity: int
+    """The entity being grabbed."""
+
+@dataclass
+class GrabEndedEvent:
+    """Event triggered when a unit stops being grabbed."""
+    entity: int
+    """The entity that was grabbed."""
+
 # Define signal names for each event
 ABILITY_ACTIVATED = 'ability_activated'
 ABILITY_COMPLETED = 'ability_completed'
@@ -152,6 +164,8 @@ DESTINATION_TARGET_ACQUIRED = 'destination_target_acquired'
 DESTINATION_TARGET_LOST = 'destination_target_lost'
 FLEEING_STARTED = 'fleeing_started'
 FLEEING_EXPIRED = 'fleeing_expired'
+GRAB_STARTED = 'grab_started'
+GRAB_ENDED = 'grab_ended'
 INSTANT_ABILITY_TRIGGERED = 'instant_ability_triggered'
 LOBBED_ARRIVED = 'lobbed_arrived'
 PLAY_SOUND = 'play_sound'

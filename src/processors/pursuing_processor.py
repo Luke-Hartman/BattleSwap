@@ -8,6 +8,7 @@ import esper
 import math
 from components.airborne import Airborne
 from components.destination import Destination
+from components.forced_movement import ForcedMovement
 from components.position import Position
 from components.status_effect import CrusaderBannerBearerMovementSpeedBuff, StatusEffects
 from components.team import Team, TeamType
@@ -22,9 +23,9 @@ class PursuingProcessor(esper.Processor):
 
     def process(self, dt: float):
         for ent, (unit_state, pos, movement, velocity, orientation, destination) in esper.get_components(UnitState, Position, Movement, Velocity, Orientation, Destination):
-            target = destination.target_strategy.target
-            if esper.has_component(ent, Airborne):
+            if esper.has_component(ent, Airborne) or esper.has_component(ent, ForcedMovement):
                 continue
+            target = destination.target_strategy.target
             if unit_state.state == State.PURSUING and target is None:
                 emit_event(DESTINATION_TARGET_LOST, event=DestinationTargetLostEvent(ent))
             if unit_state.state == State.PURSUING and target is not None:

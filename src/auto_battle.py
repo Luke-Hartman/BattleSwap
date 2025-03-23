@@ -29,6 +29,7 @@ from processors.status_effect_processor import StatusEffectProcessor
 from processors.targetting_processor import TargettingProcessor
 from processors.unique_processor import UniqueProcessor
 from entities.units import create_unit
+from processors.visual_link_processor import VisualLinkProcessor
 
 class BattleOutcome(Enum):
     TEAM1_VICTORY = auto()
@@ -64,6 +65,7 @@ class AutoBattle:
         _add_or_replace(StatusEffectProcessor())
         _add_or_replace(AnimationProcessor())
         _add_or_replace(PositionProcessor())
+        _add_or_replace(VisualLinkProcessor())
         _add_or_replace(NudgeProcessor())
         _add_or_replace(OrientationProcessor())
         _add_or_replace(RotationProcessor())

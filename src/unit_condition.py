@@ -292,7 +292,7 @@ class RememberedSatisfies(UnitCondition):
 
     def check(self, entity: int) -> bool:
         memory = esper.try_component(entity, EntityMemory)
-        return memory is not None and self.condition.check(memory.entity)
+        return memory is not None and esper.entity_exists(memory.entity) and self.condition.check(memory.entity)
 
 @dataclass
 class IsUnitType(UnitCondition):

@@ -230,6 +230,13 @@
             }
         }
     },
+    "#zombie_grabber_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/ZombieGrabberIcon.png"
+            }
+        }
+    },
     "#zombie_jumper_icon": {
         "images": {
             "normal_image": {

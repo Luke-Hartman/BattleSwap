@@ -10,6 +10,7 @@ import esper
 import pygame
 import pygame.gfxdraw
 import pygame_gui
+from components.animation import AnimationType
 from components.aura import Aura
 from components.destination import Destination
 from components.focus import Focus
@@ -22,6 +23,8 @@ from components.health import Health
 from components.unit_state import UnitState, State
 from camera import Camera
 from game_constants import gc
+from components.visual_link import VisualLink
+from visuals import create_visual_spritesheet
 
 
 class RenderingProcessor(esper.Processor):
@@ -87,6 +90,39 @@ class RenderingProcessor(esper.Processor):
         
         self.screen.blit(surface, screen_pos)
 
+    def draw_sprite_sheet(self, sprite_sheet: SpriteSheet) -> None:
+        """
+        Draw a sprite sheet at the given world position.
+        
+        Args:
+            sprite_sheet: The sprite sheet to draw
+        """
+        # Skip if sprite is completely off screen
+        if self.camera.is_box_off_screen(
+            sprite_sheet.rect.left,
+            sprite_sheet.rect.top,
+            sprite_sheet.rect.width,
+            sprite_sheet.rect.height
+        ):
+            return
+
+        rect_topleft = sprite_sheet.rect.topleft
+        rect_width = sprite_sheet.rect.width
+        rect_height = sprite_sheet.rect.height
+        new_top_left = self.camera.world_to_screen(rect_topleft[0], rect_topleft[1])
+        new_rect = pygame.Rect(new_top_left, (rect_width * self.camera.scale, rect_height * self.camera.scale))
+
+        # Scale the sprite if needed
+        if self.camera.scale != 1.0:
+            scaled_size = (
+                int(sprite_sheet.rect.width * self.camera.scale),
+                int(sprite_sheet.rect.height * self.camera.scale)
+            )
+            scaled_image = pygame.transform.scale(sprite_sheet.image, scaled_size)
+            self.screen.blit(scaled_image, new_rect)
+        else:
+            self.screen.blit(sprite_sheet.image, new_rect)
+
     def process(self, dt: float):
         # Draw all auras
         for ent, (aura, position) in esper.get_components(Aura, Position):
@@ -98,6 +134,44 @@ class RenderingProcessor(esper.Processor):
                     fill_color=(*aura.color, 25),
                     outline_color=(*aura.color, 120)
                 )
+
+        # Draw visual links
+        for ent, (visual_link,) in esper.get_components(VisualLink):
+            if not esper.entity_exists(visual_link.other_entity):
+                continue
+                
+            start_pos = esper.component_for_entity(ent, Position)
+            end_pos = esper.component_for_entity(visual_link.other_entity, Position)
+            
+            # Calculate angle between start and end
+            dx = end_pos.x - start_pos.x
+            dy = end_pos.y - start_pos.y
+            angle = math.atan2(dy, dx)
+            
+            # Calculate distance between start and end
+            distance = math.sqrt(dx**2 + dy**2)
+            
+            # Calculate number of tiles needed
+            num_tiles = int(distance / visual_link.tile_size)
+            
+            # Create sprite sheet once and rotate it
+            sprite_sheet = create_visual_spritesheet(visual=visual_link.visual)
+            sprite_sheet.update_frame(AnimationType.IDLE, 0)
+            sprite_sheet.image = pygame.transform.rotate(sprite_sheet.image, -math.degrees(angle))
+            
+            # Draw each tile
+            for i in range(num_tiles):
+                # Calculate position of this tile
+                t = i / num_tiles
+                x = start_pos.x + dx * t
+                y = start_pos.y + dy * t
+                
+                # Position the sprite
+                sprite_sheet.rect.center = (x, y)
+                
+                # Draw the sprite
+                self.draw_sprite_sheet(sprite_sheet)
+                screen_pos = self.camera.world_to_screen(x, y)
 
         # Draw range indicators on focused units
         for ent, (range_indicator, position, _) in esper.get_components(RangeIndicator, Position, Focus):
@@ -117,31 +191,8 @@ class RenderingProcessor(esper.Processor):
         sorted_entities = sorted(entities, key=lambda e: (e[1][1].layer, e[1][0].y))
         
         for ent, (pos, sprite_sheet) in sorted_entities:
-            # Skip if sprite is completely off screen
-            if self.camera.is_box_off_screen(
-                sprite_sheet.rect.left,
-                sprite_sheet.rect.top,
-                sprite_sheet.rect.width,
-                sprite_sheet.rect.height
-            ):
-                continue
-
-            rect_topleft = sprite_sheet.rect.topleft
-            rect_width = sprite_sheet.rect.width
-            rect_height = sprite_sheet.rect.height
-            new_top_left = self.camera.world_to_screen(rect_topleft[0], rect_topleft[1])
-            new_rect = pygame.Rect(new_top_left, (rect_width * self.camera.scale, rect_height * self.camera.scale))
-
-            # Scale the sprite if needed
-            if self.camera.scale != 1.0:
-                scaled_size = (
-                    int(sprite_sheet.rect.width * self.camera.scale),
-                    int(sprite_sheet.rect.height * self.camera.scale)
-                )
-                scaled_image = pygame.transform.scale(sprite_sheet.image, scaled_size)
-                self.screen.blit(scaled_image, new_rect)
-            else:
-                self.screen.blit(sprite_sheet.image, new_rect)
+            # Draw the sprite
+            self.draw_sprite_sheet(sprite_sheet)
 
             # Draw health bar if entity has Health, Team, and UnitState components, is not dead, and health is not full
             if (

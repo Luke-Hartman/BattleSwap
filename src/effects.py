@@ -21,6 +21,7 @@ from components.aura import Aura
 from components.dying import Dying
 from components.entity_memory import EntityMemory
 from components.expiration import Expiration
+from components.forced_movement import ForcedMovement
 from components.health import Health
 from components.lobbed import Lobbed
 from components.orientation import FacingDirection, Orientation
@@ -32,6 +33,7 @@ from components.team import Team, TeamType
 from components.unique import Unique
 from components.unit_type import UnitType
 from components.velocity import Velocity
+from components.visual_link import VisualLink
 from events import PLAY_SOUND, PlaySoundEvent, emit_event
 from visuals import Visual, create_visual_spritesheet
 from unit_condition import UnitCondition
@@ -276,6 +278,9 @@ class CreatesProjectile(Effect):
     unit_condition: "UnitCondition"
     """Condition that determines which units can be hit by the projectile."""
 
+    max_distance: Optional[float] = None
+    """The maximum distance the projectile can travel before being automatically deleted."""
+
     on_create: Optional[Callable[[int], None]] = None
     """Function to call when the projectile is created."""
 
@@ -311,6 +316,8 @@ class CreatesProjectile(Effect):
         esper.add_component(entity, Projectile(effects=self.effects, owner=owner, unit_condition=self.unit_condition))
         esper.add_component(entity, create_visual_spritesheet(self.visual, layer=1))
         esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
+        if self.max_distance is not None:
+            esper.add_component(entity, Expiration(time_left=self.max_distance / self.projectile_speed))
         if self.on_create:
             self.on_create(entity)
 
@@ -551,22 +558,46 @@ class AttachToTarget(Effect):
 
 @dataclass
 class RememberTarget(Effect):
-    """Effect stores the target in the parent's entity memory."""
+    """Effect stores the target in the recipient's entity memory."""
+
+    recipient: Recipient
+    """The recipient of the effect."""
 
     def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
-        assert parent is not None
-        assert target is not None
-        esper.add_component(parent, EntityMemory(entity=target))
+        if self.recipient == Recipient.OWNER:
+            assert owner is not None
+            recipient = owner
+        elif self.recipient == Recipient.PARENT:
+            assert parent is not None
+            recipient = parent
+        elif self.recipient == Recipient.TARGET:
+            assert target is not None
+            recipient = target
+        else:
+            raise ValueError(f"Invalid recipient: {self.recipient}")
+        esper.add_component(recipient, EntityMemory(entity=target))
 
 
 @dataclass
 class Forget(Effect):
-    """Effect forgets the remembered unit in the parent's entity memory."""
+    """Effect forgets the remembered unit in the recipient's entity memory."""
+
+    recipient: Recipient
+    """The recipient of the effect."""
 
     def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
-        assert parent is not None
-        esper.remove_component(parent, EntityMemory)
-
+        if self.recipient == Recipient.OWNER:
+            assert owner is not None
+            recipient = owner
+        elif self.recipient == Recipient.PARENT:
+            assert parent is not None
+            recipient = parent
+        elif self.recipient == Recipient.TARGET:
+            assert target is not None
+            recipient = target
+        else:
+            raise ValueError(f"Invalid recipient: {self.recipient}")
+        esper.remove_component(recipient, EntityMemory)
 
 @dataclass
 class SoundEffect:
@@ -941,3 +972,100 @@ class CreatesUnit(Effect):
             team=self.team,
         )
         esper.add_component(entity, Team(type=self.team))
+
+@dataclass
+class AddsForcedMovement(Effect):
+    """Effect adds forced movement to the recipient."""
+
+    recipient: Recipient
+    """The recipient of the effect."""
+
+    destination: Recipient
+    """The destination of the forced movement."""
+
+    speed: float
+    """The speed of the forced movement."""
+
+    offset_x: float
+    """The x offset of the forced movement from the destination.
+    
+    Is relative to the destination's orientation.
+    """
+
+    offset_y: float
+    """The y offset of the forced movement from the destination."""
+    
+    def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
+        if self.recipient == Recipient.OWNER:
+            recipient = owner
+        elif self.recipient == Recipient.PARENT:
+            recipient = parent
+        elif self.recipient == Recipient.TARGET:
+            recipient = target
+        else:
+            raise ValueError(f"Invalid recipient: {self.recipient}")
+        if self.destination == Recipient.OWNER:
+            assert owner is not None
+            destination = owner
+        elif self.destination == Recipient.PARENT:
+            assert parent is not None
+            destination = parent
+        elif self.destination == Recipient.TARGET:
+            assert target is not None
+            destination = target
+        else:
+            raise ValueError(f"Invalid destination: {self.destination}")
+        destination_pos = esper.component_for_entity(destination, Position)
+        destination_orientation = esper.component_for_entity(destination, Orientation)
+        esper.add_component(recipient, ForcedMovement(
+            destination_x=destination_pos.x + self.offset_x * destination_orientation.facing.value,
+            destination_y=destination_pos.y + self.offset_y,
+            speed=self.speed,
+        ))
+
+@dataclass
+class CreatesVisualLink(Effect):
+    """Effect creates a visual link between the start and other entities."""
+
+    start_entity: Recipient
+    """The start entity of the visual link."""
+
+    other_entity: Recipient
+    """The other entity of the visual link."""
+
+    visual: Visual
+    """The visual of the visual link."""
+
+    tile_size: int
+    """The tile size of the visual link."""
+
+    entity_delete_condition: Optional[UnitCondition] = None
+    """The condition that, if met, will remove the visual link."""
+
+    other_entity_delete_condition: Optional[UnitCondition] = None
+    """The condition that, if met, will remove the visual link."""
+
+    def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
+        if self.start_entity == Recipient.OWNER:
+            start_entity = owner
+        elif self.start_entity == Recipient.PARENT:
+            start_entity = parent
+        elif self.start_entity == Recipient.TARGET:
+            start_entity = target
+        else:
+            raise ValueError(f"Invalid start entity: {self.start_entity}")
+        if self.other_entity == Recipient.OWNER:
+            other_entity = owner
+        elif self.other_entity == Recipient.PARENT:
+            other_entity = parent
+        elif self.other_entity == Recipient.TARGET:
+            other_entity = target
+        else:
+            raise ValueError(f"Invalid other entity: {self.other_entity}")
+        esper.add_component(start_entity, VisualLink(
+            other_entity=other_entity,
+            visual=self.visual,
+            tile_size=self.tile_size,
+            entity_delete_condition=self.entity_delete_condition,
+            other_entity_delete_condition=self.other_entity_delete_condition,
+        ))

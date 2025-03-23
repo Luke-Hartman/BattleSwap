@@ -357,4 +357,23 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
             f"Special: Drops two basic zombies the first time an enemy is nearby or on death (whichever comes first).",
             "AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
         ]
+    if unit_type == UnitType.ZOMBIE_GRABBER:
+        return [
+            f"Name: Grabber",
+            f"Faction: Zombie",
+            f"Value: {unit_values[unit_type]}",
+            f"Health: {gc.ZOMBIE_GRABBER_HP}",
+            f"Grab Damage: {round(gc.ZOMBIE_GRABBER_GRAB_DAMAGE, 2)}",
+            f"Grab cooldown: {gc.ZOMBIE_GRABBER_GRAB_COOLDOWN}s",
+            f"Grab range: {gc.ZOMBIE_GRABBER_GRAB_MINIMUM_RANGE} to {gc.ZOMBIE_GRABBER_GRAB_MAXIMUM_RANGE}",
+            f"Grab projectile speed: {gc.ZOMBIE_GRABBER_GRAB_PROJECTILE_SPEED}",
+            f"Grab retraction speed: {gc.ZOMBIE_GRABBER_GRAB_FORCED_MOVEMENT_SPEED}",
+            f"Melee Damage: {gc.ZOMBIE_GRABBER_ATTACK_DAMAGE}",
+            f"Melee DPS: {round(gc.ZOMBIE_GRABBER_ATTACK_DAMAGE/gc.ZOMBIE_GRABBER_ANIMATION_ATTACK_DURATION, 2)}",
+            f"Speed: {gc.ZOMBIE_GRABBER_MOVEMENT_SPEED}",
+            f"Range: {gc.ZOMBIE_GRABBER_ATTACK_RANGE}",
+            f"Special: Zombies infect units they hit for {gc.ZOMBIE_INFECTION_DURATION} seconds, causing them to turn into zombies when they die.",
+            f"Special: Grabbers have a tongue attack that grabs a unit and pulls them towards them, dealing damage and infecting them.",
+            f"AI: Targets the nearest enemy, preferring units that are infectable and are at the same height on the y-axis",
+        ]
     raise NotImplementedError(unit_type)

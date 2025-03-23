@@ -25,6 +25,8 @@ class Visual(Enum):
     Fireball = auto()
     Healing = auto()
     Ignited = auto()
+    Tongue = auto()
+    TongueTip = auto()
 
 visual_sheets: dict[Visual, pygame.Surface] = {}
 
@@ -44,6 +46,8 @@ def load_visual_sheets():
         Visual.Fireball: os.path.join("assets", "effects", "Wizard.png"),
         Visual.Healing: os.path.join("assets", "units", "CrusaderCleric.png"),
         Visual.Ignited: os.path.join("assets", "effects", "Ignited.png"),
+        Visual.Tongue: os.path.join("assets", "effects", "Tongue.png"),
+        Visual.TongueTip: os.path.join("assets", "effects", "TongueTip.png"),
     }
     for visual, path in visual_paths.items():
         if visual in visual_sheets:
@@ -298,4 +302,39 @@ def create_visual_spritesheet(
             sprite_center_offset=(0, 0),
             layer=layer
         )
-
+    elif visual == Visual.Tongue:
+        if duration is None:
+            duration = 0.2
+        if scale is None:
+            scale = 1
+        if frames is None:
+            frames = (0, 1)
+        return SpriteSheet(
+            surface=visual_sheets[visual],
+            frame_width=8,
+            frame_height=8,
+            scale=scale,
+            frames={AnimationType.IDLE: frames[1] - frames[0]},
+            rows={AnimationType.IDLE: 0},
+            animation_durations={AnimationType.IDLE: duration},
+            sprite_center_offset=(0, 0),
+            layer=layer
+        )
+    elif visual == Visual.TongueTip:
+        if duration is None:
+            duration = 0.2
+        if scale is None:
+            scale = 1
+        if frames is None:
+            frames = (0, 1)
+        return SpriteSheet(
+            surface=visual_sheets[visual],
+            frame_width=8,
+            frame_height=8,
+            scale=scale,
+            frames={AnimationType.IDLE: frames[1] - frames[0]},
+            rows={AnimationType.IDLE: 0},
+            animation_durations={AnimationType.IDLE: duration},
+            sprite_center_offset=(0, 0),
+            layer=layer
+        )

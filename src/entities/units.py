@@ -12,14 +12,17 @@ from components.ammo import Ammo
 from components.attached import Attached
 from components.entity_memory import EntityMemory
 from components.follower import Follower
+from components.forced_movement import ForcedMovement
 from components.hitbox import Hitbox
 from components.immobile import Immobile
 from components.immunity import ImmuneToZombieInfection
 from components.instant_ability import InstantAbilities, InstantAbility
 from components.no_nudge import NoNudge
+from components.projectile import Projectile
 from components.range_indicator import RangeIndicator
 from components.smooth_movement import SmoothMovement
 from components.stance import Stance
+from components.visual_link import VisualLink
 from components.walk_effects import WalkEffects
 from game_constants import gc
 from components.ability import Abilities, Ability, Cooldown, HasTarget, SatisfiesUnitCondition
@@ -39,8 +42,8 @@ from components.velocity import Velocity
 from components.health import Health
 from components.orientation import Orientation, FacingDirection
 from effects import (
-    AppliesStatusEffect, AttachToTarget, CreatesUnit, CreatesVisual, 
-    CreatesAttachedVisual, CreatesLobbed, CreatesProjectile, Damages, 
+    AddsForcedMovement, AppliesStatusEffect, AttachToTarget, CreatesUnit, CreatesVisual, 
+    CreatesAttachedVisual, CreatesLobbed, CreatesProjectile, CreatesVisualLink, Damages, 
     Forget, Heals, IncreaseAmmo, Jump, PlaySound, Recipient, 
     SoundEffect, StanceChange, RememberTarget, CreatesVisualAoE, CreatesCircleAoE
 )
@@ -75,6 +78,7 @@ unit_theme_ids: Dict[UnitType, str] = {
     UnitType.WEREBEAR: "#werebear_icon",
     UnitType.ZOMBIE_BASIC_ZOMBIE: "#zombie_basic_zombie_icon",
     UnitType.ZOMBIE_BRUTE: "#zombie_brute_icon",
+    UnitType.ZOMBIE_GRABBER: "#zombie_grabber_icon",
     UnitType.ZOMBIE_JUMPER: "#zombie_jumper_icon",
     UnitType.ZOMBIE_SPITTER: "#zombie_spitter_icon",
     UnitType.ZOMBIE_TANK: "#zombie_tank_icon",
@@ -121,6 +125,7 @@ _unit_to_faction = {
     UnitType.CRUSADER_SOLDIER: Faction.CRUSADERS,
     UnitType.ZOMBIE_BASIC_ZOMBIE: Faction.ZOMBIES,
     UnitType.ZOMBIE_BRUTE: Faction.ZOMBIES,
+    UnitType.ZOMBIE_GRABBER: Faction.ZOMBIES,
     UnitType.ZOMBIE_JUMPER: Faction.ZOMBIES,
     UnitType.ZOMBIE_SPITTER: Faction.ZOMBIES,
     UnitType.ZOMBIE_TANK: Faction.ZOMBIES,
@@ -153,6 +158,7 @@ def load_sprite_sheets():
         UnitType.WEREBEAR: "Werebear.png",
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombie.png",
         UnitType.ZOMBIE_BRUTE: "ZombieBasicZombie.png",
+        UnitType.ZOMBIE_GRABBER: "ZombieBasicZombie.png",
         UnitType.ZOMBIE_JUMPER: "ZombieBasicZombie.png",
         UnitType.ZOMBIE_SPITTER: "ZombieBasicZombie.png",
         UnitType.ZOMBIE_TANK: "ZombieBasicZombie.png",
@@ -188,6 +194,7 @@ def load_sprite_sheets():
         UnitType.WEREBEAR: "WerebearIcon.png",
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombieIcon.png",
         UnitType.ZOMBIE_BRUTE: "ZombieBruteIcon.png",
+        UnitType.ZOMBIE_GRABBER: "ZombieGrabberIcon.png",
         UnitType.ZOMBIE_JUMPER: "ZombieBasicZombieIcon.png",
         UnitType.ZOMBIE_SPITTER: "ZombieSpitterIcon.png",
         UnitType.ZOMBIE_TANK: "ZombieTankIcon.png",
@@ -224,6 +231,7 @@ def create_unit(x: int, y: int, unit_type: UnitType, team: TeamType) -> int:
         UnitType.WEREBEAR: create_werebear,
         UnitType.ZOMBIE_BASIC_ZOMBIE: create_zombie_basic_zombie,
         UnitType.ZOMBIE_BRUTE: create_zombie_brute,
+        UnitType.ZOMBIE_GRABBER: create_zombie_grabber,
         UnitType.ZOMBIE_JUMPER: create_zombie_jumper,
         UnitType.ZOMBIE_SPITTER: create_zombie_spitter,
         UnitType.ZOMBIE_TANK: create_zombie_tank,
@@ -932,7 +940,7 @@ def create_crusader_banner_bearer(x: int, y: int, team: TeamType) -> int:
                         )
                     ],
                     effects=[
-                        RememberTarget(),
+                        RememberTarget(recipient=Recipient.OWNER),
                     ]
                 )
             ]
@@ -1317,7 +1325,7 @@ def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
                         )
                     ],
                     effects=[
-                        RememberTarget(),
+                        RememberTarget(recipient=Recipient.OWNER),
                     ]
                 )
             ]
@@ -1930,7 +1938,7 @@ def create_crusader_guardian_angel(x: int, y: int, team: TeamType) -> int:
                         )
                     ],
                     effects=[
-                        RememberTarget(),
+                        RememberTarget(recipient=Recipient.OWNER),
                     ]
                 ),
                 InstantAbility(
@@ -3406,4 +3414,200 @@ def create_zombie_tank(x: int, y: int, team: TeamType) -> int:
         ])]
         for frame in [1, 3]
     }))
+    return entity
+
+def create_zombie_grabber(x: int, y: int, team: TeamType) -> int:
+    """Create a grabber entity with all necessary components."""
+    entity = unit_base_entity(
+        x=x,
+        y=y,
+        team=team,
+        unit_type=UnitType.ZOMBIE_GRABBER,
+        movement_speed=gc.ZOMBIE_GRABBER_MOVEMENT_SPEED,
+        health=gc.ZOMBIE_GRABBER_HP,
+        hitbox=Hitbox(
+            width=16,
+            height=32,
+        )
+    )
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            WeightedRanking(
+                rankings={
+                    ByDistance(entity=entity, y_bias=2, ascending=True): 1,
+                },
+                ascending=True,
+            ),
+        ],
+        unit_condition=All([OnTeam(team=team.other()), Alive(), Not(HasComponent(Immobile))])
+    )
+    esper.add_component(
+        entity,
+        Destination(target_strategy=targetting_strategy, x_offset=0)
+    )
+    esper.add_component(entity, RangeIndicator(ranges=[gc.ZOMBIE_GRABBER_GRAB_MINIMUM_RANGE, gc.ZOMBIE_GRABBER_GRAB_MAXIMUM_RANGE]))
+    esper.add_component(entity, ImmuneToZombieInfection())
+    esper.add_component(
+        entity,
+        Abilities(
+            abilities=[
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        SatisfiesUnitCondition(
+                            unit_condition=RememberedSatisfies(
+                                condition=Any([
+                                    HasComponent(ForcedMovement),
+                                    HasComponent(Projectile),
+                                ])
+                            )
+                        )
+                    ],
+                    persistent_conditions=[
+                        SatisfiesUnitCondition(
+                            unit_condition=RememberedSatisfies(
+                                condition=Any([
+                                    HasComponent(ForcedMovement),
+                                    HasComponent(Projectile),
+                                ])
+                            )
+                        )
+                    ],
+                    effects={},
+                ),
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                Grounded(), 
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.ZOMBIE_GRABBER_GRAB_MAXIMUM_RANGE,
+                                    y_bias=None
+                                ),
+                                MinimumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.ZOMBIE_GRABBER_GRAB_MINIMUM_RANGE,
+                                    y_bias=None
+                                )
+                            ])
+                        ),
+                        Cooldown(duration=gc.ZOMBIE_GRABBER_GRAB_COOLDOWN),
+                    ],
+                    persistent_conditions=[],
+                    effects={
+                        3: [
+                            CreatesProjectile(
+                                projectile_speed=gc.ZOMBIE_GRABBER_GRAB_PROJECTILE_SPEED,
+                                effects=[
+                                    RememberTarget(recipient=Recipient.OWNER),
+                                    Damages(damage=gc.ZOMBIE_GRABBER_GRAB_DAMAGE, recipient=Recipient.TARGET),
+                                    AppliesStatusEffect(
+                                        status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team),
+                                        recipient=Recipient.TARGET
+                                    ),
+                                    AddsForcedMovement(
+                                        recipient=Recipient.TARGET,
+                                        destination=Recipient.OWNER,
+                                        speed=gc.ZOMBIE_GRABBER_GRAB_FORCED_MOVEMENT_SPEED,
+                                        offset_x=30,
+                                        offset_y=0,
+                                    ),
+                                    CreatesVisualLink(
+                                        start_entity=Recipient.TARGET,
+                                        other_entity=Recipient.OWNER,
+                                        visual=Visual.Tongue,
+                                        tile_size=4,
+                                        entity_delete_condition=Not(HasComponent(ForcedMovement)),
+                                    )
+                                ],
+                                visual=Visual.TongueTip,
+                                projectile_offset_x=5*gc.MINIFOLKS_SCALE,
+                                projectile_offset_y=0,
+                                unit_condition=All([OnTeam(team=team.other()), Alive(), Grounded()]),
+                                max_distance=gc.ZOMBIE_GRABBER_GRAB_MAXIMUM_RANGE,
+                                on_create=lambda projectile: (
+                                    esper.add_component(entity, EntityMemory(projectile)),
+                                    esper.add_component(entity, VisualLink(
+                                        other_entity=projectile,
+                                        visual=Visual.Tongue,
+                                        tile_size=4,
+                                    )),
+                                ),
+                            ),
+                            PlaySound(SoundEffect(filename="zombie_spitter_attack.wav", volume=0.50)),
+                        ]
+                    },
+                ),
+                # Uses basic zombie attack otherwise
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                Grounded(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_RANGE,
+                                    y_bias=3
+                                ),
+                            ])
+                        )
+                    ],
+                    persistent_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    y_bias=3
+                                ),
+                            ])
+                        )
+                    ],
+                    effects={3: [
+                        Damages(damage=gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                        AppliesStatusEffect(
+                            status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team),
+                            recipient=Recipient.TARGET
+                        )
+                    ]},
+                )
+            ]
+        )
+    )
+    esper.add_component(entity, SpriteSheet(
+        surface=sprite_sheets[UnitType.ZOMBIE_GRABBER],
+        frame_width=100,
+        frame_height=100,
+        scale=gc.TINY_RPG_SCALE,
+        frames={
+            AnimationType.IDLE: 3,
+            AnimationType.WALKING: 4,
+            AnimationType.ABILITY1: 5,
+            AnimationType.ABILITY2: 5,
+            AnimationType.ABILITY3: 5,
+            AnimationType.DYING: 6,
+        },
+        rows={
+            AnimationType.IDLE: 0,
+            AnimationType.WALKING: 1,
+            AnimationType.ABILITY1: 2,
+            AnimationType.ABILITY2: 2,
+            AnimationType.ABILITY3: 2,
+            AnimationType.DYING: 3,
+        },
+        animation_durations={
+            AnimationType.IDLE: gc.ZOMBIE_GRABBER_ANIMATION_IDLE_DURATION,
+            AnimationType.WALKING: gc.ZOMBIE_GRABBER_ANIMATION_WALKING_DURATION,
+            AnimationType.ABILITY1: gc.ZOMBIE_GRABBER_ANIMATION_CHANNELING_DURATION,
+            AnimationType.ABILITY2: gc.ZOMBIE_GRABBER_ANIMATION_GRAB_DURATION,
+            AnimationType.ABILITY3: gc.ZOMBIE_GRABBER_ANIMATION_ATTACK_DURATION,
+            AnimationType.DYING: gc.ZOMBIE_GRABBER_ANIMATION_DYING_DURATION,
+        },
+        sprite_center_offset=(2, 8),
+    ))
     return entity

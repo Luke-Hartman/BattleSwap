@@ -28,6 +28,7 @@ unit_values: Dict[UnitType, int] = {
     UnitType.WEREBEAR: 100,
     UnitType.ZOMBIE_BASIC_ZOMBIE: 50,
     UnitType.ZOMBIE_BRUTE: 200,
+    UnitType.ZOMBIE_GRABBER: 300,
     UnitType.ZOMBIE_JUMPER: 200,
     UnitType.ZOMBIE_SPITTER: 200,
     UnitType.ZOMBIE_TANK: 300,

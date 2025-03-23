@@ -54,6 +54,15 @@ class ZombieInfection(StatusEffect):
     team: TeamType
     """The team to revive as."""
 
+@dataclass
+class Grabbed(StatusEffect):
+    """Status effect that makes a unit move towards a grabbing entity."""
+
+    entity: int
+    """The entity that is grabbing this unit."""
+    grab_speed: float
+    """The speed at which the unit moves towards the grabber."""
+
 class StatusEffects:
     """Component that stores the status effects of a unit."""
     # TODO: This not really a following ECS best practice

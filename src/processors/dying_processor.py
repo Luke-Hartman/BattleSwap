@@ -2,6 +2,7 @@
 
 import esper
 from components.dying import Dying, OnDeathEffect
+from components.forced_movement import ForcedMovement
 from components.position import Position
 from components.unit_type import UnitType, UnitTypeComponent
 from components.transparent import Transparency
@@ -15,6 +16,8 @@ class DyingProcessor(esper.Processor):
 
     def process(self, dt: float):
         for ent, (_, unit_type) in esper.get_components(Dying, UnitTypeComponent):
+            if esper.has_component(ent, ForcedMovement):
+                continue
             emit_event(DEATH, event=DeathEvent(ent))
             play_death(unit_type.type)
             

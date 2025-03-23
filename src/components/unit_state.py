@@ -25,6 +25,10 @@ class State(Enum):
     """The unit is pursuing a target."""
     FLEEING = auto()
     """The unit is fleeing."""
+    GRABBED = auto()
+    """The unit is being grabbed by another unit."""
+    GRABBING = auto()
+    """The unit is grabbing another unit."""
     DEAD = auto()
     """The unit is dead."""
 

@@ -4,6 +4,7 @@ Fleeing units run away from a specific entity, and they ignore their destination
 """
 
 import esper
+from components.forced_movement import ForcedMovement
 from components.movement import Movement
 from game_constants import gc
 from components.orientation import FacingDirection, Orientation
@@ -18,7 +19,7 @@ class FleeingProcessor(esper.Processor):
 
     def process(self, dt: float):
         for ent, (unit_state, pos, velocity, movement, orientation, status_effects) in esper.get_components(UnitState, Position, Velocity, Movement, Orientation, StatusEffects):
-            if unit_state.state == State.DEAD:
+            if unit_state.state == State.DEAD or esper.has_component(ent, ForcedMovement):
                 continue
             if unit_state.state != State.FLEEING:
                 for effect in status_effects.active_effects():
