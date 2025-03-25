@@ -114,15 +114,14 @@ class BattleScene(Scene):
         
         # Prepare tooltip with score information
         current_points = calculate_points_for_units(self.battle.allies or [])
-        current_grade = self.battle.grades.get_grade(current_points) if self.battle.grades else None
-        
+        enemy_points = calculate_points_for_units(self.battle.enemies or [])
+
         if self.battle.hex_coords in progress_manager.solutions:
             previous_solution = progress_manager.solutions[self.battle.hex_coords]
             previous_points = calculate_points_for_units(previous_solution.unit_placements)
-            previous_grade = self.battle.grades.get_grade(previous_points) if self.battle.grades else None
-            tooltip = f"{previous_points} ({previous_grade}) to {current_points} ({current_grade})"
+            tooltip = f"{previous_points} pts vs {enemy_points} pts\nto\n{current_points} pts vs {enemy_points} pts"
         else:
-            tooltip = f"{current_points} ({current_grade})"
+            tooltip = f"{current_points} pts vs {enemy_points} pts"
 
         self.save_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(
