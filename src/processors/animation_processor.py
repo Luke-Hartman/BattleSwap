@@ -10,6 +10,7 @@ Also triggers events based on frame changes.
 import esper
 from components.ability import Abilities
 from components.animation import AnimationState, AnimationType
+from components.corruption import IncreasedAbilitySpeedComponent
 from components.destination import Destination
 from components.forced_movement import ForcedMovement
 from components.movement import Movement
@@ -85,6 +86,8 @@ class AnimationProcessor(esper.Processor):
                     else:
                         scale = 1
                     anim_state.time_elapsed += dt * scale
+                elif esper.has_component(ent, IncreasedAbilitySpeedComponent):
+                    anim_state.time_elapsed += dt * (1 + esper.component_for_entity(ent, IncreasedAbilitySpeedComponent).increase_percent / 100)
                 else:
                     anim_state.time_elapsed += dt
 

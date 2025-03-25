@@ -1,6 +1,6 @@
 from collections import defaultdict
 from game_constants import gc
-from typing import Tuple, Optional
+from typing import Tuple, Optional, List
 
 import pygame
 import pygame_gui
@@ -11,7 +11,7 @@ from components.hitbox import Hitbox
 from components.position import Position
 from components.team import Team, TeamType
 from components.unit_type import UnitTypeComponent
-from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event
+from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event, PLAY_SOUND, PlaySoundEvent
 from progress_manager import progress_manager
 from scenes.events import PreviousSceneEvent, SetupBattleSceneEvent
 from scenes.scene import Scene
@@ -19,10 +19,13 @@ from selected_unit_manager import selected_unit_manager
 from ui_components.barracks_ui import BarracksUI
 from ui_components.return_button import ReturnButton
 from ui_components.feedback_button import FeedbackButton
+from ui_components.corruption_panel import CorruptionPanel
+from ui_components.corruption_congratulations_panel import CorruptionCongratulationsPanel
 from world_map_view import BorderState, FillState, WorldMapView, HexState
 from scene_utils import use_world
 from ui_components.grades_panel import GradesPanel
 from ui_components.congratulations_panel import CongratulationsPanel
+from ui_components.corruption_icon import CorruptionIcon
 
 class CampaignScene(Scene):
     """A 2D hex grid world map for progressing through the campaign."""
@@ -39,6 +42,9 @@ class CampaignScene(Scene):
         self.screen = screen
         self.manager = manager
         self.world_map_view = world_map_view
+        self.corruption_dialog = None
+        self.corrupted_battles = None
+        self.corruption_icon = None
 
         # Create camera with desired initial settings
         self.hovered_battle_hex: Optional[Tuple[int, int]] = None
@@ -76,6 +82,17 @@ class CampaignScene(Scene):
             )
         else:
             self.congratulations_panel = None
+            
+        # Check if we should show corruption congratulations
+        if progress_manager.should_show_corruption_congratulations():
+            self.corruption_congratulations_panel = CorruptionCongratulationsPanel(
+                manager=self.manager,
+            )
+        else:
+            self.corruption_congratulations_panel = None
+
+        # Check for corruption trigger
+        self.check_corruption_trigger()
 
         self.create_ui()
 
@@ -90,12 +107,27 @@ class CampaignScene(Scene):
             button.kill()
         self.context_buttons.clear()
 
+        if self.corruption_icon is not None:
+            self.corruption_icon.kill()
+            self.corruption_icon = None
+
         if self.selected_battle_hex is None:
             return
 
         battle = self.world_map_view.get_battle_from_hex(self.selected_battle_hex)
         if battle is None:
             return
+
+        if progress_manager.is_battle_corrupted(self.selected_battle_hex):
+            icon_size = (48, 48)
+            icon_position = (pygame.display.Info().current_w - icon_size[0] - 15, 50)
+            self.corruption_icon = CorruptionIcon(
+                manager=self.manager,
+                position=icon_position,
+                size=icon_size,
+                battle_hex_coords=battle.hex_coords,
+                corruption_powers=battle.corruption_powers
+            )
 
         button_width = 120
         button_height = 40
@@ -126,14 +158,55 @@ class CampaignScene(Scene):
                 manager=self.manager
             )
 
+    def check_corruption_trigger(self) -> None:
+        """Check if corruption should be triggered and show a dialog if it is."""
+        if progress_manager.should_trigger_corruption():
+            corrupted_battles = progress_manager.corrupt_battles()
+            if corrupted_battles:
+                self.show_corruption_dialog(corrupted_battles)
+                
+    def show_corruption_dialog(self, corrupted_battles: List[Tuple[int, int]]) -> None:
+        """Show a dialog to inform the player about corrupted battles."""
+        # emit_event(PLAY_SOUND, event=PlaySoundEvent(
+        #     filename="corruption.wav",
+        #     volume=0.7
+        # ))
+        
+        self.corruption_dialog = CorruptionPanel(
+            manager=self.manager,
+            corrupted_battles=corrupted_battles,
+            world_map_view=self.world_map_view
+        )
+        self.corrupted_battles = corrupted_battles
+
     def update(self, time_delta: float, events: list[pygame.event.Event]) -> bool:
         """Update the world map scene."""
         for event in events:
             if event.type == pygame.QUIT:
                 return False
-            
+
+            # Handle corruption dialog if it exists
+            if self.corruption_dialog is not None and self.corruption_dialog.handle_event(event):
+                self.corruption_dialog = None
+                
+                # If we have corrupted battles, select the first one
+                if self.corrupted_battles and len(self.corrupted_battles) > 0:
+                    battle = self.world_map_view.get_battle_from_hex(self.corrupted_battles[0])
+                    if battle and self.grades_panel:
+                        self.grades_panel.update_battle(battle)
+                    self.create_context_buttons()
+                    
+                    # Center the camera on the corrupted battle
+                    if battle:
+                        self.world_map_view.move_camera_above_battle(battle.id)
+                continue
+
             # Handle congratulations panel events first if it exists
             if self.congratulations_panel is not None and self.congratulations_panel.handle_event(event):
+                continue
+                
+            # Handle corruption master panel events if it exists
+            if self.corruption_congratulations_panel is not None and self.corruption_congratulations_panel.handle_event(event):
                 continue
 
             self.handle_escape(event)
@@ -248,6 +321,20 @@ class CampaignScene(Scene):
         states = defaultdict(HexState)
         for battle in get_battles():
             if battle.hex_coords is not None:
+                # Mark corrupted battles with appropriate border color
+                if progress_manager.is_battle_corrupted(battle.hex_coords):
+                    if battle.hex_coords in progress_manager.solutions:
+                        solution = progress_manager.solutions[battle.hex_coords]
+                        if solution.solved_corrupted:
+                            # Dark red border for corrupted battles that have been beaten in their corrupted state
+                            states[battle.hex_coords].border = BorderState.DARK_RED_BORDER
+                        else:
+                            # Red border for corrupted battles that haven't been beaten in their corrupted state
+                            states[battle.hex_coords].border = BorderState.RED_BORDER
+                    else:
+                        # Red border for corrupted battles that haven't been beaten yet
+                        states[battle.hex_coords].border = BorderState.RED_BORDER
+                
                 if battle.hex_coords in available_battles:
                     # Mark available battles with green border if not yet solved
                     if battle.hex_coords not in progress_manager.solutions:

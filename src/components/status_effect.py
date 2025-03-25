@@ -1,10 +1,11 @@
 """Status effect component."""
 
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 import copy
 
 from components.team import TeamType
+from corruption_powers import CorruptionPower
 from game_constants import gc
 
 @dataclass
@@ -53,6 +54,9 @@ class ZombieInfection(StatusEffect):
     
     team: TeamType
     """The team to revive as."""
+
+    corruption_powers: Optional[List[CorruptionPower]]
+    """The corruption powers to apply to the zombie."""
 
 @dataclass
 class Grabbed(StatusEffect):

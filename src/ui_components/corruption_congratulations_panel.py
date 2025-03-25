@@ -1,25 +1,26 @@
-"""UI component for displaying the congratulations message when all battles are completed."""
+"""UI component for displaying the special congratulations message when all battles are corrupted and beaten."""
+
 
 import pygame
 import pygame_gui
-from pygame_gui.elements import UIPanel, UILabel, UIButton, UITextBox
+from pygame_gui.elements import UIPanel, UILabel, UIButton
 from progress_manager import progress_manager
 
 
-class CongratulationsPanel(UIPanel):
-    """Panel showing congratulations message when all battles are completed."""
+class CorruptionCongratulationsPanel(UIPanel):
+    """Panel showing special congratulations message when all battles are corrupted and beaten."""
     
     def __init__(
         self,
         manager: pygame_gui.UIManager,
     ):
-        """Initialize the congratulations panel.
+        """Initialize the corruption master panel.
         
         Args:
             manager: The UI manager.
         """
-        panel_width = 500
-        panel_height = 300
+        panel_width = 600
+        panel_height = 330
         screen_width = pygame.display.Info().current_w
         screen_height = pygame.display.Info().current_h
         
@@ -34,7 +35,7 @@ class CongratulationsPanel(UIPanel):
         # Title
         UILabel(
             relative_rect=pygame.Rect((0, 20), (panel_width, 70)),
-            text="Congratulations!",
+            text="Battle Swap Master!",
             manager=manager,
             container=self,
             object_id=pygame_gui.core.ObjectID(
@@ -43,35 +44,41 @@ class CongratulationsPanel(UIPanel):
             )
         )
         
-        # Message text
-        message_rect = pygame.Rect((20, 110), (panel_width - 40, -1))
+        # Main message
         UILabel(
-            relative_rect=message_rect,
-            text="Thank you for playing Battle Swap, I hope you had fun!",
+            relative_rect=pygame.Rect((20, 110), (panel_width - 40, -1)),
+            text="Wow, you corrupted and beat every battle!!",
             manager=manager,
             container=self
         )
 
-        # Corruption information
-        corrupted_battles = len(progress_manager.corrupted_battles)
-        all_battles = len(progress_manager.solutions)
+        # Achievement message
         UILabel(
             relative_rect=pygame.Rect((20, 140), (panel_width - 40, -1)),
-            text=f"You completed corrupted versions of {corrupted_battles} out of {all_battles} battles during your campaign!",
+            text="This is very impressive, and not something many others have done.",
+            manager=manager,
+            container=self
+        )
+        
+        # Feedback request
+        UILabel(
+            relative_rect=pygame.Rect((20, 170), (panel_width - 40, -1)),
+            text="I would be very interested in your feedback, especially on the corruption system.",
+            manager=manager,
+            container=self
+        )
+        
+        # Specific questions
+        UILabel(
+            relative_rect=pygame.Rect((20, 200), (panel_width - 40, -1)),
+            text="Is the corruption system too easy or hard? Is it fun or stressful?",
             manager=manager,
             container=self
         )
         
         UILabel(
-            relative_rect=pygame.Rect((20, 170), (panel_width - 40, -1)),
-            text="By continuing to improve your solutions, you can corrupt every battle!",
-            manager=manager,
-            container=self
-        )
-
-        UILabel(
-            relative_rect=pygame.Rect((20, 200), (panel_width - 40, -1)),
-            text="Please consider leaving feedback through the 'Feedback' button",
+            relative_rect=pygame.Rect((20, 230), (panel_width - 40, -1)),
+            text="How well do you think you understand how it works, and does that matter to you?",
             manager=manager,
             container=self
         )
@@ -102,8 +109,7 @@ class CongratulationsPanel(UIPanel):
         """
         if (event.type == pygame_gui.UI_BUTTON_PRESSED and 
             event.ui_element == self.continue_button):
-            progress_manager.mark_congratulations_shown()
-            print("congratulations shown")
+            progress_manager.mark_corruption_congratulations_shown()
             self.kill()
             return True
-        return False 
+        return False

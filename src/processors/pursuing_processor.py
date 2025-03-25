@@ -7,6 +7,7 @@ updating unit velocities for pursuit, checking target range, and updating orient
 import esper
 import math
 from components.airborne import Airborne
+from components.corruption import IncreasedMovementSpeedComponent
 from components.destination import Destination
 from components.forced_movement import ForcedMovement
 from components.position import Position
@@ -53,6 +54,9 @@ class PursuingProcessor(esper.Processor):
                         for effect in status_effects.active_effects():
                             if isinstance(effect, CrusaderBannerBearerMovementSpeedBuff):
                                 speed = effect.movement_speed
+                        movement_speed_component = esper.try_component(ent, IncreasedMovementSpeedComponent)
+                        if movement_speed_component is not None:
+                            speed *= 1 + movement_speed_component.increase_percent / 100
                         speed = min(
                             destination_distance/dt, # 30 ticks per second
                             speed

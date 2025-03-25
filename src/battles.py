@@ -12,6 +12,7 @@ from typing import Dict, List, Optional, Tuple
 from pydantic import BaseModel
 from unit_values import unit_values
 from entities.units import UnitType
+from corruption_powers import CorruptionPowerUnion
 
 def get_resource_path(relative_path: str) -> Path:
     """Get absolute path to resource, works for dev and for PyInstaller."""
@@ -57,6 +58,8 @@ class Battle(BaseModel):
     tip_voice_filename: Optional[str] = None
     grades: Optional[BattleGrades] = None
     best_solution: Optional[List[Tuple[UnitType, Tuple[float, float]]]] = None
+    best_corrupted_solution: Optional[List[Tuple[UnitType, Tuple[float, float]]]] = None
+    corruption_powers: Optional[List[CorruptionPowerUnion]] = None
 
 def get_battle_id(battle_id: str) -> Battle:
     """Retrieve a battle by its ID."""
@@ -172,13 +175,19 @@ def update_battle(previous_battle: Battle, updated_battle: Battle) -> None:
     if target_battle is None:
         raise ValueError(f"Battle with id {previous_battle.id} not found")
     
-    # Preserve the existing best_solution if not provided in the updated battle
+    # Preserve existing best solutions if not provided in the updated battle
     if updated_battle.best_solution is None:
         updated_battle.best_solution = target_battle.best_solution
 
-    # If existing battle doesn't have a best_solution, use the updated battle's best_solution
+    if updated_battle.best_corrupted_solution is None:
+        updated_battle.best_corrupted_solution = target_battle.best_corrupted_solution
+
+    # If existing battle doesn't have solutions, use the updated battle's solutions
     if target_battle.best_solution is None:
         target_battle.best_solution = updated_battle.best_solution
+        
+    if target_battle.best_corrupted_solution is None:
+        target_battle.best_corrupted_solution = updated_battle.best_corrupted_solution
     
     # Update the battle
     if previous_battle.id == updated_battle.id:

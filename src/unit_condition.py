@@ -309,16 +309,16 @@ class IsUnitType(UnitCondition):
 class Infected(UnitCondition):
     """The unit is infected with a zombie infection."""
 
-    def check_return_team(self, entity: int) -> Optional[TeamType]:
+    def get_active_zombie_infection(self, entity: int) -> Optional[ZombieInfection]:
         if not esper.has_component(entity, ImmuneToZombieInfection):
             status_effects = esper.component_for_entity(entity, StatusEffects)
             for effect in status_effects.active_effects():
                 if isinstance(effect, ZombieInfection):
-                    return effect.team
+                    return effect
         return None
 
     def check(self, entity: int) -> bool:
-        return self.check_return_team(entity) is not None
+        return self.get_active_zombie_infection(entity) is not None
 
 
 @dataclass

@@ -19,6 +19,7 @@ from scenes.scene import Scene
 from game_constants import gc
 from camera import Camera
 from ui_components.barracks_ui import BarracksUI
+from ui_components.corruption_icon import CorruptionIcon
 from ui_components.feedback_button import FeedbackButton
 from ui_components.return_button import ReturnButton
 from ui_components.start_button import StartButton
@@ -117,6 +118,19 @@ class SetupBattleScene(Scene):
         self.start_button = StartButton(self.manager)
         self.feedback_button = FeedbackButton(self.manager)
         self.tip_box = TipBox(self.manager, battle)
+        
+        if progress_manager.is_battle_corrupted(battle.hex_coords):
+            icon_size = (48, 48)
+            icon_position = (pygame.display.Info().current_w - icon_size[0] - 15, 50)
+            self.corruption_icon = CorruptionIcon(
+                manager=self.manager,
+                position=icon_position,
+                size=icon_size,
+                battle_hex_coords=battle.hex_coords,
+                corruption_powers=battle.corruption_powers
+            )
+        else:
+            self.corruption_icon = None
 
         self.barracks = BarracksUI(
             self.manager,
@@ -196,6 +210,7 @@ class SetupBattleScene(Scene):
             y=0,
             unit_type=value,
             team=placement_team,
+            corruption_powers=self.battle.corruption_powers
         )
         esper.add_component(self.selected_partial_unit, Placing())
         # This shouldn't be needed anymore, but it used to be here, and so bugs
@@ -337,6 +352,7 @@ class SetupBattleScene(Scene):
                             ally_placements=get_unit_placements(TeamType.TEAM1, battle_coords),
                             enemy_placements=get_unit_placements(TeamType.TEAM2, battle_coords),
                             max_duration=60,  # 60 second timeout
+                            corruption_powers=self.battle.corruption_powers,
                         )
                         
                         # Update results box based on outcome

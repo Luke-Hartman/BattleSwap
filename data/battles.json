@@ -33,10 +33,38 @@
       [
         "CORE_ARCHER",
         [
-          -238.0,
-          -2.0
+          -333.0,
+          5.0
         ]
       ]
+    ],
+    "best_corrupted_solution": [
+      [
+        "CORE_ARCHER",
+        [
+          -271.0,
+          -24.0
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          -373.0,
+          -30.0
+        ]
+      ]
+    ],
+    "corruption_powers": [
+      {
+        "name": "increased_damage",
+        "required_team": 2,
+        "increase_percent": 100.0
+      },
+      {
+        "name": "increased_ability_speed",
+        "required_team": 2,
+        "increase_percent": 100.0
+      }
     ]
   },
   {
@@ -72,10 +100,38 @@
       [
         "CORE_SWORDSMAN",
         [
-          -25.0,
-          12.0
+          -50.6406460551018,
+          -9.0
         ]
       ]
+    ],
+    "best_corrupted_solution": [
+      [
+        "CORE_SWORDSMAN",
+        [
+          -50.6406460551018,
+          -9.0
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -67.32313416327224,
+          9.57964939369445
+        ]
+      ]
+    ],
+    "corruption_powers": [
+      {
+        "name": "increased_max_health",
+        "required_team": 2,
+        "increase_percent": 100.0
+      },
+      {
+        "name": "increased_movement_speed",
+        "required_team": 2,
+        "increase_percent": 100.0
+      }
     ]
   },
   {
@@ -117,9 +173,30 @@
         "CORE_CAVALRY",
         [
           -25.0,
-          -374.9999999999999
+          -368.9999999999999
         ]
       ]
+    ],
+    "best_corrupted_solution": [
+      [
+        "CRUSADER_LONGBOWMAN",
+        [
+          -393.2812921102036,
+          -372.0
+        ]
+      ]
+    ],
+    "corruption_powers": [
+      {
+        "name": "increased_ability_speed",
+        "required_team": 2,
+        "increase_percent": 100.0
+      },
+      {
+        "name": "increased_damage",
+        "required_team": 2,
+        "increase_percent": 100.0
+      }
     ]
   },
   {
@@ -154,9 +231,30 @@
         "CORE_ARCHER",
         [
           -25.0,
-          4.0
+          13.999999999999886
         ]
       ]
+    ],
+    "best_corrupted_solution": [
+      [
+        "CORE_SWORDSMAN",
+        [
+          -25.0,
+          7.999999999999886
+        ]
+      ]
+    ],
+    "corruption_powers": [
+      {
+        "name": "increased_damage",
+        "required_team": 2,
+        "increase_percent": 200.0
+      },
+      {
+        "name": "increased_ability_speed",
+        "required_team": 2,
+        "increase_percent": 500.0
+      }
     ]
   },
   {
@@ -225,10 +323,33 @@
       [
         "CORE_WIZARD",
         [
-          -357.10161513775483,
-          4.0
+          -372.10161513775483,
+          7.0
         ]
       ]
+    ],
+    "best_corrupted_solution": [
+      [
+        "CORE_WIZARD",
+        [
+          -358.10161513775483,
+          3.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -327.10161513775483,
+          -44.0
+        ]
+      ]
+    ],
+    "corruption_powers": [
+      {
+        "name": "increased_max_health",
+        "required_team": 2,
+        "increase_percent": 300.0
+      }
     ]
   },
   {
@@ -277,17 +398,47 @@
       [
         "CORE_ARCHER",
         [
-          -25.0,
-          -435.0
+          -84.10161513775438,
+          -469.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          -45.10161513775438,
-          -416.0
+          -98.9977054469623,
+          -448.9599790372911
         ]
       ]
+    ],
+    "best_corrupted_solution": [
+      [
+        "CORE_ARCHER",
+        [
+          -84.10161513775438,
+          -469.0
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          -108.91589435106471,
+          -471.8909079534436
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          -123.81198466027263,
+          -451.8508869907347
+        ]
+      ]
+    ],
+    "corruption_powers": [
+      {
+        "name": "increased_max_health",
+        "required_team": 2,
+        "increase_percent": 125.0
+      }
     ]
   },
   {
@@ -342,24 +493,40 @@
       [
         "CORE_SWORDSMAN",
         [
-          -25.0,
-          -25.0
+          -89.46096908265281,
+          -68.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          -25.0,
-          -50.0
+          -65.9507207296092,
+          -59.58789862975573
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          -25.0,
-          3.0
+          -84.99604536082074,
+          -43.41920397009471
         ]
       ]
+    ],
+    "best_corrupted_solution": [
+      [
+        "CRUSADER_GOLD_KNIGHT",
+        [
+          -25.0,
+          -3.0
+        ]
+      ]
+    ],
+    "corruption_powers": [
+      {
+        "name": "increased_max_health",
+        "required_team": 2,
+        "increase_percent": 200.0
+      }
     ]
   },
   {
@@ -429,30 +596,74 @@
         "CORE_CAVALRY",
         [
           -25.0,
-          -400.0
+          -341.9999999999999
         ]
       ],
       [
         "CORE_CAVALRY",
         [
           -25.0,
-          -375.0
+          -316.9999999999999
         ]
       ],
       [
         "CORE_CAVALRY",
         [
           -25.0,
-          -350.0
+          -366.9999999999999
         ]
       ],
       [
         "CORE_CAVALRY",
         [
           -25.0,
-          -319.9999999999999
+          -291.9999999999999
         ]
       ]
+    ],
+    "best_corrupted_solution": [
+      [
+        "CORE_SWORDSMAN",
+        [
+          -25.0,
+          -341.9999999999999
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -25.0,
+          -316.9999999999999
+        ]
+      ],
+      [
+        "CRUSADER_CLERIC",
+        [
+          -47.28356377897944,
+          -328.28692748712473
+        ]
+      ],
+      [
+        "CORE_CAVALRY",
+        [
+          -43.33577769232306,
+          -358.9515590665264
+        ]
+      ],
+      [
+        "CORE_CAVALRY",
+        [
+          -25.0,
+          -375.90311813305317
+        ]
+      ]
+    ],
+    "corruption_powers": [
+      {
+        "name": "increased_max_health",
+        "required_team": 2,
+        "increase_percent": 100.0
+      }
     ]
   },
   {
@@ -501,24 +712,66 @@
       [
         "CORE_ARCHER",
         [
-          -50.0,
-          775.0
+          -140.74226119285595,
+          613.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          -69.75880567290278,
-          759.7247347664029
+          -119.06469481889599,
+          625.4030023240005
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          -25.401738885868326,
-          770.6528163122371
+          -98.96465623707445,
+          640.218168241775
         ]
       ]
+    ],
+    "best_corrupted_solution": [
+      [
+        "CORE_ARCHER",
+        [
+          -140.74226119285595,
+          613.0
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          -119.06469481889599,
+          625.4030023240005
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          -98.96465623707445,
+          640.218168241775
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          -77.30876588484443,
+          652.6573348232098
+        ]
+      ]
+    ],
+    "corruption_powers": [
+      {
+        "name": "increased_max_health",
+        "required_team": 2,
+        "increase_percent": 50.0
+      },
+      {
+        "name": "increased_movement_speed",
+        "required_team": 2,
+        "increase_percent": 50.0
+      }
     ]
   },
   {
@@ -611,45 +864,113 @@
       [
         "CORE_ARCHER",
         [
-          -700.0,
-          -400.0
+          -692.8203230275512,
+          -400.0000000000001
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          -700.0,
-          -375.0
+          -671.1928719752887,
+          -412.48661468690915
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          -700.0,
-          -350.0
+          -649.5654209230261,
+          -424.9732293738182
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          -675.0,
-          -375.0
+          -627.9379698707635,
+          -437.4598440607272
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          -675.0,
-          -400.0
+          -606.3105188185009,
+          -449.9464587476363
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          -659.2311347066398,
-          -419.3927269189394
+          -584.6830677662383,
+          -462.4330734345454
         ]
       ]
+    ],
+    "best_corrupted_solution": [
+      [
+        "CORE_ARCHER",
+        [
+          -671.1928719752887,
+          -412.48661468690915
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          -649.5654209230261,
+          -424.9732293738182
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          -627.9379698707635,
+          -437.4598440607272
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          -606.3105188185009,
+          -449.9464587476363
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          -584.6830677662383,
+          -462.4330734345454
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -647.6464065667178,
+          -395.2819319711195
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -628.5757015389026,
+          -411.42262367841136
+        ]
+      ]
+    ],
+    "corruption_powers": [
+      {
+        "name": "increased_max_health",
+        "required_team": 2,
+        "increase_percent": 30.0
+      },
+      {
+        "name": "increased_damage",
+        "required_team": 2,
+        "increase_percent": 30.0
+      },
+      {
+        "name": "increased_movement_speed",
+        "required_team": 2,
+        "increase_percent": 30.0
+      }
     ]
   },
   {
@@ -713,30 +1034,60 @@
         "CORE_CAVALRY",
         [
           -25.0,
-          431.00000000000006
-        ]
-      ],
-      [
-        "CORE_SWORDSMAN",
-        [
-          -98.84387633061124,
-          -96.0
-        ]
-      ],
-      [
-        "CORE_SWORDSMAN",
-        [
-          -111.8294782939829,
-          -74.67163041145038
+          420.0
         ]
       ],
       [
         "CORE_CAVALRY",
         [
           -25.0,
-          -439.00000000000006
+          -278.0
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -53.84387633061124,
+          -111.0
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -74.814806702223,
+          -97.41804673104465
         ]
       ]
+    ],
+    "best_corrupted_solution": [
+      [
+        "CORE_CAVALRY",
+        [
+          -25.0,
+          420.0
+        ]
+      ],
+      [
+        "CORE_CAVALRY",
+        [
+          -25.0,
+          -278.0
+        ]
+      ],
+      [
+        "CRUSADER_GOLD_KNIGHT",
+        [
+          -25.0,
+          -21.0
+        ]
+      ]
+    ],
+    "corruption_powers": [
+      {
+        "name": "increased_max_health",
+        "required_team": 2,
+        "increase_percent": 100.0
+      }
     ]
   },
   {
@@ -799,10 +1150,38 @@
       [
         "CRUSADER_LONGBOWMAN",
         [
-          -268.02355330306,
-          -407.0
+          -331.02355330306,
+          -279.0
         ]
       ]
+    ],
+    "best_corrupted_solution": [
+      [
+        "CRUSADER_LONGBOWMAN",
+        [
+          -331.02355330306,
+          -279.0
+        ]
+      ],
+      [
+        "CRUSADER_LONGBOWMAN",
+        [
+          -345.7745177859251,
+          -258.85234638890574
+        ]
+      ]
+    ],
+    "corruption_powers": [
+      {
+        "name": "increased_max_health",
+        "required_team": 2,
+        "increase_percent": 100.0
+      },
+      {
+        "name": "increased_damage",
+        "required_team": 2,
+        "increase_percent": 100.0
+      }
     ]
   },
   {
@@ -849,19 +1228,61 @@
     },
     "best_solution": [
       [
-        "CRUSADER_DEFENDER",
-        [
-          -623.4805313780653,
-          -77.69096967953965
-        ]
-      ],
-      [
         "CORE_DUELIST",
         [
           -692.8203230275503,
-          -102.0
+          7.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -570.6641993581616,
+          10.0
         ]
       ]
+    ],
+    "best_corrupted_solution": [
+      [
+        "CORE_SWORDSMAN",
+        [
+          -628.6641993581616,
+          18.0
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -647.1656647900254,
+          34.768750816879674
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -555.6641993581616,
+          27.0
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -625.897118963805,
+          47.85416269779557
+        ]
+      ]
+    ],
+    "corruption_powers": [
+      {
+        "name": "increased_damage",
+        "required_team": 2,
+        "increase_percent": 100.0
+      },
+      {
+        "name": "increased_ability_speed",
+        "required_team": 2,
+        "increase_percent": 50.0
+      }
     ]
   },
   {
@@ -916,10 +1337,38 @@
       [
         "CORE_WIZARD",
         [
-          -26.125168440814377,
-          -514.0
+          -62.12516844081438,
+          -302.0
         ]
       ]
+    ],
+    "best_corrupted_solution": [
+      [
+        "CORE_WIZARD",
+        [
+          -62.12516844081438,
+          -302.0
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          -151.12516844081438,
+          -118.0
+        ]
+      ]
+    ],
+    "corruption_powers": [
+      {
+        "name": "increased_damage",
+        "required_team": 2,
+        "increase_percent": 30.0
+      },
+      {
+        "name": "increased_movement_speed",
+        "required_team": 2,
+        "increase_percent": 30.0
+      }
     ]
   },
   {
@@ -980,6 +1429,41 @@
           274.67155985251577
         ]
       ]
+    ],
+    "best_corrupted_solution": [
+      [
+        "CRUSADER_CLERIC",
+        [
+          -102.2534292064338,
+          344.9533990664994
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -57.46508640544744,
+          348.14523396962863
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -43.26073710134551,
+          327.5921829126047
+        ]
+      ]
+    ],
+    "corruption_powers": [
+      {
+        "name": "increased_damage",
+        "required_team": 2,
+        "increase_percent": 100.0
+      },
+      {
+        "name": "increased_movement_speed",
+        "required_team": 2,
+        "increase_percent": 100.0
+      }
     ]
   },
   {
@@ -1051,7 +1535,101 @@
       "c_cutoff": 800,
       "d_cutoff": 900
     },
-    "best_solution": null
+    "best_solution": [
+      [
+        "CORE_CAVALRY",
+        [
+          -29.484522385711898,
+          -371.0
+        ]
+      ],
+      [
+        "CORE_CAVALRY",
+        [
+          -25.0,
+          361.0
+        ]
+      ],
+      [
+        "CORE_DUELIST",
+        [
+          -56.4845223857119,
+          -120.0
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -45.41725160763053,
+          -97.61254633485444
+        ]
+      ],
+      [
+        "CORE_CAVALRY",
+        [
+          -25.0,
+          -346.42211115725576
+        ]
+      ],
+      [
+        "CORE_CAVALRY",
+        [
+          -25.0,
+          386.0
+        ]
+      ]
+    ],
+    "best_corrupted_solution": [
+      [
+        "CORE_CAVALRY",
+        [
+          -25.0,
+          359.00000000000006
+        ]
+      ],
+      [
+        "CORE_CAVALRY",
+        [
+          -25.0,
+          -399.99999999999994
+        ]
+      ],
+      [
+        "CORE_CAVALRY",
+        [
+          -25.0,
+          -424.99999999999994
+        ]
+      ],
+      [
+        "CORE_CAVALRY",
+        [
+          -25.0,
+          389.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -146.4845223857119,
+          1.0
+        ]
+      ],
+      [
+        "CRUSADER_GOLD_KNIGHT",
+        [
+          -155.0754241431714,
+          24.446272551524878
+        ]
+      ]
+    ],
+    "corruption_powers": [
+      {
+        "name": "increased_max_health",
+        "required_team": 2,
+        "increase_percent": 100.0
+      }
+    ]
   },
   {
     "id": "Defeat the Gold Knight!",
@@ -1110,6 +1688,29 @@
           -115.0
         ]
       ]
+    ],
+    "best_corrupted_solution": [
+      [
+        "CRUSADER_LONGBOWMAN",
+        [
+          -490.02355330306,
+          -157.0
+        ]
+      ],
+      [
+        "CRUSADER_LONGBOWMAN",
+        [
+          -502.02355330306,
+          71.0
+        ]
+      ]
+    ],
+    "corruption_powers": [
+      {
+        "name": "increased_damage",
+        "required_team": 2,
+        "increase_percent": 100.0
+      }
     ]
   },
   {
@@ -1182,6 +1783,48 @@
           689.0
         ]
       ]
+    ],
+    "best_corrupted_solution": [
+      [
+        "CRUSADER_PIKEMAN",
+        [
+          -84.66419935816339,
+          -311.0
+        ]
+      ],
+      [
+        "CRUSADER_PIKEMAN",
+        [
+          -85.7913964719537,
+          -335.9446243567302
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -25.0,
+          -306.4999999999998
+        ]
+      ],
+      [
+        "CRUSADER_CLERIC",
+        [
+          -47.16419935816339,
+          -272.5
+        ]
+      ]
+    ],
+    "corruption_powers": [
+      {
+        "name": "increased_max_health",
+        "required_team": 2,
+        "increase_percent": 100.0
+      },
+      {
+        "name": "increased_movement_speed",
+        "required_team": 2,
+        "increase_percent": 100.0
+      }
     ]
   },
   {
@@ -1311,6 +1954,57 @@
           65.0
         ]
       ]
+    ],
+    "best_corrupted_solution": [
+      [
+        "CRUSADER_BLACK_KNIGHT",
+        [
+          -26.765814495915038,
+          -783.0
+        ]
+      ],
+      [
+        "CRUSADER_COMMANDER",
+        [
+          -86.76581449591504,
+          -6.0
+        ]
+      ],
+      [
+        "CORE_DUELIST",
+        [
+          -85.62119642208381,
+          -30.943768519843502
+        ]
+      ],
+      [
+        "CORE_DUELIST",
+        [
+          -93.76479841158289,
+          17.98816734773144
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -52.76581449591504,
+          -5.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -61.11283116659615,
+          18.533536030917666
+        ]
+      ]
+    ],
+    "corruption_powers": [
+      {
+        "name": "increased_max_health",
+        "required_team": 2,
+        "increase_percent": 100.0
+      }
     ]
   },
   {
@@ -1412,6 +2106,50 @@
           -595.0
         ]
       ]
+    ],
+    "best_corrupted_solution": [
+      [
+        "ZOMBIE_TANK",
+        [
+          -25.0,
+          -155.0
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -173.5239784027417,
+          -228.83990011510446
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -148.89557436356517,
+          -224.6959235218868
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -164.82386083143138,
+          -205.43270560663314
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -189.4522648706079,
+          -209.57668219984976
+        ]
+      ]
+    ],
+    "corruption_powers": [
+      {
+        "name": "increased_max_health",
+        "required_team": 2,
+        "increase_percent": 25.0
+      }
     ]
   },
   {
@@ -1457,19 +2195,73 @@
     },
     "best_solution": [
       [
-        "CRUSADER_CLERIC",
+        "CRUSADER_DEFENDER",
         [
-          -227.30484541326405,
-          0.0
+          -26.304845413264047,
+          31.0
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CRUSADER_PIKEMAN",
         [
-          -25.0,
-          -7.0
+          -76.30484541326405,
+          49.0
+        ]
+      ],
+      [
+        "CRUSADER_PIKEMAN",
+        [
+          -75.47169972046322,
+          73.95907017671357
         ]
       ]
+    ],
+    "best_corrupted_solution": [
+      [
+        "CRUSADER_PIKEMAN",
+        [
+          -76.30484541326405,
+          49.0
+        ]
+      ],
+      [
+        "CRUSADER_PIKEMAN",
+        [
+          -75.47169972046322,
+          73.95907017671357
+        ]
+      ],
+      [
+        "CRUSADER_CLERIC",
+        [
+          -221.30484541326405,
+          44.0
+        ]
+      ],
+      [
+        "CRUSADER_GOLD_KNIGHT",
+        [
+          -26.304845413264047,
+          44.0
+        ]
+      ]
+    ],
+    "corruption_powers": [
+      {
+        "name": "increased_movement_speed",
+        "required_team": 2,
+        "increase_percent": 300.0
+      },
+      {
+        "name": "increased_damage",
+        "required_team": 2,
+        "increase_percent": 75.0
+      },
+      {
+        "name": "increased_ability_speed",
+        "required_team": 2,
+        "increase_percent": 50.0
+      }
     ]
   },
   {
@@ -1504,16 +2296,39 @@
         "CORE_SWORDSMAN",
         [
           -25.0,
-          0.0
+          9.000000000000227
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
           -25.0,
-          25.0
+          -15.999999999999773
         ]
       ]
+    ],
+    "best_corrupted_solution": [
+      [
+        "CRUSADER_PALADIN",
+        [
+          -25.0,
+          6.0
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -25.0,
+          31.0
+        ]
+      ]
+    ],
+    "corruption_powers": [
+      {
+        "name": "increased_max_health",
+        "required_team": 2,
+        "increase_percent": 100.0
+      }
     ]
   },
   {
@@ -1543,7 +2358,9 @@
     "is_test": true,
     "tip_voice_filename": null,
     "grades": null,
-    "best_solution": null
+    "best_solution": null,
+    "best_corrupted_solution": null,
+    "corruption_powers": null
   },
   {
     "id": "1Duelist vs 3 Consecutive Swordsman",
@@ -1586,7 +2403,9 @@
     "is_test": true,
     "tip_voice_filename": null,
     "grades": null,
-    "best_solution": null
+    "best_solution": null,
+    "best_corrupted_solution": null,
+    "corruption_powers": null
   },
   {
     "id": "1Pikeman, 1Defender vs 2Swordsman",
@@ -1629,7 +2448,9 @@
     "is_test": true,
     "tip_voice_filename": null,
     "grades": null,
-    "best_solution": null
+    "best_solution": null,
+    "best_corrupted_solution": null,
+    "corruption_powers": null
   },
   {
     "id": "1Cavalry vs 2Archer",
@@ -1665,7 +2486,9 @@
     "is_test": true,
     "tip_voice_filename": null,
     "grades": null,
-    "best_solution": null
+    "best_solution": null,
+    "best_corrupted_solution": null,
+    "corruption_powers": null
   },
   {
     "id": "1Swordsman vs 1Cavalry",
@@ -1694,7 +2517,9 @@
     "is_test": true,
     "tip_voice_filename": null,
     "grades": null,
-    "best_solution": null
+    "best_solution": null,
+    "best_corrupted_solution": null,
+    "corruption_powers": null
   },
   {
     "id": "1Cavalry vs 1Wizard",
@@ -1723,7 +2548,9 @@
     "is_test": true,
     "tip_voice_filename": null,
     "grades": null,
-    "best_solution": null
+    "best_solution": null,
+    "best_corrupted_solution": null,
+    "corruption_powers": null
   },
   {
     "id": "1Wizard vs 6Archer Group",
@@ -1787,7 +2614,9 @@
     "is_test": true,
     "tip_voice_filename": null,
     "grades": null,
-    "best_solution": null
+    "best_solution": null,
+    "best_corrupted_solution": null,
+    "corruption_powers": null
   },
   {
     "id": "2Gold Knight vs 12Swordsman",
@@ -1900,7 +2729,9 @@
     "is_test": true,
     "tip_voice_filename": null,
     "grades": null,
-    "best_solution": null
+    "best_solution": null,
+    "best_corrupted_solution": null,
+    "corruption_powers": null
   },
   {
     "id": "The Wizards",
@@ -1982,10 +2813,40 @@
       [
         "CRUSADER_PALADIN",
         [
-          -241.74226119285595,
-          -65.0
+          -255.74226119285595,
+          -58.0
         ]
       ]
+    ],
+    "best_corrupted_solution": [
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -174.74226119285595,
+          -61.0
+        ]
+      ],
+      [
+        "CORE_WIZARD",
+        [
+          -648.742261192856,
+          -67.0
+        ]
+      ],
+      [
+        "CRUSADER_PALADIN",
+        [
+          -25.0,
+          785.5662432702593
+        ]
+      ]
+    ],
+    "corruption_powers": [
+      {
+        "name": "increased_max_health",
+        "required_team": 2,
+        "increase_percent": 100.0
+      }
     ]
   },
   {
@@ -2038,26 +2899,56 @@
     },
     "best_solution": [
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DUELIST",
         [
-          -25.0,
-          -275.0
+          -79.40646055101752,
+          -244.0
         ]
       ],
       [
         "CRUSADER_DEFENDER",
         [
           -25.0,
-          -250.0
+          -257.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -25.0,
+          -232.0
+        ]
+      ]
+    ],
+    "best_corrupted_solution": [
+      [
+        "CRUSADER_CLERIC",
+        [
+          -70.40646055101752,
+          -340.0
         ]
       ],
       [
         "CORE_DUELIST",
         [
-          -46.61942820434524,
-          -262.5
+          -69.40646055101752,
+          -278.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -25.0,
+          -231.9999999999999
         ]
       ]
+    ],
+    "corruption_powers": [
+      {
+        "name": "increased_max_health",
+        "required_team": 2,
+        "increase_percent": 100.0
+      }
     ]
   }
 ]

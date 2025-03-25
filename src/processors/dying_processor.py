@@ -29,14 +29,15 @@ class DyingProcessor(esper.Processor):
                         effect.apply(owner=ent, parent=ent, target=None)
 
             # Handle zombie infection
-            team = Infected().check_return_team(ent)
-            if team:
+            zombie_infection = Infected().get_active_zombie_infection(ent)
+            if zombie_infection:
                 position = esper.component_for_entity(ent, Position)
                 create_unit(
                     x=position.x,
                     y=position.y,
-                    team=team,
-                    unit_type=UnitType.ZOMBIE_BASIC_ZOMBIE
+                    team=zombie_infection.team,
+                    unit_type=UnitType.ZOMBIE_BASIC_ZOMBIE,
+                    corruption_powers=zombie_infection.corruption_powers
                 )
                 esper.add_component(ent, Transparency(alpha=0))
             

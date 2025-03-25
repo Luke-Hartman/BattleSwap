@@ -337,7 +337,7 @@ def has_unsaved_changes(battle: Battle) -> bool:
     """Check if current unit placements differ from saved solution.
     
     Args:
-        hex_coords: The hex coordinates of the battle to check
+        battle: The battle to check
         
     Returns:
         True if there are unsaved changes, False otherwise
@@ -347,5 +347,15 @@ def has_unsaved_changes(battle: Battle) -> bool:
         current_set = set(battle.allies) if battle.allies is not None else set()
         if saved_solution is None:
             return len(current_set) > 0
+        
+        # Check if the battle is corrupted and if the saved solution was for the corrupted version
+        is_corrupted = progress_manager.is_battle_corrupted(battle.hex_coords)
+        is_saved_corrupted = saved_solution.solved_corrupted
+        
+        # If the battle state (corrupted/uncorrupted) doesn't match the saved solution state,
+        # treat it as having unsaved changes
+        if is_corrupted != is_saved_corrupted:
+            return True
+            
         saved_set = set(saved_solution.unit_placements)
         return current_set != saved_set

@@ -18,6 +18,7 @@ from components.aoe import CircleAoE, VisualAoE
 from components.armor import Armor
 from components.attached import Attached
 from components.aura import Aura
+from components.corruption import IncreasedDamageComponent
 from components.dying import Dying
 from components.entity_memory import EntityMemory
 from components.expiration import Expiration
@@ -34,6 +35,7 @@ from components.unique import Unique
 from components.unit_type import UnitType
 from components.velocity import Velocity
 from components.visual_link import VisualLink
+from corruption_powers import CorruptionPower
 from events import PLAY_SOUND, PlaySoundEvent, emit_event
 from visuals import Visual, create_visual_spritesheet
 from unit_condition import UnitCondition
@@ -94,6 +96,9 @@ class Damages(Effect):
                 if isinstance(status_effect, CrusaderBannerBearerEmpowered) and not applied_gold_knight_empowered:
                     damage *= 1 + status_effect.damage_percentage
                     applied_gold_knight_empowered = True
+            damage_component = esper.try_component(owner, IncreasedDamageComponent)
+            if damage_component is not None:
+                damage *= 1 + damage_component.increase_percent / 100
 
         # Apply armor to the damage
         recipient_health = esper.component_for_entity(recipient, Health)
@@ -948,6 +953,9 @@ class CreatesUnit(Effect):
 
     offset: Tuple[int, int]
     """The offset of the unit from the recipient's position."""
+
+    corruption_powers: Optional[List[CorruptionPower]]
+    """The corruption powers to apply to the created unit."""
     
     def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
         if self.recipient == Recipient.OWNER:
@@ -970,6 +978,7 @@ class CreatesUnit(Effect):
             y=position.y + self.offset[1],
             unit_type=self.unit_type,
             team=self.team,
+            corruption_powers=self.corruption_powers
         )
         esper.add_component(entity, Team(type=self.team))
 

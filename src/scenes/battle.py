@@ -292,23 +292,55 @@ class BattleScene(Scene):
                             # Get the current points used
                             current_points = calculate_points_for_units(self.battle.allies)
                             
-                            # If there's a best solution, compare with it
-                            if self.battle.best_solution is None or current_points <= calculate_points_for_units(self.battle.best_solution):
-                                new_battle = Battle(
-                                    id=self.battle.id,
-                                    enemies=self.battle.enemies,
-                                    allies=None,
-                                    tip=self.battle.tip,
-                                    hex_coords=self.battle.hex_coords,
-                                    is_test=self.battle.is_test,
-                                    tip_voice_filename=self.battle.tip_voice_filename,
-                                    grades=self.battle.grades,
-                                    best_solution=self.battle.allies
-                                )
-                                update_battle(self.battle, new_battle)
+                            # Check if the battle is corrupted
+                            is_corrupted = progress_manager.is_battle_corrupted(self.battle.hex_coords)
+                            
+                            # If this is a corrupted battle
+                            if is_corrupted:
+                                # Compare with best corrupted solution
+                                if (self.battle.best_corrupted_solution is None or 
+                                    current_points <= calculate_points_for_units(self.battle.best_corrupted_solution)):
+                                    new_battle = Battle(
+                                        id=self.battle.id,
+                                        enemies=self.battle.enemies,
+                                        allies=None,
+                                        tip=self.battle.tip,
+                                        hex_coords=self.battle.hex_coords,
+                                        is_test=self.battle.is_test,
+                                        tip_voice_filename=self.battle.tip_voice_filename,
+                                        grades=self.battle.grades,
+                                        best_solution=self.battle.best_solution,
+                                        best_corrupted_solution=self.battle.allies,
+                                        corruption_powers=self.battle.corruption_powers
+                                    )
+                                    update_battle(self.battle, new_battle)
+                            else:
+                                # If there's a best solution for non-corrupted, compare with it
+                                if (self.battle.best_solution is None or 
+                                    current_points <= calculate_points_for_units(self.battle.best_solution)):
+                                    new_battle = Battle(
+                                        id=self.battle.id,
+                                        enemies=self.battle.enemies,
+                                        allies=None,
+                                        tip=self.battle.tip,
+                                        hex_coords=self.battle.hex_coords,
+                                        is_test=self.battle.is_test,
+                                        tip_voice_filename=self.battle.tip_voice_filename,
+                                        grades=self.battle.grades,
+                                        best_solution=self.battle.allies,
+                                        best_corrupted_solution=self.battle.best_corrupted_solution,
+                                        corruption_powers=self.battle.corruption_powers
+                                    )
+                                    update_battle(self.battle, new_battle)
                         
                         # Save the solution
-                        progress_manager.save_solution(Solution(hex_coords=self.battle.hex_coords, unit_placements=self.battle.allies))
+                        progress_manager.save_solution(
+                            Solution(
+                                hex_coords=self.battle.hex_coords,
+                                unit_placements=self.battle.allies,
+                                solved_corrupted=progress_manager.is_battle_corrupted(self.battle.hex_coords)
+                            )
+                        )
                         # Recreate the victory panel to update the save button state
                         self.victory_panel.kill()
                         self.create_victory_panel()

@@ -8,6 +8,7 @@ from components.team import Team, TeamType
 from components.unit_state import State, UnitState
 from components.unit_type import UnitType, UnitTypeComponent
 
+from corruption_powers import CorruptionPower
 from processors.ability_processor import AbilityProcessor
 from processors.attached_processor import AttachedProcessor
 from processors.aura_processor import AuraProcessor
@@ -104,6 +105,7 @@ def simulate_battle(
     ally_placements: List[Tuple[UnitType, Tuple[int, int]]],
     enemy_placements: List[Tuple[UnitType, Tuple[int, int]]],
     max_duration: float,
+    corruption_powers: Optional[List[CorruptionPower]] = None,
     post_battle_callback: Optional[Callable[[BattleOutcome], Any]] = None,
 ) -> Union[BattleOutcome, Tuple[BattleOutcome, Any]]:
     """Simulate a battle between two teams.
@@ -112,6 +114,7 @@ def simulate_battle(
         ally_placements: List of (unit_type, position) tuples for team 1.
         enemy_placements: List of (unit_type, position) tuples for team 2.
         max_duration: Maximum duration for the battle in seconds.
+        corruption_powers: Optional list of corruption powers to apply to units.
         post_battle_callback: Optional callback to be called after the battle.
     
     Returns:
@@ -123,9 +126,9 @@ def simulate_battle(
     
     # Create units for both teams
     for unit_type, position in ally_placements:
-        create_unit(x=position[0], y=position[1], unit_type=unit_type, team=TeamType.TEAM1)
+        create_unit(x=position[0], y=position[1], unit_type=unit_type, team=TeamType.TEAM1, corruption_powers=corruption_powers)
     for unit_type, position in enemy_placements:
-        create_unit(x=position[0], y=position[1], unit_type=unit_type, team=TeamType.TEAM2)
+        create_unit(x=position[0], y=position[1], unit_type=unit_type, team=TeamType.TEAM2, corruption_powers=corruption_powers)
     
     # Run the battle simulation
     outcome = None

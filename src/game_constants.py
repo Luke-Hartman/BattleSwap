@@ -252,7 +252,7 @@ class GameConstants(BaseModel):
     CRUSADER_PALADIN_ANIMATION_DYING_DURATION: float
     CRUSADER_PALADIN_SKILL_COOLDOWN: float
     CRUSADER_PALADIN_SKILL_HEALTH_PERCENT_THRESHOLD: float
-    CRUSADER_PALADIN_SKILL_HEAL_PERCENT: float
+    CRUSADER_PALADIN_SKILL_HEAL: float
     
     # Pikeman
     CRUSADER_PIKEMAN_HP: float
@@ -396,6 +396,10 @@ class GameConstants(BaseModel):
     CAMERA_ANIMATION_ZOOM_DURATION_SCALE: float  # scales duration of zoom animations
     CAMERA_ANIMATION_SOFTMIN_INTENSITY: float  # intensity parameter for softmin function
     CAMERA_ANIMATION_EASE_POWER: float  # power parameter for ease out and in function
+
+    # Corruption constants
+    CORRUPTION_TRIGGER_POINTS: int
+    CORRUPTION_BATTLE_COUNT: int
 
     class Config:
         frozen = False

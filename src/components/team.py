@@ -6,13 +6,13 @@ This module contains the Team component, which represents which team an entity b
 from dataclasses import dataclass
 from enum import Enum, auto
 
-class TeamType(Enum):
+class TeamType(int, Enum):
     """Enum representing different teams in the game."""
 
-    TEAM1 = auto()
+    TEAM1 = 1
     """Team 1, facing right."""
 
-    TEAM2 = auto()
+    TEAM2 = 2
     """Team 2, facing left."""
 
     def other(self) -> "TeamType":

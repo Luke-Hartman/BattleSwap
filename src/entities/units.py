@@ -7,9 +7,10 @@ from enum import Enum
 import esper
 import pygame
 import os
-from typing import Dict, List
+from typing import Dict, List, Optional, Type
 from components.ammo import Ammo
 from components.attached import Attached
+from components.corruption import IncreasedAbilitySpeedComponent, IncreasedDamageComponent, IncreasedMovementSpeedComponent
 from components.entity_memory import EntityMemory
 from components.follower import Follower
 from components.forced_movement import ForcedMovement
@@ -53,6 +54,7 @@ from unit_condition import (
 )
 from visuals import Visual
 from components.dying import OnDeathEffect
+from corruption_powers import CorruptionPower, IncreasedAbilitySpeed, IncreasedDamage, IncreasedMaxHealth, IncreasedMovementSpeed
 
 unit_theme_ids: Dict[UnitType, str] = {
     UnitType.CORE_ARCHER: "#core_archer_icon", 
@@ -205,7 +207,19 @@ def load_sprite_sheets():
         path = os.path.join("assets", "icons", filename)
         unit_icon_surfaces[unit_type] = pygame.image.load(path).convert_alpha()
 
-def create_unit(x: int, y: int, unit_type: UnitType, team: TeamType) -> int:
+def _get_corruption_power(
+        corruption_powers: Optional[List[CorruptionPower]],
+        power_type: Type[CorruptionPower],
+        team: TeamType
+    ) -> Optional[CorruptionPower]:
+    if corruption_powers is None:
+        return None
+    for power in corruption_powers:
+        if isinstance(power, power_type) and (power.required_team is None or power.required_team == team):
+            return power
+    return None
+
+def create_unit(x: int, y: int, unit_type: UnitType, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
     """Create a unit entity with all necessary components."""
     return {
         UnitType.CORE_ARCHER: create_core_archer,
@@ -235,7 +249,7 @@ def create_unit(x: int, y: int, unit_type: UnitType, team: TeamType) -> int:
         UnitType.ZOMBIE_JUMPER: create_zombie_jumper,
         UnitType.ZOMBIE_SPITTER: create_zombie_spitter,
         UnitType.ZOMBIE_TANK: create_zombie_tank,
-    }[unit_type](x, y, team)
+    }[unit_type](x, y, team, corruption_powers)
 
 def unit_base_entity(
         x: int,
@@ -244,7 +258,8 @@ def unit_base_entity(
         unit_type: UnitType,
         movement_speed: float,
         health: int,
-        hitbox: Hitbox
+        hitbox: Hitbox,
+        corruption_powers: Optional[List[CorruptionPower]]
     ) -> int:
     """Create a unit entity with all components shared by all units."""
     entity = esper.create_entity()
@@ -255,15 +270,27 @@ def unit_base_entity(
     esper.add_component(entity, Team(type=team))
     esper.add_component(entity, UnitState())
     esper.add_component(entity, UnitTypeComponent(type=unit_type))
+    health_power = _get_corruption_power(corruption_powers, IncreasedMaxHealth, team)
+    if health_power is not None:
+        health = health * (1 + health_power.increase_percent / 100)    
     esper.add_component(entity, Health(current=health, maximum=health))
     esper.add_component(entity, StatusEffects())
     esper.add_component(entity, Orientation(
         facing=FacingDirection.RIGHT if team == TeamType.TEAM1 else FacingDirection.LEFT
     ))
     esper.add_component(entity, hitbox)
+    movement_power = _get_corruption_power(corruption_powers, IncreasedMovementSpeed, team)
+    if movement_power is not None:
+        esper.add_component(entity, IncreasedMovementSpeedComponent(increase_percent=movement_power.increase_percent))
+    animation_power = _get_corruption_power(corruption_powers, IncreasedAbilitySpeed, team)
+    if animation_power is not None:
+        esper.add_component(entity, IncreasedAbilitySpeedComponent(increase_percent=animation_power.increase_percent))
+    damage_power = _get_corruption_power(corruption_powers, IncreasedDamage, team)
+    if damage_power is not None:
+        esper.add_component(entity, IncreasedDamageComponent(increase_percent=damage_power.increase_percent))
     return entity
 
-def create_core_archer(x: int, y: int, team: TeamType) -> int:
+def create_core_archer(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
     """Create an archer entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -275,7 +302,8 @@ def create_core_archer(x: int, y: int, team: TeamType) -> int:
         hitbox=Hitbox(
             width=16,
             height=32,
-        )
+        ),
+        corruption_powers=corruption_powers
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -373,7 +401,7 @@ def create_core_archer(x: int, y: int, team: TeamType) -> int:
     }))
     return entity
 
-def create_core_barbarian(x: int, y: int, team: TeamType) -> int:
+def create_core_barbarian(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
     """Create a barbarian entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -385,7 +413,8 @@ def create_core_barbarian(x: int, y: int, team: TeamType) -> int:
         hitbox=Hitbox(
             width=20,
             height=38,
-        )
+        ),
+        corruption_powers=corruption_powers
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -463,7 +492,7 @@ def create_core_barbarian(x: int, y: int, team: TeamType) -> int:
     }))
     return entity
 
-def create_core_cavalry(x: int, y: int, team: TeamType) -> int:
+def create_core_cavalry(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
     """Create a cavalry entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -475,7 +504,8 @@ def create_core_cavalry(x: int, y: int, team: TeamType) -> int:
         hitbox=Hitbox(
             width=32,
             height=46,
-        )
+        ),
+        corruption_powers=corruption_powers
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -550,7 +580,7 @@ def create_core_cavalry(x: int, y: int, team: TeamType) -> int:
     }))
     return entity
 
-def create_core_duelist(x: int, y: int, team: TeamType) -> int:
+def create_core_duelist(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
     """Create a duelist entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -562,7 +592,8 @@ def create_core_duelist(x: int, y: int, team: TeamType) -> int:
         hitbox=Hitbox(
             width=16,
             height=36,
-        )
+        ),
+        corruption_powers=corruption_powers
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -667,7 +698,7 @@ def create_core_duelist(x: int, y: int, team: TeamType) -> int:
     }))
     return entity
 
-def create_core_swordsman(x: int, y: int, team: TeamType) -> int:
+def create_core_swordsman(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
     """Create a swordsman entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -679,7 +710,8 @@ def create_core_swordsman(x: int, y: int, team: TeamType) -> int:
         hitbox=Hitbox(
             width=16,
             height=32,
-        )
+        ),
+        corruption_powers=corruption_powers
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -756,7 +788,7 @@ def create_core_swordsman(x: int, y: int, team: TeamType) -> int:
     }))
     return entity
 
-def create_core_wizard(x: int, y: int, team: TeamType) -> int:
+def create_core_wizard(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
     """Create a wizard entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -768,7 +800,8 @@ def create_core_wizard(x: int, y: int, team: TeamType) -> int:
         hitbox=Hitbox(
             width=24,
             height=36,
-        )
+        ),
+        corruption_powers=corruption_powers
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -876,7 +909,7 @@ def create_core_wizard(x: int, y: int, team: TeamType) -> int:
     }))
     return entity
 
-def create_crusader_banner_bearer(x: int, y: int, team: TeamType) -> int:
+def create_crusader_banner_bearer(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
     """Create a banner bearer entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -888,7 +921,8 @@ def create_crusader_banner_bearer(x: int, y: int, team: TeamType) -> int:
         hitbox=Hitbox(
             width=16,
             height=36,
-        )
+        ),
+        corruption_powers=corruption_powers
     )
     esper.add_component(entity, Follower())
     targetting_strategy = TargetStrategy(
@@ -992,7 +1026,7 @@ def create_crusader_banner_bearer(x: int, y: int, team: TeamType) -> int:
     }))
     return entity
 
-def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
+def create_crusader_black_knight(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
     """Create a black knight entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -1004,7 +1038,8 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
         hitbox=Hitbox(
             width=30,
             height=54,
-        )
+        ),
+        corruption_powers=corruption_powers
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -1117,7 +1152,7 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType) -> int:
     }))
     return entity
 
-def create_crusader_catapult(x: int, y: int, team: TeamType) -> int:
+def create_crusader_catapult(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
     """Create a catapult entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -1129,7 +1164,8 @@ def create_crusader_catapult(x: int, y: int, team: TeamType) -> int:
         hitbox=Hitbox(
             width=100,
             height=20,
-        )
+        ),
+        corruption_powers=corruption_powers
     )
     esper.add_component(entity, Immobile())
     targetting_strategy = TargetStrategy(
@@ -1243,7 +1279,7 @@ def create_crusader_catapult(x: int, y: int, team: TeamType) -> int:
     ))
     return entity
 
-def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
+def create_crusader_cleric(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
     """Create a cleric entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -1255,7 +1291,8 @@ def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
         hitbox=Hitbox(
             width=16,
             height=36,
-        )
+        ),
+        corruption_powers=corruption_powers
     )
     esper.add_component(entity, Follower())
     target_leader = TargetStrategy(
@@ -1397,7 +1434,7 @@ def create_crusader_cleric(x: int, y: int, team: TeamType) -> int:
     }))
     return entity
 
-def create_crusader_commander(x: int, y: int, team: TeamType) -> int:
+def create_crusader_commander(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
     """Create a commander entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -1409,7 +1446,8 @@ def create_crusader_commander(x: int, y: int, team: TeamType) -> int:
         hitbox=Hitbox(
             width=16,
             height=36,
-        )
+        ),
+        corruption_powers=corruption_powers
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -1471,10 +1509,6 @@ def create_crusader_commander(x: int, y: int, team: TeamType) -> int:
                     status_effect=CrusaderBannerBearerEmpowered(time_remaining=gc.DEFAULT_AURA_PERIOD),
                     recipient=Recipient.TARGET
                 ),
-                AppliesStatusEffect(
-                    status_effect=CrusaderBannerBearerMovementSpeedBuff(time_remaining=gc.DEFAULT_AURA_PERIOD),
-                    recipient=Recipient.TARGET
-                )
             ],
             period=gc.DEFAULT_AURA_PERIOD,
             owner_condition=Alive(),
@@ -1509,7 +1543,7 @@ def create_crusader_commander(x: int, y: int, team: TeamType) -> int:
     }))
     return entity
 
-def create_crusader_crossbowman(x: int, y: int, team: TeamType) -> int:
+def create_crusader_crossbowman(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
     """Create a crossbowman entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -1521,7 +1555,8 @@ def create_crusader_crossbowman(x: int, y: int, team: TeamType) -> int:
         hitbox=Hitbox(
             width=16,
             height=36,
-        )
+        ),
+        corruption_powers=corruption_powers
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -1692,7 +1727,7 @@ def create_crusader_crossbowman(x: int, y: int, team: TeamType) -> int:
     }))
     return entity
 
-def create_crusader_defender(x: int, y: int, team: TeamType) -> int:
+def create_crusader_defender(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
     """Create a defender entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -1704,7 +1739,8 @@ def create_crusader_defender(x: int, y: int, team: TeamType) -> int:
         hitbox=Hitbox(
             width=16,
             height=32,
-        )
+        ),
+        corruption_powers=corruption_powers
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -1780,7 +1816,7 @@ def create_crusader_defender(x: int, y: int, team: TeamType) -> int:
     }))
     return entity
 
-def create_crusader_gold_knight(x: int, y: int, team: TeamType) -> int:
+def create_crusader_gold_knight(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
     """Create a gold knight entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -1792,7 +1828,8 @@ def create_crusader_gold_knight(x: int, y: int, team: TeamType) -> int:
         hitbox=Hitbox(
             width=16,
             height=38,
-        )
+        ),
+        corruption_powers=corruption_powers
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -1872,7 +1909,7 @@ def create_crusader_gold_knight(x: int, y: int, team: TeamType) -> int:
     }))
     return entity
 
-def create_crusader_guardian_angel(x: int, y: int, team: TeamType) -> int:
+def create_crusader_guardian_angel(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
     """Create an angel entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -1884,7 +1921,8 @@ def create_crusader_guardian_angel(x: int, y: int, team: TeamType) -> int:
         hitbox=Hitbox(
             width=16,
             height=22,
-        )
+        ),
+        corruption_powers=corruption_powers
     )
     esper.add_component(entity, SmoothMovement())
     esper.add_component(entity, Follower())
@@ -2003,7 +2041,7 @@ def create_crusader_guardian_angel(x: int, y: int, team: TeamType) -> int:
     }))
     return entity
 
-def create_crusader_longbowman(x: int, y: int, team: TeamType) -> int:
+def create_crusader_longbowman(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
     """Create a longbowman entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -2015,7 +2053,8 @@ def create_crusader_longbowman(x: int, y: int, team: TeamType) -> int:
         hitbox=Hitbox(
             width=16,
             height=36,
-        )
+        ),
+        corruption_powers=corruption_powers
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -2112,7 +2151,7 @@ def create_crusader_longbowman(x: int, y: int, team: TeamType) -> int:
     }))
     return entity
 
-def create_crusader_paladin(x: int, y: int, team: TeamType) -> int:
+def create_crusader_paladin(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
     """Create a paladin entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -2124,7 +2163,8 @@ def create_crusader_paladin(x: int, y: int, team: TeamType) -> int:
         hitbox=Hitbox(
             width=30,
             height=54,
-        )
+        ),
+        corruption_powers=corruption_powers
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -2156,7 +2196,7 @@ def create_crusader_paladin(x: int, y: int, team: TeamType) -> int:
                             PlaySound(SoundEffect(filename="holy_healing_spell.wav", volume=0.50)),
                         ],
                         7: [
-                            Heals(amount=gc.CRUSADER_PALADIN_SKILL_HEAL_PERCENT * gc.CRUSADER_PALADIN_HP, recipient=Recipient.OWNER),
+                            Heals(amount=gc.CRUSADER_PALADIN_SKILL_HEAL, recipient=Recipient.OWNER),
                         ]
                     },
                 ),
@@ -2223,7 +2263,7 @@ def create_crusader_paladin(x: int, y: int, team: TeamType) -> int:
     }))
     return entity
 
-def create_crusader_pikeman(x: int, y: int, team: TeamType) -> int:
+def create_crusader_pikeman(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
     """Create a pikeman entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -2235,7 +2275,8 @@ def create_crusader_pikeman(x: int, y: int, team: TeamType) -> int:
         hitbox=Hitbox(
             width=16,
             height=32,
-        )
+        ),
+        corruption_powers=corruption_powers
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -2356,7 +2397,7 @@ def create_crusader_pikeman(x: int, y: int, team: TeamType) -> int:
     }))
     return entity
 
-def create_crusader_red_knight(x: int, y: int, team: TeamType) -> int:
+def create_crusader_red_knight(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
     """Create a red knight entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -2368,7 +2409,8 @@ def create_crusader_red_knight(x: int, y: int, team: TeamType) -> int:
         hitbox=Hitbox(
             width=16,
             height=34,
-        )
+        ),
+        corruption_powers=corruption_powers
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -2496,7 +2538,7 @@ def create_crusader_red_knight(x: int, y: int, team: TeamType) -> int:
     }))
     return entity
 
-def create_crusader_soldier(x: int, y: int, team: TeamType) -> int:
+def create_crusader_soldier(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
     """Create a soldier entity with all necessary components."""
     MELEE = 0
     RANGED = 1
@@ -2510,7 +2552,8 @@ def create_crusader_soldier(x: int, y: int, team: TeamType) -> int:
         hitbox=Hitbox(
             width=16,
             height=32,
-        )
+        ),
+        corruption_powers=corruption_powers
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -2706,7 +2749,7 @@ def create_crusader_soldier(x: int, y: int, team: TeamType) -> int:
     }))
     return entity
 
-def create_werebear(x: int, y: int, team: TeamType) -> int:
+def create_werebear(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
     """Create a werebear entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -2718,7 +2761,8 @@ def create_werebear(x: int, y: int, team: TeamType) -> int:
         hitbox=Hitbox(
             width=24,
             height=40,
-        )
+        ),
+        corruption_powers=corruption_powers
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -2785,7 +2829,7 @@ def create_werebear(x: int, y: int, team: TeamType) -> int:
     )
     return entity
 
-def create_zombie_basic_zombie(x: int, y: int, team: TeamType) -> int:
+def create_zombie_basic_zombie(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
     """Create a zombie entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -2795,6 +2839,7 @@ def create_zombie_basic_zombie(x: int, y: int, team: TeamType) -> int:
         movement_speed=gc.ZOMBIE_BASIC_ZOMBIE_MOVEMENT_SPEED,
         health=gc.ZOMBIE_BASIC_ZOMBIE_HP,
         hitbox=Hitbox(width=16, height=32),
+        corruption_powers=corruption_powers
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -2839,7 +2884,7 @@ def create_zombie_basic_zombie(x: int, y: int, team: TeamType) -> int:
                     effects={3: [
                         Damages(damage=gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_DAMAGE, recipient=Recipient.TARGET),
                         AppliesStatusEffect(
-                            status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team),
+                            status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers),
                             recipient=Recipient.TARGET
                         )
                     ]},
@@ -2874,7 +2919,7 @@ def create_zombie_basic_zombie(x: int, y: int, team: TeamType) -> int:
     }))
     return entity
 
-def create_zombie_brute(x: int, y: int, team: TeamType) -> int:
+def create_zombie_brute(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
     """Create a brute zombie entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -2884,6 +2929,7 @@ def create_zombie_brute(x: int, y: int, team: TeamType) -> int:
         movement_speed=gc.ZOMBIE_BRUTE_MOVEMENT_SPEED,
         health=gc.ZOMBIE_BRUTE_HP,
         hitbox=Hitbox(width=24, height=48),
+        corruption_powers=corruption_powers
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -2907,12 +2953,14 @@ def create_zombie_brute(x: int, y: int, team: TeamType) -> int:
                     team=team,
                     offset=(0, 10),
                     recipient=Recipient.OWNER,
+                    corruption_powers=corruption_powers,
                 ),
                 CreatesUnit(
                     unit_type=UnitType.ZOMBIE_BASIC_ZOMBIE,
                     team=team,
                     offset=(0, -10),
                     recipient=Recipient.OWNER,
+                    corruption_powers=corruption_powers,
                 ),
             ],
             condition=AmmoEquals(1)
@@ -2946,12 +2994,14 @@ def create_zombie_brute(x: int, y: int, team: TeamType) -> int:
                                 team=team,
                                 offset=(0, 10),
                                 recipient=Recipient.OWNER,
+                                corruption_powers=corruption_powers,
                             ),
                             CreatesUnit(
                                 unit_type=UnitType.ZOMBIE_BASIC_ZOMBIE,
                                 team=team,
                                 offset=(0, -10),
                                 recipient=Recipient.OWNER,
+                                corruption_powers=corruption_powers,
                             ),
                             IncreaseAmmo(amount=-1),
                         ],
@@ -2986,7 +3036,7 @@ def create_zombie_brute(x: int, y: int, team: TeamType) -> int:
                     effects={3: [
                         Damages(damage=gc.ZOMBIE_BRUTE_ATTACK_DAMAGE, recipient=Recipient.TARGET),
                         AppliesStatusEffect(
-                            status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team),
+                            status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers),
                             recipient=Recipient.TARGET
                         )
                     ]},
@@ -3022,7 +3072,7 @@ def create_zombie_brute(x: int, y: int, team: TeamType) -> int:
     }))
     return entity
 
-def create_zombie_jumper(x: int, y: int, team: TeamType) -> int:
+def create_zombie_jumper(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
     """Create a jumper zombie entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -3032,6 +3082,7 @@ def create_zombie_jumper(x: int, y: int, team: TeamType) -> int:
         movement_speed=gc.ZOMBIE_JUMPER_MOVEMENT_SPEED,
         health=gc.ZOMBIE_JUMPER_HP,
         hitbox=Hitbox(width=16, height=32),
+        corruption_powers=corruption_powers
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -3083,7 +3134,7 @@ def create_zombie_jumper(x: int, y: int, team: TeamType) -> int:
                     effects={3: [
                         Damages(damage=gc.ZOMBIE_JUMPER_ATTACK_DAMAGE, recipient=Recipient.TARGET),
                         AppliesStatusEffect(
-                            status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team),
+                            status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers),
                             recipient=Recipient.TARGET
                         )
                     ]},
@@ -3177,7 +3228,7 @@ def create_zombie_jumper(x: int, y: int, team: TeamType) -> int:
     }))
     return entity
 
-def create_zombie_spitter(x: int, y: int, team: TeamType) -> int:
+def create_zombie_spitter(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
     """Create a spitter entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -3189,7 +3240,8 @@ def create_zombie_spitter(x: int, y: int, team: TeamType) -> int:
         hitbox=Hitbox(
             width=16,
             height=32,
-        )
+        ),
+        corruption_powers=corruption_powers
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -3251,7 +3303,7 @@ def create_zombie_spitter(x: int, y: int, team: TeamType) -> int:
                                 projectile_speed=gc.ZOMBIE_SPITTER_PROJECTILE_SPEED,
                                 effects=[
                                     AppliesStatusEffect(
-                                        status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team),
+                                        status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers),
                                         recipient=Recipient.TARGET
                                     ),
                                     AppliesStatusEffect(
@@ -3301,7 +3353,7 @@ def create_zombie_spitter(x: int, y: int, team: TeamType) -> int:
                     effects={3: [
                         Damages(damage=gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_DAMAGE, recipient=Recipient.TARGET),
                         AppliesStatusEffect(
-                            status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team),
+                            status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers),
                             recipient=Recipient.TARGET
                         )
                     ]},
@@ -3327,7 +3379,7 @@ def create_zombie_spitter(x: int, y: int, team: TeamType) -> int:
     ))
     return entity
 
-def create_zombie_tank(x: int, y: int, team: TeamType) -> int:
+def create_zombie_tank(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
     """Create a tank zombie entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -3337,6 +3389,7 @@ def create_zombie_tank(x: int, y: int, team: TeamType) -> int:
         movement_speed=gc.ZOMBIE_TANK_MOVEMENT_SPEED,
         health=gc.ZOMBIE_TANK_HP,
         hitbox=Hitbox(width=32, height=64),
+        corruption_powers=corruption_powers
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -3381,7 +3434,7 @@ def create_zombie_tank(x: int, y: int, team: TeamType) -> int:
                     effects={3: [
                         Damages(damage=gc.ZOMBIE_TANK_ATTACK_DAMAGE, recipient=Recipient.TARGET),
                         AppliesStatusEffect(
-                            status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team),
+                            status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers),
                             recipient=Recipient.TARGET
                         )
                     ]},
@@ -3416,7 +3469,7 @@ def create_zombie_tank(x: int, y: int, team: TeamType) -> int:
     }))
     return entity
 
-def create_zombie_grabber(x: int, y: int, team: TeamType) -> int:
+def create_zombie_grabber(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
     """Create a grabber entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -3428,7 +3481,8 @@ def create_zombie_grabber(x: int, y: int, team: TeamType) -> int:
         hitbox=Hitbox(
             width=16,
             height=32,
-        )
+        ),
+        corruption_powers=corruption_powers
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -3505,7 +3559,7 @@ def create_zombie_grabber(x: int, y: int, team: TeamType) -> int:
                                     RememberTarget(recipient=Recipient.OWNER),
                                     Damages(damage=gc.ZOMBIE_GRABBER_GRAB_DAMAGE, recipient=Recipient.TARGET),
                                     AppliesStatusEffect(
-                                        status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team),
+                                        status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers),
                                         recipient=Recipient.TARGET
                                     ),
                                     AddsForcedMovement(
@@ -3571,7 +3625,7 @@ def create_zombie_grabber(x: int, y: int, team: TeamType) -> int:
                     effects={3: [
                         Damages(damage=gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_DAMAGE, recipient=Recipient.TARGET),
                         AppliesStatusEffect(
-                            status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team),
+                            status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers),
                             recipient=Recipient.TARGET
                         )
                     ]},

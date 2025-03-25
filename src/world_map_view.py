@@ -34,6 +34,7 @@ from events import PLAY_SOUND, PlaySoundEvent, emit_event
 from time_manager import time_manager
 from components.focus import Focus
 from selected_unit_manager import selected_unit_manager
+from progress_manager import progress_manager
 
 
 class FillState(Enum):
@@ -48,6 +49,8 @@ class BorderState(Enum):
     NORMAL = auto()
     GREEN_BORDER = auto()
     YELLOW_BORDER = auto()
+    RED_BORDER = auto()
+    DARK_RED_BORDER = auto()
 
 class HexState:
     """Combined state for both fill and border of a hex."""
@@ -87,6 +90,7 @@ class WorldMapView:
         self.rebuild(battles, cleanup=False)
     
     def _initialize_battle_world(self, battle: Battle) -> None:
+        """Initialize the battle world for a specific battle."""
         if battle.id in esper.list_worlds():
             esper.delete_world(battle.id)
         with use_world(battle.id):
@@ -97,20 +101,26 @@ class WorldMapView:
             esper.add_processor(OrientationProcessor())
             esper.add_processor(RotationProcessor())
             esper.add_processor(TargettingProcessor())
+
+            is_corrupted = progress_manager and progress_manager.is_battle_corrupted(battle.hex_coords)
+            corruption_powers = battle.corruption_powers if is_corrupted else None
+
             world_x, world_y = axial_to_world(*battle.hex_coords)
             for unit_type, position in battle.allies or []:
                 create_unit(
                     position[0] + world_x,
                     position[1] + world_y,
                     unit_type,
-                    TeamType.TEAM1
+                    TeamType.TEAM1,
+                    corruption_powers=corruption_powers
                 )
             for unit_type, position in battle.enemies:
                 create_unit(
                     position[0] + world_x,
                     position[1] + world_y,
                     unit_type,
-                    TeamType.TEAM2
+                    TeamType.TEAM2,
+                    corruption_powers=corruption_powers
                 )
 
     def get_battle_from_hex(self, hex_coords: Tuple[int, int]) -> Optional[Battle]:
@@ -191,11 +201,19 @@ class WorldMapView:
         """
         esper.switch_world(battle_id)
         world_x, world_y = axial_to_world(*self.battles[battle_id].hex_coords)
+        
+        # Determine if the battle is corrupted
+        is_corrupted = progress_manager and progress_manager.is_battle_corrupted(self.battles[battle_id].hex_coords)
+        
+        # Only apply corruption powers if the battle is corrupted
+        corruption_powers = self.battles[battle_id].corruption_powers if is_corrupted else None
+        
         create_unit(
             position[0],
             position[1],
             unit_type,
-            team
+            team,
+            corruption_powers=corruption_powers
         )
         if team == TeamType.TEAM1:
             if self.battles[battle_id].allies is None:
@@ -370,6 +388,12 @@ class WorldMapView:
         border_states = [self.hex_states.get(coords, HexState()).border for coords in edge]
         if BorderState.YELLOW_BORDER in border_states:
             color = (255, 255, 0)
+            width = 2
+        elif BorderState.RED_BORDER in border_states:
+            color = (255, 0, 0)
+            width = 2
+        elif BorderState.DARK_RED_BORDER in border_states:
+            color = (150, 0, 0)
             width = 2
         elif BorderState.GREEN_BORDER in border_states:
             color = (0, 255, 0)

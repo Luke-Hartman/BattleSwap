@@ -5,13 +5,15 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Any
 import json
 
-from pydantic import BaseModel, field_serializer, field_validator
+from pydantic import BaseModel, ValidationError, field_serializer, field_validator
 from platformdirs import user_config_dir
 
 import battles
 from components.unit_type import UnitType
 from unit_values import unit_values
 from hex_grid import hex_neighbors
+from game_constants import gc
+import random
 
 # Current version of the progress manager
 # Increment this when making breaking changes to save file format
@@ -27,13 +29,16 @@ def calculate_total_available_points() -> int:
     points = sum(unit_values[unit_type] * count for unit_type, count in battles.starting_units.items())
     for battle in battles.get_battles():
         if battle.hex_coords in progress_manager.solutions:
+            solution = progress_manager.solutions[battle.hex_coords]
             points += sum(unit_values[unit_type] for unit_type, _ in battle.enemies)
+            points -= sum(unit_values[unit_type] for unit_type, _ in solution.unit_placements)
     return points
 
 
 class Solution(BaseModel):
     hex_coords: Tuple[int, int]
     unit_placements: List[Tuple[UnitType, Tuple[float, float]]]
+    solved_corrupted: bool
 
     @field_serializer('hex_coords')
     def serialize_hex_coords(self, hex_coords: Tuple[int, int]) -> List[int]:
@@ -60,6 +65,8 @@ class ProgressManager(BaseModel):
     version: int = CURRENT_VERSION
     solutions: Dict[Tuple[int, int], Solution] = {}
     game_completed: bool = False
+    game_completed_corruption: bool = False
+    corrupted_battles: List[Tuple[int, int]] = []
 
     @field_serializer('solutions')
     def serialize_solutions(self, solutions: Dict[Tuple[int, int], Solution]) -> Dict[str, Any]:
@@ -153,6 +160,15 @@ class ProgressManager(BaseModel):
     def available_battles(self) -> List[Tuple[int, int]]:
         """Get the available battles for the player."""
         available_battles = [(0, 0)]  # 0, 0 is always available
+        
+        # Add all battles that have been solved already
+        available_battles.extend([coords for coords in self.solutions if coords != (0, 0)])
+        
+        # If there are uncompleted corrupted battles, don't allow new battles to be unlocked
+        if self.has_uncompleted_corrupted_battles():
+            return available_battles
+        
+        # Otherwise, unlock adjacent battles normally
         progress = True
         while progress:
             progress = False
@@ -185,10 +201,56 @@ class ProgressManager(BaseModel):
             battle.hex_coords in self.solutions for battle in battles.get_battles()
             if not battle.is_test
         ) and not self.game_completed
+    
+    def should_show_corruption_congratulations(self) -> bool:
+        return all(
+            battle.hex_coords in self.solutions and self.solutions[battle.hex_coords].solved_corrupted for battle in battles.get_battles()
+            if not battle.is_test
+        ) and not self.game_completed_corruption
 
     def mark_congratulations_shown(self) -> None:
         self.game_completed = True
         save_progress()
+
+    def mark_corruption_congratulations_shown(self) -> None:
+        self.game_completed_corruption = True
+        save_progress()
+        
+    def should_trigger_corruption(self) -> bool:
+        """Check if corruption should be triggered based on available unit points."""
+        available_points = calculate_total_available_points()
+        return (available_points >= gc.CORRUPTION_TRIGGER_POINTS and 
+                not self.has_uncompleted_corrupted_battles())
+                
+    def corrupt_battles(self) -> List[Tuple[int, int]]:
+        """Corrupt a number of completed battles based on the game constants."""
+        completed_battles = [coord for coord in self.solutions 
+                            if coord not in self.corrupted_battles]
+        if not completed_battles:
+            return []
+        num_corruptions = min(gc.CORRUPTION_BATTLE_COUNT, len(completed_battles))
+        battles_to_corrupt = random.sample(completed_battles, num_corruptions)
+        self.corrupted_battles.extend(battles_to_corrupt)
+        save_progress()
+        
+        return battles_to_corrupt
+        
+    def is_battle_corrupted(self, hex_coords: Tuple[int, int]) -> bool:
+        """Check if a battle is corrupted."""
+        return hex_coords in self.corrupted_battles
+        
+    def has_uncompleted_corrupted_battles(self) -> bool:
+        """Check if there are any corrupted battles that need to be cleared."""
+        for coords in self.corrupted_battles:
+            if not self.has_solved_corrupted_battle(coords):
+                return True
+        return False
+
+    def has_solved_corrupted_battle(self, hex_coords: Tuple[int, int]) -> bool:
+        """Check if a battle has been solved in its corrupted state."""
+        return (hex_coords in self.solutions and 
+                hex_coords in self.corrupted_battles and 
+                self.solutions[hex_coords].solved_corrupted)
 
 def get_progress_path() -> Path:
     """Get the path to the progress file."""
@@ -232,7 +294,11 @@ def load_progress() -> None:
                 # Create new progress if version is incompatible
                 new_progress = ProgressManager()
             else:
-                new_progress = ProgressManager.model_validate(save_data)
+                try:
+                    new_progress = ProgressManager.model_validate(save_data)
+                except ValidationError as e:
+                    print(f"Error validating save data: {e}")
+                    new_progress = ProgressManager()
     else:
         new_progress = ProgressManager()
         # Save default progress
@@ -249,6 +315,7 @@ def reset_progress() -> None:
     """Reset the progress."""
     global progress_manager
     progress_manager.solutions = {}
+    progress_manager.corrupted_battles = []
     save_progress()
 
 def has_incompatible_save() -> bool:

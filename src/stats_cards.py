@@ -228,7 +228,7 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
             f"Speed: {gc.CRUSADER_PALADIN_MOVEMENT_SPEED}",
             f"Range: {gc.CRUSADER_PALADIN_ATTACK_RANGE}",
             f"AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
-            f"Special: Heals self by {round(gc.CRUSADER_PALADIN_SKILL_HEAL_PERCENT*100)}% when their health is below {round(gc.CRUSADER_PALADIN_SKILL_HEALTH_PERCENT_THRESHOLD*100)}%, cooldown {gc.CRUSADER_PALADIN_SKILL_COOLDOWN}s. (Heal per second is at most {round(gc.CRUSADER_PALADIN_SKILL_HEAL_PERCENT * gc.CRUSADER_PALADIN_HP/gc.CRUSADER_PALADIN_SKILL_COOLDOWN, 2)} per second)",
+            f"Special: Heals self by {gc.CRUSADER_PALADIN_SKILL_HEAL} when their health is below {round(gc.CRUSADER_PALADIN_SKILL_HEALTH_PERCENT_THRESHOLD*100)}%, cooldown {gc.CRUSADER_PALADIN_SKILL_COOLDOWN}s. (Heal per second is at most {round(gc.CRUSADER_PALADIN_SKILL_HEAL/gc.CRUSADER_PALADIN_SKILL_COOLDOWN, 2)} per second)",
             f"Special: Is armoured. Has {gc.ARMOR_FLAT_DAMAGE_REDUCTION} flat armor (applied first), followed by {round(gc.ARMOR_PERCENT_DAMAGE_REDUCTION*100)}% percent armor, reducing damage taken by up to {round(gc.MAX_ARMOR_DAMAGE_REDUCTION*100)}%.",
         ]
     if unit_type == UnitType.CRUSADER_PIKEMAN:
