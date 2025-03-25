@@ -287,9 +287,10 @@ class SetupBattleScene(Scene):
         hovered_unit = get_hovered_unit(self.camera)
         hovered_team = esper.component_for_entity(hovered_unit, Team).type if hovered_unit is not None else None
         placement_pos = get_placement_pos(
-            self.battle_id,
-            battle_coords,
-            self.camera,
+            mouse_pos=pygame.mouse.get_pos(),
+            battle_id=self.battle_id,
+            hex_coords=battle_coords,
+            camera=self.camera,
             snap_to_grid=show_grid,
             required_team=None if self.sandbox_mode else TeamType.TEAM1,
         )
@@ -371,6 +372,16 @@ class SetupBattleScene(Scene):
 
             if event.type == pygame.MOUSEBUTTONDOWN and not mouse_over_ui(self.manager):
                 if event.button == pygame.BUTTON_LEFT:
+                    # Get placement position using the click position from the event
+                    click_placement_pos = get_placement_pos(
+                        mouse_pos=event.pos, # event position is more accurate than live mouse position
+                        battle_id=self.battle_id,
+                        hex_coords=battle_coords,
+                        camera=self.camera,
+                        snap_to_grid=show_grid,
+                        required_team=None if self.sandbox_mode else TeamType.TEAM1,
+                    )
+                    placement_team = TeamType.TEAM1 if click_placement_pos[0] < world_x else TeamType.TEAM2
                     if self.selected_unit_type is None:
                         if hovered_unit is not None and (self.sandbox_mode or hovered_team == TeamType.TEAM1):
                             self.set_selected_unit_type(esper.component_for_entity(hovered_unit, UnitTypeComponent).type, placement_team)
@@ -378,7 +389,7 @@ class SetupBattleScene(Scene):
                             hovered_unit = None
                     else:
                         self.create_unit_of_selected_type(
-                            placement_pos,
+                            click_placement_pos,
                             placement_team,
                         )
                 elif event.button == pygame.BUTTON_RIGHT:

@@ -162,15 +162,14 @@ def get_hovered_unit(camera: Camera) -> Optional[int]:
     return candidate_unit_id
 
 def get_placement_pos(
+    mouse_pos: Tuple[int, int],
     battle_id: str,
     hex_coords: Tuple[int, int],
     camera: Camera,
     snap_to_grid: bool = False,
     required_team: Optional[TeamType] = None,
 ) -> Tuple[float, float]:
-    """Get the world coordinates of the mouse cursor after applying legal placement area and snapping to grid."""
-    screen_pos = pygame.mouse.get_pos()
-    world_pos = camera.screen_to_world(*screen_pos)
+    world_pos = camera.screen_to_world(*mouse_pos)
     clipped_pos = clip_to_polygon(get_legal_placement_area(battle_id, hex_coords, required_team, include_units=True), *world_pos)
     if snap_to_grid:
         return snap_position_to_grid(clipped_pos[0], clipped_pos[1], hex_coords)
