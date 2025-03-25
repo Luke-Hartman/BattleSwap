@@ -30,7 +30,7 @@ from ui_components.tip_box import TipBox
 from voice import play_intro
 from world_map_view import FillState, HexState, WorldMapView
 from scene_utils import draw_grid, get_center_line, get_placement_pos, get_hovered_unit, get_unit_placements, get_legal_placement_area, has_unsaved_changes, mouse_over_ui
-from ui_components.grades_panel import GradesPanel
+from ui_components.progress_panel import ProgressPanel
 
 
 class SetupBattleScene(Scene):
@@ -142,7 +142,7 @@ class SetupBattleScene(Scene):
 
         # Create grades panel to the right of barracks, aligned at the bottom
         barracks_bottom = self.barracks.rect.bottom
-        self.grades_panel = GradesPanel(
+        self.progress_panel = ProgressPanel(
             relative_rect=pygame.Rect(
                 (pygame.display.Info().current_w - 295, barracks_bottom - 100),
                 (215, 100)
@@ -230,8 +230,8 @@ class SetupBattleScene(Scene):
         self.barracks.remove_unit(self.selected_unit_type)
         if self.barracks.units[self.selected_unit_type] == 0:
             self.set_selected_unit_type(None, TeamType.TEAM1)
-        if self.grades_panel is not None:
-            self.grades_panel.update_battle(self.battle)
+        if self.progress_panel is not None:
+            self.progress_panel.update_battle(self.battle)
     
     def remove_unit(self, unit_id: int) -> None:
         """Delete a unit of the selected type."""
@@ -242,8 +242,8 @@ class SetupBattleScene(Scene):
         )
         unit_type = esper.component_for_entity(unit_id, UnitTypeComponent).type
         self.barracks.add_unit(unit_type)
-        if self.grades_panel is not None:
-            self.grades_panel.update_battle(self.battle)
+        if self.progress_panel is not None:
+            self.progress_panel.update_battle(self.battle)
 
     def show_exit_confirmation(self) -> None:
         """Show confirmation dialog for exiting with unsaved changes."""
@@ -397,8 +397,6 @@ class SetupBattleScene(Scene):
             self.manager.process_events(event)
             self.feedback_button.handle_event(event)
             self.barracks.handle_event(event)
-            if self.grades_panel is not None:
-                self.grades_panel.handle_event(event)
 
         # Update preview for selected unit
         if self.selected_partial_unit is not None:

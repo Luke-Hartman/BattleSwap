@@ -23,7 +23,7 @@ from ui_components.corruption_panel import CorruptionPanel
 from ui_components.corruption_congratulations_panel import CorruptionCongratulationsPanel
 from world_map_view import BorderState, FillState, WorldMapView, HexState
 from scene_utils import use_world
-from ui_components.grades_panel import GradesPanel
+from ui_components.progress_panel import ProgressPanel
 from ui_components.congratulations_panel import CongratulationsPanel
 from ui_components.corruption_icon import CorruptionIcon
 
@@ -63,7 +63,7 @@ class CampaignScene(Scene):
             )
             # Create grades panel to the right of barracks, aligned at the bottom
             barracks_bottom = self.barracks.rect.bottom
-            self.grades_panel = GradesPanel(
+            self.progress_panel = ProgressPanel(
                 relative_rect=pygame.Rect(
                     (pygame.display.Info().current_w - 295, barracks_bottom - 100),
                     (215, 100)
@@ -73,7 +73,7 @@ class CampaignScene(Scene):
             )
         else:
             self.barracks = None
-            self.grades_panel = None
+            self.progress_panel = None
         
         # Check if we should show congratulations
         if progress_manager.should_show_congratulations():
@@ -189,16 +189,10 @@ class CampaignScene(Scene):
             if self.corruption_dialog is not None and self.corruption_dialog.handle_event(event):
                 self.corruption_dialog = None
                 
-                # If we have corrupted battles, select the first one
+                # If we have corrupted battles, hover over the first one
                 if self.corrupted_battles and len(self.corrupted_battles) > 0:
                     battle = self.world_map_view.get_battle_from_hex(self.corrupted_battles[0])
-                    if battle and self.grades_panel:
-                        self.grades_panel.update_battle(battle)
-                    self.create_context_buttons()
-                    
-                    # Center the camera on the corrupted battle
-                    if battle:
-                        self.world_map_view.move_camera_above_battle(battle.id)
+                    self.world_map_view.move_camera_above_battle(battle.id)
                 continue
 
             # Handle congratulations panel events first if it exists
@@ -264,29 +258,29 @@ class CampaignScene(Scene):
                             self.selected_battle_hex = clicked_hex
                             self.create_context_buttons()
                             # Update grades panel with selected battle
-                            if self.grades_panel is not None:
-                                self.grades_panel.update_battle(battle)
+                            if self.progress_panel is not None:
+                                self.progress_panel.update_battle(battle)
                     else:
                         self.selected_battle_hex = None
                         self.create_context_buttons()
                         # Update grades panel with no battle
-                        if self.grades_panel is not None:
-                            self.grades_panel.update_battle(None)
+                        if self.progress_panel is not None:
+                            self.progress_panel.update_battle(None)
 
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_RIGHT:
                 self.selected_battle_hex = None
                 self.create_context_buttons()
                 # Update grades panel with no battle
-                if self.grades_panel is not None:
-                    self.grades_panel.update_battle(None)
+                if self.progress_panel is not None:
+                    self.progress_panel.update_battle(None)
 
             if event.type == pygame.MOUSEMOTION or (event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_RIGHT):
                 # Don't process hex hovering if we're over a UI element
                 if self.manager.get_hovering_any_element():
                     self.hovered_battle_hex = None
                     # If no selected battle, update grades panel to show no battle
-                    if self.grades_panel is not None and self.selected_battle_hex is None:
-                        self.grades_panel.update_battle(None)
+                    if self.progress_panel is not None and self.selected_battle_hex is None:
+                        self.progress_panel.update_battle(None)
                 else:
                     hovered_hex = self.world_map_view.get_hex_at_mouse_pos()
                     old_hovered_hex = self.hovered_battle_hex
@@ -300,22 +294,20 @@ class CampaignScene(Scene):
                         self.hovered_battle_hex = hovered_hex
                         
                     # Update grades panel if hover state changed and no battle is selected
-                    if (self.grades_panel is not None and 
+                    if (self.progress_panel is not None and 
                         self.selected_battle_hex is None and 
                         old_hovered_hex != self.hovered_battle_hex):
                         if self.hovered_battle_hex is not None:
                             battle = self.world_map_view.get_battle_from_hex(self.hovered_battle_hex)
-                            self.grades_panel.update_battle(battle)
+                            self.progress_panel.update_battle(battle)
                         else:
-                            self.grades_panel.update_battle(None)
+                            self.progress_panel.update_battle(None)
 
             self.world_map_view.camera.process_event(event)
             self.manager.process_events(event)
             self.feedback_button.handle_event(event)
             if self.barracks is not None:
                 self.barracks.handle_event(event)
-            if self.grades_panel is not None:
-                self.grades_panel.handle_event(event)
         # Update hex states while preserving fog of war
         available_battles = progress_manager.available_battles()
         states = defaultdict(HexState)
