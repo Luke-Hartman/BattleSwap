@@ -15,7 +15,6 @@ from ui_components.return_button import ReturnButton
 from world_map_view import BorderState, FillState, WorldMapView, HexState
 from ui_components.tip_box import TipBox
 from ui_components.save_battle_dialog import SaveBattleDialog
-from ui_components.progress_panel import ProgressPanel
 
 class CampaignEditorScene(Scene):
     """Scene for editing the campaign."""
@@ -41,19 +40,7 @@ class CampaignEditorScene(Scene):
         self.context_buttons: dict[str, pygame_gui.elements.UIButton] = {}
         # Store UI elements for battle info
         self.battle_id_label: Optional[pygame_gui.elements.UILabel] = None
-        self.tip_box: Optional[TipBox] = None
-        
-        # Create grades panel at the bottom right
-        self.progress_panel = ProgressPanel(
-            relative_rect=pygame.Rect(
-                (pygame.display.Info().current_w - 295, pygame.display.Info().current_h - 150),
-                (215, 100)
-            ),
-            manager=self.manager,
-            current_battle=None,
-            is_setup_mode=False
-        )
-        
+        self.tip_box: Optional[TipBox] = None        
         self.create_ui()
 
     def create_ui(self) -> None:
@@ -85,9 +72,6 @@ class CampaignEditorScene(Scene):
             )
             # Create tip box
             self.tip_box = TipBox(self.manager, battle)
-            
-        # Update grades panel with current battle
-        self.progress_panel.update_battle(battle)
 
     def create_context_buttons(self) -> None:
         """Create context-sensitive buttons based on selected hex."""
