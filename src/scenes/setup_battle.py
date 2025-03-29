@@ -502,7 +502,8 @@ class SetupBattleScene(Scene):
     def _save_corruption_powers(self, powers: list[CorruptionPower]) -> None:
         """Save the corruption powers for the current battle."""
         self.battle.corruption_powers = powers
-        battles.update_battle(self.battle, self.battle)
+        if self.battle.id != "sandbox":
+            battles.update_battle(self.battle, self.battle)
         
         # Make sure to update the world map
         self.world_map_view.rebuild(battles=self.world_map_view.battles.values())

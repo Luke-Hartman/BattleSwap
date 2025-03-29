@@ -10,7 +10,6 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 from pydantic import BaseModel
-from unit_values import unit_values
 from entities.units import UnitType
 from corruption_powers import CorruptionPowerUnion
 
@@ -59,7 +58,7 @@ class Battle(BaseModel):
     grades: Optional[BattleGrades] = None
     best_solution: Optional[List[Tuple[UnitType, Tuple[float, float]]]] = None
     best_corrupted_solution: Optional[List[Tuple[UnitType, Tuple[float, float]]]] = None
-    corruption_powers: Optional[List[CorruptionPowerUnion]] = None
+    corruption_powers: List[CorruptionPowerUnion] = []
 
 def get_battle_id(battle_id: str) -> Battle:
     """Retrieve a battle by its ID."""
