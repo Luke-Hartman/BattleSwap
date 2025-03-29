@@ -52,7 +52,6 @@ class ProgressPanel(UIPanel):
             if self.is_setup_mode:
                 # In setup mode, use currently deployed units
                 current_units = get_unit_placements(TeamType.TEAM1, current_battle)
-                print(current_units, current_battle.hex_coords, current_battle.id)
                 player_points = calculate_points_for_units(current_units)
                 enemy_points = calculate_points_for_units(current_battle.enemies or [])
             elif current_battle.hex_coords in progress_manager.solutions:
