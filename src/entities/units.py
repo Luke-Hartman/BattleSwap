@@ -61,6 +61,7 @@ unit_theme_ids: Dict[UnitType, str] = {
     UnitType.CORE_BARBARIAN: "#core_barbarian_icon",
     UnitType.CORE_CAVALRY: "#core_cavalry_icon",
     UnitType.CORE_DUELIST: "#core_duelist_icon",
+    UnitType.CORE_LONGBOWMAN: "#core_longbowman_icon",
     UnitType.CORE_SWORDSMAN: "#core_swordsman_icon",
     UnitType.CORE_WIZARD: "#core_wizard_icon",
     UnitType.CRUSADER_BANNER_BEARER: "#crusader_banner_bearer_icon",
@@ -72,7 +73,6 @@ unit_theme_ids: Dict[UnitType, str] = {
     UnitType.CRUSADER_DEFENDER: "#crusader_defender_icon",
     UnitType.CRUSADER_GOLD_KNIGHT: "#crusader_gold_knight_icon",
     UnitType.CRUSADER_GUARDIAN_ANGEL: "#crusader_guardian_angel_icon",
-    UnitType.CRUSADER_LONGBOWMAN: "#crusader_longbowman_icon",
     UnitType.CRUSADER_PALADIN: "#crusader_paladin_icon",
     UnitType.CRUSADER_PIKEMAN: "#crusader_pikeman_icon",
     UnitType.CRUSADER_RED_KNIGHT: "#crusader_red_knight_icon",
@@ -109,6 +109,7 @@ _unit_to_faction = {
     UnitType.CORE_BARBARIAN: Faction.CORE,
     UnitType.CORE_CAVALRY: Faction.CORE,
     UnitType.CORE_DUELIST: Faction.CORE,
+    UnitType.CORE_LONGBOWMAN: Faction.CORE,
     UnitType.CORE_SWORDSMAN: Faction.CORE,
     UnitType.CORE_WIZARD: Faction.CORE,
     UnitType.CRUSADER_BANNER_BEARER: Faction.CRUSADERS,
@@ -120,7 +121,6 @@ _unit_to_faction = {
     UnitType.CRUSADER_DEFENDER: Faction.CRUSADERS,
     UnitType.CRUSADER_GOLD_KNIGHT: Faction.CRUSADERS,
     UnitType.CRUSADER_GUARDIAN_ANGEL: Faction.CRUSADERS,
-    UnitType.CRUSADER_LONGBOWMAN: Faction.CRUSADERS,
     UnitType.CRUSADER_PALADIN: Faction.CRUSADERS,
     UnitType.CRUSADER_PIKEMAN: Faction.CRUSADERS,
     UnitType.CRUSADER_RED_KNIGHT: Faction.CRUSADERS,
@@ -141,6 +141,7 @@ def load_sprite_sheets():
         UnitType.CORE_BARBARIAN: "CoreBarbarian.png",
         UnitType.CORE_CAVALRY: "CoreCavalry.png",
         UnitType.CORE_DUELIST: "CoreDuelist.png",
+        UnitType.CORE_LONGBOWMAN: "CoreLongbowman.png",
         UnitType.CORE_SWORDSMAN: "CoreSwordsman.png", 
         UnitType.CORE_WIZARD: "CoreWizard.png",
         UnitType.CRUSADER_BANNER_BEARER: "Kirby.png",
@@ -152,7 +153,6 @@ def load_sprite_sheets():
         UnitType.CRUSADER_DEFENDER: "CrusaderDefender.png",
         UnitType.CRUSADER_GOLD_KNIGHT: "CrusaderGoldKnight.png",
         UnitType.CRUSADER_GUARDIAN_ANGEL: "CrusaderGuardianAngel.png",
-        UnitType.CRUSADER_LONGBOWMAN: "CrusaderLongbowman.png",
         UnitType.CRUSADER_PALADIN: "CrusaderPaladin.png",
         UnitType.CRUSADER_PIKEMAN: "CrusaderPikeman.png",
         UnitType.CRUSADER_RED_KNIGHT: "CrusaderRedKnight.png",
@@ -177,6 +177,7 @@ def load_sprite_sheets():
         UnitType.CORE_BARBARIAN: "CoreBarbarianIcon.png",
         UnitType.CORE_CAVALRY: "CoreCavalryIcon.png",
         UnitType.CORE_DUELIST: "CoreDuelistIcon.png",
+        UnitType.CORE_LONGBOWMAN: "CoreLongbowmanIcon.png",
         UnitType.CORE_SWORDSMAN: "CoreSwordsmanIcon.png",
         UnitType.CORE_WIZARD: "CoreWizardIcon.png",
         UnitType.CRUSADER_BANNER_BEARER: "CrusaderBannerBearerIcon.png",
@@ -188,7 +189,6 @@ def load_sprite_sheets():
         UnitType.CRUSADER_DEFENDER: "CrusaderDefenderIcon.png",
         UnitType.CRUSADER_GOLD_KNIGHT: "CrusaderGoldKnightIcon.png",
         UnitType.CRUSADER_GUARDIAN_ANGEL: "CrusaderGuardianAngelIcon.png",
-        UnitType.CRUSADER_LONGBOWMAN: "CrusaderLongbowmanIcon.png",
         UnitType.CRUSADER_PALADIN: "CrusaderPaladinIcon.png",
         UnitType.CRUSADER_PIKEMAN: "CrusaderPikemanIcon.png",
         UnitType.CRUSADER_RED_KNIGHT: "CrusaderRedKnightIcon.png",
@@ -226,6 +226,7 @@ def create_unit(x: int, y: int, unit_type: UnitType, team: TeamType, corruption_
         UnitType.CORE_BARBARIAN: create_core_barbarian,
         UnitType.CORE_CAVALRY: create_core_cavalry,
         UnitType.CORE_DUELIST: create_core_duelist,
+        UnitType.CORE_LONGBOWMAN: create_core_longbowman,
         UnitType.CORE_SWORDSMAN: create_core_swordsman,
         UnitType.CORE_WIZARD: create_core_wizard,
         UnitType.CRUSADER_BANNER_BEARER: create_crusader_banner_bearer,
@@ -237,7 +238,6 @@ def create_unit(x: int, y: int, unit_type: UnitType, team: TeamType, corruption_
         UnitType.CRUSADER_DEFENDER: create_crusader_defender,
         UnitType.CRUSADER_GOLD_KNIGHT: create_crusader_gold_knight,
         UnitType.CRUSADER_GUARDIAN_ANGEL: create_crusader_guardian_angel,
-        UnitType.CRUSADER_LONGBOWMAN: create_crusader_longbowman,
         UnitType.CRUSADER_PALADIN: create_crusader_paladin,
         UnitType.CRUSADER_PIKEMAN: create_crusader_pikeman,
         UnitType.CRUSADER_RED_KNIGHT: create_crusader_red_knight,
@@ -690,6 +690,116 @@ def create_core_duelist(x: int, y: int, team: TeamType, corruption_powers: Optio
         },
         sprite_center_offset=(0, 2),
     ))
+    esper.add_component(entity, WalkEffects({
+        frame: [PlaySound(sound_effects=[
+            (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+        ])]
+        for frame in [3, 7]
+    }))
+    return entity
+
+def create_core_longbowman(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
+    """Create a longbowman entity with all necessary components."""
+    entity = unit_base_entity(
+        x=x,
+        y=y,
+        team=team,
+        unit_type=UnitType.CORE_LONGBOWMAN,
+        movement_speed=gc.CORE_LONGBOWMAN_MOVEMENT_SPEED,
+        health=gc.CORE_LONGBOWMAN_HP,
+        hitbox=Hitbox(
+            width=16,
+            height=36,
+        ),
+        corruption_powers=corruption_powers
+    )
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=2, ascending=True),
+        ],
+        unit_condition=All([OnTeam(team=team.other()), Alive()])
+    )
+
+    esper.add_component(
+        entity,
+        Destination(target_strategy=targetting_strategy, x_offset=0)
+    )
+    esper.add_component(
+        entity,
+        RangeIndicator(ranges=[gc.CORE_LONGBOWMAN_ATTACK_RANGE])
+    )
+    esper.add_component(
+        entity,
+        Abilities(
+            abilities=[
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                Grounded(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.CORE_LONGBOWMAN_ATTACK_RANGE,
+                                    y_bias=None
+                                )
+                            ])
+                        )
+                    ],
+                    persistent_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                Grounded(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.CORE_LONGBOWMAN_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    y_bias=None
+                                )
+                            ])
+                        )
+                    ],
+                    effects={
+                        4: [
+                            PlaySound(SoundEffect(filename="longbow_loading.wav", volume=0.50)),
+                        ],
+                        6: [
+                            CreatesProjectile(
+                                projectile_speed=gc.CORE_LONGBOWMAN_PROJECTILE_SPEED,
+                                effects=[
+                                    Damages(damage=gc.CORE_LONGBOWMAN_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                                ],
+                                visual=Visual.Arrow,
+                                projectile_offset_x=5*gc.MINIFOLKS_SCALE,
+                                projectile_offset_y=0,
+                                unit_condition=All([OnTeam(team=team.other()), Alive(), Grounded()]),
+                            ),
+                            PlaySound(SoundEffect(filename="arrow_fired_from_longbow.wav", volume=0.50)),
+                        ]
+                    },
+                )
+            ]
+        )
+    )
+    esper.add_component(
+        entity,
+        SpriteSheet(
+            surface=sprite_sheets[UnitType.CORE_LONGBOWMAN],
+            frame_width=100,
+            frame_height=100,
+            scale=gc.TINY_RPG_SCALE,
+            frames={AnimationType.IDLE: 6, AnimationType.WALKING: 7, AnimationType.ABILITY1: 8, AnimationType.DYING: 4},
+            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 2, AnimationType.DYING: 5},
+            animation_durations={
+                AnimationType.IDLE: gc.CORE_LONGBOWMAN_ANIMATION_IDLE_DURATION,
+                AnimationType.WALKING: gc.CORE_LONGBOWMAN_ANIMATION_WALKING_DURATION,
+                AnimationType.ABILITY1: gc.CORE_LONGBOWMAN_ANIMATION_ATTACK_DURATION,
+                AnimationType.DYING: gc.CORE_LONGBOWMAN_ANIMATION_DYING_DURATION,
+            },
+            sprite_center_offset=(0, 2),
+        )
+    )
     esper.add_component(entity, WalkEffects({
         frame: [PlaySound(sound_effects=[
             (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
@@ -2031,116 +2141,6 @@ def create_crusader_guardian_angel(x: int, y: int, team: TeamType, corruption_po
                 AnimationType.WALKING: gc.CRUSADER_GUARDIAN_ANGEL_ANIMATION_FLYING_DURATION,
                 AnimationType.DYING: gc.CRUSADER_GUARDIAN_ANGEL_ANIMATION_DYING_DURATION,
             },
-        )
-    )
-    esper.add_component(entity, WalkEffects({
-        frame: [PlaySound(sound_effects=[
-            (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
-        ])]
-        for frame in [3, 7]
-    }))
-    return entity
-
-def create_crusader_longbowman(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
-    """Create a longbowman entity with all necessary components."""
-    entity = unit_base_entity(
-        x=x,
-        y=y,
-        team=team,
-        unit_type=UnitType.CRUSADER_LONGBOWMAN,
-        movement_speed=gc.CRUSADER_LONGBOWMAN_MOVEMENT_SPEED,
-        health=gc.CRUSADER_LONGBOWMAN_HP,
-        hitbox=Hitbox(
-            width=16,
-            height=36,
-        ),
-        corruption_powers=corruption_powers
-    )
-    targetting_strategy = TargetStrategy(
-        rankings=[
-            ByDistance(entity=entity, y_bias=2, ascending=True),
-        ],
-        unit_condition=All([OnTeam(team=team.other()), Alive()])
-    )
-
-    esper.add_component(
-        entity,
-        Destination(target_strategy=targetting_strategy, x_offset=0)
-    )
-    esper.add_component(
-        entity,
-        RangeIndicator(ranges=[gc.CRUSADER_LONGBOWMAN_ATTACK_RANGE])
-    )
-    esper.add_component(
-        entity,
-        Abilities(
-            abilities=[
-                Ability(
-                    target_strategy=targetting_strategy,
-                    trigger_conditions=[
-                        HasTarget(
-                            unit_condition=All([
-                                Alive(),
-                                Grounded(),
-                                MaximumDistanceFromEntity(
-                                    entity=entity,
-                                    distance=gc.CRUSADER_LONGBOWMAN_ATTACK_RANGE,
-                                    y_bias=None
-                                )
-                            ])
-                        )
-                    ],
-                    persistent_conditions=[
-                        HasTarget(
-                            unit_condition=All([
-                                Alive(),
-                                Grounded(),
-                                MaximumDistanceFromEntity(
-                                    entity=entity,
-                                    distance=gc.CRUSADER_LONGBOWMAN_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
-                                    y_bias=None
-                                )
-                            ])
-                        )
-                    ],
-                    effects={
-                        4: [
-                            PlaySound(SoundEffect(filename="longbow_loading.wav", volume=0.50)),
-                        ],
-                        6: [
-                            CreatesProjectile(
-                                projectile_speed=gc.CRUSADER_LONGBOWMAN_PROJECTILE_SPEED,
-                                effects=[
-                                    Damages(damage=gc.CRUSADER_LONGBOWMAN_ATTACK_DAMAGE, recipient=Recipient.TARGET),
-                                ],
-                                visual=Visual.Arrow,
-                                projectile_offset_x=5*gc.MINIFOLKS_SCALE,
-                                projectile_offset_y=0,
-                                unit_condition=All([OnTeam(team=team.other()), Alive(), Grounded()]),
-                            ),
-                            PlaySound(SoundEffect(filename="arrow_fired_from_longbow.wav", volume=0.50)),
-                        ]
-                    },
-                )
-            ]
-        )
-    )
-    esper.add_component(
-        entity,
-        SpriteSheet(
-            surface=sprite_sheets[UnitType.CRUSADER_LONGBOWMAN],
-            frame_width=100,
-            frame_height=100,
-            scale=gc.TINY_RPG_SCALE,
-            frames={AnimationType.IDLE: 6, AnimationType.WALKING: 7, AnimationType.ABILITY1: 8, AnimationType.DYING: 4},
-            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 2, AnimationType.DYING: 5},
-            animation_durations={
-                AnimationType.IDLE: gc.CRUSADER_LONGBOWMAN_ANIMATION_IDLE_DURATION,
-                AnimationType.WALKING: gc.CRUSADER_LONGBOWMAN_ANIMATION_WALKING_DURATION,
-                AnimationType.ABILITY1: gc.CRUSADER_LONGBOWMAN_ANIMATION_ATTACK_DURATION,
-                AnimationType.DYING: gc.CRUSADER_LONGBOWMAN_ANIMATION_DYING_DURATION,
-            },
-            sprite_center_offset=(0, 2),
         )
     )
     esper.add_component(entity, WalkEffects({

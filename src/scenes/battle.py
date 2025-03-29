@@ -119,7 +119,7 @@ class BattleScene(Scene):
         if self.battle.hex_coords in progress_manager.solutions:
             previous_solution = progress_manager.solutions[self.battle.hex_coords]
             previous_points = calculate_points_for_units(previous_solution.unit_placements)
-            tooltip = f"{previous_points} pts vs {enemy_points} pts\nto\n{current_points} pts vs {enemy_points} pts"
+            tooltip = f"New: {current_points} pts vs {enemy_points} pts\nOld: {previous_points} pts vs {enemy_points} pts"
         else:
             tooltip = f"{current_points} pts vs {enemy_points} pts"
 

@@ -42,15 +42,15 @@
       [
         "CORE_ARCHER",
         [
-          -271.0,
-          -24.0
+          -231.0,
+          -80.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          -373.0,
-          -30.0
+          -290.0,
+          -26.0
         ]
       ]
     ],
@@ -100,8 +100,8 @@
       [
         "CORE_SWORDSMAN",
         [
-          -50.6406460551018,
-          -9.0
+          -25.0,
+          23.000000000000114
         ]
       ]
     ],
@@ -173,13 +173,13 @@
         "CORE_CAVALRY",
         [
           -25.0,
-          -368.9999999999999
+          -381.0000000000001
         ]
       ]
     ],
     "best_corrupted_solution": [
       [
-        "CRUSADER_LONGBOWMAN",
+        "CORE_LONGBOWMAN",
         [
           -393.2812921102036,
           -372.0
@@ -230,8 +230,8 @@
       [
         "CORE_ARCHER",
         [
-          -25.0,
-          13.999999999999886
+          -76.92193816530562,
+          -7.0
         ]
       ]
     ],
@@ -323,8 +323,8 @@
       [
         "CORE_WIZARD",
         [
-          -372.10161513775483,
-          7.0
+          -377.10161513775483,
+          12.0
         ]
       ]
     ],
@@ -398,15 +398,15 @@
       [
         "CORE_ARCHER",
         [
-          -84.10161513775438,
-          -469.0
+          -88.10161513775438,
+          -430.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          -98.9977054469623,
-          -448.9599790372911
+          -107.75481872287492,
+          -414.58234683409034
         ]
       ]
     ],
@@ -414,22 +414,22 @@
       [
         "CORE_ARCHER",
         [
-          -84.10161513775438,
-          -469.0
+          -88.10161513775438,
+          -430.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          -108.91589435106471,
-          -471.8909079534436
+          -81.10161513775438,
+          -457.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          -123.81198466027263,
-          -451.8508869907347
+          -77.36768192485488,
+          -481.689228228929
         ]
       ]
     ],
@@ -493,22 +493,22 @@
       [
         "CORE_SWORDSMAN",
         [
-          -89.46096908265281,
-          -68.0
+          -25.0,
+          -50.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          -65.9507207296092,
-          -59.58789862975573
+          -25.0,
+          -25.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          -84.99604536082074,
-          -43.41920397009471
+          -50.0,
+          -50.0
         ]
       ]
     ],
@@ -593,68 +593,47 @@
     },
     "best_solution": [
       [
-        "CORE_CAVALRY",
+        "CORE_LONGBOWMAN",
         [
-          -25.0,
-          -341.9999999999999
+          -520.5625842204072,
+          -414.0
         ]
       ],
       [
-        "CORE_CAVALRY",
+        "CORE_LONGBOWMAN",
         [
-          -25.0,
-          -316.9999999999999
-        ]
-      ],
-      [
-        "CORE_CAVALRY",
-        [
-          -25.0,
-          -366.9999999999999
-        ]
-      ],
-      [
-        "CORE_CAVALRY",
-        [
-          -25.0,
-          -291.9999999999999
+          -529.1617128336056,
+          -390.5566710645268
         ]
       ]
     ],
     "best_corrupted_solution": [
       [
-        "CORE_SWORDSMAN",
+        "CORE_LONGBOWMAN",
         [
-          -25.0,
-          -341.9999999999999
+          -358.5625842204072,
+          -583.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          -25.0,
-          -316.9999999999999
+          -681.1882533591743,
+          406.7157785542696
         ]
       ],
       [
-        "CRUSADER_CLERIC",
+        "CORE_SWORDSMAN",
         [
-          -47.28356377897944,
-          -328.28692748712473
+          -430.5625842204072,
+          -551.0
         ]
       ],
       [
-        "CORE_CAVALRY",
+        "CORE_LONGBOWMAN",
         [
-          -43.33577769232306,
-          -358.9515590665264
-        ]
-      ],
-      [
-        "CORE_CAVALRY",
-        [
-          -25.0,
-          -375.90311813305317
+          -390.00171987970134,
+          -574.8324020430376
         ]
       ]
     ],
@@ -712,22 +691,22 @@
       [
         "CORE_ARCHER",
         [
-          -140.74226119285595,
-          613.0
+          -142.74226119285595,
+          430.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          -119.06469481889599,
-          625.4030023240005
+          -122.59460758176101,
+          444.7509644828633
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          -98.96465623707445,
-          640.218168241775
+          -104.01906313877589,
+          461.4379817062006
         ]
       ]
     ],
@@ -864,43 +843,43 @@
       [
         "CORE_ARCHER",
         [
-          -692.8203230275512,
-          -400.0000000000001
+          -600.0,
+          -450.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          -671.1928719752887,
-          -412.48661468690915
+          -625.0,
+          -450.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          -649.5654209230261,
-          -424.9732293738182
+          -650.0,
+          -425.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          -627.9379698707635,
-          -437.4598440607272
+          -675.0,
+          -400.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          -606.3105188185009,
-          -449.9464587476363
+          -625.0,
+          -425.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          -584.6830677662383,
-          -462.4330734345454
+          -650.0,
+          -400.0
         ]
       ]
     ],
@@ -998,14 +977,14 @@
         ]
       ],
       [
-        "CRUSADER_LONGBOWMAN",
+        "CORE_LONGBOWMAN",
         [
           400.0,
           250.0
         ]
       ],
       [
-        "CRUSADER_LONGBOWMAN",
+        "CORE_LONGBOWMAN",
         [
           400.0,
           -250.0
@@ -1034,28 +1013,28 @@
         "CORE_CAVALRY",
         [
           -25.0,
-          420.0
+          366.00000000000006
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -25.0,
+          -100.0
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -25.0,
+          -125.0
         ]
       ],
       [
         "CORE_CAVALRY",
         [
           -25.0,
-          -278.0
-        ]
-      ],
-      [
-        "CORE_SWORDSMAN",
-        [
-          -53.84387633061124,
-          -111.0
-        ]
-      ],
-      [
-        "CORE_SWORDSMAN",
-        [
-          -74.814806702223,
-          -97.41804673104465
+          -357.0
         ]
       ]
     ],
@@ -1148,23 +1127,23 @@
     },
     "best_solution": [
       [
-        "CRUSADER_LONGBOWMAN",
+        "CORE_LONGBOWMAN",
         [
-          -331.02355330306,
-          -279.0
+          -335.02355330306,
+          -254.0
         ]
       ]
     ],
     "best_corrupted_solution": [
       [
-        "CRUSADER_LONGBOWMAN",
+        "CORE_LONGBOWMAN",
         [
           -331.02355330306,
           -279.0
         ]
       ],
       [
-        "CRUSADER_LONGBOWMAN",
+        "CORE_LONGBOWMAN",
         [
           -345.7745177859251,
           -258.85234638890574
@@ -1175,10 +1154,10 @@
       {
         "name": "increased_max_health",
         "required_team": 2,
-        "increase_percent": 100.0
+        "increase_percent": 200.0
       },
       {
-        "name": "increased_damage",
+        "name": "increased_movement_speed",
         "required_team": 2,
         "increase_percent": 100.0
       }
@@ -1505,14 +1484,14 @@
         ]
       ],
       [
-        "CRUSADER_LONGBOWMAN",
+        "CORE_LONGBOWMAN",
         [
           500.0,
           200.0
         ]
       ],
       [
-        "CRUSADER_LONGBOWMAN",
+        "CORE_LONGBOWMAN",
         [
           500.0,
           -200.0
@@ -1691,14 +1670,14 @@
     ],
     "best_corrupted_solution": [
       [
-        "CRUSADER_LONGBOWMAN",
+        "CORE_LONGBOWMAN",
         [
           -490.02355330306,
           -157.0
         ]
       ],
       [
-        "CRUSADER_LONGBOWMAN",
+        "CORE_LONGBOWMAN",
         [
           -502.02355330306,
           71.0
@@ -2296,30 +2275,37 @@
         "CORE_SWORDSMAN",
         [
           -25.0,
-          9.000000000000227
+          0.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
           -25.0,
-          -15.999999999999773
+          25.0
         ]
       ]
     ],
     "best_corrupted_solution": [
       [
-        "CRUSADER_PALADIN",
+        "CORE_SWORDSMAN",
         [
           -25.0,
-          6.0
+          0.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
           -25.0,
-          31.0
+          25.0
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -25.0,
+          -25.0
         ]
       ]
     ],
@@ -2360,7 +2346,7 @@
     "grades": null,
     "best_solution": null,
     "best_corrupted_solution": null,
-    "corruption_powers": null
+    "corruption_powers": []
   },
   {
     "id": "1Duelist vs 3 Consecutive Swordsman",
@@ -2405,7 +2391,7 @@
     "grades": null,
     "best_solution": null,
     "best_corrupted_solution": null,
-    "corruption_powers": null
+    "corruption_powers": []
   },
   {
     "id": "1Pikeman, 1Defender vs 2Swordsman",
@@ -2450,7 +2436,7 @@
     "grades": null,
     "best_solution": null,
     "best_corrupted_solution": null,
-    "corruption_powers": null
+    "corruption_powers": []
   },
   {
     "id": "1Cavalry vs 2Archer",
@@ -2488,7 +2474,7 @@
     "grades": null,
     "best_solution": null,
     "best_corrupted_solution": null,
-    "corruption_powers": null
+    "corruption_powers": []
   },
   {
     "id": "1Swordsman vs 1Cavalry",
@@ -2519,7 +2505,7 @@
     "grades": null,
     "best_solution": null,
     "best_corrupted_solution": null,
-    "corruption_powers": null
+    "corruption_powers": []
   },
   {
     "id": "1Cavalry vs 1Wizard",
@@ -2550,7 +2536,7 @@
     "grades": null,
     "best_solution": null,
     "best_corrupted_solution": null,
-    "corruption_powers": null
+    "corruption_powers": []
   },
   {
     "id": "1Wizard vs 6Archer Group",
@@ -2616,7 +2602,7 @@
     "grades": null,
     "best_solution": null,
     "best_corrupted_solution": null,
-    "corruption_powers": null
+    "corruption_powers": []
   },
   {
     "id": "2Gold Knight vs 12Swordsman",
@@ -2731,7 +2717,7 @@
     "grades": null,
     "best_solution": null,
     "best_corrupted_solution": null,
-    "corruption_powers": null
+    "corruption_powers": []
   },
   {
     "id": "The Wizards",
@@ -2747,49 +2733,35 @@
         "CORE_SWORDSMAN",
         [
           125.0,
-          -175.0
+          100.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
           125.0,
-          -125.0
+          -100.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
           125.0,
-          0.0
+          -50.0
         ]
       ],
       [
         "CORE_WIZARD",
         [
           250.0,
-          -125.0
+          -100.0
         ]
       ],
       [
         "CORE_WIZARD",
         [
           250.0,
-          0.0
-        ]
-      ],
-      [
-        "CORE_SWORDSMAN",
-        [
-          375.0,
-          -250.0
-        ]
-      ],
-      [
-        "CORE_SWORDSMAN",
-        [
-          375.0,
-          125.0
+          100.0
         ]
       ]
     ],
@@ -2811,10 +2783,24 @@
     },
     "best_solution": [
       [
-        "CRUSADER_PALADIN",
+        "CORE_CAVALRY",
         [
-          -255.74226119285595,
-          -58.0
+          -30.74226119285595,
+          760.0
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -150.0,
+          0.0
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -175.0,
+          0.0
         ]
       ]
     ],
@@ -2845,7 +2831,7 @@
       {
         "name": "increased_max_health",
         "required_team": 2,
-        "increase_percent": 100.0
+        "increase_percent": 300.0
       }
     ]
   },
@@ -2948,6 +2934,117 @@
         "name": "increased_max_health",
         "required_team": 2,
         "increase_percent": 100.0
+      }
+    ]
+  },
+  {
+    "id": "Longbowmen",
+    "enemies": [
+      [
+        "CORE_LONGBOWMAN",
+        [
+          650.0,
+          0.0
+        ]
+      ],
+      [
+        "CORE_LONGBOWMAN",
+        [
+          650.0,
+          125.0
+        ]
+      ],
+      [
+        "CORE_LONGBOWMAN",
+        [
+          650.0,
+          -125.0
+        ]
+      ]
+    ],
+    "allies": null,
+    "tip": [
+      "Longbowmen have very long range and powerful arrows."
+    ],
+    "hex_coords": [
+      4,
+      -2
+    ],
+    "is_test": false,
+    "tip_voice_filename": null,
+    "grades": null,
+    "best_solution": null,
+    "best_corrupted_solution": null,
+    "corruption_powers": [
+      {
+        "name": "increased_damage",
+        "required_team": 2,
+        "increase_percent": -80.0
+      },
+      {
+        "name": "increased_ability_speed",
+        "required_team": 2,
+        "increase_percent": 900.0
+      }
+    ]
+  },
+  {
+    "id": "Guarded Longbowmen",
+    "enemies": [
+      [
+        "CORE_LONGBOWMAN",
+        [
+          675.0,
+          -375.0
+        ]
+      ],
+      [
+        "CORE_LONGBOWMAN",
+        [
+          675.0,
+          375.0
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          625.0,
+          375.0
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          625.0,
+          -375.0
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          625.0,
+          0.0
+        ]
+      ]
+    ],
+    "allies": null,
+    "tip": [
+      "Longbowmen work great with units to protect them from fast units"
+    ],
+    "hex_coords": [
+      5,
+      -2
+    ],
+    "is_test": false,
+    "tip_voice_filename": null,
+    "grades": null,
+    "best_solution": null,
+    "best_corrupted_solution": null,
+    "corruption_powers": [
+      {
+        "name": "increased_movement_speed",
+        "required_team": null,
+        "increase_percent": -70.0
       }
     ]
   }

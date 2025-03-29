@@ -62,6 +62,18 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
             f"Range: {gc.CORE_DUELIST_ATTACK_RANGE}",
             f"AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
         ]
+    if unit_type == UnitType.CORE_LONGBOWMAN:
+        return [
+            f"Name: Longbowman",
+            f"Faction: Core",
+            f"Value: {unit_values[unit_type]}",
+            f"Health: {gc.CORE_LONGBOWMAN_HP}",
+            f"Attack: {gc.CORE_LONGBOWMAN_ATTACK_DAMAGE}",
+            f"DPS: {round(gc.CORE_LONGBOWMAN_ATTACK_DAMAGE/gc.CORE_LONGBOWMAN_ANIMATION_ATTACK_DURATION, 2)}",
+            f"Speed: {gc.CORE_LONGBOWMAN_MOVEMENT_SPEED}",
+            f"Range: {gc.CORE_LONGBOWMAN_ATTACK_RANGE}",
+            f"AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
+        ]
     if unit_type == UnitType.CORE_SWORDSMAN:
         return [
             f"Name: Swordsman",
@@ -204,18 +216,6 @@ def get_stats_card_text(unit_type: UnitType) -> List[str]:
             f"Attachment Range: {gc.CRUSADER_GUARDIAN_ANGEL_ATTACHMENT_RANGE}",
             f"AI: Follows the nearest ally until it dies, then follows the next nearest ally.",
             f"AI: Heals the ally they are following."
-        ]
-    if unit_type == UnitType.CRUSADER_LONGBOWMAN:
-        return [
-            f"Name: Longbowman",
-            f"Faction: Crusader",
-            f"Value: {unit_values[unit_type]}",
-            f"Health: {gc.CRUSADER_LONGBOWMAN_HP}",
-            f"Attack: {gc.CRUSADER_LONGBOWMAN_ATTACK_DAMAGE}",
-            f"DPS: {round(gc.CRUSADER_LONGBOWMAN_ATTACK_DAMAGE/gc.CRUSADER_LONGBOWMAN_ANIMATION_ATTACK_DURATION, 2)}",
-            f"Speed: {gc.CRUSADER_LONGBOWMAN_MOVEMENT_SPEED}",
-            f"Range: {gc.CRUSADER_LONGBOWMAN_ATTACK_RANGE}",
-            f"AI: Targets the nearest enemy, preferring units at the same height on the y-axis",
         ]
     if unit_type == UnitType.CRUSADER_PALADIN:
         return [

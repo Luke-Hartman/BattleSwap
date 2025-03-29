@@ -97,10 +97,10 @@
             }
         }
     },
-    "#core_wizard_icon": {
+    "#core_longbowman_icon": {
         "images": {
             "normal_image": {
-                "path": "assets/icons/CoreWizardIcon.png"
+                "path": "assets/icons/CoreLongbowmanIcon.png"
             }
         }
     },
@@ -108,6 +108,13 @@
         "images": {
             "normal_image": {
                 "path": "assets/icons/CoreSwordsmanIcon.png"
+            }
+        }
+    },
+    "#core_wizard_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/CoreWizardIcon.png"
             }
         }
     },
@@ -171,13 +178,6 @@
         "images": {
             "normal_image": {
                 "path": "assets/icons/CrusaderGuardianAngelIcon.png"
-            }
-        }
-    },
-    "#crusader_longbowman_icon": {
-        "images": {
-            "normal_image": {
-                "path": "assets/icons/CrusaderLongbowmanIcon.png"
             }
         }
     },
