@@ -97,6 +97,11 @@ class SaveBattleDialog:
         battle_id = self.id_entry.get_text()
         tip = self.tip_entry.get_text().split('\n') if self.tip_entry.get_text() else ["TODO"]
 
+        if self.existing_battle_id:
+            existing_battle = battles.get_battle_id(self.existing_battle_id)
+        else:
+            existing_battle = None
+
         battle = battles.Battle(
             id=battle_id,
             enemies=self.enemy_placements,
@@ -104,12 +109,13 @@ class SaveBattleDialog:
             tip=tip,
             dependencies=[],
             is_test=is_test,
-            hex_coords=self.hex_coords if not is_test else None
+            hex_coords=self.hex_coords if not is_test else None,
+            corruption_powers=existing_battle.corruption_powers if existing_battle else None
         )
 
         if self.existing_battle_id:
             # Always use update_battle when editing an existing battle
-            battles.update_battle(battles.get_battle_id(self.existing_battle_id), battle)
+            battles.update_battle(existing_battle, battle)
         else:
             # Only use add_battle for completely new battles
             battles.add_battle(battle)

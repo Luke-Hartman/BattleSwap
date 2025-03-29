@@ -15,6 +15,7 @@ from ui_components.return_button import ReturnButton
 from world_map_view import BorderState, FillState, WorldMapView, HexState
 from ui_components.tip_box import TipBox
 from ui_components.save_battle_dialog import SaveBattleDialog
+from ui_components.corruption_icon import CorruptionIcon
 
 class CampaignEditorScene(Scene):
     """Scene for editing the campaign."""
@@ -40,7 +41,9 @@ class CampaignEditorScene(Scene):
         self.context_buttons: dict[str, pygame_gui.elements.UIButton] = {}
         # Store UI elements for battle info
         self.battle_id_label: Optional[pygame_gui.elements.UILabel] = None
-        self.tip_box: Optional[TipBox] = None        
+        self.tip_box: Optional[TipBox] = None
+        self.corruption_icon: Optional[CorruptionIcon] = None
+        
         self.create_ui()
 
     def create_ui(self) -> None:
@@ -62,6 +65,9 @@ class CampaignEditorScene(Scene):
         if self.tip_box is not None:
             self.tip_box.kill()
             self.tip_box = None
+        if self.corruption_icon is not None:
+            self.corruption_icon.kill()
+            self.corruption_icon = None
 
         if battle is not None:
             # Create battle ID label
@@ -72,6 +78,18 @@ class CampaignEditorScene(Scene):
             )
             # Create tip box
             self.tip_box = TipBox(self.manager, battle)
+            
+            # Show corruption icon if battle is corrupted
+            if battle.hex_coords in self.world_map_view.corrupted_hexes:
+                icon_size = (48, 48)
+                icon_position = (pygame.display.Info().current_w - icon_size[0] - 15, 50)
+                self.corruption_icon = CorruptionIcon(
+                    manager=self.manager,
+                    position=icon_position,
+                    size=icon_size,
+                    battle_hex_coords=battle.hex_coords,
+                    corruption_powers=battle.corruption_powers
+                )
 
     def create_context_buttons(self) -> None:
         """Create context-sensitive buttons based on selected hex."""
@@ -125,6 +143,16 @@ class CampaignEditorScene(Scene):
                     (button_width, button_height)
                 ),
                 text="Delete",
+                manager=self.manager
+            )
+
+            # Add corruption toggle button
+            self.context_buttons["corruption"] = pygame_gui.elements.UIButton(
+                relative_rect=pygame.Rect(
+                    (start_x, y - button_height - padding),
+                    (button_width, button_height)
+                ),
+                text="Toggle Corruption",
                 manager=self.manager
             )
         else:
@@ -195,6 +223,18 @@ class CampaignEditorScene(Scene):
                             self.selected_hex = None
                             self.world_map_view.rebuild(get_battles())
                             self.create_context_buttons()
+                    elif event.ui_element == self.context_buttons.get("corruption"):
+                        # Toggle corruption for the selected battle
+                        battle = self.world_map_view.get_battle_from_hex(self.selected_hex)
+                        if battle:
+                            if battle.hex_coords in self.world_map_view.corrupted_hexes:
+                                # Remove corruption
+                                self.world_map_view.corrupted_hexes.remove(battle.hex_coords)
+                            else:
+                                # Add corruption
+                                self.world_map_view.corrupted_hexes.append(battle.hex_coords)
+                            self.create_context_buttons()
+                            self.world_map_view.rebuild(get_battles())
                     # Handle save battle dialog events
                     elif hasattr(self, 'save_battle_dialog'):
                         if event.ui_element == self.save_battle_dialog.save_battle_button:
@@ -266,6 +306,8 @@ class CampaignEditorScene(Scene):
             self.manager.process_events(event)
 
         states = defaultdict(HexState)
+        for hex_coords in self.world_map_view.corrupted_hexes:
+            states[hex_coords].border = BorderState.RED_BORDER
         if self.selected_hex is not None:
             states[self.selected_hex].border = BorderState.YELLOW_BORDER
         if self.move_target_hex is not None:

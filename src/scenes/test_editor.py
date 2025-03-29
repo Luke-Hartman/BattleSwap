@@ -337,6 +337,7 @@ class TestEditorScene(Scene):
                             manager=self.manager,
                             battles=[battle],
                             camera=Camera(),
+                            corrupted_hexes=[],
                         )
                         pygame.event.post(
                             SetupBattleSceneEvent(

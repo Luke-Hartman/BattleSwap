@@ -171,7 +171,8 @@ class MainMenuScene(Scene):
                             screen=self.screen,
                             manager=self.manager,
                             battles=progress_manager.get_battles_including_solutions(),
-                            camera=camera
+                            camera=camera,
+                            corrupted_hexes=progress_manager.corrupted_hexes
                         )
                         pygame.event.post(CampaignSceneEvent(
                             world_map_view=world_map_view,

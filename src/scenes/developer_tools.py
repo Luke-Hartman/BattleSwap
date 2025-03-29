@@ -104,7 +104,8 @@ class DeveloperToolsScene(Scene):
                             screen=self.screen,
                             manager=self.manager,
                             battles=battles.get_battles(),
-                            camera=camera
+                            camera=camera,
+                            corrupted_hexes=[],
                         )
                         pygame.event.post(CampaignEditorSceneEvent(
                             world_map_view=world_map_view,
@@ -128,7 +129,8 @@ class DeveloperToolsScene(Scene):
                             screen=self.screen,
                             manager=self.manager,
                             battles=[battle],
-                            camera=camera
+                            camera=camera,
+                            corrupted_hexes=[],
                         )
                         pygame.event.post(SetupBattleSceneEvent(
                             world_map_view=world_map_view,

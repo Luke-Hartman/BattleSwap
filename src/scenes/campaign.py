@@ -118,7 +118,7 @@ class CampaignScene(Scene):
         if battle is None:
             return
 
-        if progress_manager.is_battle_corrupted(self.selected_battle_hex):
+        if battle.hex_coords in self.world_map_view.corrupted_hexes:
             icon_size = (48, 48)
             icon_position = (pygame.display.Info().current_w - icon_size[0] - 15, 50)
             self.corruption_icon = CorruptionIcon(

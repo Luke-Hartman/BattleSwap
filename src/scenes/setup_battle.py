@@ -79,6 +79,7 @@ class SetupBattleScene(Scene):
                 manager=self.manager,
                 battles=[battle],
                 camera=Camera(),
+                corrupted_hexes=[],
             )
             if battle_id is not None:
                 raise ValueError("Battle ID must be None if world_map_view is None")
@@ -119,7 +120,7 @@ class SetupBattleScene(Scene):
         self.feedback_button = FeedbackButton(self.manager)
         self.tip_box = TipBox(self.manager, battle)
         
-        if progress_manager.is_battle_corrupted(battle.hex_coords):
+        if battle.hex_coords in self.world_map_view.corrupted_hexes:
             icon_size = (48, 48)
             icon_position = (pygame.display.Info().current_w - icon_size[0] - 15, 50)
             self.corruption_icon = CorruptionIcon(

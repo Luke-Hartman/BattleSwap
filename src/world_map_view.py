@@ -6,6 +6,7 @@ import pygame
 import pygame_gui
 from shapely import Polygon
 
+from corrupted_hexes import CorruptedHexes
 from game_constants import gc, reload_game_constants
 from auto_battle import AutoBattle
 from battles import Battle
@@ -71,21 +72,16 @@ class WorldMapView:
         screen: pygame.Surface,
         manager: pygame_gui.UIManager,
         battles: List[Battle],
-        camera: Camera
+        camera: Camera,
+        corrupted_hexes: CorruptedHexes
     ) -> None:
         """
-        Initialize the world map view.
-
-        :param screen: The main pygame display surface.
-        :param manager: The pygame_gui UI manager.
-        :param battles: A list of Battle objects with defined hex_coords.
-        :param camera: A Camera instance for world-to-screen transformations.
-        """
+        Initialize the world map view."""
         self.screen = screen
         self.manager = manager
         self.camera = camera
         self.default_world = "__default__"
-
+        self.corrupted_hexes = corrupted_hexes
         self.hex_states: Dict[Tuple[int, int], HexState] = {}
         self.rebuild(battles, cleanup=False)
     
@@ -102,7 +98,7 @@ class WorldMapView:
             esper.add_processor(RotationProcessor())
             esper.add_processor(TargettingProcessor())
 
-            is_corrupted = progress_manager and progress_manager.is_battle_corrupted(battle.hex_coords)
+            is_corrupted = battle.hex_coords in self.corrupted_hexes
             corruption_powers = battle.corruption_powers if is_corrupted else None
 
             world_x, world_y = axial_to_world(*battle.hex_coords)
