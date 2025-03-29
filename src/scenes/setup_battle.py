@@ -284,8 +284,8 @@ class SetupBattleScene(Scene):
         if (
             not self.sandbox_mode and has_unsaved_changes(self.battle)
             or self.sandbox_mode and (
-                len(get_unit_placements(TeamType.TEAM1, self.battle.hex_coords)) > 0
-                or len(get_unit_placements(TeamType.TEAM2, self.battle.hex_coords)) > 0
+                len(get_unit_placements(TeamType.TEAM1, self.battle)) > 0
+                or len(get_unit_placements(TeamType.TEAM2, self.battle)) > 0
             )
         ):
             self.show_exit_confirmation()
@@ -337,8 +337,8 @@ class SetupBattleScene(Scene):
                             break
                     assert event.ui_element is not None
                     if event.ui_element == self.save_button:
-                        enemy_placements = get_unit_placements(TeamType.TEAM2, battle_coords)
-                        ally_placements = get_unit_placements(TeamType.TEAM1, battle_coords)
+                        enemy_placements = get_unit_placements(TeamType.TEAM2, self.battle)
+                        ally_placements = get_unit_placements(TeamType.TEAM1, self.battle)
                         self.save_dialog = SaveBattleDialog(
                             self.manager,
                             ally_placements=ally_placements,
@@ -382,8 +382,8 @@ class SetupBattleScene(Scene):
                         self._toggle_corruption()
                     elif event.ui_element == self.simulate_button:
                         outcome = simulate_battle(
-                            ally_placements=get_unit_placements(TeamType.TEAM1, battle_coords),
-                            enemy_placements=get_unit_placements(TeamType.TEAM2, battle_coords),
+                            ally_placements=get_unit_placements(TeamType.TEAM1, self.battle),
+                            enemy_placements=get_unit_placements(TeamType.TEAM2, self.battle),
                             max_duration=60,  # 60 second timeout
                             corruption_powers=self.battle.corruption_powers,
                         )
