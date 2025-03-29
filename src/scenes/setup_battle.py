@@ -31,6 +31,8 @@ from voice import play_intro
 from world_map_view import FillState, HexState, WorldMapView
 from scene_utils import draw_grid, get_center_line, get_placement_pos, get_hovered_unit, get_unit_placements, get_legal_placement_area, has_unsaved_changes, mouse_over_ui
 from ui_components.progress_panel import ProgressPanel
+from ui_components.corruption_power_editor import CorruptionPowerEditorDialog
+from corruption_powers import CorruptionPower
 
 
 class SetupBattleScene(Scene):
@@ -181,10 +183,30 @@ class SetupBattleScene(Scene):
                 text='',
                 manager=self.manager
             )
+            # Add edit corruption powers button
+            self.edit_corruption_button = pygame_gui.elements.UIButton(
+                relative_rect=pygame.Rect(
+                    (pygame.display.Info().current_w - 530, 10),
+                    (100, 30)
+                ),
+                text='Edit Powers',
+                manager=self.manager
+            )
+            # Add toggle corruption button
+            self.toggle_corruption_button = pygame_gui.elements.UIButton(
+                relative_rect=pygame.Rect(
+                    (pygame.display.Info().current_w - 530, 50),
+                    (100, 30)
+                ),
+                text='Toggle Corruption',
+                manager=self.manager
+            )
         else:
             self.save_button = None
             self.simulate_button = None
             self.results_box = None
+            self.edit_corruption_button = None
+            self.toggle_corruption_button = None
         
         self.confirmation_dialog: Optional[pygame_gui.windows.UIConfirmationDialog] = None
     
@@ -344,11 +366,20 @@ class SetupBattleScene(Scene):
                           event.ui_element == self.save_dialog.save_test_button):
                         self.save_dialog.save_battle(is_test=True)
                         self.save_dialog.kill()
-                        self.save_dialog = None
                     elif (self.save_dialog and 
                           event.ui_element == self.save_dialog.cancel_button):
                         self.save_dialog.kill()
                         self.save_dialog = None
+                    elif self.developer_mode and event.ui_element == self.edit_corruption_button:
+                        # Open corruption power editor dialog
+                        self.corruption_editor = CorruptionPowerEditorDialog(
+                            manager=self.manager,
+                            current_powers=self.battle.corruption_powers,
+                            on_save=self._save_corruption_powers
+                        )
+                    elif self.developer_mode and event.ui_element == self.toggle_corruption_button:
+                        # Toggle corruption state
+                        self._toggle_corruption()
                     elif event.ui_element == self.simulate_button:
                         outcome = simulate_battle(
                             ally_placements=get_unit_placements(TeamType.TEAM1, battle_coords),
@@ -409,6 +440,15 @@ class SetupBattleScene(Scene):
             self.manager.process_events(event)
             self.feedback_button.handle_event(event)
             self.barracks.handle_event(event)
+            
+            # Handle corruption editor dialog events if it exists
+            if hasattr(self, 'corruption_editor'):
+                # Check for button presses
+                if event.type == pygame_gui.UI_BUTTON_PRESSED:
+                    # Close the dialog if save button was pressed
+                    if hasattr(event, 'ui_element') and hasattr(self.corruption_editor, 'save_button'):
+                        if event.ui_element == self.corruption_editor.save_button:
+                            delattr(self, 'corruption_editor')
 
         # Update preview for selected unit
         if self.selected_partial_unit is not None:
@@ -458,6 +498,63 @@ class SetupBattleScene(Scene):
         self.manager.update(time_delta)
         self.manager.draw_ui(self.screen)
         return super().update(time_delta, events)
+
+    def _save_corruption_powers(self, powers: list[CorruptionPower]) -> None:
+        """Save the corruption powers for the current battle."""
+        self.battle.corruption_powers = powers
+        battles.update_battle(self.battle, self.battle)
+        
+        # Make sure to update the world map
+        self.world_map_view.rebuild(battles=self.world_map_view.battles.values())
+        
+        # Update corruption icon
+        if self.corruption_icon is not None:
+            self.corruption_icon.kill()
+            self.corruption_icon = None
+
+        if self.battle.hex_coords in self.world_map_view.corrupted_hexes:
+            icon_size = (48, 48)
+            icon_position = (pygame.display.Info().current_w - icon_size[0] - 15, 50)
+            self.corruption_icon = CorruptionIcon(
+                manager=self.manager,
+                position=icon_position,
+                size=icon_size,
+                battle_hex_coords=self.battle.hex_coords,
+                corruption_powers=powers
+            )
+
+    def _toggle_corruption(self) -> None:
+        """Toggle the corruption state of the current battle."""
+        # Get battle hex coordinates
+        if self.battle.hex_coords is None:
+            return
+            
+        # Toggle the corruption state
+        if self.battle.hex_coords in self.world_map_view.corrupted_hexes:
+            # Remove from corrupted hexes
+            self.world_map_view.corrupted_hexes.remove(self.battle.hex_coords)
+            
+            # Remove corruption icon if it exists
+            if self.corruption_icon is not None:
+                self.corruption_icon.kill()
+                self.corruption_icon = None
+        else:
+            # Add to corrupted hexes
+            self.world_map_view.corrupted_hexes.append(self.battle.hex_coords)
+            
+            # Create corruption icon
+            icon_size = (48, 48)
+            icon_position = (pygame.display.Info().current_w - icon_size[0] - 15, 50)
+            self.corruption_icon = CorruptionIcon(
+                manager=self.manager,
+                position=icon_position,
+                size=icon_size,
+                battle_hex_coords=self.battle.hex_coords,
+                corruption_powers=self.battle.corruption_powers
+            )
+        
+        # Rebuild the world to apply changes
+        self.world_map_view.rebuild(battles=self.world_map_view.battles.values())
 
 
 
