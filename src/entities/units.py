@@ -971,7 +971,7 @@ def create_core_wizard(x: int, y: int, team: TeamType, corruption_powers: Option
                                         effects=[
                                             Damages(damage=gc.CORE_WIZARD_ATTACK_DAMAGE, recipient=Recipient.TARGET),
                                         ],
-                                        radius=45.0,
+                                        radius=9*gc.CORE_WIZARD_FIREBALL_AOE_SCALE,
                                         unit_condition=All([Alive(), Grounded()]),
                                         location=Recipient.PARENT,
                                     ),
