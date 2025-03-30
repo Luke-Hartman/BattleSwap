@@ -1326,7 +1326,7 @@ def create_crusader_catapult(x: int, y: int, team: TeamType, corruption_powers: 
                                         effects=[
                                             Damages(damage=gc.CRUSADER_CATAPULT_DAMAGE, recipient=Recipient.TARGET)
                                         ],
-                                        radius=25.0,
+                                        radius=10 * gc.CRUSADER_CATAPULT_AOE_SCALE,
                                         unit_condition=All([Alive(), Grounded()]),
                                         location=Recipient.PARENT,
                                     ),
@@ -1440,7 +1440,7 @@ def create_crusader_cleric(x: int, y: int, team: TeamType, corruption_powers: Op
         entity,
         Destination(
             target_strategy=target_leader,
-            x_offset=gc.CRUSADER_CLERIC_ATTACK_RANGE*2/3,
+            x_offset=gc.CRUSADER_CLERIC_ATTACK_RANGE/3,
             use_team_x_offset=True,
         )
     )

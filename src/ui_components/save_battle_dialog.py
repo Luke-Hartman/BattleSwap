@@ -110,7 +110,7 @@ class SaveBattleDialog:
             dependencies=[],
             is_test=is_test,
             hex_coords=self.hex_coords if not is_test else None,
-            corruption_powers=existing_battle.corruption_powers if existing_battle else None
+            corruption_powers=existing_battle.corruption_powers if existing_battle else []
         )
 
         if self.existing_battle_id:

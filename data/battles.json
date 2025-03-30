@@ -2865,6 +2865,13 @@
           25.0,
           125.0
         ]
+      ],
+      [
+        "ZOMBIE_TANK",
+        [
+          25.0,
+          250.0
+        ]
       ]
     ],
     "allies": null,
@@ -2877,12 +2884,7 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": {
-      "a_cutoff": 400,
-      "b_cutoff": 600,
-      "c_cutoff": 900,
-      "d_cutoff": 1200
-    },
+    "grades": null,
     "best_solution": [
       [
         "CORE_DUELIST",
@@ -3045,6 +3047,545 @@
         "name": "increased_movement_speed",
         "required_team": null,
         "increase_percent": -70.0
+      }
+    ]
+  },
+  {
+    "id": "Guardian Angels",
+    "enemies": [
+      [
+        "CRUSADER_DEFENDER",
+        [
+          25.0,
+          -384.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          25.0,
+          375.0
+        ]
+      ],
+      [
+        "CRUSADER_GUARDIAN_ANGEL",
+        [
+          250.0,
+          -375.0
+        ]
+      ],
+      [
+        "CRUSADER_GUARDIAN_ANGEL",
+        [
+          250.0,
+          375.0
+        ]
+      ]
+    ],
+    "allies": null,
+    "tip": [
+      "Guardian angels provide cheap and consistent healing to a single unit."
+    ],
+    "hex_coords": [
+      8,
+      -2
+    ],
+    "is_test": false,
+    "tip_voice_filename": null,
+    "grades": null,
+    "best_solution": null,
+    "best_corrupted_solution": null,
+    "corruption_powers": [
+      {
+        "name": "increased_max_health",
+        "required_team": null,
+        "increase_percent": -50.0
+      },
+      {
+        "name": "increased_damage",
+        "required_team": null,
+        "increase_percent": -50.0
+      }
+    ]
+  },
+  {
+    "id": "Soldiers",
+    "enemies": [
+      [
+        "CRUSADER_SOLDIER",
+        [
+          525.0,
+          0.0
+        ]
+      ],
+      [
+        "CRUSADER_SOLDIER",
+        [
+          525.0,
+          50.0
+        ]
+      ],
+      [
+        "CRUSADER_SOLDIER",
+        [
+          525.0,
+          -50.0
+        ]
+      ]
+    ],
+    "allies": [],
+    "tip": [
+      "Soliders are well rounded units with ranged attacks, melee attacks, and armor."
+    ],
+    "hex_coords": [
+      9,
+      -2
+    ],
+    "is_test": false,
+    "tip_voice_filename": null,
+    "grades": null,
+    "best_solution": null,
+    "best_corrupted_solution": null,
+    "corruption_powers": [
+      {
+        "name": "increased_damage",
+        "required_team": 1,
+        "increase_percent": -50.0
+      },
+      {
+        "name": "increased_movement_speed",
+        "required_team": 1,
+        "increase_percent": -50.0
+      }
+    ]
+  },
+  {
+    "id": "Dark Knight Rises",
+    "enemies": [
+      [
+        "CRUSADER_BLACK_KNIGHT",
+        [
+          675.0,
+          -375.0
+        ]
+      ],
+      [
+        "CRUSADER_BLACK_KNIGHT",
+        [
+          449.23418550408496,
+          146.0
+        ]
+      ],
+      [
+        "CRUSADER_PALADIN",
+        [
+          444.23418550408496,
+          -198.0
+        ]
+      ],
+      [
+        "CRUSADER_CLERIC",
+        [
+          453.23418550408496,
+          -131.0
+        ]
+      ],
+      [
+        "CRUSADER_GUARDIAN_ANGEL",
+        [
+          527.234185504085,
+          163.0
+        ]
+      ],
+      [
+        "CORE_LONGBOWMAN",
+        [
+          436.23418550408496,
+          -5.0
+        ]
+      ],
+      [
+        "CORE_LONGBOWMAN",
+        [
+          501.23418550408496,
+          -279.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          180.23418550408496,
+          -337.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          124.23418550408496,
+          -65.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          626.234185504085,
+          -61.0
+        ]
+      ],
+      [
+        "CRUSADER_SOLDIER",
+        [
+          254.23418550408496,
+          19.0
+        ]
+      ],
+      [
+        "CRUSADER_SOLDIER",
+        [
+          183.23418550408496,
+          -186.0
+        ]
+      ],
+      [
+        "CRUSADER_CLERIC",
+        [
+          211.23418550408496,
+          -70.0
+        ]
+      ]
+    ],
+    "allies": null,
+    "tip": [
+      "Black knights thrive on chaos."
+    ],
+    "hex_coords": [
+      10,
+      -2
+    ],
+    "is_test": false,
+    "tip_voice_filename": null,
+    "grades": null,
+    "best_solution": null,
+    "best_corrupted_solution": null,
+    "corruption_powers": [
+      {
+        "name": "increased_damage",
+        "required_team": null,
+        "increase_percent": 50.0
+      },
+      {
+        "name": "increased_movement_speed",
+        "required_team": 2,
+        "increase_percent": 50.0
+      }
+    ]
+  },
+  {
+    "id": "Catapult",
+    "enemies": [
+      [
+        "CRUSADER_CATAPULT",
+        [
+          525.0,
+          0.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          150.0,
+          0.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          200.0,
+          -75.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          200.0,
+          75.0
+        ]
+      ],
+      [
+        "CRUSADER_GOLD_KNIGHT",
+        [
+          225.0,
+          0.0
+        ]
+      ],
+      [
+        "CRUSADER_CLERIC",
+        [
+          300.0,
+          0.0
+        ]
+      ]
+    ],
+    "allies": null,
+    "tip": [
+      "Catapults hurl projectiles that deal extremely high damage to all units in an area."
+    ],
+    "hex_coords": [
+      7,
+      2
+    ],
+    "is_test": false,
+    "tip_voice_filename": null,
+    "grades": null,
+    "best_solution": null,
+    "best_corrupted_solution": null,
+    "corruption_powers": [
+      {
+        "name": "increased_movement_speed",
+        "required_team": 1,
+        "increase_percent": -80.0
+      },
+      {
+        "name": "increased_max_health",
+        "required_team": 2,
+        "increase_percent": 100.0
+      }
+    ]
+  },
+  {
+    "id": "More Catapults",
+    "enemies": [
+      [
+        "CRUSADER_CATAPULT",
+        [
+          625.0,
+          0.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          75.0,
+          125.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          75.0,
+          -125.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          200.0,
+          -375.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          200.0,
+          375.0
+        ]
+      ],
+      [
+        "CRUSADER_CATAPULT",
+        [
+          125.0,
+          0.0
+        ]
+      ],
+      [
+        "CRUSADER_CATAPULT",
+        [
+          375.0,
+          0.0
+        ]
+      ],
+      [
+        "CRUSADER_BLACK_KNIGHT",
+        [
+          375.0,
+          125.0
+        ]
+      ]
+    ],
+    "allies": null,
+    "tip": [
+      "Catapults are immobile, and can't hit targets which are too close."
+    ],
+    "hex_coords": [
+      8,
+      2
+    ],
+    "is_test": false,
+    "tip_voice_filename": null,
+    "grades": null,
+    "best_solution": null,
+    "best_corrupted_solution": null,
+    "corruption_powers": [
+      {
+        "name": "increased_movement_speed",
+        "required_team": 1,
+        "increase_percent": -80.0
+      }
+    ]
+  },
+  {
+    "id": "Phalanx",
+    "enemies": [
+      [
+        "CRUSADER_SOLDIER",
+        [
+          100.0,
+          125.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          25.0,
+          0.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          25.0,
+          -100.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          25.0,
+          100.0
+        ]
+      ],
+      [
+        "CRUSADER_PIKEMAN",
+        [
+          50.0,
+          -75.0
+        ]
+      ],
+      [
+        "CRUSADER_PIKEMAN",
+        [
+          50.0,
+          -25.0
+        ]
+      ],
+      [
+        "CRUSADER_PIKEMAN",
+        [
+          50.0,
+          25.0
+        ]
+      ],
+      [
+        "CRUSADER_PIKEMAN",
+        [
+          50.0,
+          75.0
+        ]
+      ],
+      [
+        "CRUSADER_SOLDIER",
+        [
+          100.0,
+          -125.0
+        ]
+      ],
+      [
+        "CRUSADER_SOLDIER",
+        [
+          100.0,
+          175.0
+        ]
+      ],
+      [
+        "CRUSADER_SOLDIER",
+        [
+          100.0,
+          -175.0
+        ]
+      ],
+      [
+        "CRUSADER_GUARDIAN_ANGEL",
+        [
+          150.0,
+          -175.0
+        ]
+      ],
+      [
+        "CRUSADER_GUARDIAN_ANGEL",
+        [
+          150.0,
+          175.0
+        ]
+      ],
+      [
+        "CORE_LONGBOWMAN",
+        [
+          150.0,
+          -75.0
+        ]
+      ],
+      [
+        "CORE_LONGBOWMAN",
+        [
+          150.0,
+          75.0
+        ]
+      ],
+      [
+        "CRUSADER_CLERIC",
+        [
+          100.0,
+          0.0
+        ]
+      ],
+      [
+        "CRUSADER_GUARDIAN_ANGEL",
+        [
+          150.0,
+          125.0
+        ]
+      ],
+      [
+        "CRUSADER_GUARDIAN_ANGEL",
+        [
+          150.0,
+          -125.0
+        ]
+      ]
+    ],
+    "allies": null,
+    "tip": [
+      "Unlike most ranged units, soldiers are resistant to flanking."
+    ],
+    "hex_coords": [
+      10,
+      -1
+    ],
+    "is_test": false,
+    "tip_voice_filename": null,
+    "grades": null,
+    "best_solution": null,
+    "best_corrupted_solution": null,
+    "corruption_powers": [
+      {
+        "name": "increased_max_health",
+        "required_team": 2,
+        "increase_percent": 300.0
+      },
+      {
+        "name": "increased_movement_speed",
+        "required_team": 2,
+        "increase_percent": 100.0
       }
     ]
   }
