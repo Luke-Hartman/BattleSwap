@@ -42,15 +42,15 @@
       [
         "CORE_ARCHER",
         [
-          -231.0,
-          -80.0
+          -315.0,
+          -43.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          -290.0,
-          -26.0
+          -315.0,
+          -18.0
         ]
       ]
     ],
@@ -100,8 +100,8 @@
       [
         "CORE_SWORDSMAN",
         [
-          -25.0,
-          23.000000000000114
+          -153.6406460551018,
+          54.0
         ]
       ]
     ],
@@ -109,15 +109,15 @@
       [
         "CORE_SWORDSMAN",
         [
-          -50.6406460551018,
-          -9.0
+          -153.6406460551018,
+          54.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          -67.32313416327224,
-          9.57964939369445
+          -153.1015517832891,
+          29.02648400330292
         ]
       ]
     ],
@@ -173,7 +173,7 @@
         "CORE_CAVALRY",
         [
           -25.0,
-          -381.0000000000001
+          -390.9999999999999
         ]
       ]
     ],
@@ -181,8 +181,8 @@
       [
         "CORE_LONGBOWMAN",
         [
-          -393.2812921102036,
-          -372.0
+          -478.2812921102036,
+          -393.0
         ]
       ]
     ],
@@ -230,8 +230,8 @@
       [
         "CORE_ARCHER",
         [
-          -76.92193816530562,
-          -7.0
+          -25.0,
+          9.0
         ]
       ]
     ],
@@ -323,8 +323,8 @@
       [
         "CORE_WIZARD",
         [
-          -377.10161513775483,
-          12.0
+          -396.10161513775483,
+          5.0
         ]
       ]
     ],
@@ -398,15 +398,15 @@
       [
         "CORE_ARCHER",
         [
-          -88.10161513775438,
-          -430.0
+          -54.10161513775438,
+          -448.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          -107.75481872287492,
-          -414.58234683409034
+          -64.52367059211883,
+          -425.3073822138713
         ]
       ]
     ],
@@ -414,22 +414,22 @@
       [
         "CORE_ARCHER",
         [
-          -88.10161513775438,
-          -430.0
+          -25.0,
+          -538.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          -81.10161513775438,
-          -457.0
+          -32.37500667250015,
+          -561.8813267694416
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          -77.36768192485488,
-          -481.689228228929
+          -30.57140273543473,
+          -586.7927213897817
         ]
       ]
     ],
@@ -494,21 +494,21 @@
         "CORE_SWORDSMAN",
         [
           -25.0,
-          -50.0
+          -54.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
           -25.0,
-          -25.0
+          -29.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          -50.0,
-          -50.0
+          -25.0,
+          -4.0
         ]
       ]
     ],
@@ -517,7 +517,7 @@
         "CRUSADER_GOLD_KNIGHT",
         [
           -25.0,
-          -3.0
+          -3.9999999999997726
         ]
       ]
     ],
@@ -595,45 +595,31 @@
       [
         "CORE_LONGBOWMAN",
         [
-          -520.5625842204072,
-          -414.0
+          -400.0,
+          -325.0
         ]
       ],
       [
         "CORE_LONGBOWMAN",
         [
-          -529.1617128336056,
-          -390.5566710645268
+          -400.0,
+          -275.0
         ]
       ]
     ],
     "best_corrupted_solution": [
       [
-        "CORE_LONGBOWMAN",
+        "CRUSADER_PALADIN",
         [
-          -358.5625842204072,
-          -583.0
+          -25.0,
+          -318.9999999999999
         ]
       ],
       [
-        "CORE_SWORDSMAN",
+        "CORE_DUELIST",
         [
-          -681.1882533591743,
-          406.7157785542696
-        ]
-      ],
-      [
-        "CORE_SWORDSMAN",
-        [
-          -430.5625842204072,
-          -551.0
-        ]
-      ],
-      [
-        "CORE_LONGBOWMAN",
-        [
-          -390.00171987970134,
-          -574.8324020430376
+          -61.56258422040719,
+          -333.0
         ]
       ]
     ],
@@ -691,22 +677,22 @@
       [
         "CORE_ARCHER",
         [
-          -142.74226119285595,
-          430.0
+          -250.0,
+          500.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          -122.59460758176101,
-          444.7509644828633
+          -225.0,
+          525.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          -104.01906313877589,
-          461.4379817062006
+          -250.0,
+          525.0
         ]
       ]
     ],
@@ -714,29 +700,29 @@
       [
         "CORE_ARCHER",
         [
-          -140.74226119285595,
-          613.0
+          -250.0,
+          500.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          -119.06469481889599,
-          625.4030023240005
+          -225.0,
+          525.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          -98.96465623707445,
-          640.218168241775
+          -250.0,
+          525.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          -77.30876588484443,
-          652.6573348232098
+          -225.0,
+          500.0
         ]
       ]
     ],
@@ -843,6 +829,20 @@
       [
         "CORE_ARCHER",
         [
+          -650.0,
+          -425.0
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          -625.0,
+          -425.0
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
           -600.0,
           -450.0
         ]
@@ -850,36 +850,22 @@
       [
         "CORE_ARCHER",
         [
-          -625.0,
+          -580.0969995864398,
+          -465.0808411326749
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          -575.0,
           -450.0
         ]
       ],
       [
         "CORE_ARCHER",
         [
-          -650.0,
-          -425.0
-        ]
-      ],
-      [
-        "CORE_ARCHER",
-        [
-          -675.0,
-          -400.0
-        ]
-      ],
-      [
-        "CORE_ARCHER",
-        [
-          -625.0,
-          -425.0
-        ]
-      ],
-      [
-        "CORE_ARCHER",
-        [
-          -650.0,
-          -400.0
+          -550.0,
+          -475.0
         ]
       ]
     ],
@@ -1010,31 +996,31 @@
     },
     "best_solution": [
       [
-        "CORE_CAVALRY",
+        "CORE_SWORDSMAN",
         [
-          -25.0,
-          366.00000000000006
+          -25.843876330611238,
+          -130.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          -25.0,
-          -100.0
-        ]
-      ],
-      [
-        "CORE_SWORDSMAN",
-        [
-          -25.0,
-          -125.0
+          -25.10874777814024,
+          -105.03611454995854
         ]
       ],
       [
         "CORE_CAVALRY",
         [
           -25.0,
-          -357.0
+          -337.0
+        ]
+      ],
+      [
+        "CORE_CAVALRY",
+        [
+          -25.0,
+          336.0
         ]
       ]
     ],
@@ -1129,8 +1115,8 @@
       [
         "CORE_LONGBOWMAN",
         [
-          -335.02355330306,
-          -254.0
+          -348.02355330306,
+          -295.0
         ]
       ]
     ],
@@ -1210,14 +1196,14 @@
         "CORE_DUELIST",
         [
           -692.8203230275503,
-          7.0
+          19.0
         ]
       ],
       [
         "CRUSADER_DEFENDER",
         [
-          -570.6641993581616,
-          10.0
+          -637.6641993581616,
+          17.0
         ]
       ]
     ],
@@ -1325,15 +1311,15 @@
       [
         "CORE_WIZARD",
         [
-          -62.12516844081438,
-          -302.0
+          -214.12516844081438,
+          0.0
         ]
       ],
       [
-        "CORE_ARCHER",
+        "CORE_SWORDSMAN",
         [
-          -151.12516844081438,
-          -118.0
+          -25.0,
+          -179.0
         ]
       ]
     ],
@@ -1395,17 +1381,24 @@
     },
     "best_solution": [
       [
-        "CRUSADER_PALADIN",
+        "CRUSADER_DEFENDER",
         [
           -25.0,
-          254.0
+          332.0
         ]
       ],
       [
         "CRUSADER_PIKEMAN",
         [
-          -39.04455869100639,
-          274.67155985251577
+          -62.32467400996575,
+          355.951847266722
+        ]
+      ],
+      [
+        "CRUSADER_CLERIC",
+        [
+          -25.30484541326223,
+          362.0
         ]
       ]
     ],
@@ -1518,43 +1511,29 @@
       [
         "CORE_CAVALRY",
         [
-          -29.484522385711898,
-          -371.0
-        ]
-      ],
-      [
-        "CORE_CAVALRY",
-        [
           -25.0,
-          361.0
+          392.99999999999994
         ]
       ],
       [
-        "CORE_DUELIST",
+        "CORE_WIZARD",
         [
-          -56.4845223857119,
-          -120.0
+          -145.4845223857119,
+          1.0
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
-          -45.41725160763053,
-          -97.61254633485444
+          -25.0,
+          -44.0
         ]
       ],
       [
         "CORE_CAVALRY",
         [
           -25.0,
-          -346.42211115725576
-        ]
-      ],
-      [
-        "CORE_CAVALRY",
-        [
-          -25.0,
-          386.0
+          -344.0
         ]
       ]
     ],
@@ -1672,15 +1651,15 @@
       [
         "CORE_LONGBOWMAN",
         [
-          -490.02355330306,
-          -157.0
+          -509.02355330306,
+          -43.0
         ]
       ],
       [
         "CORE_LONGBOWMAN",
         [
-          -502.02355330306,
-          71.0
+          -519.02355330306,
+          22.0
         ]
       ]
     ],
@@ -1765,31 +1744,17 @@
     ],
     "best_corrupted_solution": [
       [
-        "CRUSADER_PIKEMAN",
-        [
-          -84.66419935816339,
-          -311.0
-        ]
-      ],
-      [
-        "CRUSADER_PIKEMAN",
-        [
-          -85.7913964719537,
-          -335.9446243567302
-        ]
-      ],
-      [
-        "CRUSADER_DEFENDER",
+        "CRUSADER_GOLD_KNIGHT",
         [
           -25.0,
-          -306.4999999999998
+          -307.9999999999998
         ]
       ],
       [
-        "CRUSADER_CLERIC",
+        "CORE_ARCHER",
         [
-          -47.16419935816339,
-          -272.5
+          -148.6641993581634,
+          -307.0
         ]
       ]
     ],
@@ -2065,61 +2030,47 @@
     },
     "best_solution": [
       [
-        "ZOMBIE_TANK",
+        "CRUSADER_DEFENDER",
         [
-          -25.0,
-          -25.0
+          -26.945491468364708,
+          -1.0
         ]
       ],
       [
-        "CORE_DUELIST",
+        "CORE_WIZARD",
         [
-          -85.94549146836471,
-          -23.0
+          -368.9454914683647,
+          -43.0
         ]
       ],
       [
-        "CORE_CAVALRY",
+        "CORE_LONGBOWMAN",
         [
           -25.0,
-          -595.0
+          -609.0
         ]
       ]
     ],
     "best_corrupted_solution": [
       [
-        "ZOMBIE_TANK",
+        "CRUSADER_DEFENDER",
         [
-          -25.0,
-          -155.0
+          -101.94549146836471,
+          -8.0
         ]
       ],
       [
-        "CORE_SWORDSMAN",
+        "CORE_WIZARD",
         [
-          -173.5239784027417,
-          -228.83990011510446
+          -359.9454914683647,
+          -31.0
         ]
       ],
       [
-        "CORE_SWORDSMAN",
+        "CORE_LONGBOWMAN",
         [
-          -148.89557436356517,
-          -224.6959235218868
-        ]
-      ],
-      [
-        "CORE_SWORDSMAN",
-        [
-          -164.82386083143138,
-          -205.43270560663314
-        ]
-      ],
-      [
-        "CORE_SWORDSMAN",
-        [
-          -189.4522648706079,
-          -209.57668219984976
+          -290.9454914683647,
+          -422.0
         ]
       ]
     ],
@@ -2275,14 +2226,14 @@
         "CORE_SWORDSMAN",
         [
           -25.0,
-          0.0
+          -14.999999999999773
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
           -25.0,
-          25.0
+          10.000000000000227
         ]
       ]
     ],
@@ -2291,21 +2242,21 @@
         "CORE_SWORDSMAN",
         [
           -25.0,
-          0.0
+          -14.999999999999773
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
           -25.0,
-          25.0
+          10.000000000000227
         ]
       ],
       [
         "CORE_SWORDSMAN",
         [
           -25.0,
-          -25.0
+          -39.99999999999977
         ]
       ]
     ],
@@ -2783,24 +2734,17 @@
     },
     "best_solution": [
       [
-        "CORE_CAVALRY",
+        "CRUSADER_DEFENDER",
         [
-          -30.74226119285595,
-          760.0
-        ]
-      ],
-      [
-        "CORE_SWORDSMAN",
-        [
-          -150.0,
+          -125.0,
           0.0
         ]
       ],
       [
-        "CORE_SWORDSMAN",
+        "CORE_LONGBOWMAN",
         [
-          -175.0,
-          0.0
+          -25.0,
+          -785.5662432702593
         ]
       ]
     ],
@@ -2884,7 +2828,12 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": null,
+    "grades": {
+      "a_cutoff": 400,
+      "b_cutoff": 600,
+      "c_cutoff": 900,
+      "d_cutoff": 1200
+    },
     "best_solution": [
       [
         "CORE_DUELIST",
@@ -2974,9 +2923,51 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": null,
-    "best_solution": null,
-    "best_corrupted_solution": null,
+    "grades": {
+      "a_cutoff": 300,
+      "b_cutoff": 400,
+      "c_cutoff": 500,
+      "d_cutoff": 600
+    },
+    "best_solution": [
+      [
+        "CORE_CAVALRY",
+        [
+          -25.0,
+          -200.0
+        ]
+      ],
+      [
+        "CORE_CAVALRY",
+        [
+          -25.0,
+          -175.0
+        ]
+      ],
+      [
+        "CORE_CAVALRY",
+        [
+          -25.0,
+          -150.0
+        ]
+      ]
+    ],
+    "best_corrupted_solution": [
+      [
+        "CRUSADER_PALADIN",
+        [
+          -25.0,
+          -133.0
+        ]
+      ],
+      [
+        "CRUSADER_PALADIN",
+        [
+          -25.0,
+          126.0
+        ]
+      ]
+    ],
     "corruption_powers": [
       {
         "name": "increased_damage",
@@ -3039,9 +3030,44 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": null,
-    "best_solution": null,
-    "best_corrupted_solution": null,
+    "grades": {
+      "a_cutoff": 400,
+      "b_cutoff": 500,
+      "c_cutoff": 600,
+      "d_cutoff": 700
+    },
+    "best_solution": [
+      [
+        "CORE_CAVALRY",
+        [
+          -25.56258422040719,
+          480.0
+        ]
+      ],
+      [
+        "CORE_CAVALRY",
+        [
+          -28.570805740170726,
+          504.7968773895984
+        ]
+      ],
+      [
+        "CRUSADER_BLACK_KNIGHT",
+        [
+          -25.0,
+          529.5103032932893
+        ]
+      ]
+    ],
+    "best_corrupted_solution": [
+      [
+        "CRUSADER_CATAPULT",
+        [
+          -142.5625842204072,
+          382.0
+        ]
+      ]
+    ],
     "corruption_powers": [
       {
         "name": "increased_movement_speed",
@@ -3092,9 +3118,44 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": null,
-    "best_solution": null,
-    "best_corrupted_solution": null,
+    "grades": {
+      "a_cutoff": 300,
+      "b_cutoff": 350,
+      "c_cutoff": 375,
+      "d_cutoff": 400
+    },
+    "best_solution": [
+      [
+        "CORE_SWORDSMAN",
+        [
+          -27.484522385711898,
+          -405.0
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -26.602368122745247,
+          -380.0433374599502
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -48.67285969086879,
+          -391.78076828625944
+        ]
+      ]
+    ],
+    "best_corrupted_solution": [
+      [
+        "CRUSADER_BLACK_KNIGHT",
+        [
+          -35.4845223857119,
+          -387.0
+        ]
+      ]
+    ],
     "corruption_powers": [
       {
         "name": "increased_max_health",
@@ -3133,7 +3194,7 @@
         ]
       ]
     ],
-    "allies": [],
+    "allies": null,
     "tip": [
       "Soliders are well rounded units with ranged attacks, melee attacks, and armor."
     ],
@@ -3143,9 +3204,51 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": null,
-    "best_solution": null,
-    "best_corrupted_solution": null,
+    "grades": {
+      "a_cutoff": 300,
+      "b_cutoff": 350,
+      "c_cutoff": 400,
+      "d_cutoff": 450
+    },
+    "best_solution": [
+      [
+        "CRUSADER_BLACK_KNIGHT",
+        [
+          -25.0,
+          -65.0
+        ]
+      ],
+      [
+        "CRUSADER_GUARDIAN_ANGEL",
+        [
+          -86.12516844081438,
+          -90.0
+        ]
+      ],
+      [
+        "CRUSADER_GUARDIAN_ANGEL",
+        [
+          -86.12516844081438,
+          -63.0
+        ]
+      ]
+    ],
+    "best_corrupted_solution": [
+      [
+        "CRUSADER_SOLDIER",
+        [
+          -25.0,
+          -4.0
+        ]
+      ],
+      [
+        "CRUSADER_CLERIC",
+        [
+          -78.12516844081438,
+          -5.0
+        ]
+      ]
+    ],
     "corruption_powers": [
       {
         "name": "increased_damage",
@@ -3264,9 +3367,177 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": null,
-    "best_solution": null,
-    "best_corrupted_solution": null,
+    "grades": {
+      "a_cutoff": 1600,
+      "b_cutoff": 1800,
+      "c_cutoff": 2100,
+      "d_cutoff": 2400
+    },
+    "best_solution": [
+      [
+        "CRUSADER_COMMANDER",
+        [
+          -662.765814495915,
+          383.0
+        ]
+      ],
+      [
+        "CRUSADER_SOLDIER",
+        [
+          -658.765814495915,
+          324.0
+        ]
+      ],
+      [
+        "CRUSADER_SOLDIER",
+        [
+          -641.765814495915,
+          344.0
+        ]
+      ],
+      [
+        "CRUSADER_SOLDIER",
+        [
+          -624.6205805262871,
+          362.1602409921861
+        ]
+      ],
+      [
+        "CRUSADER_COMMANDER",
+        [
+          -601.765814495915,
+          252.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -551.765814495915,
+          298.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -631.765814495915,
+          224.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -523.765814495915,
+          396.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -453.76581449591504,
+          353.0
+        ]
+      ],
+      [
+        "CRUSADER_CATAPULT",
+        [
+          -582.765814495915,
+          185.0
+        ]
+      ],
+      [
+        "CRUSADER_BLACK_KNIGHT",
+        [
+          -25.0,
+          -785.5662432702593
+        ]
+      ]
+    ],
+    "best_corrupted_solution": [
+      [
+        "CRUSADER_SOLDIER",
+        [
+          -658.765814495915,
+          324.0
+        ]
+      ],
+      [
+        "CRUSADER_SOLDIER",
+        [
+          -641.765814495915,
+          344.0
+        ]
+      ],
+      [
+        "CRUSADER_SOLDIER",
+        [
+          -624.6205805262871,
+          362.1602409921861
+        ]
+      ],
+      [
+        "CRUSADER_COMMANDER",
+        [
+          -601.765814495915,
+          252.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -551.765814495915,
+          298.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -631.765814495915,
+          224.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -523.765814495915,
+          396.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -453.76581449591504,
+          353.0
+        ]
+      ],
+      [
+        "CRUSADER_CATAPULT",
+        [
+          -582.765814495915,
+          185.0
+        ]
+      ],
+      [
+        "CRUSADER_BLACK_KNIGHT",
+        [
+          -25.0,
+          -785.5662432702593
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          -686.765814495915,
+          350.0
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          -692.8203230275503,
+          374.22474611565303
+        ]
+      ]
+    ],
     "corruption_powers": [
       {
         "name": "increased_damage",
@@ -3336,9 +3607,79 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": null,
-    "best_solution": null,
-    "best_corrupted_solution": null,
+    "grades": {
+      "a_cutoff": 500,
+      "b_cutoff": 700,
+      "c_cutoff": 9000,
+      "d_cutoff": 1100
+    },
+    "best_solution": [
+      [
+        "CORE_SWORDSMAN",
+        [
+          -182.12516844081438,
+          -4.0
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -371.1251684408144,
+          -4.0
+        ]
+      ],
+      [
+        "CRUSADER_BLACK_KNIGHT",
+        [
+          -25.0,
+          -785.5662432702593
+        ]
+      ]
+    ],
+    "best_corrupted_solution": [
+      [
+        "CRUSADER_CATAPULT",
+        [
+          -25.0,
+          -323.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -56.12516844081438,
+          9.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -102.12516844081438,
+          104.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -262.1251684408144,
+          374.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -353.1251684408144,
+          458.0
+        ]
+      ],
+      [
+        "CORE_LONGBOWMAN",
+        [
+          -394.1251684408144,
+          505.0
+        ]
+      ]
+    ],
     "corruption_powers": [
       {
         "name": "increased_movement_speed",
@@ -3422,9 +3763,79 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": null,
-    "best_solution": null,
-    "best_corrupted_solution": null,
+    "grades": {
+      "a_cutoff": 700,
+      "b_cutoff": 1000,
+      "c_cutoff": 1300,
+      "d_cutoff": 1600
+    },
+    "best_solution": [
+      [
+        "CORE_SWORDSMAN",
+        [
+          -25.0,
+          -6.0
+        ]
+      ],
+      [
+        "CRUSADER_CATAPULT",
+        [
+          -135.76581449591504,
+          -15.0
+        ]
+      ],
+      [
+        "CORE_CAVALRY",
+        [
+          -101.76581449591504,
+          -77.0
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          -297.76581449591504,
+          -53.0
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          -300.0574582802401,
+          -2.0634543901483084
+        ]
+      ]
+    ],
+    "best_corrupted_solution": [
+      [
+        "CRUSADER_GUARDIAN_ANGEL",
+        [
+          -95.76581449591504,
+          -222.0
+        ]
+      ],
+      [
+        "CRUSADER_CATAPULT",
+        [
+          -25.0,
+          -324.0
+        ]
+      ],
+      [
+        "CRUSADER_PALADIN",
+        [
+          -403.76581449591504,
+          -12.0
+        ]
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          -258.76581449591504,
+          -386.0
+        ]
+      ]
+    ],
     "corruption_powers": [
       {
         "name": "increased_movement_speed",
@@ -3573,9 +3984,212 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": null,
-    "best_solution": null,
-    "best_corrupted_solution": null,
+    "grades": {
+      "a_cutoff": 1400,
+      "b_cutoff": 1700,
+      "c_cutoff": 2000,
+      "d_cutoff": 2300
+    },
+    "best_solution": [
+      [
+        "CRUSADER_CATAPULT",
+        [
+          -692.8203230275503,
+          15.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -400.0,
+          -75.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -400.0,
+          -50.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -400.0,
+          0.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -400.0,
+          50.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -400.0,
+          75.0
+        ]
+      ],
+      [
+        "CRUSADER_CLERIC",
+        [
+          -462.5861375234672,
+          6.0
+        ]
+      ],
+      [
+        "CORE_LONGBOWMAN",
+        [
+          -525.0,
+          50.0
+        ]
+      ],
+      [
+        "CORE_LONGBOWMAN",
+        [
+          -525.0,
+          -75.0
+        ]
+      ],
+      [
+        "CRUSADER_BLACK_KNIGHT",
+        [
+          -39.733831776660736,
+          -777.0596615278098
+        ]
+      ]
+    ],
+    "best_corrupted_solution": [
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -25.0,
+          -325.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -50.0,
+          -325.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -75.0,
+          -325.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -100.0,
+          -325.0
+        ]
+      ],
+      [
+        "CRUSADER_CLERIC",
+        [
+          -88.58613752346719,
+          -443.0
+        ]
+      ],
+      [
+        "CRUSADER_GOLD_KNIGHT",
+        [
+          -75.0,
+          -350.0
+        ]
+      ],
+      [
+        "CRUSADER_GOLD_KNIGHT",
+        [
+          -50.0,
+          -350.0
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -100.0,
+          -350.0
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -75.0,
+          -375.0
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -50.0,
+          -375.0
+        ]
+      ],
+      [
+        "CORE_LONGBOWMAN",
+        [
+          -25.0,
+          -625.0
+        ]
+      ],
+      [
+        "CORE_LONGBOWMAN",
+        [
+          -25.0,
+          -600.0
+        ]
+      ],
+      [
+        "CORE_LONGBOWMAN",
+        [
+          -25.0,
+          -650.0
+        ]
+      ],
+      [
+        "CORE_LONGBOWMAN",
+        [
+          -25.0,
+          -675.0
+        ]
+      ],
+      [
+        "CORE_DUELIST",
+        [
+          -64.40531180261496,
+          -397.6109685795145
+        ]
+      ],
+      [
+        "CRUSADER_COMMANDER",
+        [
+          -91.58613752346719,
+          -401.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -121.61942820434524,
+          -337.5
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          -121.61942820434524,
+          -362.5
+        ]
+      ]
+    ],
     "corruption_powers": [
       {
         "name": "increased_max_health",

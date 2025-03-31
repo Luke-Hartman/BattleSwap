@@ -64,6 +64,7 @@ def run_balance_overview():
     CATEGORY_CAP = 5
     TOURNAMENT_SIZE = None
     MINIMUM_POINTS = 600
+    USE_POWERS = True
 
     # Setup evolution strategy with the same parameters as the main script
     evolution = EvolutionStrategy(
@@ -82,6 +83,7 @@ def run_balance_overview():
         mutation_adaptation_rate=MUTATION_ADAPTATION_RATE,
         category_cap=CATEGORY_CAP if CATEGORY_CAP is not None else PARENTS_PER_GENERATION,
         n_mutations=1,
+        use_powers=USE_POWERS,
     )
     # Get all non-test battles
     battles = [b for b in get_battles() if not b.is_test and sum(unit_values[unit_type] for unit_type, _ in b.enemies) >= MINIMUM_POINTS]

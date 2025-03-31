@@ -75,11 +75,20 @@ class CampaignScene(Scene):
             self.barracks = None
             self.progress_panel = None
         
+        self.congratulations_panel = None
+        self.corruption_congratulations_panel = None
+        self.corruption_dialog = None
+        self.check_panels()
+        self.create_ui()
+        
+    
+    def check_panels(self) -> None:
         # Check if we should show congratulations
         if progress_manager.should_show_congratulations():
             self.congratulations_panel = CongratulationsPanel(
                 manager=self.manager,
             )
+            return
         else:
             self.congratulations_panel = None
             
@@ -88,13 +97,19 @@ class CampaignScene(Scene):
             self.corruption_congratulations_panel = CorruptionCongratulationsPanel(
                 manager=self.manager,
             )
+            return
         else:
             self.corruption_congratulations_panel = None
 
-        # Check for corruption trigger
-        self.check_corruption_trigger()
-
-        self.create_ui()
+        if progress_manager.should_trigger_corruption():
+            corrupted_battles = progress_manager.corrupt_battles()
+            if corrupted_battles:
+                self.corruption_dialog = CorruptionPanel(
+                    manager=self.manager,
+                    corrupted_battles=corrupted_battles,
+                    world_map_view=self.world_map_view
+                )
+                self.corrupted_battles = corrupted_battles
 
     def create_ui(self) -> None:
         """Create the UI elements for the world map scene."""
@@ -158,27 +173,6 @@ class CampaignScene(Scene):
                 manager=self.manager
             )
 
-    def check_corruption_trigger(self) -> None:
-        """Check if corruption should be triggered and show a dialog if it is."""
-        if progress_manager.should_trigger_corruption():
-            corrupted_battles = progress_manager.corrupt_battles()
-            if corrupted_battles:
-                self.show_corruption_dialog(corrupted_battles)
-                
-    def show_corruption_dialog(self, corrupted_battles: List[Tuple[int, int]]) -> None:
-        """Show a dialog to inform the player about corrupted battles."""
-        # emit_event(PLAY_SOUND, event=PlaySoundEvent(
-        #     filename="corruption.wav",
-        #     volume=0.7
-        # ))
-        
-        self.corruption_dialog = CorruptionPanel(
-            manager=self.manager,
-            corrupted_battles=corrupted_battles,
-            world_map_view=self.world_map_view
-        )
-        self.corrupted_battles = corrupted_battles
-
     def update(self, time_delta: float, events: list[pygame.event.Event]) -> bool:
         """Update the world map scene."""
         for event in events:
@@ -197,10 +191,12 @@ class CampaignScene(Scene):
 
             # Handle congratulations panel events first if it exists
             if self.congratulations_panel is not None and self.congratulations_panel.handle_event(event):
+                self.check_panels()
                 continue
                 
             # Handle corruption master panel events if it exists
             if self.corruption_congratulations_panel is not None and self.corruption_congratulations_panel.handle_event(event):
+                self.check_panels()
                 continue
 
             self.handle_escape(event)

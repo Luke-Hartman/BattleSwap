@@ -220,8 +220,27 @@ class ProgressManager(BaseModel):
     def should_trigger_corruption(self) -> bool:
         """Check if corruption should be triggered based on available unit points."""
         available_points = calculate_total_available_points()
-        return (available_points >= gc.CORRUPTION_TRIGGER_POINTS and 
-                not self.has_uncompleted_corrupted_battles())
+        enough_points = available_points >= gc.CORRUPTION_TRIGGER_POINTS
+        not_already_corrupted = not self.has_uncompleted_corrupted_battles()
+        enough_uncorrupted_solved_battles = sum(
+            1 for hex_coords in self.solutions.keys()
+            if hex_coords not in self.corrupted_hexes
+        ) >= gc.CORRUPTION_BATTLE_COUNT
+        final_corruption = all(
+            battle.hex_coords in self.solutions
+            for battle in battles.get_battles()
+            if not battle.is_test
+        )
+        all_levels_already_corrupted = all(
+            battle.hex_coords in self.solutions and battle.hex_coords in self.corrupted_hexes
+            for battle in battles.get_battles()
+            if not battle.is_test
+        )
+        return (
+            enough_points and
+            not_already_corrupted and
+            (enough_uncorrupted_solved_battles or final_corruption)
+        ) and not all_levels_already_corrupted
 
     def corrupt_battles(self) -> List[Tuple[int, int]]:
         """Corrupt a number of completed battles based on the game constants."""

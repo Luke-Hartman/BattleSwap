@@ -18,7 +18,7 @@ class CongratulationsPanel(UIPanel):
         Args:
             manager: The UI manager.
         """
-        panel_width = 500
+        panel_width = 600
         panel_height = 300
         screen_width = pygame.display.Info().current_w
         screen_height = pygame.display.Info().current_h
@@ -53,7 +53,7 @@ class CongratulationsPanel(UIPanel):
         )
 
         # Corruption information
-        corrupted_battles = len(progress_manager.corrupted_battles)
+        corrupted_battles = sum(1 for solution in progress_manager.solutions.values() if solution.solved_corrupted)
         all_battles = len(progress_manager.solutions)
         UILabel(
             relative_rect=pygame.Rect((20, 140), (panel_width - 40, -1)),
@@ -103,7 +103,6 @@ class CongratulationsPanel(UIPanel):
         if (event.type == pygame_gui.UI_BUTTON_PRESSED and 
             event.ui_element == self.continue_button):
             progress_manager.mark_congratulations_shown()
-            print("congratulations shown")
             self.kill()
             return True
         return False 

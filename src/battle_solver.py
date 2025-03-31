@@ -40,27 +40,29 @@ import multiprocessing
 # ]
 ALLOWED_UNIT_TYPES = [
     UnitType.CORE_ARCHER,
-    UnitType.CORE_BARBARIAN,
+    # UnitType.CORE_BARBARIAN,
     UnitType.CORE_CAVALRY,
     UnitType.CORE_DUELIST,
+    UnitType.CORE_LONGBOWMAN,
     UnitType.CORE_SWORDSMAN,
     UnitType.CORE_WIZARD,
-    UnitType.CRUSADER_BANNER_BEARER,
+    # UnitType.CRUSADER_BANNER_BEARER,
+    UnitType.CRUSADER_COMMANDER,
     UnitType.CRUSADER_BLACK_KNIGHT,
     UnitType.CRUSADER_CATAPULT,
     UnitType.CRUSADER_CLERIC,
-    UnitType.CRUSADER_CROSSBOWMAN,
+    # UnitType.CRUSADER_CROSSBOWMAN,
     UnitType.CRUSADER_DEFENDER,
     UnitType.CRUSADER_GOLD_KNIGHT,
     UnitType.CRUSADER_GUARDIAN_ANGEL,
-    UnitType.CRUSADER_LONGBOWMAN,
     UnitType.CRUSADER_PALADIN,
     UnitType.CRUSADER_PIKEMAN,
     UnitType.CRUSADER_SOLDIER,
-    UnitType.ZOMBIE_BRUTE,
-    UnitType.ZOMBIE_GRABBER,
-    UnitType.ZOMBIE_JUMPER,
-    UnitType.ZOMBIE_SPITTER,
+    # UnitType.ZOMBIE_BASIC,
+    # UnitType.ZOMBIE_BRUTE,
+    # UnitType.ZOMBIE_GRABBER,
+    # UnitType.ZOMBIE_JUMPER,
+    # UnitType.ZOMBIE_SPITTER,
     UnitType.ZOMBIE_TANK,
 ]
 
@@ -140,6 +142,7 @@ class Individual:
     def evaluate(
         self,
         max_duration: float,
+        use_powers: bool,
     ) -> Fitness:
         battle = get_battle_id(self.battle_id)
         enemy_placements = battle.enemies
@@ -155,6 +158,7 @@ class Individual:
             ally_placements=self.unit_placements,
             enemy_placements=enemy_placements,
             max_duration=max_duration,
+            corruption_powers=battle.corruption_powers if use_powers else [],
             post_battle_callback=lambda outcome: Fitness(
                 outcome=outcome,
                 points=self.points,
@@ -175,8 +179,8 @@ class Individual:
     def __hash__(self) -> int:
         return hash(tuple(self.unit_placements))
 
-def _evaluate(individual: Individual, max_duration: float):
-    return individual.evaluate(max_duration)
+def _evaluate(individual: Individual, max_duration: float, use_powers: bool):
+    return individual.evaluate(max_duration, use_powers)
 
 # Add this at the module level
 _global_process_pool = None
@@ -202,7 +206,7 @@ class Population:
     def __init__(self, individuals: List[Individual]):
         self.individuals = individuals
 
-    def evaluate(self, max_duration: float = 120.0):
+    def evaluate(self, max_duration: float = 120.0, use_powers: bool = False):
         game_constants_hash = get_game_constants_hash()
         game_constants_hash_changed = False
         individuals_to_evaluate = []
@@ -222,7 +226,7 @@ class Population:
         
         if len(individuals_to_evaluate) > 1:
             pool = get_process_pool()
-            results = pool.starmap(_evaluate, [(ind, max_duration) for ind in individuals_to_evaluate])
+            results = pool.starmap(_evaluate, [(ind, max_duration, use_powers) for ind in individuals_to_evaluate])
             
             # Update the fitness for each individual in the main process
             for ind, fitness in zip(individuals_to_evaluate, results):
@@ -231,7 +235,7 @@ class Population:
         else:
             # For a single individual, avoid the overhead of using the pool
             for ind in individuals_to_evaluate:
-                ind._fitness = ind.evaluate(max_duration)
+                ind._fitness = ind.evaluate(max_duration, use_powers)
                 ind._constants_hash = game_constants_hash
     @property
     def best_individuals(self) -> List[Individual]:
@@ -585,6 +589,7 @@ class EvolutionStrategy(Evolution):
         mutation_adaptation_rate: float = 0.1,
         category_cap: int = 3,
         n_mutations: int = 1,
+        use_powers: bool = False,
     ):
         self.mutations = mutations
         self.selector = selector
@@ -597,6 +602,7 @@ class EvolutionStrategy(Evolution):
         self.mutation_adaptation_rate = mutation_adaptation_rate
         self.category_cap = category_cap
         self.n_mutations = n_mutations
+        self.use_powers = use_powers
 
     def __call__(self, population: Population) -> Population:
         parents = population.individuals
@@ -616,7 +622,7 @@ class EvolutionStrategy(Evolution):
 
         # Evaluate parents + children
         parents_and_children = Population(list(next_generation))
-        parents_and_children.evaluate()
+        parents_and_children.evaluate(use_powers=self.use_powers)
 
         # Select the next generation
         individuals = []
@@ -856,6 +862,8 @@ def main():
     CHILDREN_PER_GENERATION = 10
     CATEGORY_CAP = None
     TOURNAMENT_SIZE = None
+    USE_POWERS = True
+
     population = random_population(battle_id=BATTLE_ID, size=PARENTS_PER_GENERATION, target_cost=get_battle_id(BATTLE_ID).grades.d_cutoff)
     population.evaluate()
     evolution = EvolutionStrategy(
@@ -873,6 +881,7 @@ def main():
         children_per_generation=CHILDREN_PER_GENERATION,
         mutation_adaptation_rate=0.1,
         n_mutations=1,
+        use_powers=USE_POWERS,
         category_cap=CATEGORY_CAP if CATEGORY_CAP is not None else PARENTS_PER_GENERATION,
     )
     

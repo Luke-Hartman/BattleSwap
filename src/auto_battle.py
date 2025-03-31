@@ -155,6 +155,7 @@ def simulate_battle_with_dependencies(
     ally_placements: List[Tuple[UnitType, Tuple[int, int]]],
     enemy_placements: List[Tuple[UnitType, Tuple[int, int]]],
     max_duration: float,
+    corruption_powers: Optional[List[CorruptionPower]] = None,
     post_battle_callback: Optional[Callable[[BattleOutcome], Any]] = None,
 ) -> Union[BattleOutcome, Tuple[BattleOutcome, Any]]:
     import os
@@ -171,4 +172,4 @@ def simulate_battle_with_dependencies(
     load_visual_sheets()
     combat_handler = CombatHandler()
     state_machine = StateMachine()
-    return simulate_battle(ally_placements, enemy_placements, max_duration, post_battle_callback)
+    return simulate_battle(ally_placements, enemy_placements, max_duration, corruption_powers, post_battle_callback)
