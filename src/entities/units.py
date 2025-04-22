@@ -24,7 +24,7 @@ from components.range_indicator import RangeIndicator
 from components.smooth_movement import SmoothMovement
 from components.stance import Stance
 from components.visual_link import VisualLink
-from components.walk_effects import WalkEffects
+from components.animation_effects import AnimationEffects
 from game_constants import gc
 from components.ability import Abilities, Ability, Cooldown, HasTarget, SatisfiesUnitCondition
 from components.armor import Armor
@@ -144,7 +144,7 @@ def load_sprite_sheets():
         UnitType.CORE_LONGBOWMAN: "CoreLongbowman.png",
         UnitType.CORE_SWORDSMAN: "CoreSwordsman.png", 
         UnitType.CORE_WIZARD: "CoreWizard.png",
-        UnitType.CRUSADER_BANNER_BEARER: "Kirby.png",
+        UnitType.CRUSADER_BANNER_BEARER: "CrusaderBannerBearer.png",
         UnitType.CRUSADER_BLACK_KNIGHT: "CrusaderBlackKnight.png",
         UnitType.CRUSADER_CATAPULT: "CrusaderCatapult.png",
         UnitType.CRUSADER_CLERIC: "CrusaderCleric.png",
@@ -393,11 +393,13 @@ def create_core_archer(x: int, y: int, team: TeamType, corruption_powers: Option
         },
         sprite_center_offset=(0, -8),
     ))
-    esper.add_component(entity, WalkEffects({
-        frame: [PlaySound(sound_effects=[
-            (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
-        ])]
-        for frame in [1, 4]
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [1, 4]
+        },
     }))
     return entity
 
@@ -484,11 +486,13 @@ def create_core_barbarian(x: int, y: int, team: TeamType, corruption_powers: Opt
         },
         sprite_center_offset=(-2, 2),
     ))
-    esper.add_component(entity, WalkEffects({
-        frame: [PlaySound(sound_effects=[
-            (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
-        ])]
-        for frame in [2, 5]
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [2, 5]
+        },
     }))
     return entity
 
@@ -572,11 +576,13 @@ def create_core_cavalry(x: int, y: int, team: TeamType, corruption_powers: Optio
         },
         sprite_center_offset=(1, -6),
     ))
-    esper.add_component(entity, WalkEffects({
-        frame: [PlaySound(sound_effects=[
-            (SoundEffect(filename=f"horse_footsteps_grass{i+1}.wav", volume=0.15), 1.0) for i in range(4)
-        ])]
-        for frame in [2]
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"horse_footsteps_grass{i+1}.wav", volume=0.15), 1.0) for i in range(4)
+            ])]
+            for frame in [2]
+        },
     }))
     return entity
 
@@ -690,11 +696,13 @@ def create_core_duelist(x: int, y: int, team: TeamType, corruption_powers: Optio
         },
         sprite_center_offset=(0, 2),
     ))
-    esper.add_component(entity, WalkEffects({
-        frame: [PlaySound(sound_effects=[
-            (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
-        ])]
-        for frame in [3, 7]
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [3, 7]
+        },
     }))
     return entity
 
@@ -800,11 +808,13 @@ def create_core_longbowman(x: int, y: int, team: TeamType, corruption_powers: Op
             sprite_center_offset=(0, 2),
         )
     )
-    esper.add_component(entity, WalkEffects({
-        frame: [PlaySound(sound_effects=[
-            (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
-        ])]
-        for frame in [3, 7]
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [3, 7]
+        },
     }))
     return entity
 
@@ -890,11 +900,13 @@ def create_core_swordsman(x: int, y: int, team: TeamType, corruption_powers: Opt
         },
         sprite_center_offset=(0, -8),
     ))
-    esper.add_component(entity, WalkEffects({
-        frame: [PlaySound(sound_effects=[
-            (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
-        ])]
-        for frame in [2, 5]
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [2, 5]
+        },
     }))
     return entity
 
@@ -1011,11 +1023,13 @@ def create_core_wizard(x: int, y: int, team: TeamType, corruption_powers: Option
         },
         sprite_center_offset=(0, -8),
     ))
-    esper.add_component(entity, WalkEffects({
-        frame: [PlaySound(sound_effects=[
-            (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
-        ])]
-        for frame in [1, 4]
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [1, 4]
+        },
     }))
     return entity
 
@@ -1114,25 +1128,34 @@ def create_crusader_banner_bearer(x: int, y: int, team: TeamType, corruption_pow
             color=(255, 215, 0),
         )
     )
+    esper.add_component(entity, SmoothMovement())
     esper.add_component(entity, SpriteSheet(
         surface=sprite_sheets[UnitType.CRUSADER_BANNER_BEARER],
         frame_width=100,
         frame_height=100,
         scale=gc.TINY_RPG_SCALE,
-        frames={AnimationType.IDLE: 6, AnimationType.WALKING: 8, AnimationType.DYING: 3},
-        rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.DYING: 4},
+        frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.DYING: 4},
+        rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.DYING: 2},
         animation_durations={
             AnimationType.IDLE: gc.CRUSADER_BANNER_BEARER_ANIMATION_IDLE_DURATION,
             AnimationType.WALKING: gc.CRUSADER_BANNER_BEARER_ANIMATION_WALKING_DURATION,
             AnimationType.DYING: gc.CRUSADER_BANNER_BEARER_ANIMATION_DYING_DURATION,
         },
-        sprite_center_offset=(0, 10),
+        synchronized_animations={
+            AnimationType.WALKING: True,
+            AnimationType.IDLE: True,
+        },
+        sprite_center_offset=(2, -5),
     ))
-    esper.add_component(entity, WalkEffects({
-        frame: [PlaySound(sound_effects=[
-            (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
-        ])]
-        for frame in [3, 7]
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            0: [PlaySound(SoundEffect("bannerbearer_drum_1.wav", volume=0.5, channel="drum"))],
+            3: [PlaySound(SoundEffect("bannerbearer_drum_2.wav", volume=0.5, channel="drum"))],
+        },
+        AnimationType.IDLE: {
+            0: [PlaySound(SoundEffect("bannerbearer_drum_1.wav", volume=0.5, channel="drum"))],
+            2: [PlaySound(SoundEffect("bannerbearer_drum_2.wav", volume=0.5, channel="drum"))],
+        },
     }))
     return entity
 
@@ -1254,11 +1277,13 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType, corruption_powe
         },
         sprite_center_offset=(0, 7),
     ))
-    esper.add_component(entity, WalkEffects({
-        frame: [PlaySound(sound_effects=[
-            (SoundEffect(filename=f"horse_footsteps_grass{i+1}.wav", volume=0.15), 1.0) for i in range(4)
-        ])]
-        for frame in [3]
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"horse_footsteps_grass{i+1}.wav", volume=0.15), 1.0) for i in range(4)
+            ])]
+            for frame in [3]
+        },
     }))
     return entity
 
@@ -1536,11 +1561,13 @@ def create_crusader_cleric(x: int, y: int, team: TeamType, corruption_powers: Op
         },
         sprite_center_offset=(0, 2),
     ))
-    esper.add_component(entity, WalkEffects({
-        frame: [PlaySound(sound_effects=[
-            (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
-        ])]
-        for frame in [3, 7]
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [3, 7]
+        },
     }))
     return entity
 
@@ -1645,11 +1672,13 @@ def create_crusader_commander(x: int, y: int, team: TeamType, corruption_powers:
         },
         sprite_center_offset=(0, 2),
     ))
-    esper.add_component(entity, WalkEffects({
-        frame: [PlaySound(sound_effects=[
-            (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
-        ])]
-        for frame in [3, 7]
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [3, 7]
+        },
     }))
     return entity
 
@@ -1829,11 +1858,13 @@ def create_crusader_crossbowman(x: int, y: int, team: TeamType, corruption_power
             sprite_center_offset=(0, 2),
         )
     )
-    esper.add_component(entity, WalkEffects({
-        frame: [PlaySound(sound_effects=[
-            (SoundEffect(filename=f"armored_grass_footstep{i+1}.wav", volume=0.25), 1.0) for i in range(5)
-        ])]
-        for frame in [1, 5]
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"armored_grass_footstep{i+1}.wav", volume=0.25), 1.0) for i in range(5)
+            ])]
+            for frame in [1, 5]
+        },
     }))
     return entity
 
@@ -1918,11 +1949,13 @@ def create_crusader_defender(x: int, y: int, team: TeamType, corruption_powers: 
         },
         sprite_center_offset=(0, -8),
     ))
-    esper.add_component(entity, WalkEffects({
-        frame: [PlaySound(sound_effects=[
-            (SoundEffect(filename=f"armored_grass_footstep{i+1}.wav", volume=0.25), 1.0) for i in range(5)
-        ])]
-        for frame in [1, 5]
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"armored_grass_footstep{i+1}.wav", volume=0.25), 1.0) for i in range(5)
+            ])]
+            for frame in [1, 5]
+        },
     }))
     return entity
 
@@ -2011,11 +2044,13 @@ def create_crusader_gold_knight(x: int, y: int, team: TeamType, corruption_power
         },
         sprite_center_offset=(0, 2),
     ))
-    esper.add_component(entity, WalkEffects({
-        frame: [PlaySound(sound_effects=[
-            (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
-        ])]
-        for frame in [3, 7]
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [3, 7]
+        },
     }))
     return entity
 
@@ -2143,11 +2178,13 @@ def create_crusader_guardian_angel(x: int, y: int, team: TeamType, corruption_po
             },
         )
     )
-    esper.add_component(entity, WalkEffects({
-        frame: [PlaySound(sound_effects=[
-            (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
-        ])]
-        for frame in [3, 7]
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [3, 7]
+        },
     }))
     return entity
 
@@ -2255,11 +2292,13 @@ def create_crusader_paladin(x: int, y: int, team: TeamType, corruption_powers: O
             sprite_center_offset=(0, 7),
         )
     )
-    esper.add_component(entity, WalkEffects({
-        frame: [PlaySound(sound_effects=[
-            (SoundEffect(filename=f"horse_footsteps_grass{i+1}.wav", volume=0.15), 1.0) for i in range(4)
-        ])]
-        for frame in [3]
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"horse_footsteps_grass{i+1}.wav", volume=0.15), 1.0) for i in range(4)
+            ])]
+            for frame in [3]
+        },
     }))
     return entity
 
@@ -2389,11 +2428,13 @@ def create_crusader_pikeman(x: int, y: int, team: TeamType, corruption_powers: O
             sprite_center_offset=(25, -30),
         )
     )
-    esper.add_component(entity, WalkEffects({
-        frame: [PlaySound(sound_effects=[
-            (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
-        ])]
-        for frame in [1, 4]
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [1, 4]
+        },
     }))
     return entity
 
@@ -2530,11 +2571,13 @@ def create_crusader_red_knight(x: int, y: int, team: TeamType, corruption_powers
             sprite_center_offset=(0, 1),
         )
     )
-    esper.add_component(entity, WalkEffects({
-        frame: [PlaySound(sound_effects=[
-            (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
-        ])]
-        for frame in [3, 7]
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [3, 7]
+        },
     }))
     return entity
 
@@ -2741,11 +2784,13 @@ def create_crusader_soldier(x: int, y: int, team: TeamType, corruption_powers: O
             sprite_center_offset=(0, 1),
         )
     )
-    esper.add_component(entity, WalkEffects({
-        frame: [PlaySound(sound_effects=[
-            (SoundEffect(filename=f"armored_grass_footstep{i+1}.wav", volume=0.25), 1.0) for i in range(5)
-        ])]
-        for frame in [3, 7]
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"armored_grass_footstep{i+1}.wav", volume=0.25), 1.0) for i in range(5)
+            ])]
+            for frame in [3, 7]
+        },
     }))
     return entity
 
@@ -2911,11 +2956,13 @@ def create_zombie_basic_zombie(x: int, y: int, team: TeamType, corruption_powers
             sprite_center_offset=(2, 8),
         )
     )
-    esper.add_component(entity, WalkEffects({
-        frame: [PlaySound(sound_effects=[
-            (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
-        ])]
-        for frame in [1, 3]
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [1, 3]
+        },
     }))
     return entity
 
@@ -3064,11 +3111,13 @@ def create_zombie_brute(x: int, y: int, team: TeamType, corruption_powers: Optio
             sprite_center_offset=(2, 8),
         )
     )
-    esper.add_component(entity, WalkEffects({
-        frame: [PlaySound(sound_effects=[
-            (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
-        ])]
-        for frame in [1, 3]
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [1, 3]
+        },
     }))
     return entity
 
@@ -3220,11 +3269,13 @@ def create_zombie_jumper(x: int, y: int, team: TeamType, corruption_powers: Opti
             sprite_center_offset=(2, 8),
         )
     )
-    esper.add_component(entity, WalkEffects({
-        frame: [PlaySound(sound_effects=[
-            (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
-        ])]
-        for frame in [1, 3]
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [1, 3]
+        },
     }))
     return entity
 
@@ -3461,11 +3512,13 @@ def create_zombie_tank(x: int, y: int, team: TeamType, corruption_powers: Option
             sprite_center_offset=(2, 8),
         )
     )
-    esper.add_component(entity, WalkEffects({
-        frame: [PlaySound(sound_effects=[
-            (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
-        ])]
-        for frame in [1, 3]
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [1, 3]
+        },
     }))
     return entity
 

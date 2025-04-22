@@ -38,7 +38,7 @@ class SettingsScene(Scene):
 
         # Create a panel to hold settings
         panel_width = 400
-        panel_height = 230
+        panel_height = 270
         screen_width = pygame.display.Info().current_w
         screen_height = pygame.display.Info().current_h
         
@@ -142,6 +142,31 @@ class SettingsScene(Scene):
             container=settings_panel,
             click_increment=click_increment
         )
+        
+        # Drum Volume
+        y_offset += element_height + padding
+        pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect(
+                (10, y_offset),
+                (label_width, element_height)
+            ),
+            text="Banner Bearer Volume",
+            manager=self.manager,
+            container=settings_panel,
+        )
+
+        self.initial_values["DRUM_VOLUME"] = settings.DRUM_VOLUME
+        self.sliders["DRUM_VOLUME"] = pygame_gui.elements.UIHorizontalSlider(
+            relative_rect=pygame.Rect(
+                (label_width + padding, y_offset),
+                (slider_width, element_height)
+            ),
+            start_value=settings.DRUM_VOLUME,
+            value_range=(0.0, 1.0),
+            manager=self.manager,
+            container=settings_panel,
+            click_increment=click_increment
+        )
 
         # Save Button
         y_offset += element_height + padding * 2
@@ -183,6 +208,7 @@ class SettingsScene(Scene):
                         ))
                     settings.SOUND_VOLUME = self.sliders["SOUND_VOLUME"].get_current_value()
                     settings.VOICE_VOLUME = self.sliders["VOICE_VOLUME"].get_current_value()
+                    settings.DRUM_VOLUME = self.sliders["DRUM_VOLUME"].get_current_value()
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.save_button:
                         save_settings()
@@ -190,6 +216,7 @@ class SettingsScene(Scene):
                             "MUSIC_VOLUME": settings.MUSIC_VOLUME,
                             "SOUND_VOLUME": settings.SOUND_VOLUME,
                             "VOICE_VOLUME": settings.VOICE_VOLUME,
+                            "DRUM_VOLUME": settings.DRUM_VOLUME,
                         }
                     elif event.ui_element == self.return_button:
                         if self.has_unsaved_changes():

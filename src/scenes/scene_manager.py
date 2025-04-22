@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Optional, Any, List
 
 from camera import Camera
-from events import STOP_ALL_SOUNDS, StopAllSoundsEvent, emit_event
+from events import STOP_ALL_SOUNDS, StopAllSoundsEvent, emit_event, MUTE_DRUMS, MuteDrumsEvent
 from hex_grid import axial_to_world
 from scenes.battle import BattleScene
 from scenes.setup_battle import SetupBattleScene
@@ -93,6 +93,7 @@ class SceneManager:
 
     def cleanup(self, add_to_stack: bool = True) -> None:
         """Clean up the current scene and save its state."""
+        emit_event(MUTE_DRUMS, event=MuteDrumsEvent())
         if not self.current_scene:
             return
 

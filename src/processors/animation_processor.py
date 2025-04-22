@@ -18,14 +18,27 @@ from components.smooth_movement import SmoothMovement
 from components.sprite_sheet import SpriteSheet
 from components.unit_state import UnitState, State
 from components.velocity import Velocity
-from components.walk_effects import WalkEffects
+from components.animation_effects import AnimationEffects
 from components.airborne import Airborne
 from events import ABILITY_ACTIVATED, ABILITY_COMPLETED, AbilityActivatedEvent, AbilityCompletedEvent, emit_event
+from time_manager import time_manager
 
 class AnimationProcessor(esper.Processor):
     """
     Processor responsible for updating animation frames.
     """
+
+    def __init__(self) -> None:
+        """
+        Initialize the AnimationProcessor.
+        """
+        super().__init__()
+    
+    def _get_start_time(self, sprite_sheet: SpriteSheet, animation_type: AnimationType) -> float:
+        if sprite_sheet.synchronized_animations.get(animation_type, False) or animation_type == AnimationType.IDLE:
+            return time_manager.global_clock % sprite_sheet.animation_durations[animation_type]
+        else:
+            return 0
 
     def process(self, dt: float):
         """
@@ -61,7 +74,7 @@ class AnimationProcessor(esper.Processor):
             if esper.has_component(ent, ForcedMovement):
                 new_anim_type = AnimationType.IDLE
                 anim_state.current_frame = 0
-                anim_state.time_elapsed = 0
+                anim_state.time_elapsed = self._get_start_time(sprite_sheet, new_anim_type)
 
             if unit_state.state == State.PURSUING:
                 if esper.has_component(ent, Destination):
@@ -71,11 +84,14 @@ class AnimationProcessor(esper.Processor):
                         target_velocity = esper.component_for_entity(destination.target_strategy.target, Velocity)
                         if velocity.x == velocity.y == target_velocity.x == target_velocity.y == 0:
                             new_anim_type = AnimationType.IDLE
+            
+            if anim_state.time_elapsed is None:
+                anim_state.time_elapsed = self._get_start_time(sprite_sheet, new_anim_type)
 
             if anim_state.type != new_anim_type:
                 anim_state.type = new_anim_type
                 anim_state.current_frame = 0
-                anim_state.time_elapsed = 0
+                anim_state.time_elapsed = self._get_start_time(sprite_sheet, new_anim_type)
             else:
                 if anim_state.type == AnimationType.WALKING and not esper.has_component(ent, SmoothMovement):
                     # If the unit is moving faster/slower than it's normal movement speed, scale the animation speed
@@ -121,12 +137,11 @@ class AnimationProcessor(esper.Processor):
                     ability = esper.component_for_entity(ent, Abilities).abilities[index]
                     if ability.effects.get(anim_state.current_frame, None):
                         emit_event(ABILITY_ACTIVATED, event=AbilityActivatedEvent(ent, index, anim_state.current_frame))
-                elif anim_state.type == AnimationType.WALKING and esper.has_component(ent, WalkEffects):
-                    walk_effects = esper.component_for_entity(ent, WalkEffects)
-                    effects = walk_effects.effects.get(anim_state.current_frame, None)
-                    if effects:
-                        for effect in effects:
-                            effect.apply(ent, ent, ent)
+                elif esper.has_component(ent, AnimationEffects):
+                    anim_effects = esper.component_for_entity(ent, AnimationEffects)
+                    effects = anim_effects.effects.get(anim_state.type, {}).get(anim_state.current_frame, [])
+                    for effect in effects:
+                        effect.apply(ent, ent, ent)
                 
                 if new_frame == frame_count:
                     if index is not None:

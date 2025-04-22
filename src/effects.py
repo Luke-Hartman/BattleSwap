@@ -613,6 +613,9 @@ class SoundEffect:
 
     volume: float
     """The volume of the sound effect."""
+    
+    channel: Optional[str] = None
+    """The channel to play the sound on. If None, uses a standard channel."""
 
 
 @dataclass
@@ -630,7 +633,11 @@ class PlaySound(Effect):
                 [sound_effect for sound_effect, _ in self.sound_effects],
                 weights=[weight for _, weight in self.sound_effects]
             )[0]
-        emit_event(PLAY_SOUND, event=PlaySoundEvent(filename=sound_effect.filename, volume=sound_effect.volume))
+        emit_event(PLAY_SOUND, event=PlaySoundEvent(
+            filename=sound_effect.filename,
+            volume=sound_effect.volume,
+            channel=sound_effect.channel
+        ))
 
 
 @dataclass

@@ -20,6 +20,7 @@ class SpriteSheet(pygame.sprite.Sprite):
         animation_durations: Dict[AnimationType, float],
         sprite_center_offset: Tuple[int, int],
         start_frames: Optional[Dict[AnimationType, int]] = None,
+        synchronized_animations: Optional[Dict[AnimationType, bool]] = None,
         flip_frames: bool = False,
         layer: int = 0
     ):
@@ -39,6 +40,7 @@ class SpriteSheet(pygame.sprite.Sprite):
         self.flip_frames = flip_frames
         self.layer = layer
         self._processed_frames = {}
+        self.synchronized_animations = synchronized_animations if synchronized_animations is not None else {}
 
     def update_frame(self, animation_type: AnimationType, frame: int):
         """Update the sprite's image to the specified frame of the animation."""

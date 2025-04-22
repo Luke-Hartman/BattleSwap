@@ -17,6 +17,7 @@ class TimeManager:
         ]
         self._is_paused = False
         self._in_battle = False
+        self._global_clock = 0
 
     def increase_game_speed(self):
         current_index = self.game_speeds.index(self._game_speed)
@@ -61,5 +62,12 @@ class TimeManager:
         if self._is_paused or not self._in_battle:
             return 60
         return 60 * self._game_speed
+
+    @property
+    def global_clock(self):
+        return self._global_clock
+
+    def tick(self):
+        self._global_clock += self.dt
 
 time_manager = TimeManager()

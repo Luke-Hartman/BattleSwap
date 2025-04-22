@@ -3,7 +3,7 @@ from game_constants import gc
 import pygame
 import pygame_gui
 from auto_battle import AutoBattle, BattleOutcome
-from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event
+from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event, UNMUTE_DRUMS, UnmuteDrumsEvent
 from scene_utils import use_world, has_unsaved_changes
 from scenes.scene import Scene
 from scenes.events import PreviousSceneEvent
@@ -40,6 +40,7 @@ class BattleScene(Scene):
         emit_event(CHANGE_MUSIC, event=ChangeMusicEvent(
             filename="Battle Theme.wav",
         ))
+        emit_event(UNMUTE_DRUMS, event=UnmuteDrumsEvent())
         self.screen = screen
         self.manager = manager
         self.world_map_view = world_map_view

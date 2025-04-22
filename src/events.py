@@ -105,6 +105,8 @@ class PlaySoundEvent:
     """Event triggered to play a sound."""
     filename: str
     volume: float
+    channel: str = None
+    """Optional channel to play the sound on. If None, plays on a standard channel."""
 
 @dataclass
 class PlayVoiceEvent:
@@ -150,6 +152,16 @@ class GrabEndedEvent:
     entity: int
     """The entity that was grabbed."""
 
+@dataclass
+class MuteDrumsEvent:
+    """Event triggered to mute drums."""
+    pass
+
+@dataclass
+class UnmuteDrumsEvent:
+    """Event triggered to unmute drums."""
+    pass
+
 # Define signal names for each event
 ABILITY_ACTIVATED = 'ability_activated'
 ABILITY_COMPLETED = 'ability_completed'
@@ -174,6 +186,8 @@ PROJECTILE_HIT = 'projectile_hit'
 STATE_CHANGED = 'state_changed'
 STOP_ALL_SOUNDS = 'stop_all_sounds'
 VISUAL_AOE_HIT = 'visual_aoe_hit'
+MUTE_DRUMS = 'mute_drums'
+UNMUTE_DRUMS = 'unmute_drums'
 
 def emit_event(event_type, **kwargs):
     """Emit an event using pydispatch."""

@@ -7,6 +7,7 @@ the animation state of an entity in the game.
 
 from dataclasses import dataclass
 from enum import Enum, auto
+from typing import Optional
 
 class AnimationType(Enum):
     """
@@ -52,5 +53,8 @@ class AnimationState:
     current_frame: int = 0
     """The index of the current frame in the animation sequence."""
 
-    time_elapsed: float = 0.0
-    """The time elapsed since the animation began, in seconds."""
+    time_elapsed: Optional[float] = None
+    """The time elapsed since the animation began, in seconds.
+    
+    Is only None when first initialized.
+    """

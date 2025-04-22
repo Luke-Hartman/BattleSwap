@@ -15,6 +15,7 @@ class Settings(BaseModel):
     SOUND_VOLUME: float = 0.5
     MUSIC_VOLUME: float = 0.5
     VOICE_VOLUME: float = 0.5
+    DRUM_VOLUME: float = 0.5
 
     class Config:
         frozen = False

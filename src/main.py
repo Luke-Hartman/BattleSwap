@@ -71,5 +71,6 @@ while running:
     # screen.blit(fps_text, fps_rect)
     
     pygame.display.flip()
+    time_manager.tick()
 
 pygame.quit()

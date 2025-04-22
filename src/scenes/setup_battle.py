@@ -12,7 +12,7 @@ from components.team import Team, TeamType
 from components.transparent import Transparency
 from components.unit_type import UnitType, UnitTypeComponent
 from entities.units import create_unit
-from events import CHANGE_MUSIC, PLAY_SOUND, ChangeMusicEvent, PlaySoundEvent, emit_event
+from events import CHANGE_MUSIC, PLAY_SOUND, ChangeMusicEvent, PlaySoundEvent, emit_event, UNMUTE_DRUMS, UnmuteDrumsEvent
 from hex_grid import axial_to_world
 from progress_manager import progress_manager
 from scenes.scene import Scene
@@ -64,6 +64,7 @@ class SetupBattleScene(Scene):
         emit_event(CHANGE_MUSIC, event=ChangeMusicEvent(
             filename="Main Theme.wav",
         ))
+        emit_event(UNMUTE_DRUMS, event=UnmuteDrumsEvent())
         self.screen = screen
         self.manager = manager
         self._selected_unit_type: Optional[UnitType] = None
