@@ -2933,22 +2933,22 @@
       [
         "CORE_CAVALRY",
         [
-          -25.0,
-          -200.0
+          -91.92193816530562,
+          -3.0
         ]
       ],
       [
         "CORE_CAVALRY",
         [
-          -25.0,
-          -175.0
+          -67.92193816530562,
+          -162.0
         ]
       ],
       [
         "CORE_CAVALRY",
         [
-          -25.0,
-          -150.0
+          -77.92193816530562,
+          94.0
         ]
       ]
     ],
@@ -3040,22 +3040,29 @@
       [
         "CORE_CAVALRY",
         [
-          -25.56258422040719,
-          480.0
+          -25.0,
+          -507.0
         ]
       ],
       [
         "CORE_CAVALRY",
         [
-          -28.570805740170726,
-          504.7968773895984
+          -25.0,
+          -482.0
         ]
       ],
       [
-        "CRUSADER_BLACK_KNIGHT",
+        "CORE_CAVALRY",
         [
           -25.0,
-          529.5103032932893
+          -457.0
+        ]
+      ],
+      [
+        "CORE_CAVALRY",
+        [
+          -25.0,
+          -432.0
         ]
       ]
     ],
@@ -3119,31 +3126,24 @@
     "is_test": false,
     "tip_voice_filename": null,
     "grades": {
-      "a_cutoff": 300,
-      "b_cutoff": 350,
-      "c_cutoff": 375,
+      "a_cutoff": 200,
+      "b_cutoff": 250,
+      "c_cutoff": 300,
       "d_cutoff": 400
     },
     "best_solution": [
       [
-        "CORE_SWORDSMAN",
+        "CRUSADER_PIKEMAN",
         [
-          -27.484522385711898,
-          -405.0
+          -117.4845223857119,
+          -382.5
         ]
       ],
       [
-        "CORE_SWORDSMAN",
+        "CRUSADER_DEFENDER",
         [
-          -26.602368122745247,
-          -380.0433374599502
-        ]
-      ],
-      [
-        "CORE_SWORDSMAN",
-        [
-          -48.67285969086879,
-          -391.78076828625944
+          -34.9845223857119,
+          -382.0
         ]
       ]
     ],
@@ -3176,21 +3176,28 @@
         "CRUSADER_SOLDIER",
         [
           525.0,
-          0.0
+          -25.0
         ]
       ],
       [
         "CRUSADER_SOLDIER",
         [
           525.0,
-          50.0
+          -75.0
         ]
       ],
       [
         "CRUSADER_SOLDIER",
         [
           525.0,
-          -50.0
+          25.0
+        ]
+      ],
+      [
+        "CRUSADER_SOLDIER",
+        [
+          525.0,
+          75.0
         ]
       ]
     ],
@@ -3205,31 +3212,24 @@
     "is_test": false,
     "tip_voice_filename": null,
     "grades": {
-      "a_cutoff": 300,
-      "b_cutoff": 350,
-      "c_cutoff": 400,
-      "d_cutoff": 450
+      "a_cutoff": 400,
+      "b_cutoff": 450,
+      "c_cutoff": 500,
+      "d_cutoff": 600
     },
     "best_solution": [
       [
-        "CRUSADER_BLACK_KNIGHT",
+        "CORE_WIZARD",
         [
-          -25.0,
-          -65.0
+          -250.0,
+          0.0
         ]
       ],
       [
-        "CRUSADER_GUARDIAN_ANGEL",
+        "CRUSADER_DEFENDER",
         [
-          -86.12516844081438,
-          -90.0
-        ]
-      ],
-      [
-        "CRUSADER_GUARDIAN_ANGEL",
-        [
-          -86.12516844081438,
-          -63.0
+          -300.0,
+          0.0
         ]
       ]
     ],
@@ -3368,9 +3368,9 @@
     "is_test": false,
     "tip_voice_filename": null,
     "grades": {
-      "a_cutoff": 1600,
-      "b_cutoff": 1800,
-      "c_cutoff": 2100,
+      "a_cutoff": 1850,
+      "b_cutoff": 2000,
+      "c_cutoff": 2200,
       "d_cutoff": 2400
     },
     "best_solution": [
@@ -3985,8 +3985,8 @@
     "is_test": false,
     "tip_voice_filename": null,
     "grades": {
-      "a_cutoff": 1400,
-      "b_cutoff": 1700,
+      "a_cutoff": 1700,
+      "b_cutoff": 1850,
       "c_cutoff": 2000,
       "d_cutoff": 2300
     },

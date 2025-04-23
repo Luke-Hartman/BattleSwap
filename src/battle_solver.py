@@ -857,12 +857,12 @@ def random_population(
 
 def main():
 
-    BATTLE_ID = "I need a medic!"
-    PARENTS_PER_GENERATION = 10
+    BATTLE_ID = "Soldiers"
+    PARENTS_PER_GENERATION = 30
     CHILDREN_PER_GENERATION = 10
-    CATEGORY_CAP = None
+    CATEGORY_CAP = 3
     TOURNAMENT_SIZE = None
-    USE_POWERS = True
+    USE_POWERS = False
 
     population = random_population(battle_id=BATTLE_ID, size=PARENTS_PER_GENERATION, target_cost=get_battle_id(BATTLE_ID).grades.d_cutoff)
     population.evaluate()
@@ -906,7 +906,7 @@ def main():
             population = evolution(population)
             
             # Print status
-            # print(population)
+            print(population)
             # print(evolution.mutation_rates)
             
             # Update the plot with the evolved population
