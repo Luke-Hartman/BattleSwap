@@ -12,6 +12,7 @@ import battles
 from auto_battle import simulate_battle, BattleOutcome
 from ui_components.save_battle_dialog import SaveBattleDialog
 from world_map_view import WorldMapView
+from game_constants import gc
 
 class TestStatus(Enum):
     """Status of a test run."""
@@ -389,7 +390,7 @@ class TestEditorScene(Scene):
             self.manager.process_events(event)
         
         self.manager.update(time_delta)
-        self.screen.fill((0, 0, 0))
+        self.screen.fill(gc.MAP_BACKGROUND_COLOR)
         self.manager.draw_ui(self.screen)
         return super().update(time_delta, events)
 

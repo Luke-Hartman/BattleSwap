@@ -13,7 +13,7 @@ from scenes.events import (
 )
 from ui_components.return_button import ReturnButton
 from world_map_view import WorldMapView
-
+from game_constants import gc
 
 class DeveloperToolsScene(Scene):
     """Scene containing developer tools and utilities."""
@@ -145,6 +145,6 @@ class DeveloperToolsScene(Scene):
             self.manager.process_events(event)
 
         self.manager.update(time_delta)
-        self.screen.fill((0, 0, 0))
+        self.screen.fill(gc.MAP_BACKGROUND_COLOR)
         self.manager.draw_ui(self.screen)
         return True

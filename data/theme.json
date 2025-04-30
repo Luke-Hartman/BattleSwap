@@ -1,4 +1,40 @@
 {
+    "defaults": {
+        "colours": {
+            "normal_bg": "#8C9FA1",
+            "hovered_bg": "#A0B4B6",
+            "disabled_bg": "#677476",
+            "selected_bg": "#5C7A7C",
+            "active_bg": "#4E5D63",
+            "dark_bg": "#36495E",
+            "normal_text": "#FFFFFF",
+            "hovered_text": "#FFFFFF",
+            "selected_text": "#FFFFFF",
+            "disabled_text": "#808080",
+            "link_text": "#0000EE",
+            "link_hover": "#2020FF",
+            "link_selected": "#551A8B",
+            "text_shadow": "#777777",
+            "filled_bar": "#f4251b",
+            "unfilled_bar": "#CCCCCC"
+        }
+    },
+    "window": {
+        "colours": {},
+        "misc": {
+            "shape": "rounded_rectangle",
+            "shape_corner_radius": "10"
+        }
+    },
+    "button": {
+        "colours": {
+        },
+        "misc": {
+            "shape": "rounded_rectangle",
+            "shape_corner_radius": "10",
+            "border_width": "0"
+        }
+    },
     "@title_label": {
         "font": {
             "size": "48"
@@ -46,20 +82,19 @@
     },
     "@unit_count": {
         "colours": {
-            "normal_bg": "#45494e",
-            "hovered_bg": "#35393e",
-            "disabled_bg": "#25292e",
-            "selected_bg": "#193754",
-            "active_bg": "#193754",
-            "normal_border": "#DDDDDD",
+            "normal_bg": "#8C9FA1",
+            "hovered_bg": "#A0B4B6",
+            "disabled_bg": "#677476",
+            "selected_bg": "#5C7A7C",
+            "active_bg": "#4E5D63",
+            "normal_border": "#EEEBE1",
             "hovered_border": "#FFFFFF",
-            "disabled_border": "#808080",
-            "selected_border": "#8080B0",
-            "active_border": "#8080B0"
+            "disabled_border": "#AEACA5",
+            "selected_border": "#FFFFFF",
+            "active_border": "#FFFFFF"
         },
         "misc": {
-            "border_width": "1",
-            "shadow_width": "2",
+            "border_width": "3",
             "shape": "rectangle"
         }
     },
@@ -67,6 +102,18 @@
         "misc": {
             "text_horiz_alignment": "right",
             "text_horiz_alignment_padding": "3"
+        }
+    },
+    "tab_container.faction_tab": {
+        "colours": {
+            "normal_bg": "#283645",
+            "hovered_bg": "#455E78",
+            "disabled_bg": "#283645",
+            "selected_bg": "#36495E",
+            "active_bg": "#455E78"
+        },
+        "misc": {
+            "border_width": "0"
         }
     },
     "#core_archer_icon": {

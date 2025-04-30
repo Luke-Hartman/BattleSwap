@@ -144,13 +144,11 @@ class BarracksUI(UITabContainer):
                 (panel_width, content_height + 30)
             ),
             manager=manager,
-            object_id=ObjectID(class_id='@barracks_tabs')
         )
 
         self.faction_to_tab_index: Dict[Faction, int] = {}
         for faction in sorted(self.available_factions, key=lambda f: f.value):
-            tab_id = faction.name.lower() + '_tab'
-            tab_index = self.add_tab(faction.name, '#' + tab_id)
+            tab_index = self.add_tab(faction.name, "faction_tab")
             self.faction_to_tab_index[faction] = tab_index
         
         self.unit_containers: Dict[Faction, UIScrollingContainer] = {}
@@ -169,7 +167,7 @@ class BarracksUI(UITabContainer):
                 relative_rect=container_rect,
                 manager=self.manager,
                 container=tab_panel,
-                allow_scroll_y=False
+                allow_scroll_y=False,
             )
             self.unit_containers[faction] = container
         
