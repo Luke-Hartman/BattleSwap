@@ -10,7 +10,7 @@
             "normal_text": "#FFFFFF",
             "hovered_text": "#FFFFFF",
             "selected_text": "#FFFFFF",
-            "disabled_text": "#808080",
+            "disabled_text": "#FFFFFF",
             "link_text": "#0000EE",
             "link_hover": "#2020FF",
             "link_selected": "#551A8B",
