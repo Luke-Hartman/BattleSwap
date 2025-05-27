@@ -13,6 +13,7 @@ from progress_manager import progress_manager, Solution, calculate_points_for_un
 from ui_components.time_controls import TimeControls
 from time_manager import time_manager
 from battles import Battle, update_battle
+from components.hex_state import HexState, FillState
 
 class BattleScene(Scene):
     """The scene for the battle."""
@@ -57,6 +58,13 @@ class BattleScene(Scene):
         self.confirmation_dialog = None
 
         self.world_map_view.rebuild(self.world_map_view.battles.values())
+        # Fog all other battles except the current one
+        fogged_states = {
+            b.hex_coords: HexState(fill=FillState.FOGGED) if b.hex_coords != self.battle.hex_coords else HexState(fill=FillState.NORMAL)
+            for b in self.world_map_view.battles.values()
+        }
+        self.world_map_view.reset_hex_states()
+        self.world_map_view.update_hex_state(fogged_states)
 
         with use_world(self.battle_id):
             self.auto_battle = AutoBattle(
@@ -68,6 +76,13 @@ class BattleScene(Scene):
         """Handle return button press or escape key."""
         self.world_map_view.move_camera_above_battle(self.battle_id)
         self.world_map_view.rebuild(self.world_map_view.battles.values())
+        # Fog all other battles except the current one
+        fogged_states = {
+            b.hex_coords: HexState(fill=FillState.FOGGED) if b.hex_coords != self.battle.hex_coords else HexState(fill=FillState.NORMAL)
+            for b in self.world_map_view.battles.values()
+        }
+        self.world_map_view.reset_hex_states()
+        self.world_map_view.update_hex_state(fogged_states)
         pygame.event.post(PreviousSceneEvent(n=n).to_event())
 
     def create_victory_panel(self) -> None:
