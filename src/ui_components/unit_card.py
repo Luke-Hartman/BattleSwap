@@ -37,15 +37,13 @@ class UnitCard:
         # Create the window
         self.window = pygame_gui.elements.UIWindow(
             rect=pygame.Rect(position, (300, 420)),
-            window_display_title=name,
+            window_display_title=f"{name} - {Faction.faction_of(unit_type).name.title()}",
             manager=manager,
             resizable=False
         )
         
-        # Add faction and points info to the description
-        faction = Faction.faction_of(unit_type).name.title()
-        points = unit_values[unit_type]
-        full_description = f"<a href='Faction'>Faction</a>: {faction}  <a href='Points'>Points</a>: {points}\n{description}"
+        # Add description
+        full_description = f"{description}"
         
         # Add unit description with clickable links
         self.text = pygame_gui.elements.UITextBox(

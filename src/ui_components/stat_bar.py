@@ -9,7 +9,7 @@ class StatBar:
     # Define colors for each stat type
     STAT_COLORS = {
         StatType.DAMAGE: (200, 50, 50),
-        StatType.DURABILITY: (50, 100, 200),
+        StatType.DEFENSE: (50, 100, 200),
         StatType.SPEED: (200, 200, 50),
         StatType.RANGE: (194, 178, 128),
         StatType.UTILITY: (150, 50, 200)
