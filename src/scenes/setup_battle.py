@@ -111,8 +111,6 @@ class SetupBattleScene(Scene):
             for other_battle in self.world_map_view.battles.values():
                 if other_battle.hex_coords == battle.hex_coords:
                     unfocused_states[other_battle.hex_coords] = HexState(fill=FillState.NORMAL)
-                elif other_battle.hex_coords in progress_manager.solutions:
-                    unfocused_states[other_battle.hex_coords] = HexState(fill=FillState.UNFOCUSED)
                 else:
                     unfocused_states[other_battle.hex_coords] = HexState(fill=FillState.FOGGED)
         self.world_map_view.reset_hex_states()
