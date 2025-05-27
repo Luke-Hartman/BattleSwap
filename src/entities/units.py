@@ -290,6 +290,107 @@ def unit_base_entity(
         esper.add_component(entity, IncreasedDamageComponent(increase_percent=damage_power.increase_percent))
     return entity
 
+def get_unit_sprite_sheet(unit_type: UnitType) -> SpriteSheet:
+    """Return the SpriteSheet component for a given unit type."""
+    if unit_type == UnitType.CORE_ARCHER:
+        return SpriteSheet(
+            surface=sprite_sheets[UnitType.CORE_ARCHER],
+            frame_width=32,
+            frame_height=32,
+            scale=gc.MINIFOLKS_SCALE,
+            frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.ABILITY1: 11, AnimationType.DYING: 4},
+            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 3, AnimationType.DYING: 6},
+            animation_durations={
+                AnimationType.IDLE: gc.CORE_ARCHER_ANIMATION_IDLE_DURATION,
+                AnimationType.WALKING: gc.CORE_ARCHER_ANIMATION_WALKING_DURATION,
+                AnimationType.ABILITY1: gc.CORE_ARCHER_ANIMATION_ATTACK_DURATION,
+                AnimationType.DYING: gc.CORE_ARCHER_ANIMATION_DYING_DURATION,
+            },
+            sprite_center_offset=(0, -8),
+        )
+    elif unit_type == UnitType.CORE_BARBARIAN:
+        return SpriteSheet(
+            surface=sprite_sheets[UnitType.CORE_BARBARIAN],
+            frame_width=100,
+            frame_height=100,
+            scale=gc.TINY_RPG_SCALE,
+            frames={AnimationType.IDLE: 6, AnimationType.WALKING: 9, AnimationType.ABILITY1: 12, AnimationType.DYING: 4},
+            rows={AnimationType.IDLE: 1, AnimationType.WALKING: 4, AnimationType.ABILITY1: 10, AnimationType.DYING: 19},
+            animation_durations={
+                AnimationType.IDLE: gc.CORE_BARBARIAN_ANIMATION_IDLE_DURATION,
+                AnimationType.WALKING: gc.CORE_BARBARIAN_ANIMATION_WALKING_DURATION,
+                AnimationType.ABILITY1: gc.CORE_BARBARIAN_ANIMATION_ATTACK_DURATION,
+                AnimationType.DYING: gc.CORE_BARBARIAN_ANIMATION_DYING_DURATION,
+            },
+            sprite_center_offset=(-2, 2),
+        )
+    elif unit_type == UnitType.CORE_CAVALRY:
+        return SpriteSheet(
+            surface=sprite_sheets[UnitType.CORE_CAVALRY],
+            frame_width=32,
+            frame_height=32,
+            scale=gc.MINIFOLKS_SCALE,
+            frames={AnimationType.IDLE: 8, AnimationType.WALKING: 6, AnimationType.ABILITY1: 7, AnimationType.DYING: 6},
+            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 4, AnimationType.DYING: 6},
+            animation_durations={
+                AnimationType.IDLE: gc.CORE_CAVALRY_ANIMATION_IDLE_DURATION,
+                AnimationType.WALKING: gc.CORE_CAVALRY_ANIMATION_WALKING_DURATION,
+                AnimationType.ABILITY1: gc.CORE_CAVALRY_ANIMATION_ATTACK_DURATION,
+                AnimationType.DYING: gc.CORE_CAVALRY_ANIMATION_DYING_DURATION,
+            },
+            sprite_center_offset=(1, -6),
+        )
+    elif unit_type == UnitType.CORE_DUELIST:
+        return SpriteSheet(
+            surface=sprite_sheets[UnitType.CORE_DUELIST],
+            frame_width=100,
+            frame_height=100,
+            scale=gc.TINY_RPG_SCALE,
+            frames={AnimationType.IDLE: 4, AnimationType.WALKING: 8, AnimationType.ABILITY1: 12, AnimationType.DYING: 4},
+            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 4, AnimationType.DYING: 6},
+            animation_durations={
+                AnimationType.IDLE: gc.CORE_DUELIST_ANIMATION_IDLE_DURATION,
+                AnimationType.WALKING: gc.CORE_DUELIST_ANIMATION_WALKING_DURATION,
+                AnimationType.ABILITY1: gc.CORE_DUELIST_ANIMATION_ATTACK_DURATION,
+                AnimationType.DYING: gc.CORE_DUELIST_ANIMATION_DYING_DURATION,
+            },
+            sprite_center_offset=(0, 2),
+        )
+    elif unit_type == UnitType.CORE_LONGBOWMAN:
+        return SpriteSheet(
+            surface=sprite_sheets[UnitType.CORE_LONGBOWMAN],
+            frame_width=100,
+            frame_height=100,
+            scale=gc.TINY_RPG_SCALE,
+            frames={AnimationType.IDLE: 6, AnimationType.WALKING: 7, AnimationType.ABILITY1: 8, AnimationType.DYING: 4},
+            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 2, AnimationType.DYING: 5},
+            animation_durations={
+                AnimationType.IDLE: gc.CORE_LONGBOWMAN_ANIMATION_IDLE_DURATION,
+                AnimationType.WALKING: gc.CORE_LONGBOWMAN_ANIMATION_WALKING_DURATION,
+                AnimationType.ABILITY1: gc.CORE_LONGBOWMAN_ANIMATION_ATTACK_DURATION,
+                AnimationType.DYING: gc.CORE_LONGBOWMAN_ANIMATION_DYING_DURATION,
+            },
+            sprite_center_offset=(0, 2),
+        )
+    elif unit_type == UnitType.CORE_SWORDSMAN:
+        return SpriteSheet(
+            surface=sprite_sheets[UnitType.CORE_SWORDSMAN],
+            frame_width=32,
+            frame_height=32,
+            scale=gc.MINIFOLKS_SCALE,
+            frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.ABILITY1: 6, AnimationType.DYING: 4},
+            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 3, AnimationType.DYING: 5},
+            animation_durations={
+                AnimationType.IDLE: gc.CORE_SWORDSMAN_ANIMATION_IDLE_DURATION,
+                AnimationType.WALKING: gc.CORE_SWORDSMAN_ANIMATION_WALKING_DURATION,
+                AnimationType.ABILITY1: gc.CORE_SWORDSMAN_ANIMATION_ATTACK_DURATION,
+                AnimationType.DYING: gc.CORE_SWORDSMAN_ANIMATION_DYING_DURATION,
+            },
+            sprite_center_offset=(0, -8),
+        )
+    else:
+        raise ValueError(f"No SpriteSheet defined for unit type: {unit_type}")
+
 def create_core_archer(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
     """Create an archer entity with all necessary components."""
     entity = unit_base_entity(
@@ -305,6 +406,15 @@ def create_core_archer(x: int, y: int, team: TeamType, corruption_powers: Option
         ),
         corruption_powers=corruption_powers
     )
+    entity.add_component(get_unit_sprite_sheet(UnitType.CORE_ARCHER))
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [1, 4]
+        },
+    }))
     targetting_strategy = TargetStrategy(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
@@ -378,29 +488,6 @@ def create_core_archer(x: int, y: int, team: TeamType, corruption_powers: Option
             ]
         )
     )
-    esper.add_component(entity, SpriteSheet(
-        surface=sprite_sheets[UnitType.CORE_ARCHER],
-        frame_width=32,
-        frame_height=32,
-        scale=gc.MINIFOLKS_SCALE,
-        frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.ABILITY1: 11, AnimationType.DYING: 4},
-        rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 3, AnimationType.DYING: 6},
-        animation_durations={
-            AnimationType.IDLE: gc.CORE_ARCHER_ANIMATION_IDLE_DURATION,
-            AnimationType.WALKING: gc.CORE_ARCHER_ANIMATION_WALKING_DURATION,
-            AnimationType.ABILITY1: gc.CORE_ARCHER_ANIMATION_ATTACK_DURATION,
-            AnimationType.DYING: gc.CORE_ARCHER_ANIMATION_DYING_DURATION,
-        },
-        sprite_center_offset=(0, -8),
-    ))
-    esper.add_component(entity, AnimationEffects({
-        AnimationType.WALKING: {
-            frame: [PlaySound(sound_effects=[
-                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
-            ])]
-            for frame in [1, 4]
-        },
-    }))
     return entity
 
 def create_core_barbarian(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
@@ -418,6 +505,15 @@ def create_core_barbarian(x: int, y: int, team: TeamType, corruption_powers: Opt
         ),
         corruption_powers=corruption_powers
     )
+    entity.add_component(get_unit_sprite_sheet(UnitType.CORE_BARBARIAN))
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [2, 5]
+        },
+    }))
     targetting_strategy = TargetStrategy(
         rankings=[
             ByDistance(entity=entity, y_bias=4, ascending=True),
@@ -471,29 +567,6 @@ def create_core_barbarian(x: int, y: int, team: TeamType, corruption_powers: Opt
             ]
         )
     )
-    esper.add_component(entity, SpriteSheet(
-        surface=sprite_sheets[UnitType.CORE_BARBARIAN],
-        frame_width=100,
-        frame_height=100,
-        scale=gc.TINY_RPG_SCALE,
-        frames={AnimationType.IDLE: 6, AnimationType.WALKING: 9, AnimationType.ABILITY1: 12, AnimationType.DYING: 4},
-        rows={AnimationType.IDLE: 1, AnimationType.WALKING: 4, AnimationType.ABILITY1: 10, AnimationType.DYING: 19},
-        animation_durations={
-            AnimationType.IDLE: gc.CORE_BARBARIAN_ANIMATION_IDLE_DURATION,
-            AnimationType.WALKING: gc.CORE_BARBARIAN_ANIMATION_WALKING_DURATION,
-            AnimationType.ABILITY1: gc.CORE_BARBARIAN_ANIMATION_ATTACK_DURATION,
-            AnimationType.DYING: gc.CORE_BARBARIAN_ANIMATION_DYING_DURATION,
-        },
-        sprite_center_offset=(-2, 2),
-    ))
-    esper.add_component(entity, AnimationEffects({
-        AnimationType.WALKING: {
-            frame: [PlaySound(sound_effects=[
-                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
-            ])]
-            for frame in [2, 5]
-        },
-    }))
     return entity
 
 def create_core_cavalry(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
@@ -511,6 +584,15 @@ def create_core_cavalry(x: int, y: int, team: TeamType, corruption_powers: Optio
         ),
         corruption_powers=corruption_powers
     )
+    entity.add_component(get_unit_sprite_sheet(UnitType.CORE_CAVALRY))
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"horse_footsteps_grass{i+1}.wav", volume=0.15), 1.0) for i in range(4)
+            ])]
+            for frame in [2]
+        },
+    }))
     targetting_strategy = TargetStrategy(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
@@ -561,29 +643,6 @@ def create_core_cavalry(x: int, y: int, team: TeamType, corruption_powers: Optio
             ]
         )
     )
-    esper.add_component(entity, SpriteSheet(
-        surface=sprite_sheets[UnitType.CORE_CAVALRY],
-        frame_width=32,
-        frame_height=32,
-        scale=gc.MINIFOLKS_SCALE,
-        frames={AnimationType.IDLE: 8, AnimationType.WALKING: 6, AnimationType.ABILITY1: 7, AnimationType.DYING: 6},
-        rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 4, AnimationType.DYING: 6},
-        animation_durations={
-            AnimationType.IDLE: gc.CORE_CAVALRY_ANIMATION_IDLE_DURATION,
-            AnimationType.WALKING: gc.CORE_CAVALRY_ANIMATION_WALKING_DURATION,
-            AnimationType.ABILITY1: gc.CORE_CAVALRY_ANIMATION_ATTACK_DURATION,
-            AnimationType.DYING: gc.CORE_CAVALRY_ANIMATION_DYING_DURATION,
-        },
-        sprite_center_offset=(1, -6),
-    ))
-    esper.add_component(entity, AnimationEffects({
-        AnimationType.WALKING: {
-            frame: [PlaySound(sound_effects=[
-                (SoundEffect(filename=f"horse_footsteps_grass{i+1}.wav", volume=0.15), 1.0) for i in range(4)
-            ])]
-            for frame in [2]
-        },
-    }))
     return entity
 
 def create_core_duelist(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
@@ -601,6 +660,15 @@ def create_core_duelist(x: int, y: int, team: TeamType, corruption_powers: Optio
         ),
         corruption_powers=corruption_powers
     )
+    entity.add_component(get_unit_sprite_sheet(UnitType.CORE_DUELIST))
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [3, 7]
+        },
+    }))
     targetting_strategy = TargetStrategy(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
@@ -681,29 +749,6 @@ def create_core_duelist(x: int, y: int, team: TeamType, corruption_powers: Optio
             ]
         )
     )
-    esper.add_component(entity, SpriteSheet(
-        surface=sprite_sheets[UnitType.CORE_DUELIST],
-        frame_width=100,
-        frame_height=100,
-        scale=gc.TINY_RPG_SCALE,
-        frames={AnimationType.IDLE: 4, AnimationType.WALKING: 8, AnimationType.ABILITY1: 12, AnimationType.DYING: 4},
-        rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 4, AnimationType.DYING: 6},
-        animation_durations={
-            AnimationType.IDLE: gc.CORE_DUELIST_ANIMATION_IDLE_DURATION,
-            AnimationType.WALKING: gc.CORE_DUELIST_ANIMATION_WALKING_DURATION,
-            AnimationType.ABILITY1: gc.CORE_DUELIST_ANIMATION_ATTACK_DURATION,
-            AnimationType.DYING: gc.CORE_DUELIST_ANIMATION_DYING_DURATION,
-        },
-        sprite_center_offset=(0, 2),
-    ))
-    esper.add_component(entity, AnimationEffects({
-        AnimationType.WALKING: {
-            frame: [PlaySound(sound_effects=[
-                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
-            ])]
-            for frame in [3, 7]
-        },
-    }))
     return entity
 
 def create_core_longbowman(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
@@ -721,6 +766,15 @@ def create_core_longbowman(x: int, y: int, team: TeamType, corruption_powers: Op
         ),
         corruption_powers=corruption_powers
     )
+    entity.add_component(get_unit_sprite_sheet(UnitType.CORE_LONGBOWMAN))
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [3, 7]
+        },
+    }))
     targetting_strategy = TargetStrategy(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
@@ -790,32 +844,6 @@ def create_core_longbowman(x: int, y: int, team: TeamType, corruption_powers: Op
             ]
         )
     )
-    esper.add_component(
-        entity,
-        SpriteSheet(
-            surface=sprite_sheets[UnitType.CORE_LONGBOWMAN],
-            frame_width=100,
-            frame_height=100,
-            scale=gc.TINY_RPG_SCALE,
-            frames={AnimationType.IDLE: 6, AnimationType.WALKING: 7, AnimationType.ABILITY1: 8, AnimationType.DYING: 4},
-            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 2, AnimationType.DYING: 5},
-            animation_durations={
-                AnimationType.IDLE: gc.CORE_LONGBOWMAN_ANIMATION_IDLE_DURATION,
-                AnimationType.WALKING: gc.CORE_LONGBOWMAN_ANIMATION_WALKING_DURATION,
-                AnimationType.ABILITY1: gc.CORE_LONGBOWMAN_ANIMATION_ATTACK_DURATION,
-                AnimationType.DYING: gc.CORE_LONGBOWMAN_ANIMATION_DYING_DURATION,
-            },
-            sprite_center_offset=(0, 2),
-        )
-    )
-    esper.add_component(entity, AnimationEffects({
-        AnimationType.WALKING: {
-            frame: [PlaySound(sound_effects=[
-                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
-            ])]
-            for frame in [3, 7]
-        },
-    }))
     return entity
 
 def create_core_swordsman(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
@@ -833,6 +861,15 @@ def create_core_swordsman(x: int, y: int, team: TeamType, corruption_powers: Opt
         ),
         corruption_powers=corruption_powers
     )
+    entity.add_component(get_unit_sprite_sheet(UnitType.CORE_SWORDSMAN))
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [2, 5]
+        },
+    }))
     targetting_strategy = TargetStrategy(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
@@ -885,29 +922,6 @@ def create_core_swordsman(x: int, y: int, team: TeamType, corruption_powers: Opt
             ]
         )
     )
-    esper.add_component(entity, SpriteSheet(
-        surface=sprite_sheets[UnitType.CORE_SWORDSMAN],
-        frame_width=32,
-        frame_height=32,
-        scale=gc.MINIFOLKS_SCALE,
-        frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.ABILITY1: 6, AnimationType.DYING: 4},
-        rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 3, AnimationType.DYING: 5},
-        animation_durations={
-            AnimationType.IDLE: gc.CORE_SWORDSMAN_ANIMATION_IDLE_DURATION,
-            AnimationType.WALKING: gc.CORE_SWORDSMAN_ANIMATION_WALKING_DURATION,
-            AnimationType.ABILITY1: gc.CORE_SWORDSMAN_ANIMATION_ATTACK_DURATION,
-            AnimationType.DYING: gc.CORE_SWORDSMAN_ANIMATION_DYING_DURATION,
-        },
-        sprite_center_offset=(0, -8),
-    ))
-    esper.add_component(entity, AnimationEffects({
-        AnimationType.WALKING: {
-            frame: [PlaySound(sound_effects=[
-                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
-            ])]
-            for frame in [2, 5]
-        },
-    }))
     return entity
 
 def create_core_wizard(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
@@ -925,6 +939,15 @@ def create_core_wizard(x: int, y: int, team: TeamType, corruption_powers: Option
         ),
         corruption_powers=corruption_powers
     )
+    entity.add_component(get_unit_sprite_sheet(UnitType.CORE_WIZARD))
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [1, 4]
+        },
+    }))
     targetting_strategy = TargetStrategy(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
@@ -1008,29 +1031,6 @@ def create_core_wizard(x: int, y: int, team: TeamType, corruption_powers: Option
             ]
         )
     )
-    esper.add_component(entity, SpriteSheet(
-        surface=sprite_sheets[UnitType.CORE_WIZARD],
-        frame_width=32,
-        frame_height=32,
-        scale=gc.MINIFOLKS_SCALE,
-        frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.ABILITY1: 11, AnimationType.DYING: 9},
-        rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 3, AnimationType.DYING: 7},
-        animation_durations={
-            AnimationType.IDLE: gc.CORE_WIZARD_ANIMATION_IDLE_DURATION,
-            AnimationType.WALKING: gc.CORE_WIZARD_ANIMATION_WALKING_DURATION,
-            AnimationType.ABILITY1: gc.CORE_WIZARD_ANIMATION_ATTACK_DURATION,
-            AnimationType.DYING: gc.CORE_WIZARD_ANIMATION_DYING_DURATION,
-        },
-        sprite_center_offset=(0, -8),
-    ))
-    esper.add_component(entity, AnimationEffects({
-        AnimationType.WALKING: {
-            frame: [PlaySound(sound_effects=[
-                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
-            ])]
-            for frame in [1, 4]
-        },
-    }))
     return entity
 
 def create_crusader_banner_bearer(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
@@ -1174,6 +1174,15 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType, corruption_powe
         ),
         corruption_powers=corruption_powers
     )
+    entity.add_component(get_unit_sprite_sheet(UnitType.CRUSADER_BLACK_KNIGHT))
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"horse_footsteps_grass{i+1}.wav", volume=0.15), 1.0) for i in range(4)
+            ])]
+            for frame in [3]
+        },
+    }))
     targetting_strategy = TargetStrategy(
         rankings=[
             WeightedRanking(
@@ -1262,29 +1271,6 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType, corruption_powe
             ]
         )
     )
-    esper.add_component(entity, SpriteSheet(
-        surface=sprite_sheets[UnitType.CRUSADER_BLACK_KNIGHT],
-        frame_width=100,
-        frame_height=100,
-        scale=gc.TINY_RPG_SCALE,
-        frames={AnimationType.IDLE: 6, AnimationType.WALKING: 8, AnimationType.ABILITY1: 6, AnimationType.DYING: 4},
-        rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 3, AnimationType.DYING: 6},
-        animation_durations={
-            AnimationType.IDLE: gc.CRUSADER_BLACK_KNIGHT_ANIMATION_IDLE_DURATION,
-            AnimationType.WALKING: gc.CRUSADER_BLACK_KNIGHT_ANIMATION_WALKING_DURATION,
-            AnimationType.ABILITY1: gc.CRUSADER_BLACK_KNIGHT_ANIMATION_ATTACK_DURATION,
-            AnimationType.DYING: gc.CRUSADER_BLACK_KNIGHT_ANIMATION_DYING_DURATION,
-        },
-        sprite_center_offset=(0, 7),
-    ))
-    esper.add_component(entity, AnimationEffects({
-        AnimationType.WALKING: {
-            frame: [PlaySound(sound_effects=[
-                (SoundEffect(filename=f"horse_footsteps_grass{i+1}.wav", volume=0.15), 1.0) for i in range(4)
-            ])]
-            for frame in [3]
-        },
-    }))
     return entity
 
 def create_crusader_catapult(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
@@ -1390,28 +1376,6 @@ def create_crusader_catapult(x: int, y: int, team: TeamType, corruption_powers: 
             ]
         )
     )
-    esper.add_component(entity, SpriteSheet(
-        surface=sprite_sheets[UnitType.CRUSADER_CATAPULT],
-        frame_width=128,
-        frame_height=288//3,
-        scale=gc.TINY_RPG_SCALE,
-        frames={AnimationType.IDLE: 1, 
-                AnimationType.WALKING: 1,
-                AnimationType.ABILITY1: 10, 
-                AnimationType.DYING: 3},
-        rows={AnimationType.IDLE: 0, 
-               AnimationType.WALKING: 0,
-               AnimationType.ABILITY1: 0, 
-               AnimationType.DYING: 2},
-        animation_durations={
-            AnimationType.IDLE: gc.CRUSADER_CATAPULT_ANIMATION_IDLE_DURATION,
-            AnimationType.WALKING: gc.CRUSADER_CATAPULT_ANIMATION_IDLE_DURATION,
-            AnimationType.ABILITY1: gc.CRUSADER_CATAPULT_ANIMATION_ATTACK_DURATION,
-            AnimationType.DYING: gc.CRUSADER_CATAPULT_ANIMATION_DYING_DURATION,
-        },
-        sprite_center_offset=(-10, -7),
-        flip_frames=True,
-    ))
     return entity
 
 def create_crusader_cleric(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
@@ -1546,29 +1510,6 @@ def create_crusader_cleric(x: int, y: int, team: TeamType, corruption_powers: Op
             ]
         )
     )
-    esper.add_component(entity, SpriteSheet(
-        surface=sprite_sheets[UnitType.CRUSADER_CLERIC],
-        frame_width=100,
-        frame_height=100,
-        scale=gc.TINY_RPG_SCALE,
-        frames={AnimationType.IDLE: 6, AnimationType.WALKING: 8, AnimationType.ABILITY1: 6, AnimationType.DYING: 4},
-        rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 4, AnimationType.DYING: 7},
-        animation_durations={
-            AnimationType.IDLE: gc.CRUSADER_CLERIC_ANIMATION_IDLE_DURATION,
-            AnimationType.WALKING: gc.CRUSADER_CLERIC_ANIMATION_WALKING_DURATION,
-            AnimationType.ABILITY1: gc.CRUSADER_CLERIC_ANIMATION_ATTACK_DURATION,
-            AnimationType.DYING: gc.CRUSADER_CLERIC_ANIMATION_DYING_DURATION,
-        },
-        sprite_center_offset=(0, 2),
-    ))
-    esper.add_component(entity, AnimationEffects({
-        AnimationType.WALKING: {
-            frame: [PlaySound(sound_effects=[
-                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
-            ])]
-            for frame in [3, 7]
-        },
-    }))
     return entity
 
 def create_crusader_commander(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
@@ -1586,6 +1527,15 @@ def create_crusader_commander(x: int, y: int, team: TeamType, corruption_powers:
         ),
         corruption_powers=corruption_powers
     )
+    entity.add_component(get_unit_sprite_sheet(UnitType.CRUSADER_COMMANDER))
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [3, 7]
+        },
+    }))
     targetting_strategy = TargetStrategy(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
@@ -1636,50 +1586,6 @@ def create_crusader_commander(x: int, y: int, team: TeamType, corruption_powers:
             ]
         )
     )
-    esper.add_component(
-        entity,
-        Aura(
-            owner=entity,
-            radius=gc.CRUSADER_COMMANDER_AURA_RADIUS,
-            effects=[
-                AppliesStatusEffect(
-                    status_effect=CrusaderBannerBearerEmpowered(time_remaining=gc.DEFAULT_AURA_PERIOD),
-                    recipient=Recipient.TARGET
-                ),
-            ],
-            period=gc.DEFAULT_AURA_PERIOD,
-            owner_condition=Alive(),
-            unit_condition=All([
-                Not(IsEntity(entity=entity)),
-                OnTeam(team=team),
-                Alive()
-            ]),
-            color=(255, 215, 0),
-        )
-    )
-    esper.add_component(entity, SpriteSheet(
-        surface=sprite_sheets[UnitType.CRUSADER_COMMANDER],
-        frame_width=100,
-        frame_height=100,
-        scale=gc.TINY_RPG_SCALE,
-        frames={AnimationType.IDLE: 6, AnimationType.WALKING: 8, AnimationType.ABILITY1: 7, AnimationType.DYING: 4},
-        rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 4, AnimationType.DYING: 8},
-        animation_durations={
-            AnimationType.IDLE: gc.CRUSADER_COMMANDER_ANIMATION_IDLE_DURATION,
-            AnimationType.WALKING: gc.CRUSADER_COMMANDER_ANIMATION_WALKING_DURATION,
-            AnimationType.ABILITY1: gc.CRUSADER_COMMANDER_ANIMATION_ATTACK_DURATION,
-            AnimationType.DYING: gc.CRUSADER_COMMANDER_ANIMATION_DYING_DURATION,
-        },
-        sprite_center_offset=(0, 2),
-    ))
-    esper.add_component(entity, AnimationEffects({
-        AnimationType.WALKING: {
-            frame: [PlaySound(sound_effects=[
-                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
-            ])]
-            for frame in [3, 7]
-        },
-    }))
     return entity
 
 def create_crusader_crossbowman(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
@@ -1697,6 +1603,15 @@ def create_crusader_crossbowman(x: int, y: int, team: TeamType, corruption_power
         ),
         corruption_powers=corruption_powers
     )
+    entity.add_component(get_unit_sprite_sheet(UnitType.CRUSADER_CROSSBOWMAN))
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"armored_grass_footstep{i+1}.wav", volume=0.25), 1.0) for i in range(5)
+            ])]
+            for frame in [1, 5]
+        },
+    }))
     targetting_strategy = TargetStrategy(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
@@ -1839,33 +1754,6 @@ def create_crusader_crossbowman(x: int, y: int, team: TeamType, corruption_power
             ),
         ]
     ))
-    esper.add_component(
-        entity,
-        SpriteSheet(
-            surface=sprite_sheets[UnitType.CRUSADER_CROSSBOWMAN],
-            frame_width=100,
-            frame_height=100,
-            scale=gc.TINY_RPG_SCALE,
-            frames={AnimationType.IDLE: 6, AnimationType.WALKING: 7, AnimationType.ABILITY1: 8, AnimationType.ABILITY2: 4, AnimationType.DYING: 4},
-            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 2, AnimationType.ABILITY2: 4, AnimationType.DYING: 5},
-            animation_durations={
-                AnimationType.IDLE: gc.CRUSADER_CROSSBOWMAN_ANIMATION_IDLE_DURATION,
-                AnimationType.WALKING: gc.CRUSADER_CROSSBOWMAN_ANIMATION_WALKING_DURATION,
-                AnimationType.ABILITY1: gc.CRUSADER_CROSSBOWMAN_ANIMATION_ATTACK_DURATION,
-                AnimationType.ABILITY2: gc.CRUSADER_CROSSBOWMAN_ANIMATION_RELOAD_DURATION,
-                AnimationType.DYING: gc.CRUSADER_CROSSBOWMAN_ANIMATION_DYING_DURATION,
-            },
-            sprite_center_offset=(0, 2),
-        )
-    )
-    esper.add_component(entity, AnimationEffects({
-        AnimationType.WALKING: {
-            frame: [PlaySound(sound_effects=[
-                (SoundEffect(filename=f"armored_grass_footstep{i+1}.wav", volume=0.25), 1.0) for i in range(5)
-            ])]
-            for frame in [1, 5]
-        },
-    }))
     return entity
 
 def create_crusader_defender(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
@@ -1883,6 +1771,15 @@ def create_crusader_defender(x: int, y: int, team: TeamType, corruption_powers: 
         ),
         corruption_powers=corruption_powers
     )
+    entity.add_component(get_unit_sprite_sheet(UnitType.CRUSADER_DEFENDER))
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"armored_grass_footstep{i+1}.wav", volume=0.25), 1.0) for i in range(5)
+            ])]
+            for frame in [1, 5]
+        },
+    }))
     targetting_strategy = TargetStrategy(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
@@ -1934,29 +1831,6 @@ def create_crusader_defender(x: int, y: int, team: TeamType, corruption_powers: 
             ]
         )
     )
-    esper.add_component(entity, SpriteSheet(
-        surface=sprite_sheets[UnitType.CRUSADER_DEFENDER],
-        frame_width=32,
-        frame_height=32,
-        scale=gc.MINIFOLKS_SCALE,
-        frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.ABILITY1: 6, AnimationType.DYING: 4},
-        rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 3, AnimationType.DYING: 6},
-        animation_durations={
-            AnimationType.IDLE: gc.CRUSADER_DEFENDER_ANIMATION_IDLE_DURATION,
-            AnimationType.WALKING: gc.CRUSADER_DEFENDER_ANIMATION_WALKING_DURATION,
-            AnimationType.ABILITY1: gc.CRUSADER_DEFENDER_ANIMATION_ATTACK_DURATION,
-            AnimationType.DYING: gc.CRUSADER_DEFENDER_ANIMATION_DYING_DURATION,
-        },
-        sprite_center_offset=(0, -8),
-    ))
-    esper.add_component(entity, AnimationEffects({
-        AnimationType.WALKING: {
-            frame: [PlaySound(sound_effects=[
-                (SoundEffect(filename=f"armored_grass_footstep{i+1}.wav", volume=0.25), 1.0) for i in range(5)
-            ])]
-            for frame in [1, 5]
-        },
-    }))
     return entity
 
 def create_crusader_gold_knight(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
@@ -1974,6 +1848,15 @@ def create_crusader_gold_knight(x: int, y: int, team: TeamType, corruption_power
         ),
         corruption_powers=corruption_powers
     )
+    entity.add_component(get_unit_sprite_sheet(UnitType.CRUSADER_GOLD_KNIGHT))
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [3, 7]
+        },
+    }))
     targetting_strategy = TargetStrategy(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
@@ -2029,29 +1912,6 @@ def create_crusader_gold_knight(x: int, y: int, team: TeamType, corruption_power
             ]
         )
     )
-    esper.add_component(entity, SpriteSheet(
-        surface=sprite_sheets[UnitType.CRUSADER_GOLD_KNIGHT],
-        frame_width=100,
-        frame_height=100,
-        scale=gc.TINY_RPG_SCALE,
-        frames={AnimationType.IDLE: 6, AnimationType.WALKING: 8, AnimationType.ABILITY1: 4, AnimationType.DYING: 4},
-        rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 6, AnimationType.DYING: 5},
-        animation_durations={
-            AnimationType.IDLE: gc.CRUSADER_GOLD_KNIGHT_ANIMATION_IDLE_DURATION,
-            AnimationType.WALKING: gc.CRUSADER_GOLD_KNIGHT_ANIMATION_WALKING_DURATION,
-            AnimationType.ABILITY1: gc.CRUSADER_GOLD_KNIGHT_ANIMATION_ATTACK_DURATION,
-            AnimationType.DYING: gc.CRUSADER_GOLD_KNIGHT_ANIMATION_DYING_DURATION,
-        },
-        sprite_center_offset=(0, 2),
-    ))
-    esper.add_component(entity, AnimationEffects({
-        AnimationType.WALKING: {
-            frame: [PlaySound(sound_effects=[
-                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
-            ])]
-            for frame in [3, 7]
-        },
-    }))
     return entity
 
 def create_crusader_guardian_angel(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
@@ -2069,6 +1929,15 @@ def create_crusader_guardian_angel(x: int, y: int, team: TeamType, corruption_po
         ),
         corruption_powers=corruption_powers
     )
+    entity.add_component(get_unit_sprite_sheet(UnitType.CRUSADER_GUARDIAN_ANGEL))
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [3, 7]
+        },
+    }))
     esper.add_component(entity, SmoothMovement())
     esper.add_component(entity, Follower())
     targetting_strategy = TargetStrategy(
@@ -2161,31 +2030,6 @@ def create_crusader_guardian_angel(x: int, y: int, team: TeamType, corruption_po
             ]
         )
     )
-    esper.add_component(
-        entity,
-        SpriteSheet(
-            surface=sprite_sheets[UnitType.CRUSADER_GUARDIAN_ANGEL],
-            frame_width=100,
-            frame_height=100,
-            scale=gc.TINY_RPG_SCALE,
-            frames={AnimationType.IDLE: 24, AnimationType.WALKING: 24, AnimationType.DYING: 8},
-            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 0, AnimationType.DYING: 1},
-            sprite_center_offset=(0, 6),
-            animation_durations={
-                AnimationType.IDLE: gc.CRUSADER_GUARDIAN_ANGEL_ANIMATION_FLYING_DURATION,
-                AnimationType.WALKING: gc.CRUSADER_GUARDIAN_ANGEL_ANIMATION_FLYING_DURATION,
-                AnimationType.DYING: gc.CRUSADER_GUARDIAN_ANGEL_ANIMATION_DYING_DURATION,
-            },
-        )
-    )
-    esper.add_component(entity, AnimationEffects({
-        AnimationType.WALKING: {
-            frame: [PlaySound(sound_effects=[
-                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
-            ])]
-            for frame in [3, 7]
-        },
-    }))
     return entity
 
 def create_crusader_paladin(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
@@ -2203,6 +2047,15 @@ def create_crusader_paladin(x: int, y: int, team: TeamType, corruption_powers: O
         ),
         corruption_powers=corruption_powers
     )
+    entity.add_component(get_unit_sprite_sheet(UnitType.CRUSADER_PALADIN))
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"horse_footsteps_grass{i+1}.wav", volume=0.15), 1.0) for i in range(4)
+            ])]
+            for frame in [3]
+        },
+    }))
     targetting_strategy = TargetStrategy(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
@@ -2273,33 +2126,6 @@ def create_crusader_paladin(x: int, y: int, team: TeamType, corruption_powers: O
             ]
         )
     )
-    esper.add_component(
-        entity,
-        SpriteSheet(
-            surface=sprite_sheets[UnitType.CRUSADER_PALADIN],
-            frame_width=100,
-            frame_height=100,
-            scale=gc.TINY_RPG_SCALE,
-            frames={AnimationType.IDLE: 6, AnimationType.WALKING: 8, AnimationType.ABILITY1: 13, AnimationType.ABILITY2: 6, AnimationType.DYING: 4},
-            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 7, AnimationType.ABILITY2: 3, AnimationType.DYING: 6},
-            animation_durations={
-                AnimationType.IDLE: gc.CRUSADER_PALADIN_ANIMATION_IDLE_DURATION,
-                AnimationType.WALKING: gc.CRUSADER_PALADIN_ANIMATION_WALKING_DURATION,
-                AnimationType.ABILITY1: gc.CRUSADER_PALADIN_ANIMATION_SKILL_DURATION,
-                AnimationType.ABILITY2: gc.CRUSADER_PALADIN_ANIMATION_ATTACK_DURATION,
-                AnimationType.DYING: gc.CRUSADER_PALADIN_ANIMATION_DYING_DURATION,
-            },
-            sprite_center_offset=(0, 7),
-        )
-    )
-    esper.add_component(entity, AnimationEffects({
-        AnimationType.WALKING: {
-            frame: [PlaySound(sound_effects=[
-                (SoundEffect(filename=f"horse_footsteps_grass{i+1}.wav", volume=0.15), 1.0) for i in range(4)
-            ])]
-            for frame in [3]
-        },
-    }))
     return entity
 
 def create_crusader_pikeman(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
@@ -2317,6 +2143,15 @@ def create_crusader_pikeman(x: int, y: int, team: TeamType, corruption_powers: O
         ),
         corruption_powers=corruption_powers
     )
+    entity.add_component(get_unit_sprite_sheet(UnitType.CRUSADER_PIKEMAN))
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [1, 4]
+        },
+    }))
     targetting_strategy = TargetStrategy(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
@@ -2408,34 +2243,6 @@ def create_crusader_pikeman(x: int, y: int, team: TeamType, corruption_powers: O
             ]
         )
     )
-    esper.add_component(
-        entity,
-        SpriteSheet(
-            surface=sprite_sheets[UnitType.CRUSADER_PIKEMAN],
-            frame_width=120,
-            frame_height=120,
-            scale=gc.TINY_RPG_SCALE,
-            frames={AnimationType.IDLE: 6, AnimationType.WALKING: 7, AnimationType.ABILITY1: 2, AnimationType.ABILITY2: 6, AnimationType.ABILITY3: 2, AnimationType.DYING: 3},
-            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 2, AnimationType.ABILITY2: 3, AnimationType.ABILITY3: 4, AnimationType.DYING: 5},
-            animation_durations={
-                AnimationType.IDLE: gc.CRUSADER_PIKEMAN_ANIMATION_IDLE_DURATION,
-                AnimationType.WALKING: gc.CRUSADER_PIKEMAN_ANIMATION_WALKING_DURATION,
-                AnimationType.ABILITY1: gc.CRUSADER_PIKEMAN_ANIMATION_STANCE_CHANGE_DURATION,
-                AnimationType.ABILITY2: gc.CRUSADER_PIKEMAN_ANIMATION_ATTACK_DURATION,
-                AnimationType.ABILITY3: gc.CRUSADER_PIKEMAN_ANIMATION_STANCE_CHANGE_DURATION,
-                AnimationType.DYING: gc.CRUSADER_PIKEMAN_ANIMATION_DYING_DURATION,
-            },
-            sprite_center_offset=(25, -30),
-        )
-    )
-    esper.add_component(entity, AnimationEffects({
-        AnimationType.WALKING: {
-            frame: [PlaySound(sound_effects=[
-                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
-            ])]
-            for frame in [1, 4]
-        },
-    }))
     return entity
 
 def create_crusader_red_knight(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
@@ -2453,6 +2260,15 @@ def create_crusader_red_knight(x: int, y: int, team: TeamType, corruption_powers
         ),
         corruption_powers=corruption_powers
     )
+    entity.add_component(get_unit_sprite_sheet(UnitType.CRUSADER_RED_KNIGHT))
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [3, 7]
+        },
+    }))
     targetting_strategy = TargetStrategy(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
@@ -2552,33 +2368,6 @@ def create_crusader_red_knight(x: int, y: int, team: TeamType, corruption_powers
             ]
         )
     )
-    esper.add_component(
-        entity,
-        SpriteSheet(
-            surface=sprite_sheets[UnitType.CRUSADER_RED_KNIGHT],
-            frame_width=100,
-            frame_height=100,
-            scale=gc.TINY_RPG_SCALE,
-            frames={AnimationType.IDLE: 6, AnimationType.WALKING: 8, AnimationType.ABILITY1: 11, AnimationType.ABILITY2: 10, AnimationType.DYING: 4},
-            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 4, AnimationType.ABILITY2: 3, AnimationType.DYING: 7},
-            animation_durations={
-                AnimationType.IDLE: gc.CRUSADER_RED_KNIGHT_ANIMATION_IDLE_DURATION,
-                AnimationType.WALKING: gc.CRUSADER_RED_KNIGHT_ANIMATION_WALKING_DURATION,
-                AnimationType.ABILITY1: gc.CRUSADER_RED_KNIGHT_ANIMATION_SKILL_DURATION,
-                AnimationType.ABILITY2: gc.CRUSADER_RED_KNIGHT_ANIMATION_ATTACK_DURATION,
-                AnimationType.DYING: gc.CRUSADER_RED_KNIGHT_ANIMATION_DYING_DURATION,
-            },
-            sprite_center_offset=(0, 1),
-        )
-    )
-    esper.add_component(entity, AnimationEffects({
-        AnimationType.WALKING: {
-            frame: [PlaySound(sound_effects=[
-                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
-            ])]
-            for frame in [3, 7]
-        },
-    }))
     return entity
 
 def create_crusader_soldier(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
@@ -2598,6 +2387,15 @@ def create_crusader_soldier(x: int, y: int, team: TeamType, corruption_powers: O
         ),
         corruption_powers=corruption_powers
     )
+    entity.add_component(get_unit_sprite_sheet(UnitType.CRUSADER_SOLDIER))
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"armored_grass_footstep{i+1}.wav", volume=0.25), 1.0) for i in range(5)
+            ])]
+            for frame in [3, 7]
+        },
+    }))
     targetting_strategy = TargetStrategy(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
@@ -2764,34 +2562,6 @@ def create_crusader_soldier(x: int, y: int, team: TeamType, corruption_powers: O
             ]
         )
     )
-    esper.add_component(
-        entity,
-        SpriteSheet(
-            surface=sprite_sheets[UnitType.CRUSADER_SOLDIER],
-            frame_width=100,
-            frame_height=100,
-            scale=gc.TINY_RPG_SCALE,
-            frames={AnimationType.IDLE: 6, AnimationType.WALKING: 8, AnimationType.ABILITY1: 3, AnimationType.ABILITY2: 6, AnimationType.ABILITY3: 9, AnimationType.DYING: 4},
-            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 7, AnimationType.ABILITY2: 2, AnimationType.ABILITY3: 4, AnimationType.DYING: 6},
-            animation_durations={
-                AnimationType.IDLE: gc.CRUSADER_SOLDIER_ANIMATION_IDLE_DURATION,
-                AnimationType.WALKING: gc.CRUSADER_SOLDIER_ANIMATION_WALKING_DURATION,
-                AnimationType.ABILITY1: gc.CRUSADER_SOLDIER_ANIMATION_SWITCH_STANCE_DURATION,
-                AnimationType.ABILITY2: gc.CRUSADER_SOLDIER_ANIMATION_MELEE_ATTACK_DURATION,
-                AnimationType.ABILITY3: gc.CRUSADER_SOLDIER_ANIMATION_RANGED_ATTACK_DURATION,
-                AnimationType.DYING: gc.CRUSADER_SOLDIER_ANIMATION_DYING_DURATION,
-            },
-            sprite_center_offset=(0, 1),
-        )
-    )
-    esper.add_component(entity, AnimationEffects({
-        AnimationType.WALKING: {
-            frame: [PlaySound(sound_effects=[
-                (SoundEffect(filename=f"armored_grass_footstep{i+1}.wav", volume=0.25), 1.0) for i in range(5)
-            ])]
-            for frame in [3, 7]
-        },
-    }))
     return entity
 
 def create_werebear(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
@@ -2809,6 +2579,15 @@ def create_werebear(x: int, y: int, team: TeamType, corruption_powers: Optional[
         ),
         corruption_powers=corruption_powers
     )
+    entity.add_component(get_unit_sprite_sheet(UnitType.WEREBEAR))
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [3, 7]
+        },
+    }))
     targetting_strategy = TargetStrategy(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
@@ -2854,24 +2633,6 @@ def create_werebear(x: int, y: int, team: TeamType, corruption_powers: Optional[
             ]
         )
     )
-    esper.add_component(
-        entity,
-        SpriteSheet(
-            surface=sprite_sheets[UnitType.WEREBEAR],
-            frame_width=100,
-            frame_height=100,
-            scale=gc.TINY_RPG_SCALE,
-            frames={AnimationType.IDLE: 6, AnimationType.WALKING: 7, AnimationType.ABILITY1: 8, AnimationType.DYING: 4},
-            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 2, AnimationType.DYING: 6},
-            animation_durations={
-                AnimationType.IDLE: gc.WEREBEAR_ANIMATION_IDLE_DURATION,
-                AnimationType.WALKING: gc.WEREBEAR_ANIMATION_WALKING_DURATION,
-                AnimationType.ABILITY1: gc.WEREBEAR_ANIMATION_ATTACK_DURATION,
-                AnimationType.DYING: gc.WEREBEAR_ANIMATION_DYING_DURATION,
-            },
-            sprite_center_offset=(-2, 1),
-        )
-    )
     return entity
 
 def create_zombie_basic_zombie(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
@@ -2886,6 +2647,15 @@ def create_zombie_basic_zombie(x: int, y: int, team: TeamType, corruption_powers
         hitbox=Hitbox(width=16, height=32),
         corruption_powers=corruption_powers
     )
+    entity.add_component(get_unit_sprite_sheet(UnitType.ZOMBIE_BASIC_ZOMBIE))
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [1, 3]
+        },
+    }))
     targetting_strategy = TargetStrategy(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
@@ -2938,32 +2708,6 @@ def create_zombie_basic_zombie(x: int, y: int, team: TeamType, corruption_powers
         )
     )
     esper.add_component(entity, ImmuneToZombieInfection())
-    esper.add_component(
-        entity,
-        SpriteSheet(
-            surface=sprite_sheets[UnitType.ZOMBIE_BASIC_ZOMBIE],
-            frame_width=100,
-            frame_height=100,
-            scale=gc.TINY_RPG_SCALE,
-            frames={AnimationType.IDLE: 3, AnimationType.WALKING: 4, AnimationType.ABILITY1: 5, AnimationType.DYING: 6},
-            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 2, AnimationType.DYING: 3},
-            animation_durations={
-                AnimationType.IDLE: gc.ZOMBIE_BASIC_ZOMBIE_ANIMATION_IDLE_DURATION,
-                AnimationType.WALKING: gc.ZOMBIE_BASIC_ZOMBIE_ANIMATION_WALKING_DURATION,
-                AnimationType.ABILITY1: gc.ZOMBIE_BASIC_ZOMBIE_ANIMATION_ATTACK_DURATION,
-                AnimationType.DYING: gc.ZOMBIE_BASIC_ZOMBIE_ANIMATION_DYING_DURATION,
-            },
-            sprite_center_offset=(2, 8),
-        )
-    )
-    esper.add_component(entity, AnimationEffects({
-        AnimationType.WALKING: {
-            frame: [PlaySound(sound_effects=[
-                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
-            ])]
-            for frame in [1, 3]
-        },
-    }))
     return entity
 
 def create_zombie_brute(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
@@ -2978,6 +2722,15 @@ def create_zombie_brute(x: int, y: int, team: TeamType, corruption_powers: Optio
         hitbox=Hitbox(width=24, height=48),
         corruption_powers=corruption_powers
     )
+    entity.add_component(get_unit_sprite_sheet(UnitType.ZOMBIE_BRUTE))
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [1, 3]
+        },
+    }))
     targetting_strategy = TargetStrategy(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
@@ -3092,33 +2845,6 @@ def create_zombie_brute(x: int, y: int, team: TeamType, corruption_powers: Optio
         )
     )
     esper.add_component(entity, ImmuneToZombieInfection())
-    esper.add_component(
-        entity,
-        SpriteSheet(
-            surface=sprite_sheets[UnitType.ZOMBIE_BRUTE],
-            frame_width=100,
-            frame_height=100,
-            scale=1.5*gc.TINY_RPG_SCALE,
-            frames={AnimationType.IDLE: 3, AnimationType.WALKING: 4, AnimationType.ABILITY1: 5, AnimationType.ABILITY2: 5, AnimationType.DYING: 6},
-            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 2, AnimationType.ABILITY2: 2, AnimationType.DYING: 3},
-            animation_durations={
-                AnimationType.IDLE: gc.ZOMBIE_BRUTE_ANIMATION_IDLE_DURATION,
-                AnimationType.WALKING: gc.ZOMBIE_BRUTE_ANIMATION_WALKING_DURATION,
-                AnimationType.ABILITY1: gc.ZOMBIE_BRUTE_ANIMATION_ATTACK_DURATION,
-                AnimationType.ABILITY2: gc.ZOMBIE_BRUTE_ANIMATION_ATTACK_DURATION,
-                AnimationType.DYING: gc.ZOMBIE_BRUTE_ANIMATION_DYING_DURATION,
-            },
-            sprite_center_offset=(2, 8),
-        )
-    )
-    esper.add_component(entity, AnimationEffects({
-        AnimationType.WALKING: {
-            frame: [PlaySound(sound_effects=[
-                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
-            ])]
-            for frame in [1, 3]
-        },
-    }))
     return entity
 
 def create_zombie_jumper(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
@@ -3133,6 +2859,15 @@ def create_zombie_jumper(x: int, y: int, team: TeamType, corruption_powers: Opti
         hitbox=Hitbox(width=16, height=32),
         corruption_powers=corruption_powers
     )
+    entity.add_component(get_unit_sprite_sheet(UnitType.ZOMBIE_JUMPER))
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [1, 3]
+        },
+    }))
     targetting_strategy = TargetStrategy(
         rankings=[
             WeightedRanking(
@@ -3235,48 +2970,6 @@ def create_zombie_jumper(x: int, y: int, team: TeamType, corruption_powers: Opti
         )
     )
     esper.add_component(entity, ImmuneToZombieInfection())
-    esper.add_component(
-        entity,
-        SpriteSheet(
-            surface=sprite_sheets[UnitType.ZOMBIE_JUMPER],
-            frame_width=100,
-            frame_height=100,
-            scale=gc.TINY_RPG_SCALE,
-            frames={
-                AnimationType.IDLE: 3,
-                AnimationType.WALKING: 4,
-                AnimationType.ABILITY1: 5,
-                AnimationType.ABILITY2: 3,
-                AnimationType.DYING: 6,
-                AnimationType.AIRBORNE: 1,
-            },
-            rows={
-                AnimationType.IDLE: 0,
-                AnimationType.WALKING: 1,
-                AnimationType.ABILITY1: 2,
-                AnimationType.ABILITY2: 0,
-                AnimationType.DYING: 3,
-                AnimationType.AIRBORNE: 0,
-            },
-            animation_durations={
-                AnimationType.IDLE: gc.ZOMBIE_JUMPER_ANIMATION_IDLE_DURATION,
-                AnimationType.WALKING: gc.ZOMBIE_JUMPER_ANIMATION_WALKING_DURATION,
-                AnimationType.ABILITY1: gc.ZOMBIE_JUMPER_ANIMATION_ATTACK_DURATION,
-                AnimationType.ABILITY2: gc.ZOMBIE_JUMPER_ANIMATION_JUMPING_DURATION,
-                AnimationType.DYING: gc.ZOMBIE_JUMPER_ANIMATION_DYING_DURATION,
-                AnimationType.AIRBORNE: gc.ZOMBIE_JUMPER_ANIMATION_AIRBORNE_DURATION,
-            },
-            sprite_center_offset=(2, 8),
-        )
-    )
-    esper.add_component(entity, AnimationEffects({
-        AnimationType.WALKING: {
-            frame: [PlaySound(sound_effects=[
-                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
-            ])]
-            for frame in [1, 3]
-        },
-    }))
     return entity
 
 def create_zombie_spitter(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
@@ -3294,6 +2987,15 @@ def create_zombie_spitter(x: int, y: int, team: TeamType, corruption_powers: Opt
         ),
         corruption_powers=corruption_powers
     )
+    entity.add_component(get_unit_sprite_sheet(UnitType.ZOMBIE_SPITTER))
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [1, 3]
+        },
+    }))
     targetting_strategy = TargetStrategy(
         rankings=[
             WeightedRanking(
@@ -3412,22 +3114,7 @@ def create_zombie_spitter(x: int, y: int, team: TeamType, corruption_powers: Opt
             ]
         )
     )
-    esper.add_component(entity, SpriteSheet(
-        surface=sprite_sheets[UnitType.ZOMBIE_SPITTER],
-        frame_width=100,
-        frame_height=100,
-        scale=gc.TINY_RPG_SCALE,
-        frames={AnimationType.IDLE: 3, AnimationType.WALKING: 4, AnimationType.ABILITY1: 5, AnimationType.ABILITY2: 5, AnimationType.DYING: 6},
-        rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 2, AnimationType.ABILITY2: 2, AnimationType.DYING: 3},
-        animation_durations={
-            AnimationType.IDLE: gc.ZOMBIE_SPITTER_ANIMATION_IDLE_DURATION,
-            AnimationType.WALKING: gc.ZOMBIE_SPITTER_ANIMATION_WALKING_DURATION,
-            AnimationType.ABILITY1: gc.ZOMBIE_SPITTER_ANIMATION_ATTACK_DURATION,
-            AnimationType.ABILITY2: gc.ZOMBIE_BASIC_ZOMBIE_ANIMATION_ATTACK_DURATION,
-            AnimationType.DYING: gc.ZOMBIE_SPITTER_ANIMATION_DYING_DURATION,
-        },
-        sprite_center_offset=(2, 8),
-    ))
+    esper.add_component(entity, ImmuneToZombieInfection())
     return entity
 
 def create_zombie_tank(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
@@ -3442,6 +3129,15 @@ def create_zombie_tank(x: int, y: int, team: TeamType, corruption_powers: Option
         hitbox=Hitbox(width=32, height=64),
         corruption_powers=corruption_powers
     )
+    entity.add_component(get_unit_sprite_sheet(UnitType.ZOMBIE_TANK))
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [1, 3]
+        },
+    }))
     targetting_strategy = TargetStrategy(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
@@ -3494,32 +3190,6 @@ def create_zombie_tank(x: int, y: int, team: TeamType, corruption_powers: Option
         )
     )
     esper.add_component(entity, ImmuneToZombieInfection())
-    esper.add_component(
-        entity,
-        SpriteSheet(
-            surface=sprite_sheets[UnitType.ZOMBIE_TANK],
-            frame_width=100,
-            frame_height=100,
-            scale=2*gc.TINY_RPG_SCALE,
-            frames={AnimationType.IDLE: 3, AnimationType.WALKING: 4, AnimationType.ABILITY1: 5, AnimationType.DYING: 6},
-            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 2, AnimationType.DYING: 3},
-            animation_durations={
-                AnimationType.IDLE: gc.ZOMBIE_TANK_ANIMATION_IDLE_DURATION,
-                AnimationType.WALKING: gc.ZOMBIE_TANK_ANIMATION_WALKING_DURATION,
-                AnimationType.ABILITY1: gc.ZOMBIE_TANK_ANIMATION_ATTACK_DURATION,
-                AnimationType.DYING: gc.ZOMBIE_TANK_ANIMATION_DYING_DURATION,
-            },
-            sprite_center_offset=(2, 8),
-        )
-    )
-    esper.add_component(entity, AnimationEffects({
-        AnimationType.WALKING: {
-            frame: [PlaySound(sound_effects=[
-                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
-            ])]
-            for frame in [1, 3]
-        },
-    }))
     return entity
 
 def create_zombie_grabber(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
@@ -3537,6 +3207,15 @@ def create_zombie_grabber(x: int, y: int, team: TeamType, corruption_powers: Opt
         ),
         corruption_powers=corruption_powers
     )
+    entity.add_component(get_unit_sprite_sheet(UnitType.ZOMBIE_GRABBER))
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [1, 3]
+        },
+    }))
     targetting_strategy = TargetStrategy(
         rankings=[
             WeightedRanking(
@@ -3686,35 +3365,5 @@ def create_zombie_grabber(x: int, y: int, team: TeamType, corruption_powers: Opt
             ]
         )
     )
-    esper.add_component(entity, SpriteSheet(
-        surface=sprite_sheets[UnitType.ZOMBIE_GRABBER],
-        frame_width=100,
-        frame_height=100,
-        scale=gc.TINY_RPG_SCALE,
-        frames={
-            AnimationType.IDLE: 3,
-            AnimationType.WALKING: 4,
-            AnimationType.ABILITY1: 5,
-            AnimationType.ABILITY2: 5,
-            AnimationType.ABILITY3: 5,
-            AnimationType.DYING: 6,
-        },
-        rows={
-            AnimationType.IDLE: 0,
-            AnimationType.WALKING: 1,
-            AnimationType.ABILITY1: 2,
-            AnimationType.ABILITY2: 2,
-            AnimationType.ABILITY3: 2,
-            AnimationType.DYING: 3,
-        },
-        animation_durations={
-            AnimationType.IDLE: gc.ZOMBIE_GRABBER_ANIMATION_IDLE_DURATION,
-            AnimationType.WALKING: gc.ZOMBIE_GRABBER_ANIMATION_WALKING_DURATION,
-            AnimationType.ABILITY1: gc.ZOMBIE_GRABBER_ANIMATION_CHANNELING_DURATION,
-            AnimationType.ABILITY2: gc.ZOMBIE_GRABBER_ANIMATION_GRAB_DURATION,
-            AnimationType.ABILITY3: gc.ZOMBIE_GRABBER_ANIMATION_ATTACK_DURATION,
-            AnimationType.DYING: gc.ZOMBIE_GRABBER_ANIMATION_DYING_DURATION,
-        },
-        sprite_center_offset=(2, 8),
-    ))
+    esper.add_component(entity, ImmuneToZombieInfection())
     return entity
