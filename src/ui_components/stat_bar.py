@@ -45,23 +45,9 @@ class StatBar:
         self.tooltip_text = tooltip_text
         self.disabled = disabled
         
-        # Calculate positions for label and status bar
-        label_height = 20
-        bar_height = rect.height - label_height
-        
-        # Create label for the stat name, centered above the bar
-        self.label_rect = pygame.Rect(rect.x, rect.y, rect.width, label_height)
-        self.label = pygame_gui.elements.UILabel(
-            relative_rect=self.label_rect,
-            text=self.name,
-            manager=manager,
-            container=container,
-        )
-        
         # Create the status bar
-        self.status_bar_rect = pygame.Rect(rect.x, rect.y + label_height, rect.width, bar_height)
         self.status_bar = pygame_gui.elements.UIStatusBar(
-            relative_rect=self.status_bar_rect,
+            relative_rect=rect,
             manager=manager,
             container=container,
         )
@@ -73,7 +59,6 @@ class StatBar:
         # Set the tooltip if provided and not disabled
         if tooltip_text and not disabled:
             self.status_bar.set_tooltip(tooltip_text, delay=0)
-            self.label.set_tooltip(tooltip_text, delay=0)
         
     def update(self, time_delta: float):
         """Update the stat bar components."""
@@ -88,15 +73,11 @@ class StatBar:
         """Set whether this stat bar is disabled (grayed out)."""
         if self.disabled != disabled:
             self.disabled = disabled
-            # Update tooltips
             if disabled:
                 self.status_bar.set_tooltip(None)
-                self.label.set_tooltip(None)
             elif self.tooltip_text:
                 self.status_bar.set_tooltip(self.tooltip_text, delay=0)
-                self.label.set_tooltip(self.tooltip_text, delay=0)
         
     def kill(self):
         """Remove the stat bar from the UI."""
-        self.label.kill()
         self.status_bar.kill() 

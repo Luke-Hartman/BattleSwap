@@ -3,17 +3,20 @@ import pygame_gui
 from typing import List, Tuple
 from ui_components.stat_bar import StatBar
 from components.unit_type import UnitType
-from entities.units import Faction
+from entities.units import Faction, get_unit_sprite_sheet
 from ui_components.game_data import StatType, UNIT_DATA
 from unit_values import unit_values
-from pygame_gui.elements import UILabel, UIButton
+from pygame_gui.elements import UILabel, UIButton, UIImage
 from info_mode_manager import info_mode_manager
 from ui_components.glossary_entry import GlossaryEntry
+from components.animation import AnimationType
+from game_constants import gc
 
 class UnitCard:
     """A UI component that displays a unit card with a name, description, and stats."""
     
     def __init__(self, 
+                 screen: pygame.Surface,
                  manager: pygame_gui.UIManager,
                  position: Tuple[int, int],
                  name: str,
@@ -29,6 +32,7 @@ class UnitCard:
             description: The HTML description of the unit (can include links)
             unit_type: The type of unit to display the image for
         """
+        self.screen = screen
         self.manager = manager
         self.name = name
         self.stat_bars: List[StatBar] = []
@@ -36,10 +40,22 @@ class UnitCard:
         
         # Create the window
         self.window = pygame_gui.elements.UIWindow(
-            rect=pygame.Rect(position, (300, 420)),
+            rect=pygame.Rect(position, (300, 475)),
             window_display_title=f"{name} - {Faction.faction_of(unit_type).name.title()}",
             manager=manager,
             resizable=False
+        )
+        
+        # Create a surface for the unit display area
+        unit_display_surface = pygame.Surface((300, 200))
+        unit_display_surface.fill(gc.MAP_BATTLEFIELD_COLOR)
+        
+        # Add the unit display as a UIImage
+        self.unit_display = UIImage(
+            relative_rect=pygame.Rect((0, 0), (300, 200)),
+            image_surface=unit_display_surface,
+            manager=manager,
+            container=self.window
         )
         
         # Add description
@@ -47,7 +63,7 @@ class UnitCard:
         
         # Add unit description with clickable links
         self.text = pygame_gui.elements.UITextBox(
-            relative_rect=pygame.Rect((0, 0), (300, 150)),
+            relative_rect=pygame.Rect((0, 200), (300, 90)),
             html_text=full_description,
             manager=manager,
             container=self.window
@@ -57,7 +73,7 @@ class UnitCard:
         self.text.ui_container.window = self.window
 
         # Add bottom row with label and Tips button
-        bottom_y = 350
+        bottom_y = 410
         self.bottom_label = UILabel(
             relative_rect=pygame.Rect((10, bottom_y), (180, 30)),
             text="",
@@ -70,6 +86,42 @@ class UnitCard:
             manager=manager,
             container=self.window
         )
+        self.sprite_sheet = get_unit_sprite_sheet(unit_type)
+        
+        # Animation state tracking
+        self.animation_time = 0.0
+        self.current_frame = 0
+        
+        # Update the unit display with sprite sheet animation
+        self.update_unit_display()
+    
+    def update_unit_display(self):
+        """Update the unit display surface with the current sprite frame."""
+        # Create a new surface for the display
+        display_surface = pygame.Surface((300, 200), pygame.SRCALPHA)
+        display_surface.fill(gc.MAP_BATTLEFIELD_COLOR)
+        
+        # Update the sprite sheet frame
+        self.sprite_sheet.update_frame(AnimationType.IDLE, self.current_frame)
+        
+        # Get the dimensions after scaling
+        sprite_width = self.sprite_sheet.rect.width
+        sprite_height = self.sprite_sheet.rect.height
+        
+        # Calculate position to center the sprite in the display area
+        center_x = 150  # Center of 300px width
+        center_y = 100  # Center of 200px height
+        
+        # Calculate the top-left position for blitting
+        # The sprite's rect.center is already adjusted by sprite_center_offset
+        blit_x = center_x - sprite_width // 2 + self.sprite_sheet.sprite_center_offset[0]
+        blit_y = center_y - sprite_height // 2 + self.sprite_sheet.sprite_center_offset[1]
+        
+        # Blit the sprite onto the display surface
+        display_surface.blit(self.sprite_sheet.image, (blit_x, blit_y))
+        
+        # Update the UIImage with the new surface
+        self.unit_display.set_image(display_surface)
     
     def add_stat(self, 
                 stat_type: StatType, 
@@ -84,9 +136,9 @@ class UnitCard:
             tooltip_text: Text to display when hovering over the stat
         """
         # Constants for positioning stats
-        y_offset = 150
-        bar_height = 35
-        spacing = 5
+        y_offset = 295
+        bar_height = 20
+        spacing = 3
         
         # Create the stat bar
         stat_bar = StatBar(
@@ -113,9 +165,9 @@ class UnitCard:
             stat_type: The type of stat
         """
         # Constants for positioning stats
-        y_offset = 150
-        bar_height = 35
-        spacing = 5
+        y_offset = 295
+        bar_height = 20
+        spacing = 3
         
         # Create the stat bar
         stat_bar = StatBar(
@@ -145,7 +197,7 @@ class UnitCard:
         self.tips_button.kill()
         
     def update(self, time_delta: float):
-        """Update all stat bars."""
+        """Update all stat bars and animations."""
         for stat_bar in self.stat_bars:
             stat_bar.update(time_delta)
 
@@ -153,6 +205,26 @@ class UnitCard:
             self.bottom_label.set_text(f"Press {info_mode_manager.modifier_key} to close")
         else:
             self.bottom_label.set_text(f"Press {info_mode_manager.modifier_key} to keep open")
+        
+        # Update animation
+        self.animation_time += time_delta
+        
+        # Get animation parameters for IDLE
+        idle_duration = self.sprite_sheet.animation_durations[AnimationType.IDLE]
+        idle_frame_count = self.sprite_sheet.frames[AnimationType.IDLE]
+        
+        # Loop the animation
+        if self.animation_time >= idle_duration:
+            self.animation_time = self.animation_time % idle_duration
+        
+        # Calculate current frame
+        frame_duration = idle_duration / idle_frame_count
+        new_frame = int(self.animation_time / frame_duration) % idle_frame_count
+        
+        # Update display if frame changed
+        if new_frame != self.current_frame:
+            self.current_frame = new_frame
+            self.update_unit_display()
 
     def show_tips(self):
         """Show a glossary entry with tips for this unit at the mouse position."""

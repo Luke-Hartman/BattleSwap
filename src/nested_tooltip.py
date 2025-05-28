@@ -136,6 +136,7 @@ class NestedTooltipDemo:
             
         # Create the unit card
         unit_card = UnitCard(
+            screen=self.screen,
             manager=self.ui_manager,
             position=position,
             name=unit_data["name"],
