@@ -54,7 +54,7 @@ class StatBar:
         self.name = stat_type.value
         self.value = value
         self.max_value = 10
-        self.tooltip_text = tooltip_text
+        self.tooltip_text = f"{stat_type.value.title()}: {tooltip_text}" if not disabled else f"{stat_type.value.title()}: N/A"
         self.disabled = disabled
         
         # Icon size and spacing
@@ -81,8 +81,7 @@ class StatBar:
         )
         
         # Set tooltip on icon if not disabled
-        if tooltip_text and not disabled:
-            self.icon_element.set_tooltip(tooltip_text, delay=0)
+        self.icon_element.set_tooltip(self.tooltip_text, delay=0)
         
         # Calculate bar area
         self.bar_rect = pygame.Rect(
@@ -108,10 +107,7 @@ class StatBar:
             manager=manager,
             container=container
         )
-        
-        # Set tooltip if not disabled
-        if tooltip_text and not disabled:
-            self.segments_element.set_tooltip(tooltip_text, delay=0)
+        self.segments_element.set_tooltip(self.tooltip_text, delay=0)
     
     def _update_segments(self):
         """Update the visual state of segments based on current value."""
@@ -181,22 +177,6 @@ class StatBar:
         """Set a new value for the stat bar and update the visual representation."""
         self.value = min(value, self.max_value)
         self._update_segments()
-        
-    def set_disabled(self, disabled: bool):
-        """Set whether this stat bar is disabled (grayed out)."""
-        if self.disabled != disabled:
-            self.disabled = disabled
-            
-            # Update tooltips
-            if disabled:
-                self.icon_element.set_tooltip(None)
-                self.segments_element.set_tooltip(None)
-            elif self.tooltip_text:
-                self.icon_element.set_tooltip(self.tooltip_text, delay=0)
-                self.segments_element.set_tooltip(self.tooltip_text, delay=0)
-            
-            # Update visual state
-            self._update_segments()
         
     def kill(self):
         """Remove the stat bar from the UI."""
