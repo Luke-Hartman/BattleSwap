@@ -68,7 +68,7 @@ GLOSSARY_ENTRIES = {
     GlossaryEntryType.FOLLOWER: "Follower units follow a nearby friendly non-follower unit until it is killed.",
     GlossaryEntryType.HEALING: "Healing restores health to units, based on the specified healing amount.",
     GlossaryEntryType.HUNTER: "While most units target the nearest enemy unit, Hunters prioritize units with low current health.",
-    GlossaryEntryType.INFECTION: "Infected units turn into zombies when they die. Infection lasts for 2 seconds.",
+    GlossaryEntryType.INFECTION: f"Infected units turn into <a href='{UnitType.ZOMBIE_BASIC_ZOMBIE.value}'>zombies</a> when they die. Infection lasts for 2 seconds.",
     GlossaryEntryType.KILLING_BLOW: "A killing blow is when an instance of damage is enough to kill a unit. Some units have special abilities that trigger when they deal a killing blow.",
     GlossaryEntryType.POINTS: f"Points represent the value of a unit. When you have more than {gc.CORRUPTION_TRIGGER_POINTS} points of units in your <a href='{GlossaryEntryType.BARRACKS.value}'>Barracks</a>, <a href='{GlossaryEntryType.CORRUPTION.value}'>Corruption</a> will trigger.",
 }

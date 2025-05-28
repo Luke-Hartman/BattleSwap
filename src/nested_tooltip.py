@@ -192,6 +192,39 @@ class NestedTooltipDemo:
         
         return glossary_entry
     
+    def is_unit_type(self, type_str: str) -> bool:
+        """Check if a string represents a valid unit type."""
+        for unit_type in UnitType:
+            if unit_type.value == type_str:
+                return True
+        return False
+    
+    def get_unit_type_from_string(self, type_str: str) -> UnitType:
+        """Get the UnitType enum from a string."""
+        for unit_type in UnitType:
+            if unit_type.value == type_str:
+                return unit_type
+        return None
+    
+    def create_unit_card_from_click(self, unit_type_str: str, click_position: tuple[int, int]):
+        """Create a unit card from a link click."""
+        unit_type = self.get_unit_type_from_string(unit_type_str)
+        if unit_type is None:
+            return None
+            
+        # Calculate position near the click position but ensure it's on screen
+        card_width = 300
+        card_height = 475
+        
+        # Start with click position, but adjust to keep card on screen
+        x = max(0, min(click_position[0], self.WINDOW_SIZE[0] - card_width))
+        y = max(0, min(click_position[1], self.WINDOW_SIZE[1] - card_height))
+        
+        # Create the unit card
+        unit_card = self.create_unit_card(unit_type=unit_type, position=(x, y))
+        
+        return unit_card
+    
     def clear_all_windows(self):
         """Clear all active windows."""
         # Kill all windows
@@ -276,10 +309,18 @@ class NestedTooltipDemo:
                 # Handle text link clicks
                 if event.type == pygame_gui.UI_TEXT_BOX_LINK_CLICKED:
                     mouse_pos = pygame.mouse.get_pos()
-                    self.create_glossary_entry(
-                        entry_type_str=event.link_target,
-                        click_position=mouse_pos
-                    )
+                    # Check if the link target is a unit type
+                    if self.is_unit_type(event.link_target):
+                        self.create_unit_card_from_click(
+                            unit_type_str=event.link_target,
+                            click_position=mouse_pos
+                        )
+                    else:
+                        # Assume it's a glossary entry
+                        self.create_glossary_entry(
+                            entry_type_str=event.link_target,
+                            click_position=mouse_pos
+                        )
                 
                 event_handled = False
                 for unit_card in self.unit_cards:
