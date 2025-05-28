@@ -104,6 +104,27 @@
             "text_horiz_alignment_padding": "3"
         }
     },
+    "@unit_value_box": {
+        "colours": {
+            "normal_text": "#FFFFFF",
+            "normal_bg": "#3A5F7D",
+            "hovered_bg": "#4A6F8D",
+            "normal_border": "#2A4F6D",
+            "hovered_border": "#3A5F7D"
+        },
+        "misc": {
+            "text_horiz_alignment": "center",
+            "text_horiz_alignment_padding": "0",
+            "text_vert_alignment": "middle",
+            "border_width": "1",
+            "shape": "rounded_rectangle",
+            "shape_corner_radius": "3"
+        },
+        "font": {
+            "size": "12",
+            "bold": "1"
+        }
+    },
     "tab_container.faction_tab": {
         "colours": {
             "normal_bg": "#283645",
