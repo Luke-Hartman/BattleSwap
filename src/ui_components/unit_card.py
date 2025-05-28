@@ -6,7 +6,8 @@ from components.unit_type import UnitType
 from entities.units import Faction, get_unit_sprite_sheet
 from ui_components.game_data import StatType, UNIT_DATA
 from unit_values import unit_values
-from pygame_gui.elements import UILabel, UIButton, UIImage
+from pygame_gui.elements import UILabel, UIButton, UIImage, UIPanel
+from pygame_gui.core import ObjectID
 from info_mode_manager import info_mode_manager
 from ui_components.glossary_entry import GlossaryEntry
 from components.animation import AnimationType
@@ -56,6 +57,31 @@ class UnitCard:
             image_surface=unit_display_surface,
             manager=manager,
             container=self.window
+        )
+        
+        # Add point value box in upper right corner
+        point_value = unit_values.get(unit_type, 0)
+        point_value_text = str(point_value)
+        
+        # Calculate box size based on text
+        box_width = 40
+        box_height = 25
+        
+        # Create a background panel for the point value (touching top right corner)
+        self.point_value_bg = UIPanel(
+            relative_rect=pygame.Rect((300 - box_width, 0), (box_width, box_height)),
+            manager=manager,
+            container=self.window,
+            margins={'left': 0, 'right': 0, 'top': 0, 'bottom': 0},
+            object_id=ObjectID(object_id='#point_value_box')
+        )
+        
+        # Add the point value text
+        self.point_value_label = UILabel(
+            relative_rect=pygame.Rect((0, 0), (box_width, box_height)),
+            text=point_value_text,
+            manager=manager,
+            container=self.point_value_bg
         )
         
         # Add description
@@ -195,6 +221,8 @@ class UnitCard:
         self.window.kill()
         self.bottom_label.kill()
         self.tips_button.kill()
+        self.point_value_label.kill()
+        self.point_value_bg.kill()
         
     def update(self, time_delta: float):
         """Update all stat bars and animations."""

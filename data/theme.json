@@ -347,6 +347,16 @@
                 "path": "assets/icons/Play.png"
             }
         }
+    },
+    "#point_value_box": {
+        "colours": {
+            "normal_bg": "#36495E",
+            "dark_bg": "#36495E"
+        },
+        "misc": {
+            "shape": "rectangle",
+            "border_width": "0"
+        }
     }
 }
     
