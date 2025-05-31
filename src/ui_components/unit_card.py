@@ -256,13 +256,34 @@ class UnitCard:
 
     def show_tips(self):
         """Show a glossary entry with tips for this unit at the mouse position."""
-        tips = UNIT_DATA[self.unit_type].get("tips", "No tips available for this unit.")
+        tips_data = UNIT_DATA[self.unit_type].get("tips", {})
+        
+        if not tips_data:
+            content = "No tips available for this unit."
+        else:
+            content_lines = []
+            
+            # Add "Strong when" section
+            if "Strong when" in tips_data:
+                content_lines.append("Strong when:")
+                for tip in tips_data["Strong when"]:
+                    content_lines.append(f"  • {tip}")
+                content_lines.append("")  # Add blank line
+            
+            # Add "Weak when" section
+            if "Weak when" in tips_data:
+                content_lines.append("Weak when:")
+                for tip in tips_data["Weak when"]:
+                    content_lines.append(f"  • {tip}")
+            
+            content = '\n'.join(content_lines)
+        
         mouse_pos = pygame.mouse.get_pos()
         GlossaryEntry(
             manager=self.manager,
             position=mouse_pos,
             title=f"{self.name} Tips",
-            content='\n'.join(f'  {tip}' for tip in tips)
+            content=content
         )
 
     def process_event(self, event):
