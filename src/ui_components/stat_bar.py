@@ -132,6 +132,8 @@ class StatBar:
         # Convert to full and half segments
         full_segments = int(filled_segments)
         has_half = (filled_segments - full_segments) >= 0.5
+        if full_segments == 0 and self.value > 0:
+            has_half = True
         
         # Get the stat color
         stat_color = self.STAT_COLORS[self.stat_type]
