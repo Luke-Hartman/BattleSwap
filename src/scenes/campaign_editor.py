@@ -16,6 +16,7 @@ from world_map_view import BorderState, FillState, WorldMapView, HexState
 from ui_components.tip_box import TipBox
 from ui_components.save_battle_dialog import SaveBattleDialog
 from ui_components.corruption_icon import CorruptionIcon
+from selected_unit_manager import selected_unit_manager
 
 class CampaignEditorScene(Scene):
     """Scene for editing the campaign."""
@@ -323,6 +324,8 @@ class CampaignEditorScene(Scene):
             self.world_map_view.camera.update(time_delta)
         self.world_map_view.draw_map()
         self.world_map_view.update_battles(time_delta)
+        
+        selected_unit_manager.update(time_delta)
         
         self.manager.update(time_delta)
         self.manager.draw_ui(self.screen)

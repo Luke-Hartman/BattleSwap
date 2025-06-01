@@ -226,6 +226,7 @@ class UnitCard:
         
     def update(self, time_delta: float):
         """Update all stat bars and animations."""
+        time_delta = 1/60
         for stat_bar in self.stat_bars:
             stat_bar.update(time_delta)
 

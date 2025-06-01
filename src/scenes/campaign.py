@@ -342,6 +342,7 @@ class CampaignScene(Scene):
         self.world_map_view.camera.update(time_delta)
         self.world_map_view.draw_map()
         self.world_map_view.update_battles(time_delta)
+        selected_unit_manager.update(time_delta)
 
         # Draw circles around units if there is a selected unit type
         if selected_unit_manager.selected_unit_type is not None:

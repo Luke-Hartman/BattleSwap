@@ -33,6 +33,7 @@ from scene_utils import draw_grid, get_center_line, get_placement_pos, get_hover
 from ui_components.progress_panel import ProgressPanel
 from ui_components.corruption_power_editor import CorruptionPowerEditorDialog
 from corruption_powers import CorruptionPower
+from selected_unit_manager import selected_unit_manager
 
 
 class SetupBattleScene(Scene):
@@ -494,6 +495,10 @@ class SetupBattleScene(Scene):
 
         self.world_map_view.update_battles(time_delta)
         self.barracks.select_unit_type(self.selected_unit_type)
+        
+        # Update selected unit manager for card animations
+        selected_unit_manager.update(time_delta)
+        
         self.manager.update(time_delta)
         self.manager.draw_ui(self.screen)
         return super().update(time_delta, events)

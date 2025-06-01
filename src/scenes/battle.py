@@ -13,6 +13,7 @@ from progress_manager import progress_manager, Solution, calculate_points_for_un
 from ui_components.time_controls import TimeControls
 from time_manager import time_manager
 from battles import Battle, update_battle
+from selected_unit_manager import selected_unit_manager
 
 class BattleScene(Scene):
     """The scene for the battle."""
@@ -392,7 +393,9 @@ class BattleScene(Scene):
         with use_world(self.battle_id):
             self.auto_battle.update(time_delta)
         battle_outcome = self.auto_battle.battle_outcome
-        
+
+        selected_unit_manager.update(time_delta)
+
         # Track when we first get a victory/defeat outcome
         if battle_outcome in (BattleOutcome.TEAM1_VICTORY, BattleOutcome.TEAM2_VICTORY) and not self.sandbox_mode:
             if self.outcome_time is None:
@@ -408,6 +411,7 @@ class BattleScene(Scene):
                 elif battle_outcome == BattleOutcome.TEAM2_VICTORY and self.defeat_panel is None:
                     self.return_button.hide()
                     self.create_defeat_panel()
+
 
         self.manager.update(time_delta)
         self.manager.draw_ui(self.screen)

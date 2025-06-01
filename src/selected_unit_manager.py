@@ -4,20 +4,29 @@ import pygame
 import pygame_gui
 
 from components.unit_type import UnitType
-from stats_cards import get_stats_card_text
+from ui_components.unit_card import UnitCard
+from ui_components.game_data import UNIT_DATA
+from ui_components.game_data import StatType
 
 class SelectedUnitManager:
     """Service for managing the stats card UI."""
 
     def __init__(self):
         """Initialize the stats card manager."""
-        self.stats_card_ui: Optional[pygame_gui.elements.UITextBox] = None
+        self.unit_card: Optional[UnitCard] = None
         self._selected_unit_type: Optional[UnitType] = None
         self.manager: Optional[pygame_gui.UIManager] = None
+        self.screen: Optional[pygame.Surface] = None
 
     def initialize(self, manager: pygame_gui.UIManager) -> None:
         """Initialize with the UI manager."""
         self.manager = manager
+        self.screen = pygame.display.get_surface()
+
+    def update(self, time_delta: float) -> None:
+        """Update the unit card animations."""
+        if self.unit_card is not None:
+            self.unit_card.update(time_delta)
 
     @property
     def selected_unit_type(self) -> Optional[UnitType]:
@@ -25,35 +34,56 @@ class SelectedUnitManager:
     
     @selected_unit_type.setter
     def selected_unit_type(self, value: Optional[UnitType]) -> None:
-        self._selected_unit_type = value
-        if value is not None:
-            self._show_stats()
-        else:
+        if self._selected_unit_type != value:
             self._hide_stats()
+            self._selected_unit_type = value
+            self._show_stats()
 
     def _show_stats(self) -> None:
-        """Show the stats card for a unit type."""
-        if self.manager is None:
+        """Show the unit card for a unit type."""
+        if self.manager is None or self.screen is None:
             return
-        self._hide_stats()  # Clean up any existing stats card
-        assert self._selected_unit_type is not None
-        text = "\n".join(get_stats_card_text(self._selected_unit_type))
-        self.stats_card_ui = pygame_gui.elements.UITextBox(
-            relative_rect=pygame.Rect(0, 0, 300, -1),
-            html_text=text,
-            wrap_to_height=True,
-            manager=self.manager
+        if self._selected_unit_type is None:
+            return
+        
+        # Get unit data
+        unit_data = UNIT_DATA[self._selected_unit_type]
+        
+        # Calculate position in middle right of screen (same as before)
+        card_width = 300
+        card_height = 475
+        position = (
+            self.screen.get_width() - card_width - 10,
+            (self.screen.get_height() - card_height) // 2
         )
-        # Position in middle right of screen
-        self.stats_card_ui.rect.midright = (
-            pygame.display.get_surface().get_width() - 10,
-            pygame.display.get_surface().get_height()/2
+        
+        # Create the unit card
+        self.unit_card = UnitCard(
+            screen=self.screen,
+            manager=self.manager,
+            position=position,
+            name=unit_data["name"],
+            description=unit_data["description"],
+            unit_type=self._selected_unit_type
         )
+        
+        # Add all stats to the card, with non-applicable ones being grayed out
+        for stat_type in StatType:
+            if stat_type in unit_data["stats"]:
+                self.unit_card.add_stat(
+                    stat_type=stat_type,
+                    value=unit_data["stats"][stat_type],
+                    tooltip_text=unit_data["tooltips"][stat_type]
+                )
+            else:
+                self.unit_card.skip_stat(
+                    stat_type=stat_type
+                )
 
     def _hide_stats(self) -> None:
-        """Hide the stats card if it exists."""
-        if self.stats_card_ui is not None:
-            self.stats_card_ui.kill()
-            self.stats_card_ui = None
+        """Hide the unit card if it exists."""
+        if self.unit_card is not None:
+            self.unit_card.kill()
+            self.unit_card = None
 
 selected_unit_manager = SelectedUnitManager()
