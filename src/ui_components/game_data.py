@@ -311,7 +311,7 @@ UNIT_DATA = {
         },
         "tips": {
             "Strong when": ["In a large group", f"Against <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a> units"],
-            "Weak when": ["Against <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a>", "When allies are too far away"],
+            "Weak when": [f"Against <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a>", "When allies are too far away"],
         }
     },
     UnitType.CRUSADER_CROSSBOWMAN: {
