@@ -57,7 +57,7 @@ class CampaignScene(Scene):
             self.barracks = BarracksUI(
                 self.manager,
                 progress_manager.available_units(None),
-                interactive=False,
+                interactive=True,
                 sandbox_mode=False,
                 current_battle=None,
             )

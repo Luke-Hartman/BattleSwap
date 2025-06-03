@@ -198,7 +198,7 @@ UNIT_DATA = {
     },
     UnitType.CORE_WIZARD: {
         "name": "Wizard",
-        "description": f"Wizards shoot fireballs that damage both allied and enemy units in a large <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a>.",
+        "description": f"Wizards shoot fireballs that damage allied and enemy units in a large <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a>.",
         "stats": {
             StatType.DEFENSE: defense_stat(gc.CORE_WIZARD_HP),
             StatType.SPEED: speed_stat(gc.CORE_WIZARD_MOVEMENT_SPEED),

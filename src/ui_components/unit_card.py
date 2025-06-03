@@ -216,6 +216,21 @@ class UnitCard:
         """Get the window element for this unit card."""
         return self.window
     
+    def bring_to_front(self):
+        """Bring this unit card to the front, simulating a click behavior."""
+        if self.window.alive():
+            # Use pygame-gui's built-in bring_to_front method if available
+            if hasattr(self.manager, 'bring_to_front'):
+                self.manager.bring_to_front(self.window)
+            # Fallback: use the window's change_layer method
+            elif hasattr(self.window, 'change_layer'):
+                # Find the highest layer currently in use and add 1
+                current_max = 0
+                for element in self.manager.get_root_container().elements:
+                    if hasattr(element, '_layer'):
+                        current_max = max(current_max, element._layer)
+                self.window.change_layer(current_max + 1)
+    
     def kill(self):
         """Remove the unit card from the UI."""
         self.window.kill()
@@ -226,6 +241,7 @@ class UnitCard:
         
     def update(self, time_delta: float):
         """Update all stat bars and animations."""
+        # Always update at 60fps
         time_delta = 1/60
         for stat_bar in self.stat_bars:
             stat_bar.update(time_delta)
@@ -257,6 +273,9 @@ class UnitCard:
 
     def show_tips(self):
         """Show a glossary entry with tips for this unit at the mouse position."""
+        # Import here to avoid circular imports
+        from selected_unit_manager import selected_unit_manager
+        
         tips_data = UNIT_DATA[self.unit_type].get("tips", {})
         
         if not tips_data:
@@ -279,13 +298,8 @@ class UnitCard:
             
             content = '\n'.join(content_lines)
         
-        mouse_pos = pygame.mouse.get_pos()
-        GlossaryEntry(
-            manager=self.manager,
-            position=mouse_pos,
-            title=f"{self.name} Tips",
-            content=content
-        )
+        # Use the manager's public method to create the tips entry
+        selected_unit_manager.create_tips_glossary_entry(self.name, content)
 
     def process_event(self, event):
         """Process UI events for the unit card (e.g., Tips button click). Returns True if handled."""

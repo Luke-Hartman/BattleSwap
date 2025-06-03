@@ -15,6 +15,7 @@ from scenes.scene_manager import scene_manager
 from selected_unit_manager import selected_unit_manager
 from time_manager import time_manager
 from visuals import load_visual_sheets
+from info_mode_manager import info_mode_manager
 import steam
 
 # Initialize Pygame
@@ -62,6 +63,26 @@ clock = pygame.time.Clock()
 while running:
     dt = clock.tick(time_manager.max_fps) / 1000
     events = pygame.event.get()
+
+    # Process command key events for info mode before scene processing
+    for event in events:
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_LMETA or event.key == pygame.K_RMETA:  # Command key
+                old_info_mode = info_mode_manager.info_mode
+                info_mode_manager.info_mode = not info_mode_manager.info_mode
+                
+                # Handle mode transitions
+                if old_info_mode and not info_mode_manager.info_mode:
+                    # Exiting info mode - clear all cards
+                    selected_unit_manager.clear_all_cards()
+                elif not old_info_mode and info_mode_manager.info_mode:
+                    # Entering info mode - if there's a current card, move it to info mode collection
+                    if selected_unit_manager.unit_card is not None:
+                        selected_unit_manager.unit_cards.append(selected_unit_manager.unit_card)
+                        selected_unit_manager.unit_card = None
+                
+        # Process selected unit manager events (for future interactive features)
+        selected_unit_manager.process_events(event)
 
     running = scene_manager.update(dt, events)
     

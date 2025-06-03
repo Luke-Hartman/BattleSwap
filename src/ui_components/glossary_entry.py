@@ -22,12 +22,13 @@ class GlossaryEntry:
         self.manager = manager
         self.title = title
         self.content = content
+        self.creation_index = None  # Used for positioning in the card system
+        
+        # Use same dimensions as unit cards
+        width = 300
+        height = 475
         
         # Create the window
-        width = 300
-        height = 200
-        x, y = position
-        position = (x - width/2, y)
         self.window = pygame_gui.elements.UIWindow(
             rect=pygame.Rect(position, (width, height)),
             window_display_title=title,
@@ -36,8 +37,9 @@ class GlossaryEntry:
         )
         
         # Add text to the window with clickable words
+        # Leave more space for content since we don't have other elements like unit cards
         self.text = pygame_gui.elements.UITextBox(
-            relative_rect=pygame.Rect((0, 0), (300, 170)),
+            relative_rect=pygame.Rect((0, 0), (300, 445)),
             html_text=content,
             manager=manager,
             container=self.window
@@ -54,6 +56,21 @@ class GlossaryEntry:
         """Remove the glossary entry from the UI."""
         self.window.kill()
         
+    def bring_to_front(self):
+        """Bring this glossary entry to the front."""
+        if self.window.alive():
+            # Use pygame-gui's built-in bring_to_front method if available
+            if hasattr(self.manager, 'bring_to_front'):
+                self.manager.bring_to_front(self.window)
+            # Fallback: use the window's change_layer method
+            elif hasattr(self.window, 'change_layer'):
+                # Find the highest layer currently in use and add 1
+                current_max = 0
+                for element in self.manager.get_root_container().elements:
+                    if hasattr(element, '_layer'):
+                        current_max = max(current_max, element._layer)
+                self.window.change_layer(current_max + 1)
+    
     @staticmethod
     def from_click_position(manager: pygame_gui.UIManager, 
                            title: str,
