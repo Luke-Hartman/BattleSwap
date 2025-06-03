@@ -35,7 +35,7 @@ class AnimationProcessor(esper.Processor):
         super().__init__()
     
     def _get_start_time(self, sprite_sheet: SpriteSheet, animation_type: AnimationType) -> float:
-        if sprite_sheet.synchronized_animations.get(animation_type, False) or animation_type == AnimationType.IDLE:
+        if sprite_sheet.synchronized_animations.get(animation_type, False):
             return time_manager.global_clock % sprite_sheet.animation_durations[animation_type]
         else:
             return 0

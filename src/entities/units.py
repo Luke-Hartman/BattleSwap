@@ -3286,6 +3286,9 @@ def get_unit_sprite_sheet(unit_type: UnitType) -> SpriteSheet:
                 AnimationType.DYING: gc.CORE_ARCHER_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(0, -8),
+            synchronized_animations={
+                AnimationType.IDLE: True,
+            }
         )
     if unit_type == UnitType.CORE_BARBARIAN:
         return SpriteSheet(
@@ -3302,6 +3305,9 @@ def get_unit_sprite_sheet(unit_type: UnitType) -> SpriteSheet:
                 AnimationType.DYING: gc.CORE_BARBARIAN_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(-2, 2),
+            synchronized_animations={
+                AnimationType.IDLE: True,
+            }
         )
     if unit_type == UnitType.CORE_CAVALRY:
         return SpriteSheet(
@@ -3318,6 +3324,9 @@ def get_unit_sprite_sheet(unit_type: UnitType) -> SpriteSheet:
             AnimationType.DYING: gc.CORE_CAVALRY_ANIMATION_DYING_DURATION,
         },
         sprite_center_offset=(1, -6),
+        synchronized_animations={
+            AnimationType.IDLE: True,
+        }
     )
     if unit_type == UnitType.CORE_DUELIST:
         return SpriteSheet(
@@ -3334,6 +3343,9 @@ def get_unit_sprite_sheet(unit_type: UnitType) -> SpriteSheet:
             AnimationType.DYING: gc.CORE_DUELIST_ANIMATION_DYING_DURATION,
         },
         sprite_center_offset=(0, 2),
+        synchronized_animations={
+            AnimationType.IDLE: True,
+        }
     )
     if unit_type == UnitType.CORE_LONGBOWMAN:
         return SpriteSheet(
@@ -3350,6 +3362,9 @@ def get_unit_sprite_sheet(unit_type: UnitType) -> SpriteSheet:
                 AnimationType.DYING: gc.CORE_LONGBOWMAN_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(0, 2),
+            synchronized_animations={
+                AnimationType.IDLE: True,
+            }
         )
     if unit_type == UnitType.CORE_SWORDSMAN:
         return SpriteSheet(
@@ -3366,6 +3381,9 @@ def get_unit_sprite_sheet(unit_type: UnitType) -> SpriteSheet:
             AnimationType.DYING: gc.CORE_SWORDSMAN_ANIMATION_DYING_DURATION,
         },
         sprite_center_offset=(0, -8),
+        synchronized_animations={
+            AnimationType.IDLE: True,
+        }
     )
     if unit_type == UnitType.CORE_WIZARD:
         return SpriteSheet(
@@ -3382,6 +3400,9 @@ def get_unit_sprite_sheet(unit_type: UnitType) -> SpriteSheet:
                 AnimationType.DYING: gc.CORE_WIZARD_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(0, -8),
+            synchronized_animations={
+                AnimationType.IDLE: True,
+            }
         )
     if unit_type == UnitType.CRUSADER_BANNER_BEARER:
         return SpriteSheet(
@@ -3416,6 +3437,9 @@ def get_unit_sprite_sheet(unit_type: UnitType) -> SpriteSheet:
                 AnimationType.ABILITY1: gc.CRUSADER_BLACK_KNIGHT_ANIMATION_ATTACK_DURATION,
                 AnimationType.DYING: gc.CRUSADER_BLACK_KNIGHT_ANIMATION_DYING_DURATION,
             },
+            synchronized_animations={
+                AnimationType.IDLE: True,
+            },
             sprite_center_offset=(0, 7),
         )
     if unit_type == UnitType.CRUSADER_CATAPULT:
@@ -3439,7 +3463,10 @@ def get_unit_sprite_sheet(unit_type: UnitType) -> SpriteSheet:
                 AnimationType.DYING: gc.CRUSADER_CATAPULT_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(-10, -7),
-            flip_frames=True,
+            flip_frames=True,   
+            synchronized_animations={
+                AnimationType.IDLE: True,
+            }
         )
     if unit_type == UnitType.CRUSADER_CLERIC:
         return SpriteSheet(
@@ -3456,6 +3483,9 @@ def get_unit_sprite_sheet(unit_type: UnitType) -> SpriteSheet:
                 AnimationType.DYING: gc.CRUSADER_CLERIC_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(0, 2),
+            synchronized_animations={
+                AnimationType.IDLE: True,
+            }
         )
     if unit_type == UnitType.CRUSADER_COMMANDER:
         return SpriteSheet(
@@ -3472,6 +3502,9 @@ def get_unit_sprite_sheet(unit_type: UnitType) -> SpriteSheet:
                 AnimationType.DYING: gc.CRUSADER_COMMANDER_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(0, 2),
+            synchronized_animations={
+                AnimationType.IDLE: True,
+            }
         )
     if unit_type == UnitType.CRUSADER_CROSSBOWMAN:
         return SpriteSheet(
@@ -3489,6 +3522,9 @@ def get_unit_sprite_sheet(unit_type: UnitType) -> SpriteSheet:
                 AnimationType.DYING: gc.CRUSADER_CROSSBOWMAN_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(0, 2),
+            synchronized_animations={
+                AnimationType.IDLE: True,
+            }
         )
     if unit_type == UnitType.CRUSADER_DEFENDER:
         return SpriteSheet(
@@ -3505,6 +3541,9 @@ def get_unit_sprite_sheet(unit_type: UnitType) -> SpriteSheet:
                 AnimationType.DYING: gc.CRUSADER_DEFENDER_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(0, -8),
+            synchronized_animations={
+                AnimationType.IDLE: True,
+            }
         )
     if unit_type == UnitType.CRUSADER_GOLD_KNIGHT:
         return SpriteSheet(
@@ -3521,6 +3560,9 @@ def get_unit_sprite_sheet(unit_type: UnitType) -> SpriteSheet:
                 AnimationType.DYING: gc.CRUSADER_GOLD_KNIGHT_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(0, 2),
+            synchronized_animations={
+                AnimationType.IDLE: True,
+            }
         )
     if unit_type == UnitType.CRUSADER_GUARDIAN_ANGEL:
         return SpriteSheet(
@@ -3536,6 +3578,9 @@ def get_unit_sprite_sheet(unit_type: UnitType) -> SpriteSheet:
                 AnimationType.WALKING: gc.CRUSADER_GUARDIAN_ANGEL_ANIMATION_FLYING_DURATION,
                 AnimationType.DYING: gc.CRUSADER_GUARDIAN_ANGEL_ANIMATION_DYING_DURATION,
             },
+            synchronized_animations={
+                AnimationType.IDLE: True,
+            }
         )
     if unit_type == UnitType.CRUSADER_PALADIN:
         return SpriteSheet(
@@ -3553,6 +3598,9 @@ def get_unit_sprite_sheet(unit_type: UnitType) -> SpriteSheet:
                 AnimationType.DYING: gc.CRUSADER_PALADIN_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(0, 7),
+            synchronized_animations={
+                AnimationType.IDLE: True,
+            }
         )
     if unit_type == UnitType.CRUSADER_PIKEMAN:
         return SpriteSheet(
@@ -3571,6 +3619,9 @@ def get_unit_sprite_sheet(unit_type: UnitType) -> SpriteSheet:
                 AnimationType.DYING: gc.CRUSADER_PIKEMAN_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(25, -30),
+            synchronized_animations={
+                AnimationType.IDLE: True,
+            }
         )
     if unit_type == UnitType.CRUSADER_RED_KNIGHT:
         return SpriteSheet(
@@ -3588,6 +3639,9 @@ def get_unit_sprite_sheet(unit_type: UnitType) -> SpriteSheet:
                 AnimationType.DYING: gc.CRUSADER_RED_KNIGHT_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(0, 1),
+            synchronized_animations={
+                AnimationType.IDLE: True,
+            }
         )
     if unit_type == UnitType.CRUSADER_SOLDIER:
         return SpriteSheet(
@@ -3606,6 +3660,9 @@ def get_unit_sprite_sheet(unit_type: UnitType) -> SpriteSheet:
                 AnimationType.DYING: gc.CRUSADER_SOLDIER_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(0, 1),
+            synchronized_animations={
+                AnimationType.IDLE: True,
+            }
         )
     if unit_type == UnitType.WEREBEAR:
         return SpriteSheet(
@@ -3622,6 +3679,9 @@ def get_unit_sprite_sheet(unit_type: UnitType) -> SpriteSheet:
                 AnimationType.DYING: gc.WEREBEAR_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(-2, 1),
+            synchronized_animations={
+                AnimationType.IDLE: True,
+            }
         )
     if unit_type == UnitType.ZOMBIE_BASIC_ZOMBIE:
         return SpriteSheet(
@@ -3638,6 +3698,9 @@ def get_unit_sprite_sheet(unit_type: UnitType) -> SpriteSheet:
                 AnimationType.DYING: gc.ZOMBIE_BASIC_ZOMBIE_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(2, 8),
+            synchronized_animations={
+                AnimationType.IDLE: True,
+            }
         )
     if unit_type == UnitType.ZOMBIE_BRUTE:
         return SpriteSheet(
@@ -3655,6 +3718,9 @@ def get_unit_sprite_sheet(unit_type: UnitType) -> SpriteSheet:
                 AnimationType.DYING: gc.ZOMBIE_BRUTE_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(2, 8),
+            synchronized_animations={
+                AnimationType.IDLE: True,
+            }
         )
     if unit_type == UnitType.ZOMBIE_JUMPER:
         return SpriteSheet(
@@ -3687,6 +3753,9 @@ def get_unit_sprite_sheet(unit_type: UnitType) -> SpriteSheet:
                 AnimationType.AIRBORNE: gc.ZOMBIE_JUMPER_ANIMATION_AIRBORNE_DURATION,
             },
             sprite_center_offset=(2, 8),
+            synchronized_animations={
+                AnimationType.IDLE: True,
+            }
         )
     if unit_type == UnitType.ZOMBIE_SPITTER:
         return SpriteSheet(
@@ -3704,6 +3773,9 @@ def get_unit_sprite_sheet(unit_type: UnitType) -> SpriteSheet:
                 AnimationType.DYING: gc.ZOMBIE_SPITTER_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(2, 8),
+            synchronized_animations={
+                AnimationType.IDLE: True,
+            }
         )
     if unit_type == UnitType.ZOMBIE_TANK:
         return SpriteSheet(
@@ -3720,6 +3792,9 @@ def get_unit_sprite_sheet(unit_type: UnitType) -> SpriteSheet:
                 AnimationType.DYING: gc.ZOMBIE_TANK_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(2, 8),
+            synchronized_animations={
+                AnimationType.IDLE: True,
+            }
         )
     if unit_type == UnitType.ZOMBIE_GRABBER:
         return SpriteSheet(
@@ -3752,5 +3827,8 @@ def get_unit_sprite_sheet(unit_type: UnitType) -> SpriteSheet:
                 AnimationType.DYING: gc.ZOMBIE_GRABBER_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(2, 8),
+            synchronized_animations={
+                AnimationType.IDLE: True,
+            }
         )
     raise NotImplementedError(unit_type)
