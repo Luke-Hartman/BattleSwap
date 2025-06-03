@@ -606,4 +606,26 @@ UNIT_DATA = {
             "Weak when": ["Against ranged units", "Against units with high damage per second"],
         }
     },
+    UnitType.WEREBEAR: {
+        "name": "Werebear",
+        "description": "Test unit.",
+        "stats": {
+            StatType.DEFENSE: defense_stat(gc.WEREBEAR_HP),
+            StatType.SPEED: speed_stat(gc.WEREBEAR_MOVEMENT_SPEED),
+            StatType.DAMAGE: damage_stat(gc.WEREBEAR_ATTACK_DAMAGE / gc.WEREBEAR_ANIMATION_ATTACK_DURATION),
+            StatType.RANGE: range_stat(gc.WEREBEAR_ATTACK_RANGE),
+            StatType.UTILITY: 0
+        },
+        "tooltips": {
+            StatType.DEFENSE: f"{gc.WEREBEAR_HP} maximum health",
+            StatType.SPEED: f"{gc.WEREBEAR_MOVEMENT_SPEED} units per second",
+            StatType.DAMAGE: f"{gc.WEREBEAR_ATTACK_DAMAGE} per hit ({gc.WEREBEAR_ATTACK_DAMAGE / gc.WEREBEAR_ANIMATION_ATTACK_DURATION:.1f} per second)",
+            StatType.RANGE: f"{gc.WEREBEAR_ATTACK_RANGE} units",
+            StatType.UTILITY: f"TODO"
+        },
+        "tips": {
+            "Strong when": ["TODO"],
+            "Weak when": ["TODO"],
+        }
+    }
 } 
