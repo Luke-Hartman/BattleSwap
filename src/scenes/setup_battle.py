@@ -143,6 +143,17 @@ class SetupBattleScene(Scene):
             current_battle=battle,
         )
 
+        # Add clear button above the barracks
+        barracks_x = self.barracks.rect.x
+        self.clear_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect(
+                (barracks_x, self.barracks.rect.y - 40),
+                (100, 30)
+            ),
+            text='Clear All',
+            manager=self.manager
+        )
+
         # Create grades panel to the right of barracks, aligned at the bottom
         barracks_bottom = self.barracks.rect.bottom
         self.progress_panel = ProgressPanel(
@@ -267,6 +278,20 @@ class SetupBattleScene(Scene):
         self.barracks.add_unit(unit_type)
         if self.progress_panel is not None:
             self.progress_panel.update_battle(self.battle)
+
+    def clear_allied_units(self) -> None:
+        """Remove all allied units from the battlefield."""
+        # Get all allied units in the current world
+        esper.switch_world(self.battle_id)
+        allied_units = []
+        for ent, (team, _) in esper.get_components(Team, UnitTypeComponent):
+            if team.type == TeamType.TEAM1 and not esper.has_component(ent, Placing):
+                allied_units.append(ent)
+        
+        # Remove each allied unit
+        for unit_id in allied_units:
+            if esper.entity_exists(unit_id):  # Check if entity still exists before removing
+                self.remove_unit(unit_id)
 
     def show_exit_confirmation(self) -> None:
         """Show confirmation dialog for exiting with unsaved changes."""
@@ -395,6 +420,8 @@ class SetupBattleScene(Scene):
                             self.results_box.set_text('Team 2 Wins')
                         elif outcome == BattleOutcome.TIMEOUT:
                             self.results_box.set_text('Timeout')
+                    elif event.ui_element == self.clear_button:
+                        self.clear_allied_units()
                 elif event.user_type == pygame_gui.UI_CONFIRMATION_DIALOG_CONFIRMED:
                     if self.confirmation_dialog is not None and event.ui_element == self.confirmation_dialog:
                         self.world_map_view.move_camera_above_battle(self.battle_id)
