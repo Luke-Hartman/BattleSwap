@@ -161,6 +161,12 @@ class SceneManager:
         for event in events:
             if event.type == PREVIOUS_SCENE_EVENT:
                 validated_event = PreviousSceneEvent.model_validate(event.dict)
+                
+                # Protect against empty scene stack
+                if len(self.scene_stack) < validated_event.n:
+                    # Not enough scenes on stack to pop, ignore this event
+                    continue
+                    
                 for _ in range(validated_event.n):
                     previous_state = self.scene_stack.pop()
                 self.cleanup(add_to_stack=False)
