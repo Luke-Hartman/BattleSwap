@@ -24,16 +24,30 @@ class ReturnButton(UIButton):
         )
         self._clicked = False  # Track if button has been clicked
     
-    def disable_after_click(self) -> None:
-        """Disable the button to prevent multiple rapid clicks."""
-        if not self._clicked:
+    def process_event(self, event: pygame.event.Event) -> bool:
+        """Override process_event to prevent multiple rapid clicks.
+        
+        Args:
+            event: The pygame event to process.
+            
+        Returns:
+            bool: True if the event was consumed, False otherwise.
+        """
+        # If we've already been clicked, consume all events to prevent further processing
+        if self._clicked:
+            return True
+            
+        # Process the event normally
+        consumed = super().process_event(event)
+        
+        # If this was a button press event, disable ourselves to prevent rapid clicking
+        if (consumed and 
+            event.type == pygame.USEREVENT and 
+            hasattr(event, 'user_type') and 
+            event.user_type == pygame_gui.UI_BUTTON_PRESSED and
+            hasattr(event, 'ui_element') and 
+            event.ui_element == self):
             self._clicked = True
             self.disable()
-    
-    def is_clicked(self) -> bool:
-        """Check if the button has been clicked and disabled.
         
-        Returns:
-            bool: True if the button has been clicked and disabled.
-        """
-        return self._clicked 
+        return consumed 

@@ -16,8 +16,7 @@ class Scene(ABC):
         """Handle escape key press by triggering the return button if it exists."""
         if (event.type == pygame.KEYDOWN and 
             event.key == pygame.K_ESCAPE and 
-            hasattr(self, 'return_button') and
-            not self.return_button.is_clicked()):  # Only trigger if not already clicked
+            hasattr(self, 'return_button')):
             # Create and post a button press event for the return button
             button_event = pygame.event.Event(
                 pygame.USEREVENT,
@@ -60,11 +59,6 @@ class Scene(ABC):
         """
         for event in events:
             if event.type == pygame_gui.UI_BUTTON_PRESSED:
-                # Automatically disable return button when it's clicked
-                if (hasattr(self, 'return_button') and 
-                    event.ui_element == self.return_button):
-                    self.return_button.disable_after_click()
-                
                 emit_event(PLAY_SOUND, event=PlaySoundEvent(
                     filename="ui_click.wav",
                     volume=0.5
