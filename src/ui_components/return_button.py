@@ -21,4 +21,19 @@ class ReturnButton(UIButton):
             relative_rect=pygame.Rect((10, 10), (100, 30)),
             text="Return",
             manager=manager
-        ) 
+        )
+        self._clicked = False  # Track if button has been clicked
+    
+    def disable_after_click(self) -> None:
+        """Disable the button to prevent multiple rapid clicks."""
+        if not self._clicked:
+            self._clicked = True
+            self.disable()
+    
+    def is_clicked(self) -> bool:
+        """Check if the button has been clicked and disabled.
+        
+        Returns:
+            bool: True if the button has been clicked and disabled.
+        """
+        return self._clicked 
