@@ -52,12 +52,19 @@ class Command(ABC):
 - **Undo**: Undoes all sub-commands in reverse order
 - **Key Feature**: Allows complex operations to be built from simple, tested commands
 
-#### MoveUnitCommand (extends CompositeCommand)
-- **Purpose**: Handles moving a unit from one position to another
-- **Implementation**: Composed of `RemoveUnitCommand` + `PlaceUnitCommand`
-- **Execute**: First removes the unit, then places it at the new position
-- **Undo**: First undoes the placement, then undoes the removal (recreating original unit)
-- **Key Benefit**: Reuses existing, tested logic instead of implementing complex move logic
+### Move Operation Implementation
+
+Move operations are implemented using a **pending removal** approach that solves both the ghost unit problem and entity ID tracking issues:
+
+#### The Problem with Previous Approaches
+1. **Ghost Units**: Trying to track units without removing them left duplicate units on the battlefield
+2. **Entity ID Invalidation**: When units are deleted and recreated, they get new entity IDs, making stored references invalid
+
+#### The Solution: Immediate Removal + Pending State
+1. **On Unit Pickup**: `RemoveUnitCommand` is executed immediately (unit disappears from battlefield)
+2. **Pending State**: The removal command is stored in `pending_removal` but not added to undo stack yet
+3. **On Placement**: `PlaceUnitCommand` is executed, then a `CompositeCommand` of both operations is added to undo stack
+4. **On Cancellation**: The pending removal is undone directly (unit reappears at original position)
 
 ### State Management
 
@@ -71,27 +78,32 @@ The SetupBattleScene maintains two stacks:
 - When undoing, commands are moved from undo stack to redo stack
 - When redoing, commands are moved from redo stack back to undo stack
 
-#### Move State Tracking
-The scene tracks when a unit is being moved vs when placing a new unit:
-- `moving_unit`: Stores `(unit_id, original_position, team)` when a unit is picked up for moving
-- This distinguishes between placing new units from barracks vs moving existing units
-- State is cleared when the move completes, is cancelled, or when selecting from barracks
+#### Pending Removal Tracking
+- `pending_removal`: Stores the `RemoveUnitCommand` when a unit is picked up for moving
+- This command has been executed but not yet added to the undo stack
+- Cleared when move completes, is cancelled, or when selecting from barracks
 
 ### User Interaction Flow
 
 #### Moving a Unit
-1. **Left-click on unit**: Unit is "picked up" - stores original position for move operation
-2. **Left-click to place**: Executes `MoveUnitCommand` (remove + place as single operation)
-3. **Right-click to cancel**: Cancels the move, unit stays at original position
+1. **Left-click on unit**: `RemoveUnitCommand` executes immediately (unit disappears)
+2. **Unit type selected**: User sees preview of unit to place
+3. **Left-click to place**: `PlaceUnitCommand` executes, `CompositeCommand` added to undo stack
+4. **Right-click to cancel**: Pending removal is undone directly (unit reappears at original position)
 
 #### Placing New Unit
-1. **Click barracks unit**: Selects unit type for placement (clears any pending move)
+1. **Click barracks unit**: Selects unit type for placement (cancels any pending move)
 2. **Left-click to place**: Executes `PlaceUnitCommand` to create new unit
 
 #### Removing Unit
 1. **Right-click on unit**: Executes `RemoveUnitCommand` to delete unit
 
 ### Design Benefits
+
+#### Solves Key Problems
+- **No Ghost Units**: Units are immediately removed when picked up
+- **No Entity ID Issues**: Commands don't rely on tracking entities across delete/recreate cycles
+- **Clean State**: Battlefield always shows the actual current state
 
 #### Composite Pattern Advantages
 - **Reuse**: Move operations reuse existing, tested RemoveUnitCommand and PlaceUnitCommand logic
@@ -109,9 +121,9 @@ The scene tracks when a unit is being moved vs when placing a new unit:
 #### Modified Methods
 1. **`create_unit_of_selected_type()`**: Now creates and executes a `PlaceUnitCommand`
 2. **`remove_unit()`**: Now creates and executes a `RemoveUnitCommand`
-3. **`update()`**: Added undo/redo keyboard event handling and updated mouse logic
-4. **`set_selected_unit_type()`**: Clears moving unit state when selection is cleared
-5. **Mouse click handlers**: Completely rewritten to distinguish between moves and new placements
+3. **`update()`**: Completely rewritten mouse click logic with proper move handling
+4. **`set_selected_unit_type()`**: Properly manages state when selection changes
+5. **Barracks selection**: Cancels pending moves by undoing pending removals
 
 #### Event Handling
 The `handle_undo_redo_keys()` method:
@@ -138,6 +150,7 @@ Each command preserves and restores:
 - **Safe**: Uses existing, tested remove/place logic rather than custom move code
 - **Consistent**: Maintains the same entity lifecycle patterns as other operations
 - **Robust**: No risk of entity state corruption from manual position updates
+- **Visual**: Unit immediately disappears when picked up, eliminating confusion
 
 ## User Experience
 
@@ -148,9 +161,9 @@ Each command preserves and restores:
 - No visual changes to the UI - purely keyboard-driven
 
 ### Improved Move Handling
-- **Before**: Moving a unit required two undos (undo placement, undo removal)
-- **After**: Moving a unit requires only one undo (restores to original position)
-- **Cancellation**: Right-click during move cancels without creating undo entries
+- **Before**: Moving a unit left ghost units and required complex entity tracking
+- **After**: Units disappear immediately when picked up, move is single undoable operation
+- **Cancellation**: Right-click during move restores unit to original position
 - **State Management**: Selecting from barracks automatically cancels any pending move
 
 ### Edge Cases Handled
@@ -159,7 +172,8 @@ Each command preserves and restores:
 - Maintains unit selection state appropriately
 - Handles both sandbox and normal campaign modes
 - Move cancellation doesn't pollute undo history
-- Barracks selection clears move state
+- Barracks selection clears move state by restoring picked-up units
+- No duplicate units on battlefield during moves
 
 ## Code Quality
 
@@ -170,12 +184,14 @@ Each command preserves and restores:
 - **Consistent**: Follows existing codebase patterns and style
 - **Type Safe**: Proper typing for all state variables
 - **Reusable**: CompositeCommand can be used for other multi-step operations
+- **Debuggable**: Clear state tracking makes issues easy to identify
 
 ### Performance Considerations
 - Minimal memory overhead (only stores command metadata)
 - Efficient entity ID tracking eliminates search operations
 - Move operations reuse existing optimized code paths
 - Commands execute quickly without noticeable delay
+- No entity duplication or ghost state management
 
 ## Future Enhancements
 

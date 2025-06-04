@@ -204,24 +204,6 @@ class CompositeCommand(Command):
             command.undo()
 
 
-class MoveUnitCommand(CompositeCommand):
-    """Command for moving a unit from one position to another.
-    
-    This is implemented as a composite of RemoveUnitCommand + PlaceUnitCommand.
-    """
-    
-    def __init__(self, scene: 'SetupBattleScene', unit_id: int, old_position: Tuple[int, int], new_position: Tuple[int, int], team: TeamType):
-        # Get unit information before creating the sub-commands
-        esper.switch_world(scene.battle_id)
-        unit_type = esper.component_for_entity(unit_id, UnitTypeComponent).type
-        
-        # Create the sub-commands: remove from old position, place at new position
-        remove_command = RemoveUnitCommand(scene, unit_id)
-        place_command = PlaceUnitCommand(scene, unit_type, new_position, team)
-        
-        super().__init__([remove_command, place_command], "Move Unit")
-
-
 class SetupBattleScene(Scene):
     """A scene for setting up a battle.
 
@@ -260,8 +242,8 @@ class SetupBattleScene(Scene):
         self.undo_stack: List[Command] = []
         self.redo_stack: List[Command] = []
         
-        # Track when we're moving a unit (picked up from battlefield) vs placing new (from barracks)
-        self.moving_unit: Optional[Tuple[int, Tuple[int, int], TeamType]] = None  # (unit_id, original_position, team)
+        # Track pending removal when moving a unit
+        self.pending_removal: Optional[RemoveUnitCommand] = None
         
         if world_map_view is None:
             battle = battles.Battle(
@@ -463,9 +445,6 @@ class SetupBattleScene(Scene):
             esper.delete_entity(self.selected_partial_unit)
         if value is None:
             self.selected_partial_unit = None
-            # Clear moving unit state when selection is cleared
-            if self.moving_unit is not None:
-                self.moving_unit = None
             return
         self.selected_partial_unit = create_unit(
             x=0,
@@ -475,9 +454,6 @@ class SetupBattleScene(Scene):
             corruption_powers=self.battle.corruption_powers
         )
         esper.add_component(self.selected_partial_unit, Placing())
-        # This shouldn't be needed anymore, but it used to be here, and so bugs
-        # might be related to it not being disabled.
-        # esper.remove_component(self.selected_partial_unit, UnitTypeComponent)
         esper.add_component(self.selected_partial_unit, Transparency(alpha=128))
     
     def create_unit_of_selected_type(self, placement_pos: Tuple[int, int], team: TeamType) -> None:
@@ -565,8 +541,10 @@ class SetupBattleScene(Scene):
                     for unit_count in self.barracks.unit_list_items:
                         if event.ui_element == unit_count.button:
                             play_intro(unit_count.unit_type)
-                            # Clear any pending move when selecting from barracks
-                            self.moving_unit = None
+                            # Clear any pending removal when selecting from barracks
+                            if self.pending_removal is not None:
+                                self.pending_removal.undo()
+                                self.pending_removal = None
                             self.set_selected_unit_type(unit_count.unit_type, placement_team)
                             break
                     assert event.ui_element is not None
@@ -652,28 +630,39 @@ class SetupBattleScene(Scene):
                     if self.selected_unit_type is None:
                         # No unit type selected - check if clicking on a unit to pick it up
                         if hovered_unit is not None and (self.sandbox_mode or hovered_team == TeamType.TEAM1):
-                            # Store the unit's original position for potential move
-                            unit_position = esper.component_for_entity(hovered_unit, Position)
-                            original_pos = (unit_position.x, unit_position.y)
+                            # Get unit type before removing
                             unit_type = esper.component_for_entity(hovered_unit, UnitTypeComponent).type
                             
-                            # Set up for moving this unit
-                            self.moving_unit = (hovered_unit, original_pos, hovered_team)
-                            self.set_selected_unit_type(unit_type, placement_team)
+                            # Execute removal immediately - unit disappears from battlefield
+                            removal_command = RemoveUnitCommand(self, hovered_unit)
+                            removal_command.execute()  # Execute but don't add to undo stack yet
+                            self.pending_removal = removal_command
                             
-                            # Don't execute remove command yet - we're just picking up for potential move
+                            # Set up for placing the picked-up unit
+                            self.set_selected_unit_type(unit_type, placement_team)
                             hovered_unit = None
                     else:
                         # Unit type is selected - place the unit
-                        if self.moving_unit is not None:
-                            # We're completing a move operation
-                            unit_id, original_pos, team = self.moving_unit
-                            move_command = MoveUnitCommand(self, unit_id, original_pos, click_placement_pos, team)
-                            self.execute_command(move_command)
+                        if self.pending_removal is not None:
+                            # We're completing a move operation - create composite command
+                            placement_command = PlaceUnitCommand(self, self.selected_unit_type, click_placement_pos, placement_team)
                             
-                            # Clear the unit selection and moving state
+                            # Create composite of the removal + placement
+                            move_command = CompositeCommand(
+                                [self.pending_removal, placement_command], 
+                                "Move Unit"
+                            )
+                            
+                            # Execute the placement (removal was already executed)
+                            placement_command.execute()
+                            
+                            # Add the composite command to undo stack
+                            self.undo_stack.append(move_command)
+                            self.redo_stack.clear()
+                            
+                            # Clear states
                             self.set_selected_unit_type(None, placement_team)
-                            self.moving_unit = None
+                            self.pending_removal = None
                         else:
                             # We're placing a new unit from barracks
                             self.create_unit_of_selected_type(
@@ -682,9 +671,10 @@ class SetupBattleScene(Scene):
                             )
                 elif event.button == pygame.BUTTON_RIGHT:
                     if self.selected_unit_type is not None:
-                        if self.moving_unit is not None:
-                            # Cancel the move - unit stays in original position
-                            self.moving_unit = None
+                        if self.pending_removal is not None:
+                            # Cancel the move - undo the removal to restore the unit
+                            self.pending_removal.undo()
+                            self.pending_removal = None
                         self.set_selected_unit_type(None, placement_team)
                         emit_event(PLAY_SOUND, event=PlaySoundEvent(
                             filename="unit_picked_up.wav",
