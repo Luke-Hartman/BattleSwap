@@ -1,4 +1,5 @@
 from abc import ABC
+import time
 
 import pygame
 import pygame_gui
@@ -10,13 +11,22 @@ class Scene(ABC):
 
     def __init__(self) -> None:
         """Initialize the scene."""
-        pass
+        self._last_escape_time = 0.0  # Track when escape was last pressed
+        self._escape_debounce_delay = 0.2  # 200ms debounce delay
 
     def handle_escape(self, event: pygame.event.Event) -> None:
         """Handle escape key press by triggering the return button if it exists."""
         if (event.type == pygame.KEYDOWN and 
             event.key == pygame.K_ESCAPE and 
             hasattr(self, 'return_button')):
+            
+            # Debounce rapid escape key presses
+            current_time = time.time()
+            if current_time - self._last_escape_time < self._escape_debounce_delay:
+                return  # Ignore rapid consecutive escape presses
+            
+            self._last_escape_time = current_time
+            
             # Create and post a button press event for the return button
             button_event = pygame.event.Event(
                 pygame.USEREVENT,

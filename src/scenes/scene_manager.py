@@ -161,14 +161,18 @@ class SceneManager:
         for event in events:
             if event.type == PREVIOUS_SCENE_EVENT:
                 validated_event = PreviousSceneEvent.model_validate(event.dict)
-                for _ in range(validated_event.n):
-                    previous_state = self.scene_stack.pop()
-                self.cleanup(add_to_stack=False)
-                self.current_scene = previous_state.scene_type(
-                    **previous_state.params
-                )
-                if previous_state.camera_state:
-                    previous_state.camera_state.restore_position()
+                # Guard against trying to pop more scenes than available
+                scenes_to_pop = min(validated_event.n, len(self.scene_stack))
+                if scenes_to_pop > 0:
+                    for _ in range(scenes_to_pop):
+                        previous_state = self.scene_stack.pop()
+                    self.cleanup(add_to_stack=False)
+                    self.current_scene = previous_state.scene_type(
+                        **previous_state.params
+                    )
+                    if previous_state.camera_state:
+                        previous_state.camera_state.restore_position()
+                # If we can't pop any scenes, ignore the event
             elif event.type == BATTLE_SCENE_EVENT:
                 validated_event = BattleSceneEvent.model_validate(event.dict)
                 self.cleanup()
