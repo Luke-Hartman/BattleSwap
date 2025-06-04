@@ -1,5 +1,6 @@
 """Sandbox scene for experimenting with unit placement and battles."""
-from typing import Optional, Tuple
+from abc import ABC, abstractmethod
+from typing import Optional, Tuple, List
 import esper
 import pygame
 import pygame_gui
@@ -36,6 +37,155 @@ from corruption_powers import CorruptionPower
 from selected_unit_manager import selected_unit_manager
 
 
+class Command(ABC):
+    """Abstract base class for undoable commands."""
+    
+    @abstractmethod
+    def execute(self) -> None:
+        """Execute the command."""
+        pass
+    
+    @abstractmethod
+    def undo(self) -> None:
+        """Undo the command."""
+        pass
+
+
+class PlaceUnitCommand(Command):
+    """Command for placing a unit on the battlefield."""
+    
+    def __init__(self, scene: 'SetupBattleScene', unit_type: UnitType, position: Tuple[int, int], team: TeamType):
+        self.scene = scene
+        self.unit_type = unit_type
+        self.position = position
+        self.team = team
+        self.unit_id: Optional[int] = None
+    
+    def execute(self) -> None:
+        """Place the unit and record its ID."""
+        # Switch to the correct world and create the unit directly
+        esper.switch_world(self.scene.battle_id)
+        world_x, world_y = axial_to_world(*self.scene.battle.hex_coords)
+        
+        # Determine if the battle is corrupted
+        is_corrupted = progress_manager and progress_manager.is_battle_corrupted(self.scene.battle.hex_coords)
+        
+        # Only apply corruption powers if the battle is corrupted
+        corruption_powers = self.scene.battle.corruption_powers if is_corrupted else None
+        
+        # Create the unit and store its ID
+        self.unit_id = create_unit(
+            x=self.position[0],
+            y=self.position[1],
+            unit_type=self.unit_type,
+            team=self.team,
+            corruption_powers=corruption_powers
+        )
+        
+        # Update the battle data
+        if self.team == TeamType.TEAM1:
+            if self.scene.battle.allies is None:
+                self.scene.battle.allies = []
+            self.scene.battle.allies.append((self.unit_type, (self.position[0] - world_x, self.position[1] - world_y)))
+        else:
+            self.scene.battle.enemies.append((self.unit_type, (self.position[0] - world_x, self.position[1] - world_y)))
+        
+        # Update UI state
+        self.scene.barracks.remove_unit(self.unit_type)
+        if self.scene.barracks.units[self.unit_type] == 0:
+            self.scene.set_selected_unit_type(None, TeamType.TEAM1)
+        if self.scene.progress_panel is not None:
+            self.scene.progress_panel.update_battle(self.scene.battle)
+        
+        # Play sound effect
+        emit_event(PLAY_SOUND, event=PlaySoundEvent(
+            filename="unit_placed.wav",
+            volume=0.5
+        ))
+    
+    def undo(self) -> None:
+        """Remove the placed unit."""
+        if self.unit_id is not None:
+            esper.switch_world(self.scene.battle_id)
+            world_x, world_y = axial_to_world(*self.scene.battle.hex_coords)
+            local_x, local_y = self.position[0] - world_x, self.position[1] - world_y
+            
+            # Remove from battle data
+            if self.team == TeamType.TEAM1:
+                found_unit = next((unit for unit in self.scene.battle.allies if unit[1] == (local_x, local_y)), None)
+                if found_unit is not None:
+                    self.scene.battle.allies.remove(found_unit)
+            else:
+                found_unit = next((unit for unit in self.scene.battle.enemies if unit[1] == (local_x, local_y)), None)
+                if found_unit is not None:
+                    self.scene.battle.enemies.remove(found_unit)
+            
+            # Delete the entity
+            esper.delete_entity(self.unit_id)
+            
+            # Update UI state
+            self.scene.barracks.add_unit(self.unit_type)
+            if self.scene.progress_panel is not None:
+                self.scene.progress_panel.update_battle(self.scene.battle)
+            
+            # Play sound effect
+            emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                filename="unit_returned.wav",
+                volume=0.5
+            ))
+
+
+class RemoveUnitCommand(Command):
+    """Command for removing a unit from the battlefield."""
+    
+    def __init__(self, scene: 'SetupBattleScene', unit_id: int):
+        self.scene = scene
+        self.unit_id = unit_id
+        # Store unit information before removal
+        esper.switch_world(self.scene.battle_id)
+        self.unit_type = esper.component_for_entity(unit_id, UnitTypeComponent).type
+        self.team = esper.component_for_entity(unit_id, Team).type
+        self.position = esper.component_for_entity(unit_id, Position)
+        self.position_tuple = (self.position.x, self.position.y)
+    
+    def execute(self) -> None:
+        """Remove the unit from the battlefield."""
+        self.scene.world_map_view.remove_unit(self.scene.battle_id, self.unit_id)
+        self.scene.barracks.add_unit(self.unit_type)
+        if self.scene.progress_panel is not None:
+            self.scene.progress_panel.update_battle(self.scene.battle)
+    
+    def undo(self) -> None:
+        """Re-place the unit on the battlefield."""
+        self.scene.world_map_view.add_unit(
+            self.scene.battle_id,
+            self.unit_type,
+            self.position_tuple,
+            self.team,
+        )
+        self.scene.barracks.remove_unit(self.unit_type)
+        if self.scene.progress_panel is not None:
+            self.scene.progress_panel.update_battle(self.scene.battle)
+
+
+class ChangeSelectionCommand(Command):
+    """Command for changing the selected unit type."""
+    
+    def __init__(self, scene: 'SetupBattleScene', old_unit_type: Optional[UnitType], new_unit_type: Optional[UnitType], placement_team: TeamType):
+        self.scene = scene
+        self.old_unit_type = old_unit_type
+        self.new_unit_type = new_unit_type
+        self.placement_team = placement_team
+    
+    def execute(self) -> None:
+        """Change the selected unit type."""
+        self.scene.set_selected_unit_type(self.new_unit_type, self.placement_team)
+    
+    def undo(self) -> None:
+        """Restore the previous selected unit type."""
+        self.scene.set_selected_unit_type(self.old_unit_type, self.placement_team)
+
+
 class SetupBattleScene(Scene):
     """A scene for setting up a battle.
 
@@ -69,6 +219,11 @@ class SetupBattleScene(Scene):
         self.screen = screen
         self.manager = manager
         self._selected_unit_type: Optional[UnitType] = None
+        
+        # Initialize undo/redo system
+        self.undo_stack: List[Command] = []
+        self.redo_stack: List[Command] = []
+        
         if world_map_view is None:
             battle = battles.Battle(
                 id="sandbox",
@@ -209,6 +364,48 @@ class SetupBattleScene(Scene):
             self.toggle_corruption_button = None
         
         self.confirmation_dialog: Optional[pygame_gui.windows.UIConfirmationDialog] = None
+
+    def execute_command(self, command: Command) -> None:
+        """Execute a command and add it to the undo stack."""
+        command.execute()
+        self.undo_stack.append(command)
+        # Clear redo stack when new command is executed
+        self.redo_stack.clear()
+
+    def undo(self) -> None:
+        """Undo the last command."""
+        if self.undo_stack:
+            command = self.undo_stack.pop()
+            command.undo()
+            self.redo_stack.append(command)
+
+    def redo(self) -> None:
+        """Redo the last undone command."""
+        if self.redo_stack:
+            command = self.redo_stack.pop()
+            command.execute()
+            self.undo_stack.append(command)
+
+    def handle_undo_redo_keys(self, event: pygame.event.Event) -> bool:
+        """Handle undo/redo keyboard shortcuts.
+        
+        Returns:
+            True if the event was handled, False otherwise.
+        """
+        if event.type == pygame.KEYDOWN:
+            keys = pygame.key.get_pressed()
+            ctrl_pressed = keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL]
+            shift_pressed = keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]
+            
+            if ctrl_pressed and event.key == pygame.K_z:
+                if shift_pressed:
+                    # Ctrl+Shift+Z for redo
+                    self.redo()
+                else:
+                    # Ctrl+Z for undo
+                    self.undo()
+                return True
+        return False
     
     @property
     def selected_unit_type(self) -> Optional[UnitType]:
@@ -244,29 +441,18 @@ class SetupBattleScene(Scene):
     def create_unit_of_selected_type(self, placement_pos: Tuple[int, int], team: TeamType) -> None:
         """Create a unit of the selected type."""
         assert self.sandbox_mode or team == TeamType.TEAM1
-        self.world_map_view.add_unit(
-            self.battle_id,
-            self.selected_unit_type,
-            placement_pos,
-            team,
-        )
-        self.barracks.remove_unit(self.selected_unit_type)
-        if self.barracks.units[self.selected_unit_type] == 0:
-            self.set_selected_unit_type(None, TeamType.TEAM1)
-        if self.progress_panel is not None:
-            self.progress_panel.update_battle(self.battle)
+        
+        # Execute placement as a command for undo/redo
+        command = PlaceUnitCommand(self, self.selected_unit_type, placement_pos, team)
+        self.execute_command(command)
     
     def remove_unit(self, unit_id: int) -> None:
         """Delete a unit of the selected type."""
         assert self.sandbox_mode or esper.component_for_entity(unit_id, Team).type == TeamType.TEAM1
-        self.world_map_view.remove_unit(
-            self.battle_id,
-            unit_id,
-        )
-        unit_type = esper.component_for_entity(unit_id, UnitTypeComponent).type
-        self.barracks.add_unit(unit_type)
-        if self.progress_panel is not None:
-            self.progress_panel.update_battle(self.battle)
+        
+        # Execute removal as a command for undo/redo
+        command = RemoveUnitCommand(self, unit_id)
+        self.execute_command(command)
 
     def show_exit_confirmation(self) -> None:
         """Show confirmation dialog for exiting with unsaved changes."""
@@ -324,6 +510,10 @@ class SetupBattleScene(Scene):
                 return False
 
             if self.handle_confirmation_dialog_keys(event):
+                continue
+
+            # Handle undo/redo keyboard shortcuts
+            if self.handle_undo_redo_keys(event):
                 continue
 
             self.handle_escape(event)
