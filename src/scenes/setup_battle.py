@@ -1,5 +1,5 @@
 """Sandbox scene for experimenting with unit placement and battles."""
-from typing import Optional, Tuple, List, Set, Dict
+from typing import Optional, Tuple, List
 import esper
 import pygame
 import pygame_gui
@@ -8,7 +8,6 @@ import battles
 from components.focus import Focus
 from components.placing import Placing
 from components.position import Position
-from components.selected import Selected
 from components.team import Team, TeamType
 from components.transparent import Transparency
 from components.unit_type import UnitType, UnitTypeComponent
@@ -35,6 +34,7 @@ from ui_components.progress_panel import ProgressPanel
 from ui_components.corruption_power_editor import CorruptionPowerEditorDialog
 from corruption_powers import CorruptionPower
 from selected_unit_manager import selected_unit_manager
+from components.sprite_sheet import SpriteSheet
 
 
 class SetupBattleScene(Scene):
@@ -423,6 +423,42 @@ class SetupBattleScene(Scene):
         if self.progress_panel is not None:
             self.progress_panel.update_battle(self.battle)
 
+    def sprite_intersects_rect(self, sprite: SpriteSheet, min_x: float, max_x: float, min_y: float, max_y: float) -> bool:
+        """Check if any non-transparent pixels of a sprite intersect with the given rectangle."""
+        # First do a quick bounding box check
+        if not (sprite.rect.left <= max_x and sprite.rect.right >= min_x and 
+                sprite.rect.top <= max_y and sprite.rect.bottom >= min_y):
+            return False
+        
+        # Calculate the intersection area between sprite and selection rectangle
+        intersect_left = max(sprite.rect.left, min_x)
+        intersect_right = min(sprite.rect.right, max_x)
+        intersect_top = max(sprite.rect.top, min_y)
+        intersect_bottom = min(sprite.rect.bottom, max_y)
+        
+        # Convert world coordinates to sprite-local coordinates
+        sprite_start_x = int(intersect_left - sprite.rect.left)
+        sprite_end_x = int(intersect_right - sprite.rect.left)
+        sprite_start_y = int(intersect_top - sprite.rect.top)
+        sprite_end_y = int(intersect_bottom - sprite.rect.top)
+        
+        # Clamp to sprite bounds
+        sprite_start_x = max(0, min(sprite_start_x, sprite.rect.width))
+        sprite_end_x = max(0, min(sprite_end_x, sprite.rect.width))
+        sprite_start_y = max(0, min(sprite_start_y, sprite.rect.height))
+        sprite_end_y = max(0, min(sprite_end_y, sprite.rect.height))
+        
+        # Check if any non-transparent pixels exist in the intersection area
+        for x in range(sprite_start_x, sprite_end_x):
+            for y in range(sprite_start_y, sprite_end_y):
+                try:
+                    if sprite.image.get_at((x, y)).a != 0:  # Non-transparent pixel
+                        return True
+                except IndexError:
+                    continue
+        
+        return False
+
     def select_units_in_rect(self, start_pos: Tuple[int, int], end_pos: Tuple[int, int]) -> None:
         """Select all units within the given screen rectangle and pick them up."""
         esper.switch_world(self.battle_id)
@@ -437,6 +473,10 @@ class SetupBattleScene(Scene):
         min_y = min(start_world[1], end_world[1])
         max_y = max(start_world[1], end_world[1])
         
+        # Ensure minimum size for single clicks
+        max_x = max(max_x, min_x + 1)
+        max_y = max(max_y, min_y + 1)
+        
         # Find units within the rectangle
         selected_units = []
         placement_team = None
@@ -445,8 +485,13 @@ class SetupBattleScene(Scene):
             if esper.has_component(ent, Placing):
                 continue
             
-            # Check if unit is within selection rectangle
-            if min_x <= pos.x <= max_x and min_y <= pos.y <= max_y:
+            # Get sprite component for intersection checking
+            if not esper.has_component(ent, SpriteSheet):
+                continue
+            sprite = esper.component_for_entity(ent, SpriteSheet)
+            
+            # Check if sprite (considering transparency) intersects with selection rectangle
+            if self.sprite_intersects_rect(sprite, min_x, max_x, min_y, max_y):
                 # Only select units that can be moved (team1 units or all units in sandbox mode)
                 if self.sandbox_mode or team.type == TeamType.TEAM1:
                     selected_units.append(ent)
@@ -508,7 +553,7 @@ class SetupBattleScene(Scene):
 
     def draw_selection_rectangle(self) -> None:
         """Draw the selection rectangle during drag selection."""
-        if not self.is_drag_selecting or self.drag_start_pos is None or self.drag_end_pos is None:
+        if not self.is_drag_selecting:
             return
             
         # Create rectangle from drag positions
@@ -520,16 +565,17 @@ class SetupBattleScene(Scene):
         rect_w = abs(end_x - start_x)
         rect_h = abs(end_y - start_y)
         
-        # Only draw if rectangle is large enough
-        if rect_w > 5 and rect_h > 5:
-            # Draw selection rectangle
-            selection_rect = pygame.Rect(rect_x, rect_y, rect_w, rect_h)
-            pygame.draw.rect(self.screen, (0, 255, 0), selection_rect, 2)
-            
-            # Draw semi-transparent fill
-            selection_surface = pygame.Surface((rect_w, rect_h), pygame.SRCALPHA)
-            selection_surface.fill((0, 255, 0, 50))
-            self.screen.blit(selection_surface, (rect_x, rect_y))
+        rect_w = max(rect_w, 1)
+        rect_h = max(rect_h, 1)
+        
+        # Draw selection rectangle
+        selection_rect = pygame.Rect(rect_x, rect_y, rect_w, rect_h)
+        pygame.draw.rect(self.screen, (0, 255, 0), selection_rect, 2)
+        
+        # Draw semi-transparent fill
+        selection_surface = pygame.Surface((rect_w, rect_h), pygame.SRCALPHA)
+        selection_surface.fill((0, 255, 0, 50))
+        self.screen.blit(selection_surface, (rect_x, rect_y))
 
     def update(self, time_delta: float, events: list[pygame.event.Event]) -> bool:
         """Update the sandbox scene."""
@@ -556,6 +602,7 @@ class SetupBattleScene(Scene):
         )
         placement_team = TeamType.TEAM1 if placement_pos[0] < world_x else TeamType.TEAM2
 
+        stop_drag_selecting = False
         for event in events:
             if event.type == pygame.QUIT:
                 return False
@@ -657,11 +704,6 @@ class SetupBattleScene(Scene):
                         )
                         placement_team = TeamType.TEAM1 if click_placement_pos[0] < world_x else TeamType.TEAM2
                         self.create_unit_of_selected_type(click_placement_pos, placement_team)
-                    # If clicking on a unit, pick it up (single unit pickup)
-                    elif hovered_unit is not None and (self.sandbox_mode or hovered_team == TeamType.TEAM1):
-                        self.set_selected_unit_type(esper.component_for_entity(hovered_unit, UnitTypeComponent).type, placement_team)
-                        self.remove_unit(hovered_unit)
-                    # If clicking in empty space, start drag selection
                     else:
                         self.is_drag_selecting = True
                         self.drag_start_pos = event.pos
@@ -682,17 +724,10 @@ class SetupBattleScene(Scene):
                     elif hovered_unit is not None and (self.sandbox_mode or hovered_team == TeamType.TEAM1):
                         self.remove_unit(hovered_unit)
 
-            elif event.type == pygame.MOUSEBUTTONUP and not mouse_over_ui(self.manager):
+            elif event.type == pygame.MOUSEBUTTONUP:
                 if event.button == pygame.BUTTON_LEFT and self.is_drag_selecting:
-                    # End drag selection - only if we dragged a reasonable distance
-                    if (self.drag_start_pos and self.drag_end_pos and 
-                        (abs(self.drag_end_pos[0] - self.drag_start_pos[0]) > 5 or 
-                         abs(self.drag_end_pos[1] - self.drag_start_pos[1]) > 5)):
-                        self.select_units_in_rect(self.drag_start_pos, self.drag_end_pos)
-                    
-                    self.is_drag_selecting = False
-                    self.drag_start_pos = None
-                    self.drag_end_pos = None
+                    self.select_units_in_rect(self.drag_start_pos, self.drag_end_pos)
+                    stop_drag_selecting = True
 
             elif event.type == pygame.MOUSEMOTION:
                 if self.is_drag_selecting:
@@ -779,6 +814,10 @@ class SetupBattleScene(Scene):
         
         # Draw selection UI elements
         self.draw_selection_rectangle()
+        if stop_drag_selecting:
+            self.is_drag_selecting = False
+            self.drag_start_pos = None
+            self.drag_end_pos = None
         
         self.manager.update(time_delta)
         self.manager.draw_ui(self.screen)
