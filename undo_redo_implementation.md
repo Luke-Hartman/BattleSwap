@@ -46,11 +46,18 @@ class Command(ABC):
 - **Execute**: Removes unit entity and updates UI state
 - **Undo**: Re-creates the unit at its original position with original properties
 
-#### MoveUnitCommand
-- **Purpose**: Handles moving a unit from one position to another (left-click pickup + left-click place)
-- **Execute**: Updates the unit's position and battle data without deleting/recreating the entity
-- **Undo**: Moves the unit back to its original position and updates battle data
-- **Key Feature**: Treats the entire move as a single operation, so undoing restores the unit to its original position
+#### CompositeCommand
+- **Purpose**: Executes multiple sub-commands as a single undoable operation
+- **Execute**: Runs all sub-commands in order
+- **Undo**: Undoes all sub-commands in reverse order
+- **Key Feature**: Allows complex operations to be built from simple, tested commands
+
+#### MoveUnitCommand (extends CompositeCommand)
+- **Purpose**: Handles moving a unit from one position to another
+- **Implementation**: Composed of `RemoveUnitCommand` + `PlaceUnitCommand`
+- **Execute**: First removes the unit, then places it at the new position
+- **Undo**: First undoes the placement, then undoes the removal (recreating original unit)
+- **Key Benefit**: Reuses existing, tested logic instead of implementing complex move logic
 
 ### State Management
 
@@ -73,8 +80,8 @@ The scene tracks when a unit is being moved vs when placing a new unit:
 ### User Interaction Flow
 
 #### Moving a Unit
-1. **Left-click on unit**: Unit is "picked up" - stores original position but doesn't remove from battlefield yet
-2. **Left-click to place**: Executes `MoveUnitCommand` with original and new positions
+1. **Left-click on unit**: Unit is "picked up" - stores original position for move operation
+2. **Left-click to place**: Executes `MoveUnitCommand` (remove + place as single operation)
 3. **Right-click to cancel**: Cancels the move, unit stays at original position
 
 #### Placing New Unit
@@ -83,6 +90,19 @@ The scene tracks when a unit is being moved vs when placing a new unit:
 
 #### Removing Unit
 1. **Right-click on unit**: Executes `RemoveUnitCommand` to delete unit
+
+### Design Benefits
+
+#### Composite Pattern Advantages
+- **Reuse**: Move operations reuse existing, tested RemoveUnitCommand and PlaceUnitCommand logic
+- **Consistency**: All operations use the same underlying mechanisms
+- **Reliability**: No complex position update logic that could cause state inconsistencies
+- **Maintainability**: Changes to remove/place logic automatically benefit move operations
+
+#### Entity Management
+- **Clean Lifecycle**: Units are properly removed and recreated rather than moved in place
+- **State Consistency**: All entity components and battle data are managed consistently
+- **No Entity Corruption**: Avoids potential issues with updating entity positions manually
 
 ### Integration Points
 
@@ -115,8 +135,9 @@ Each command preserves and restores:
 
 ### Move Operation Benefits
 - **Atomic**: Moving a unit is a single operation that can be undone with one Ctrl+Z
-- **Efficient**: Doesn't delete and recreate entities, just updates position
-- **Consistent**: Maintains unit entity ID and all components throughout the move
+- **Safe**: Uses existing, tested remove/place logic rather than custom move code
+- **Consistent**: Maintains the same entity lifecycle patterns as other operations
+- **Robust**: No risk of entity state corruption from manual position updates
 
 ## User Experience
 
@@ -143,16 +164,17 @@ Each command preserves and restores:
 ## Code Quality
 
 ### Architecture Benefits
-- **Extensible**: Easy to add new undoable operations
+- **Extensible**: Easy to add new undoable operations and composite operations
 - **Maintainable**: Clear separation of concerns with command classes
 - **Testable**: Each command can be tested independently
 - **Consistent**: Follows existing codebase patterns and style
 - **Type Safe**: Proper typing for all state variables
+- **Reusable**: CompositeCommand can be used for other multi-step operations
 
 ### Performance Considerations
 - Minimal memory overhead (only stores command metadata)
 - Efficient entity ID tracking eliminates search operations
-- Move operations don't delete/recreate entities
+- Move operations reuse existing optimized code paths
 - Commands execute quickly without noticeable delay
 
 ## Future Enhancements
@@ -160,9 +182,10 @@ Each command preserves and restores:
 Potential additions that could be implemented using the same pattern:
 - Undoable unit selection changes
 - Undoable corruption power modifications
-- Batch operations (e.g., "undo all placements", "move multiple units")
+- Batch operations using CompositeCommand (e.g., "place multiple units", "clear all units")
 - Undo history persistence across sessions
-- Multi-step move operations (pick up multiple units)
+- Multi-step operations (pick up multiple units and move as a group)
+- Macro commands (record and replay sequences of operations)
 
 ## Files Modified
 
