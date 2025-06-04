@@ -186,6 +186,98 @@ class ChangeSelectionCommand(Command):
         self.scene.set_selected_unit_type(self.old_unit_type, self.placement_team)
 
 
+class MoveUnitCommand(Command):
+    """Command for moving a unit from one position to another."""
+    
+    def __init__(self, scene: 'SetupBattleScene', unit_id: int, old_position: Tuple[int, int], new_position: Tuple[int, int], team: TeamType):
+        self.scene = scene
+        self.unit_id = unit_id
+        self.old_position = old_position
+        self.new_position = new_position
+        self.team = team
+        # Store unit information before moving
+        esper.switch_world(self.scene.battle_id)
+        self.unit_type = esper.component_for_entity(unit_id, UnitTypeComponent).type
+    
+    def execute(self) -> None:
+        """Move the unit to the new position."""
+        esper.switch_world(self.scene.battle_id)
+        world_x, world_y = axial_to_world(*self.scene.battle.hex_coords)
+        
+        # Remove from old position in battle data
+        old_local_x, old_local_y = self.old_position[0] - world_x, self.old_position[1] - world_y
+        if self.team == TeamType.TEAM1:
+            found_unit = next((unit for unit in self.scene.battle.allies if unit[1] == (old_local_x, old_local_y)), None)
+            if found_unit is not None:
+                self.scene.battle.allies.remove(found_unit)
+        else:
+            found_unit = next((unit for unit in self.scene.battle.enemies if unit[1] == (old_local_x, old_local_y)), None)
+            if found_unit is not None:
+                self.scene.battle.enemies.remove(found_unit)
+        
+        # Update unit's position
+        position = esper.component_for_entity(self.unit_id, Position)
+        position.x, position.y = self.new_position
+        
+        # Add to new position in battle data
+        new_local_x, new_local_y = self.new_position[0] - world_x, self.new_position[1] - world_y
+        if self.team == TeamType.TEAM1:
+            if self.scene.battle.allies is None:
+                self.scene.battle.allies = []
+            self.scene.battle.allies.append((self.unit_type, (new_local_x, new_local_y)))
+        else:
+            self.scene.battle.enemies.append((self.unit_type, (new_local_x, new_local_y)))
+        
+        # Update UI state
+        if self.scene.progress_panel is not None:
+            self.scene.progress_panel.update_battle(self.scene.battle)
+        
+        # Play sound effect
+        emit_event(PLAY_SOUND, event=PlaySoundEvent(
+            filename="unit_placed.wav",
+            volume=0.5
+        ))
+    
+    def undo(self) -> None:
+        """Move the unit back to its original position."""
+        esper.switch_world(self.scene.battle_id)
+        world_x, world_y = axial_to_world(*self.scene.battle.hex_coords)
+        
+        # Remove from new position in battle data
+        new_local_x, new_local_y = self.new_position[0] - world_x, self.new_position[1] - world_y
+        if self.team == TeamType.TEAM1:
+            found_unit = next((unit for unit in self.scene.battle.allies if unit[1] == (new_local_x, new_local_y)), None)
+            if found_unit is not None:
+                self.scene.battle.allies.remove(found_unit)
+        else:
+            found_unit = next((unit for unit in self.scene.battle.enemies if unit[1] == (new_local_x, new_local_y)), None)
+            if found_unit is not None:
+                self.scene.battle.enemies.remove(found_unit)
+        
+        # Update unit's position back to original
+        position = esper.component_for_entity(self.unit_id, Position)
+        position.x, position.y = self.old_position
+        
+        # Add back to original position in battle data
+        old_local_x, old_local_y = self.old_position[0] - world_x, self.old_position[1] - world_y
+        if self.team == TeamType.TEAM1:
+            if self.scene.battle.allies is None:
+                self.scene.battle.allies = []
+            self.scene.battle.allies.append((self.unit_type, (old_local_x, old_local_y)))
+        else:
+            self.scene.battle.enemies.append((self.unit_type, (old_local_x, old_local_y)))
+        
+        # Update UI state
+        if self.scene.progress_panel is not None:
+            self.scene.progress_panel.update_battle(self.scene.battle)
+        
+        # Play sound effect
+        emit_event(PLAY_SOUND, event=PlaySoundEvent(
+            filename="unit_returned.wav",
+            volume=0.5
+        ))
+
+
 class SetupBattleScene(Scene):
     """A scene for setting up a battle.
 
@@ -223,6 +315,9 @@ class SetupBattleScene(Scene):
         # Initialize undo/redo system
         self.undo_stack: List[Command] = []
         self.redo_stack: List[Command] = []
+        
+        # Track when we're moving a unit (picked up from battlefield) vs placing new (from barracks)
+        self.moving_unit: Optional[Tuple[int, Tuple[int, int], TeamType]] = None  # (unit_id, original_position, team)
         
         if world_map_view is None:
             battle = battles.Battle(
@@ -424,6 +519,9 @@ class SetupBattleScene(Scene):
             esper.delete_entity(self.selected_partial_unit)
         if value is None:
             self.selected_partial_unit = None
+            # Clear moving unit state when selection is cleared
+            if self.moving_unit is not None:
+                self.moving_unit = None
             return
         self.selected_partial_unit = create_unit(
             x=0,
@@ -523,6 +621,8 @@ class SetupBattleScene(Scene):
                     for unit_count in self.barracks.unit_list_items:
                         if event.ui_element == unit_count.button:
                             play_intro(unit_count.unit_type)
+                            # Clear any pending move when selecting from barracks
+                            self.moving_unit = None
                             self.set_selected_unit_type(unit_count.unit_type, placement_team)
                             break
                     assert event.ui_element is not None
@@ -604,24 +704,50 @@ class SetupBattleScene(Scene):
                         required_team=None if self.sandbox_mode else TeamType.TEAM1,
                     )
                     placement_team = TeamType.TEAM1 if click_placement_pos[0] < world_x else TeamType.TEAM2
+                    
                     if self.selected_unit_type is None:
+                        # No unit type selected - check if clicking on a unit to pick it up
                         if hovered_unit is not None and (self.sandbox_mode or hovered_team == TeamType.TEAM1):
-                            self.set_selected_unit_type(esper.component_for_entity(hovered_unit, UnitTypeComponent).type, placement_team)
-                            self.remove_unit(hovered_unit)
+                            # Store the unit's original position for potential move
+                            unit_position = esper.component_for_entity(hovered_unit, Position)
+                            original_pos = (unit_position.x, unit_position.y)
+                            unit_type = esper.component_for_entity(hovered_unit, UnitTypeComponent).type
+                            
+                            # Set up for moving this unit
+                            self.moving_unit = (hovered_unit, original_pos, hovered_team)
+                            self.set_selected_unit_type(unit_type, placement_team)
+                            
+                            # Don't execute remove command yet - we're just picking up for potential move
                             hovered_unit = None
                     else:
-                        self.create_unit_of_selected_type(
-                            click_placement_pos,
-                            placement_team,
-                        )
+                        # Unit type is selected - place the unit
+                        if self.moving_unit is not None:
+                            # We're completing a move operation
+                            unit_id, original_pos, team = self.moving_unit
+                            move_command = MoveUnitCommand(self, unit_id, original_pos, click_placement_pos, team)
+                            self.execute_command(move_command)
+                            
+                            # Clear the unit selection and moving state
+                            self.set_selected_unit_type(None, placement_team)
+                            self.moving_unit = None
+                        else:
+                            # We're placing a new unit from barracks
+                            self.create_unit_of_selected_type(
+                                click_placement_pos,
+                                placement_team,
+                            )
                 elif event.button == pygame.BUTTON_RIGHT:
                     if self.selected_unit_type is not None:
+                        if self.moving_unit is not None:
+                            # Cancel the move - unit stays in original position
+                            self.moving_unit = None
                         self.set_selected_unit_type(None, placement_team)
                         emit_event(PLAY_SOUND, event=PlaySoundEvent(
                             filename="unit_picked_up.wav",
                             volume=0.5,
                         ))
                     else:
+                        # Right-click to remove a unit
                         if hovered_unit is not None and (self.sandbox_mode or hovered_team == TeamType.TEAM1):
                             self.remove_unit(hovered_unit)
                             hovered_unit = None
