@@ -352,8 +352,8 @@ class SetupBattleScene(Scene):
             esper.add_component(partial_unit, Transparency(alpha=128))
             self.selected_group_partial_units.append(partial_unit)
             
-            # Remove original unit and add to barracks
-            self.remove_unit(unit_id)
+            # Remove original unit from battlefield (but don't add to barracks since we're carrying them)
+            self.world_map_view.remove_unit(self.battle_id, unit_id)
         
         self.group_placement_team = placement_team
 
@@ -464,20 +464,36 @@ class SetupBattleScene(Scene):
             self.pickup_group_of_units(selected_units, mouse_world_pos, placement_team)
 
     def update_group_partial_units_position(self, mouse_world_pos: Tuple[float, float]) -> None:
-        """Update positions of group partial units to follow mouse."""
+        """Update positions of group partial units to show actual clipped placement positions."""
         if not self.selected_group_partial_units:
             return
             
         esper.switch_world(self.battle_id)
+        
+        # Get battle coordinates for legal placement checking
+        battle_coords = self.battle.hex_coords
+        legal_area = get_legal_placement_area(
+            self.battle_id,
+            battle_coords,
+            required_team=None if self.sandbox_mode else TeamType.TEAM1,
+            include_units=True,
+        )
         
         for i, partial_unit in enumerate(self.selected_group_partial_units):
             if not esper.entity_exists(partial_unit):
                 continue
                 
             offset_x, offset_y = self.group_unit_offsets[i]
+            ideal_x = mouse_world_pos[0] + offset_x
+            ideal_y = mouse_world_pos[1] + offset_y
+            
+            # Clip to legal placement area (same logic as place_group_units)
+            from scene_utils import clip_to_polygon
+            clipped_pos = clip_to_polygon(legal_area, ideal_x, ideal_y)
+            
+            # Update partial unit position to show actual placement position
             pos = esper.component_for_entity(partial_unit, Position)
-            pos.x = mouse_world_pos[0] + offset_x
-            pos.y = mouse_world_pos[1] + offset_y
+            pos.x, pos.y = clipped_pos
             esper.add_component(partial_unit, Focus())
 
     def draw_selection_rectangle(self) -> None:

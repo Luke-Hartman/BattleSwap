@@ -16,6 +16,7 @@ Added drag selection and multi-unit pickup functionality to the setup_battle sce
 - **Relative Positioning**: Units maintain their relative positions from the group center
 - **Centered on Mouse**: The group is centered on the mouse cursor for easy positioning
 - **Formation Preservation**: Units maintain their relative formation during movement
+- **Accurate Preview**: Preview shows the actual positions where units will be placed (including collision avoidance)
 
 ### 3. Group Placement & Cancellation
 - **Left Click to Place**: Places all units in the group at their relative positions
@@ -41,6 +42,7 @@ Added drag selection and multi-unit pickup functionality to the setup_battle sce
 - **Green Selection Rectangle**: Shows during drag selection (only for rectangles > 5px)
 - **Transparent Unit Previews**: Selected units become semi-transparent and follow mouse
 - **Legal Placement Area**: Gray outlined area shows where units can be placed
+- **Accurate Preview Positions**: Preview units show exactly where they'll be placed (with collision avoidance)
 
 ## Technical Implementation
 
@@ -51,24 +53,30 @@ Added drag selection and multi-unit pickup functionality to the setup_battle sce
 - `group_placement_team`: Team assignment for the group
 
 ### Key Methods
-- `pickup_group_of_units()`: Creates transparent previews and removes original units
+- `pickup_group_of_units()`: Creates transparent previews and removes original units from battlefield
 - `clear_group_pickup()`: Cleans up group pickup state and deletes preview units
 - `place_group_units()`: Places all units from group pickup at mouse position
 - `cancel_group_pickup()`: Cancels pickup and returns units to barracks inventory
 - `select_units_in_rect()`: Finds units in rectangle and immediately picks them up
-- `update_group_partial_units_position()`: Updates preview positions to follow mouse
+- `update_group_partial_units_position()`: Updates preview positions to show actual placement locations
 
 ### Workflow
 1. **Drag Selection**: User drags to create selection rectangle
 2. **Automatic Pickup**: Units in rectangle are immediately picked up as transparent previews
-3. **Movement**: Preview units follow mouse cursor maintaining relative positions
+3. **Movement**: Preview units follow mouse cursor showing actual placement positions
 4. **Placement**: Left click places all units, right click cancels and returns to barracks
+
+### Inventory Management
+- **Pickup**: Units are removed from battlefield but not added to barracks (they're "carried")
+- **Placement**: Units are placed directly without barracks interaction
+- **Cancellation**: Units are returned to barracks inventory
 
 ## Usage Examples
 
 1. **Select and Move Multiple Units**: 
    - Click and drag to create a rectangle around units
    - Units immediately become transparent and follow your mouse
+   - Preview shows exactly where units will be placed (with collision avoidance)
    - Left click to place them in the new position
    - Right click to cancel and return them to barracks
 
@@ -80,13 +88,17 @@ Added drag selection and multi-unit pickup functionality to the setup_battle sce
    - Click unit types in barracks to select for placement
    - Left click to place, right click to cancel
 
-## Key Improvements from Previous Version
+## Recent Bug Fixes
 
-1. **Fixed Normal Unit Placement**: Single unit pickup and placement works exactly as before
-2. **Consistent Interaction Model**: Group pickup works exactly like single unit pickup
-3. **Immediate Feedback**: Units are picked up immediately when selected, not just highlighted
-4. **Proper Cancellation**: Right click properly returns units to barracks instead of deleting them
-5. **Simplified Controls**: No complex multi-state interaction, just pickup → place/cancel
+### Fixed: Infinite Unit Placement
+- **Issue**: Could place units even when barracks showed 0 remaining
+- **Cause**: Group pickup was adding units to barracks inventory but placement wasn't removing them
+- **Fix**: Group units are now in a "carried" state - removed from battlefield but not added to barracks until canceled
+
+### Fixed: Inaccurate Preview Positions
+- **Issue**: Preview showed ideal positions but units were placed at different (clipped) positions
+- **Cause**: Preview used ideal offsets while placement used clipped positions for collision avoidance
+- **Fix**: Preview now calculates and shows the actual clipped positions where units will be placed
 
 ## Compatibility
 - **Fully Compatible**: Works alongside existing single unit pickup system
@@ -94,3 +106,4 @@ Added drag selection and multi-unit pickup functionality to the setup_battle sce
 - **Barracks Integration**: Properly updates barracks inventory when units are picked up/placed/cancelled
 - **Grid Snapping**: Compatible with Shift+grid snapping for precise placement
 - **Legal Placement**: All units are constrained to legal placement areas
+- **Accurate Preview**: Shows exactly where units will be placed, including collision avoidance
