@@ -29,7 +29,7 @@ from auto_battle import BattleOutcome, simulate_battle
 from ui_components.tip_box import TipBox
 from voice import play_intro
 from world_map_view import FillState, HexState, WorldMapView
-from scene_utils import draw_grid, get_center_line, get_placement_pos, get_hovered_unit, get_unit_placements, get_legal_placement_area, get_legal_placement_area_with_simulated_units, clip_to_polygon, has_unsaved_changes, mouse_over_ui
+from scene_utils import draw_grid, get_center_line, get_placement_pos, get_hovered_unit, get_unit_placements, get_legal_placement_area, clip_to_polygon, has_unsaved_changes, mouse_over_ui
 from ui_components.progress_panel import ProgressPanel
 from ui_components.corruption_power_editor import CorruptionPowerEditorDialog
 from corruption_powers import CorruptionPower
@@ -558,7 +558,7 @@ class SetupBattleScene(Scene):
             ideal_y = mouse_world_pos[1] + offset_y
             
             # Get legal area considering existing units + previously calculated positions
-            legal_area = get_legal_placement_area_with_simulated_units(
+            legal_area = get_legal_placement_area(
                 self.battle_id,
                 battle_coords,
                 required_team=None if self.sandbox_mode else TeamType.TEAM1,
