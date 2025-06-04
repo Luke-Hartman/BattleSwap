@@ -30,7 +30,7 @@ from auto_battle import BattleOutcome, simulate_battle
 from ui_components.tip_box import TipBox
 from voice import play_intro
 from world_map_view import FillState, HexState, WorldMapView
-from scene_utils import draw_grid, get_center_line, get_placement_pos, get_hovered_unit, get_unit_placements, get_legal_placement_area, has_unsaved_changes, mouse_over_ui
+from scene_utils import draw_grid, get_center_line, get_placement_pos, get_hovered_unit, get_unit_placements, get_legal_placement_area, get_legal_placement_area_with_simulated_units, clip_to_polygon, has_unsaved_changes, mouse_over_ui
 from ui_components.progress_panel import ProgressPanel
 from ui_components.corruption_power_editor import CorruptionPowerEditorDialog
 from corruption_powers import CorruptionPower
@@ -392,7 +392,6 @@ class SetupBattleScene(Scene):
                 required_team=None if self.sandbox_mode else TeamType.TEAM1,
                 include_units=True,
             )
-            from scene_utils import clip_to_polygon
             clipped_pos = clip_to_polygon(legal_area, placement_pos[0], placement_pos[1])
             
             # Create the unit
@@ -464,7 +463,11 @@ class SetupBattleScene(Scene):
             self.pickup_group_of_units(selected_units, mouse_world_pos, placement_team)
 
     def update_group_partial_units_position(self, mouse_world_pos: Tuple[float, float]) -> None:
-        """Update positions of group partial units to show actual clipped placement positions."""
+        """Update positions of group partial units to show actual clipped placement positions.
+        
+        This calculates positions sequentially, where each unit considers the positions of
+        previously calculated units, matching the actual placement behavior.
+        """
         if not self.selected_group_partial_units:
             return
             
@@ -472,12 +475,9 @@ class SetupBattleScene(Scene):
         
         # Get battle coordinates for legal placement checking
         battle_coords = self.battle.hex_coords
-        legal_area = get_legal_placement_area(
-            self.battle_id,
-            battle_coords,
-            required_team=None if self.sandbox_mode else TeamType.TEAM1,
-            include_units=True,
-        )
+        
+        # Calculate positions sequentially, same order as actual placement
+        calculated_positions = []
         
         for i, partial_unit in enumerate(self.selected_group_partial_units):
             if not esper.entity_exists(partial_unit):
@@ -487,9 +487,19 @@ class SetupBattleScene(Scene):
             ideal_x = mouse_world_pos[0] + offset_x
             ideal_y = mouse_world_pos[1] + offset_y
             
-            # Clip to legal placement area (same logic as place_group_units)
-            from scene_utils import clip_to_polygon
+            # Get legal area considering existing units + previously calculated positions
+            legal_area = get_legal_placement_area_with_simulated_units(
+                self.battle_id,
+                battle_coords,
+                required_team=None if self.sandbox_mode else TeamType.TEAM1,
+                additional_unit_positions=calculated_positions,  # Consider previous units in this group
+            )
+            
+            # Clip to legal placement area
             clipped_pos = clip_to_polygon(legal_area, ideal_x, ideal_y)
+            
+            # Store this position for subsequent units to consider
+            calculated_positions.append(clipped_pos)
             
             # Update partial unit position to show actual placement position
             pos = esper.component_for_entity(partial_unit, Position)

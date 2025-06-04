@@ -359,3 +359,71 @@ def has_unsaved_changes(battle: Battle) -> bool:
             
         saved_set = set(saved_solution.unit_placements)
         return current_set != saved_set
+
+def get_legal_placement_area_with_simulated_units(
+    battle_id: str,
+    hex_coords: Tuple[int, int],
+    required_team: Optional[TeamType] = None,
+    additional_unit_positions: Optional[List[Tuple[float, float]]] = None,
+) -> shapely.Polygon:
+    """Get the legal placement area for a hex, including additional simulated unit positions.
+    
+    This is used for calculating accurate preview positions where we need to consider
+    not just existing units but also where other preview units will be placed.
+    
+    Args:
+        battle_id: ID of the battle to check
+        hex_coords: (q,r) axial coordinates of the hex
+        required_team: If provided, restrict to this team's side
+        additional_unit_positions: Additional unit positions to consider as obstacles
+
+    Returns:
+        Shapely polygon representing the legal placement area
+    """    
+    # Get hex center
+    hex_center_x, _ = axial_to_world(*hex_coords)
+    
+    # Create battlefield polygon centered on hex
+    battlefield = get_battlefield_polygon(hex_coords)
+    
+    # Create no man's land polygon
+    no_mans_land = shapely.Polygon([
+        (hex_center_x - gc.NO_MANS_LAND_WIDTH//2, -LARGE_NUMBER), 
+        (hex_center_x - gc.NO_MANS_LAND_WIDTH//2, LARGE_NUMBER), 
+        (hex_center_x + gc.NO_MANS_LAND_WIDTH//2, LARGE_NUMBER), 
+        (hex_center_x + gc.NO_MANS_LAND_WIDTH//2, -LARGE_NUMBER)
+    ])
+    
+    # Get base legal area
+    legal_area = battlefield.difference(no_mans_land)
+    
+    # If team is specified, restrict to appropriate side
+    if required_team is not None:
+        # Create half-plane for team's side
+        half_plane = shapely.Polygon([
+            (hex_center_x, -LARGE_NUMBER),
+            (hex_center_x, LARGE_NUMBER),
+            (-LARGE_NUMBER if required_team == TeamType.TEAM1 else LARGE_NUMBER, LARGE_NUMBER),
+            (-LARGE_NUMBER if required_team == TeamType.TEAM1 else LARGE_NUMBER, -LARGE_NUMBER)
+        ])
+        legal_area = legal_area.intersection(half_plane)
+
+    # Collect all unit positions (existing + additional)
+    all_unit_positions = []
+    
+    # Get existing units
+    with use_world(battle_id):
+        for ent, (pos, _) in esper.get_components(Position, UnitTypeComponent):
+            if esper.has_component(ent, Placing):
+                continue
+            all_unit_positions.append((pos.x, pos.y))
+    
+    # Add additional simulated positions
+    if additional_unit_positions:
+        all_unit_positions.extend(additional_unit_positions)
+    
+    # Remove circles around all units
+    if all_unit_positions:
+        legal_area = _get_legal_placement_area_helper(legal_area, tuple(all_unit_positions))
+    
+    return legal_area
