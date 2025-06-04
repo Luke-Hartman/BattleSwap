@@ -45,6 +45,7 @@ class CampaignScene(Scene):
         self.corruption_dialog = None
         self.corrupted_battles = None
         self.corruption_icon = None
+        self._scene_transition_pending = False  # Prevent corruption during transitions
 
         # Create camera with desired initial settings
         self.hovered_battle_hex: Optional[Tuple[int, int]] = None
@@ -101,7 +102,8 @@ class CampaignScene(Scene):
         else:
             self.corruption_congratulations_panel = None
 
-        if progress_manager.should_trigger_corruption():
+        # Don't trigger corruption if a scene transition is pending
+        if not self._scene_transition_pending and progress_manager.should_trigger_corruption():
             corrupted_battles = progress_manager.corrupt_battles()
             if corrupted_battles:
                 self.corruption_dialog = CorruptionPanel(
@@ -217,6 +219,7 @@ class CampaignScene(Scene):
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.return_button:
+                        self._scene_transition_pending = True  # Prevent corruption
                         pygame.event.post(PreviousSceneEvent().to_event())
                     elif event.ui_element in (
                         self.context_buttons.get("battle"),
