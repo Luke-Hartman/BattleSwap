@@ -38,7 +38,7 @@ from components.destination import Destination
 from components.team import Team, TeamType
 from components.unit_state import State, UnitState
 from components.movement import Movement
-from components.unit_type import UnitType, UnitTypeComponent, UnitTier
+from components.unit_type import UnitType, UnitTypeComponent, UnitTier, UnitTierComponent
 from components.velocity import Velocity
 from components.health import Health
 from components.orientation import Orientation, FacingDirection
@@ -87,11 +87,10 @@ def get_tier_suffix(tier: UnitTier) -> str:
         raise ValueError(f"Unknown tier: {tier}")
 
 def get_unit_theme_id(unit_type: UnitType) -> str:
-    """Get the theme ID for a unit type, using the base unit's theme for tiered units."""
-    base_unit = unit_type.get_base_unit_type()
-    return _base_unit_theme_ids[base_unit]
+    """Get the theme ID for a unit type."""
+    return _unit_theme_ids[unit_type]
 
-_base_unit_theme_ids: Dict[UnitType, str] = {
+_unit_theme_ids: Dict[UnitType, str] = {
     UnitType.CORE_ARCHER: "#core_archer_icon", 
     UnitType.CORE_BARBARIAN: "#core_barbarian_icon",
     UnitType.CORE_CAVALRY: "#core_cavalry_icon",
@@ -133,15 +132,13 @@ class Faction(Enum):
     
     @staticmethod
     def faction_of(unit_type: UnitType) -> "Faction":
-        # Use base unit type for faction lookup
-        base_unit = unit_type.get_base_unit_type()
-        return _base_unit_to_faction[base_unit]
+        return _unit_to_faction[unit_type]
 
     @staticmethod
     def units(faction: "Faction") -> List[UnitType]:
-        return [unit_type for unit_type, faction_value in _base_unit_to_faction.items() if faction_value == faction]
+        return [unit_type for unit_type, faction_value in _unit_to_faction.items() if faction_value == faction]
 
-_base_unit_to_faction = {
+_unit_to_faction = {
     UnitType.CORE_ARCHER: Faction.CORE,
     UnitType.CORE_BARBARIAN: Faction.CORE,
     UnitType.CORE_CAVALRY: Faction.CORE,
