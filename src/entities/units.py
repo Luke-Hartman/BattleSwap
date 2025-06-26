@@ -38,7 +38,7 @@ from components.destination import Destination
 from components.team import Team, TeamType
 from components.unit_state import State, UnitState
 from components.movement import Movement
-from components.unit_type import UnitType, UnitTypeComponent
+from components.unit_type import UnitType, UnitTypeComponent, UnitTier
 from components.velocity import Velocity
 from components.health import Health
 from components.orientation import Orientation, FacingDirection
@@ -56,7 +56,42 @@ from visuals import Visual
 from components.dying import OnDeathEffect
 from corruption_powers import CorruptionPower, IncreasedAbilitySpeed, IncreasedDamage, IncreasedMaxHealth, IncreasedMovementSpeed
 
-unit_theme_ids: Dict[UnitType, str] = {
+def get_health_for_tier(base_health: float, tier: UnitTier) -> float:
+    """Calculate health for a unit based on its tier.
+    
+    Args:
+        base_health: The base health (Basic tier) for the unit
+        tier: The tier of the unit
+        
+    Returns:
+        The health value for the specified tier
+    """
+    if tier == UnitTier.BASIC:
+        return base_health
+    elif tier == UnitTier.VETERAN:
+        return base_health * 1.5  # 50% more health
+    elif tier == UnitTier.ELITE:
+        return base_health * 2.0  # 100% more health than Basic
+    else:
+        raise ValueError(f"Unknown tier: {tier}")
+
+def get_tier_suffix(tier: UnitTier) -> str:
+    """Get the suffix for a tier name for display purposes."""
+    if tier == UnitTier.BASIC:
+        return ""
+    elif tier == UnitTier.VETERAN:
+        return " (Veteran)"
+    elif tier == UnitTier.ELITE:
+        return " (Elite)"
+    else:
+        raise ValueError(f"Unknown tier: {tier}")
+
+def get_unit_theme_id(unit_type: UnitType) -> str:
+    """Get the theme ID for a unit type, using the base unit's theme for tiered units."""
+    base_unit = unit_type.get_base_unit_type()
+    return _base_unit_theme_ids[base_unit]
+
+_base_unit_theme_ids: Dict[UnitType, str] = {
     UnitType.CORE_ARCHER: "#core_archer_icon", 
     UnitType.CORE_BARBARIAN: "#core_barbarian_icon",
     UnitType.CORE_CAVALRY: "#core_cavalry_icon",
@@ -98,13 +133,15 @@ class Faction(Enum):
     
     @staticmethod
     def faction_of(unit_type: UnitType) -> "Faction":
-        return _unit_to_faction[unit_type]
+        # Use base unit type for faction lookup
+        base_unit = unit_type.get_base_unit_type()
+        return _base_unit_to_faction[base_unit]
 
     @staticmethod
     def units(faction: "Faction") -> List[UnitType]:
-        return [unit_type for unit_type, faction_value in _unit_to_faction.items() if faction_value == faction]
+        return [unit_type for unit_type, faction_value in _base_unit_to_faction.items() if faction_value == faction]
 
-_unit_to_faction = {
+_base_unit_to_faction = {
     UnitType.CORE_ARCHER: Faction.CORE,
     UnitType.CORE_BARBARIAN: Faction.CORE,
     UnitType.CORE_CAVALRY: Faction.CORE,
@@ -133,6 +170,16 @@ _unit_to_faction = {
     UnitType.ZOMBIE_TANK: Faction.ZOMBIES,
     UnitType.WEREBEAR: Faction.MISC,
 }
+
+def get_sprite_sheet_for_unit_type(unit_type: UnitType) -> pygame.Surface:
+    """Get the sprite sheet surface for a unit type, using base unit sprite for tiered units."""
+    base_unit = unit_type.get_base_unit_type()
+    return sprite_sheets[base_unit]
+
+def get_icon_surface_for_unit_type(unit_type: UnitType) -> pygame.Surface:
+    """Get the icon surface for a unit type, using base unit icon for tiered units."""
+    base_unit = unit_type.get_base_unit_type()
+    return unit_icon_surfaces[base_unit]
 
 def load_sprite_sheets():
     """Load all sprite sheets and unit icons."""
@@ -219,9 +266,22 @@ def _get_corruption_power(
             return power
     return None
 
+def create_tiered_unit(base_creation_func, x: int, y: int, unit_type: UnitType, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
+    """Create a tiered unit by calling the base creation function but with the tiered unit type."""
+    # Create the entity using the base function
+    entity = base_creation_func(x, y, team, corruption_powers)
+    
+    # Update the unit type component to reflect the actual tier
+    unit_type_component = esper.component_for_entity(entity, UnitTypeComponent)
+    unit_type_component.type = unit_type
+    
+    return entity
+
 def create_unit(x: int, y: int, unit_type: UnitType, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
     """Create a unit entity with all necessary components."""
-    return {
+    
+    # Map of base unit types to their creation functions
+    base_creation_functions = {
         UnitType.CORE_ARCHER: create_core_archer,
         UnitType.CORE_BARBARIAN: create_core_barbarian,
         UnitType.CORE_CAVALRY: create_core_cavalry,
@@ -249,7 +309,21 @@ def create_unit(x: int, y: int, unit_type: UnitType, team: TeamType, corruption_
         UnitType.ZOMBIE_JUMPER: create_zombie_jumper,
         UnitType.ZOMBIE_SPITTER: create_zombie_spitter,
         UnitType.ZOMBIE_TANK: create_zombie_tank,
-    }[unit_type](x, y, team, corruption_powers)
+    }
+    
+    # Get the base unit type and creation function
+    base_unit_type = unit_type.get_base_unit_type()
+    creation_func = base_creation_functions.get(base_unit_type)
+    
+    if creation_func is None:
+        raise ValueError(f"No creation function found for unit type: {unit_type}")
+    
+    # If it's a basic unit, call the function directly
+    if unit_type.get_tier() == UnitTier.BASIC:
+        return creation_func(x, y, team, corruption_powers)
+    else:
+        # For tiered units, use the tiered creation helper
+        return create_tiered_unit(creation_func, x, y, unit_type, team, corruption_powers)
 
 def unit_base_entity(
         x: int,
@@ -257,7 +331,7 @@ def unit_base_entity(
         team: TeamType,
         unit_type: UnitType,
         movement_speed: float,
-        health: int,
+        base_health: float,
         hitbox: Hitbox,
         corruption_powers: Optional[List[CorruptionPower]]
     ) -> int:
@@ -270,10 +344,16 @@ def unit_base_entity(
     esper.add_component(entity, Team(type=team))
     esper.add_component(entity, UnitState())
     esper.add_component(entity, UnitTypeComponent(type=unit_type))
+    
+    # Apply tier-based health scaling
+    tier = unit_type.get_tier()
+    health = get_health_for_tier(base_health, tier)
+    
+    # Apply corruption power health scaling
     health_power = _get_corruption_power(corruption_powers, IncreasedMaxHealth, team)
     if health_power is not None:
         health = health * (1 + health_power.increase_percent / 100)    
-    esper.add_component(entity, Health(current=health, maximum=health))
+    esper.add_component(entity, Health(current=int(health), maximum=int(health)))
     esper.add_component(entity, StatusEffects())
     esper.add_component(entity, Orientation(
         facing=FacingDirection.RIGHT if team == TeamType.TEAM1 else FacingDirection.LEFT
@@ -298,7 +378,7 @@ def create_core_archer(x: int, y: int, team: TeamType, corruption_powers: Option
         team=team,
         unit_type=UnitType.CORE_ARCHER,
         movement_speed=gc.CORE_ARCHER_MOVEMENT_SPEED,
-        health=gc.CORE_ARCHER_HP,
+        base_health=gc.CORE_ARCHER_HP,
         hitbox=Hitbox(
             width=16,
             height=32,
@@ -397,7 +477,7 @@ def create_core_barbarian(x: int, y: int, team: TeamType, corruption_powers: Opt
         team=team,
         unit_type=UnitType.CORE_BARBARIAN,
         movement_speed=gc.CORE_BARBARIAN_MOVEMENT_SPEED,
-        health=gc.CORE_BARBARIAN_HP,
+        base_health=gc.CORE_BARBARIAN_HP,
         hitbox=Hitbox(
             width=20,
             height=38,
@@ -476,7 +556,7 @@ def create_core_cavalry(x: int, y: int, team: TeamType, corruption_powers: Optio
         team=team,
         unit_type=UnitType.CORE_CAVALRY,
         movement_speed=gc.CORE_CAVALRY_MOVEMENT_SPEED,
-        health=gc.  CORE_CAVALRY_HP,
+        base_health=gc.CORE_CAVALRY_HP,
         hitbox=Hitbox(
             width=32,
             height=46,
@@ -552,7 +632,7 @@ def create_core_duelist(x: int, y: int, team: TeamType, corruption_powers: Optio
         team=team,
         unit_type=UnitType.CORE_DUELIST,
         movement_speed=gc.CORE_DUELIST_MOVEMENT_SPEED,
-        health=gc.CORE_DUELIST_HP,
+        base_health=gc.CORE_DUELIST_HP,
         hitbox=Hitbox(
             width=16,
             height=36,
@@ -658,7 +738,7 @@ def create_core_longbowman(x: int, y: int, team: TeamType, corruption_powers: Op
         team=team,
         unit_type=UnitType.CORE_LONGBOWMAN,
         movement_speed=gc.CORE_LONGBOWMAN_MOVEMENT_SPEED,
-        health=gc.CORE_LONGBOWMAN_HP,
+        base_health=gc.CORE_LONGBOWMAN_HP,
         hitbox=Hitbox(
             width=16,
             height=36,
@@ -756,7 +836,7 @@ def create_core_swordsman(x: int, y: int, team: TeamType, corruption_powers: Opt
         team=team,
         unit_type=UnitType.CORE_SWORDSMAN,
         movement_speed=gc.CORE_SWORDSMAN_MOVEMENT_SPEED,
-        health=gc.CORE_SWORDSMAN_HP,
+        base_health=gc.CORE_SWORDSMAN_HP,
         hitbox=Hitbox(
             width=16,
             height=32,
@@ -834,7 +914,7 @@ def create_core_wizard(x: int, y: int, team: TeamType, corruption_powers: Option
         team=team,
         unit_type=UnitType.CORE_WIZARD,
         movement_speed=gc.CORE_WIZARD_MOVEMENT_SPEED,
-        health=gc.CORE_WIZARD_HP,
+        base_health=gc.CORE_WIZARD_HP,
         hitbox=Hitbox(
             width=24,
             height=36,
@@ -3271,7 +3351,10 @@ def create_zombie_grabber(x: int, y: int, team: TeamType, corruption_powers: Opt
     return entity
 
 def get_unit_sprite_sheet(unit_type: UnitType) -> SpriteSheet:
-    if unit_type == UnitType.CORE_ARCHER:
+    # Use base unit type for sprite sheet lookup (all tiers share same sprites)
+    base_unit_type = unit_type.get_base_unit_type()
+    
+    if base_unit_type == UnitType.CORE_ARCHER:
         return SpriteSheet(
             surface=sprite_sheets[UnitType.CORE_ARCHER],
             frame_width=32,
@@ -3290,7 +3373,7 @@ def get_unit_sprite_sheet(unit_type: UnitType) -> SpriteSheet:
                 AnimationType.IDLE: True,
             }
         )
-    if unit_type == UnitType.CORE_BARBARIAN:
+    if base_unit_type == UnitType.CORE_BARBARIAN:
         return SpriteSheet(
             surface=sprite_sheets[UnitType.CORE_BARBARIAN],
             frame_width=100,
