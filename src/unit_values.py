@@ -1,23 +1,8 @@
-from components.unit_type import UnitType, UnitTier
+from components.unit_type import UnitType
 from typing import Dict
 from game_constants import gc
 
-def get_unit_value(unit_type: UnitType) -> int:
-    """Get the point value for a unit, adjusting for tier."""
-    base_unit = unit_type.get_base_unit_type()
-    base_value = _base_unit_values.get(base_unit, 0)
-    
-    tier = unit_type.get_tier()
-    if tier == UnitTier.BASIC:
-        return base_value
-    elif tier == UnitTier.VETERAN:
-        return int(base_value * 1.5)  # 50% more points for veteran
-    elif tier == UnitTier.ELITE:
-        return int(base_value * 2.0)  # 100% more points for elite
-    else:
-        return base_value
-
-_base_unit_values: Dict[UnitType, int] = {
+unit_values: Dict[UnitType, int] = {
     UnitType.CORE_ARCHER: gc.CORE_ARCHER_POINTS,
     UnitType.CORE_BARBARIAN: gc.CORE_BARBARIAN_POINTS,
     UnitType.CORE_CAVALRY: gc.CORE_CAVALRY_POINTS,
@@ -46,6 +31,3 @@ _base_unit_values: Dict[UnitType, int] = {
     UnitType.ZOMBIE_SPITTER: gc.ZOMBIE_SPITTER_POINTS,
     UnitType.ZOMBIE_TANK: gc.ZOMBIE_TANK_POINTS,
 }
-
-# Backward compatibility
-unit_values = _base_unit_values

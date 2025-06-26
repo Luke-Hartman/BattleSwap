@@ -5,7 +5,7 @@ from ui_components.stat_bar import StatBar
 from components.unit_type import UnitType, UnitTier
 from entities.units import Faction, get_unit_sprite_sheet, get_tier_suffix
 from ui_components.game_data import StatType, UNIT_DATA
-from unit_values import get_unit_value
+from unit_values import unit_values
 from pygame_gui.elements import UILabel, UIButton, UIImage, UIPanel
 from pygame_gui.core import ObjectID
 from info_mode_manager import info_mode_manager
@@ -22,7 +22,8 @@ class UnitCard:
                  position: Tuple[int, int],
                  name: str,
                  description: str,
-                 unit_type: UnitType):
+                 unit_type: UnitType,
+                 tier: UnitTier = UnitTier.BASIC):
         """
         Initialize a UnitCard component.
         
@@ -32,6 +33,7 @@ class UnitCard:
             name: The name of the unit
             description: The HTML description of the unit (can include links)
             unit_type: The type of unit to display the image for
+            tier: The tier of the unit (Basic, Veteran, Elite)
         """
         self.screen = screen
         self.manager = manager
@@ -40,7 +42,7 @@ class UnitCard:
         self.unit_type = unit_type
         
         # Create the window with tier information
-        tier_suffix = get_tier_suffix(unit_type.get_tier())
+        tier_suffix = get_tier_suffix(tier)
         faction_name = Faction.faction_of(unit_type).name.title()
         self.window = pygame_gui.elements.UIWindow(
             rect=pygame.Rect(position, (300, 475)),
@@ -62,7 +64,7 @@ class UnitCard:
         )
         
         # Add point value box in upper right corner
-        point_value = get_unit_value(unit_type)
+        point_value = unit_values.get(unit_type, 0)
         point_value_text = str(point_value)
         
         # Calculate box size based on text

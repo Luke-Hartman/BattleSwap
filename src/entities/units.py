@@ -263,22 +263,9 @@ def _get_corruption_power(
             return power
     return None
 
-def create_tiered_unit(base_creation_func, x: int, y: int, unit_type: UnitType, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
-    """Create a tiered unit by calling the base creation function but with the tiered unit type."""
-    # Create the entity using the base function
-    entity = base_creation_func(x, y, team, corruption_powers)
-    
-    # Update the unit type component to reflect the actual tier
-    unit_type_component = esper.component_for_entity(entity, UnitTypeComponent)
-    unit_type_component.type = unit_type
-    
-    return entity
-
-def create_unit(x: int, y: int, unit_type: UnitType, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
+def create_unit(x: int, y: int, unit_type: UnitType, team: TeamType, corruption_powers: Optional[List[CorruptionPower]], tier: UnitTier = UnitTier.BASIC) -> int:
     """Create a unit entity with all necessary components."""
-    
-    # Map of base unit types to their creation functions
-    base_creation_functions = {
+    return {
         UnitType.CORE_ARCHER: create_core_archer,
         UnitType.CORE_BARBARIAN: create_core_barbarian,
         UnitType.CORE_CAVALRY: create_core_cavalry,
@@ -306,21 +293,7 @@ def create_unit(x: int, y: int, unit_type: UnitType, team: TeamType, corruption_
         UnitType.ZOMBIE_JUMPER: create_zombie_jumper,
         UnitType.ZOMBIE_SPITTER: create_zombie_spitter,
         UnitType.ZOMBIE_TANK: create_zombie_tank,
-    }
-    
-    # Get the base unit type and creation function
-    base_unit_type = unit_type.get_base_unit_type()
-    creation_func = base_creation_functions.get(base_unit_type)
-    
-    if creation_func is None:
-        raise ValueError(f"No creation function found for unit type: {unit_type}")
-    
-    # If it's a basic unit, call the function directly
-    if unit_type.get_tier() == UnitTier.BASIC:
-        return creation_func(x, y, team, corruption_powers)
-    else:
-        # For tiered units, use the tiered creation helper
-        return create_tiered_unit(creation_func, x, y, unit_type, team, corruption_powers)
+    }[unit_type](x, y, team, corruption_powers, tier)
 
 def unit_base_entity(
         x: int,
@@ -330,7 +303,8 @@ def unit_base_entity(
         movement_speed: float,
         base_health: float,
         hitbox: Hitbox,
-        corruption_powers: Optional[List[CorruptionPower]]
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier = UnitTier.BASIC
     ) -> int:
     """Create a unit entity with all components shared by all units."""
     entity = esper.create_entity()
@@ -341,9 +315,9 @@ def unit_base_entity(
     esper.add_component(entity, Team(type=team))
     esper.add_component(entity, UnitState())
     esper.add_component(entity, UnitTypeComponent(type=unit_type))
+    esper.add_component(entity, UnitTierComponent(tier=tier))
     
     # Apply tier-based health scaling
-    tier = unit_type.get_tier()
     health = get_health_for_tier(base_health, tier)
     
     # Apply corruption power health scaling
@@ -367,7 +341,7 @@ def unit_base_entity(
         esper.add_component(entity, IncreasedDamageComponent(increase_percent=damage_power.increase_percent))
     return entity
 
-def create_core_archer(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
+def create_core_archer(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]], tier: UnitTier = UnitTier.BASIC) -> int:
     """Create an archer entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -380,7 +354,8 @@ def create_core_archer(x: int, y: int, team: TeamType, corruption_powers: Option
             width=16,
             height=32,
         ),
-        corruption_powers=corruption_powers
+        corruption_powers=corruption_powers,
+        tier=tier
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -466,7 +441,7 @@ def create_core_archer(x: int, y: int, team: TeamType, corruption_powers: Option
     }))
     return entity
 
-def create_core_barbarian(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
+def create_core_barbarian(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]], tier: UnitTier = UnitTier.BASIC) -> int:
     """Create a barbarian entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -479,7 +454,8 @@ def create_core_barbarian(x: int, y: int, team: TeamType, corruption_powers: Opt
             width=20,
             height=38,
         ),
-        corruption_powers=corruption_powers
+        corruption_powers=corruption_powers,
+        tier=tier
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -3348,10 +3324,7 @@ def create_zombie_grabber(x: int, y: int, team: TeamType, corruption_powers: Opt
     return entity
 
 def get_unit_sprite_sheet(unit_type: UnitType) -> SpriteSheet:
-    # Use base unit type for sprite sheet lookup (all tiers share same sprites)
-    base_unit_type = unit_type.get_base_unit_type()
-    
-    if base_unit_type == UnitType.CORE_ARCHER:
+    if unit_type == UnitType.CORE_ARCHER:
         return SpriteSheet(
             surface=sprite_sheets[UnitType.CORE_ARCHER],
             frame_width=32,
@@ -3370,7 +3343,7 @@ def get_unit_sprite_sheet(unit_type: UnitType) -> SpriteSheet:
                 AnimationType.IDLE: True,
             }
         )
-    if base_unit_type == UnitType.CORE_BARBARIAN:
+    if unit_type == UnitType.CORE_BARBARIAN:
         return SpriteSheet(
             surface=sprite_sheets[UnitType.CORE_BARBARIAN],
             frame_width=100,
