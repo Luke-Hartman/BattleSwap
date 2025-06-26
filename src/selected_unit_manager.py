@@ -6,8 +6,7 @@ import pygame_gui
 from components.unit_type import UnitType
 from ui_components.unit_card import UnitCard
 from ui_components.glossary_entry import GlossaryEntry
-from ui_components.game_data import UNIT_DATA
-from ui_components.game_data import StatType
+from ui_components.game_data import get_unit_data, UnitTier, StatType, GLOSSARY_ENTRIES
 from info_mode_manager import info_mode_manager
 
 class SelectedUnitManager:
@@ -177,7 +176,7 @@ class SelectedUnitManager:
     def _create_or_focus_glossary_entry(self, entry_type_str: str, position_hint: Optional[tuple[int, int]] = None) -> bool:
         """Create a new glossary entry or bring existing one to front."""
         # Import here to avoid circular imports
-        from ui_components.game_data import GlossaryEntryType, GLOSSARY_ENTRIES
+        from ui_components.game_data import GlossaryEntryType
         
         entry_type = None
         for glossary_type in GlossaryEntryType:
@@ -391,23 +390,25 @@ class SelectedUnitManager:
 
     def _create_unit_card(self, unit_type: UnitType, position: tuple[int, int]) -> UnitCard:
         """Create a unit card with all stats populated."""
-        unit_data = UNIT_DATA[unit_type]
+        unit_data = get_unit_data(unit_type, UnitTier.BASIC)
         
         new_card = UnitCard(
             screen=self.screen,
             manager=self.manager,
             position=position,
-            name=unit_data["name"],
-            description=unit_data["description"],
+            name=unit_data.name,
+            description=unit_data.description,
             unit_type=unit_type
         )
         
         for stat_type in StatType:
-            if stat_type in unit_data["stats"]:
+            stat_value = unit_data.stats[stat_type]
+            if stat_value is not None:
                 new_card.add_stat(
                     stat_type=stat_type,
-                    value=unit_data["stats"][stat_type],
-                    tooltip_text=unit_data["tooltips"][stat_type]
+                    value=int(stat_value),
+                    tooltip_text=unit_data.tooltips[stat_type] or "N/A",
+                    modification_level=unit_data.modification_levels[stat_type]
                 )
             else:
                 new_card.skip_stat(stat_type=stat_type)
