@@ -1,6 +1,8 @@
 import enum
 from components.unit_type import UnitType
 from game_constants import gc
+from typing import Dict, List, Optional
+from dataclasses import dataclass
 
 def taper(value: float) -> float:
     """Tapers the value to a stat value between 1 and 10, with a steeper curve at the end."""
@@ -31,6 +33,12 @@ def range_stat(range: float) -> float:
     stat = (range / gc.CRUSADER_CATAPULT_MAXIMUM_RANGE) * 16
     return taper(stat)
 
+class UnitTier(enum.Enum):
+    """Unit tier levels that affect unit stats."""
+    BASIC = "Basic"
+    ADVANCED = "Advanced"
+    ELITE = "Elite"
+
 class GlossaryEntryType(enum.Enum):
     """Types of glossary entries available in the game."""
     AREA_OF_EFFECT = "Area of Effect" 
@@ -56,6 +64,26 @@ class StatType(enum.Enum):
     RANGE = "range"
     UTILITY = "utility"
 
+@dataclass
+class UnitData:
+    """Data class representing unit information including stats, tooltips, and tips."""
+    name: str
+    description: str
+    tier: UnitTier
+    stats: Dict[StatType, Optional[float]]
+    tooltips: Dict[StatType, Optional[str]]
+    tips: Dict[str, List[str]]
+    modified_stats: List[StatType]  # Stats that have been modified from base tier
+    
+    def __post_init__(self):
+        """Ensure all StatType values are explicitly specified."""
+        # Fill in missing stats with None
+        for stat_type in StatType:
+            if stat_type not in self.stats:
+                self.stats[stat_type] = None
+            if stat_type not in self.tooltips:
+                self.tooltips[stat_type] = None
+
 # Glossary entry content
 GLOSSARY_ENTRIES = {
     GlossaryEntryType.AREA_OF_EFFECT: "Area of Effect: Applies one or more effects to all units within an area. Some units may not be affected, such as units on the same team.",
@@ -74,558 +102,636 @@ GLOSSARY_ENTRIES = {
     GlossaryEntryType.SPREADER: f"While most units target the nearest enemy unit, Spreaders prioritize units that are not <a href='{GlossaryEntryType.INFECTION.value}'>Infected</a>."
 }
 
-# Unit data
-UNIT_DATA = {
-    UnitType.CORE_ARCHER: {
-        "name": "Archer",
-        "description": "Archers are basic ranged units that deal damage from a distance.",
-        "stats": {
-            StatType.DAMAGE: damage_stat(gc.CORE_ARCHER_ATTACK_DAMAGE / gc.CORE_ARCHER_ANIMATION_ATTACK_DURATION),
-            StatType.DEFENSE: defense_stat(gc.CORE_ARCHER_HP),
-            StatType.SPEED: speed_stat(gc.CORE_ARCHER_MOVEMENT_SPEED),
-            StatType.RANGE: range_stat(gc.CORE_ARCHER_ATTACK_RANGE)
+def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> UnitData:
+    """Get unit data for the specified unit type and tier."""
+    
+    # Define base unit data
+    base_unit_data = {
+        UnitType.CORE_ARCHER: {
+            "name": "Archer",
+            "description": "Archers are basic ranged units that deal damage from a distance.",
+            "stats": {
+                StatType.DAMAGE: damage_stat(gc.CORE_ARCHER_ATTACK_DAMAGE / gc.CORE_ARCHER_ANIMATION_ATTACK_DURATION),
+                StatType.DEFENSE: defense_stat(gc.CORE_ARCHER_HP),
+                StatType.SPEED: speed_stat(gc.CORE_ARCHER_MOVEMENT_SPEED),
+                StatType.RANGE: range_stat(gc.CORE_ARCHER_ATTACK_RANGE),
+                StatType.UTILITY: None
+            },
+            "tooltips": {
+                StatType.DAMAGE: f"{gc.CORE_ARCHER_ATTACK_DAMAGE} per hit ({gc.CORE_ARCHER_ATTACK_DAMAGE / gc.CORE_ARCHER_ANIMATION_ATTACK_DURATION:.1f} per second)",
+                StatType.DEFENSE: f"{gc.CORE_ARCHER_HP} maximum health",
+                StatType.SPEED: f"{gc.CORE_ARCHER_MOVEMENT_SPEED} units per second",
+                StatType.RANGE: f"{gc.CORE_ARCHER_ATTACK_RANGE} units",
+                StatType.UTILITY: None
+            },
+            "tips": {
+                "Strong when": ["Against slow melee units", "In a large group", "Behind other units"],
+                "Weak when": ["Against fast units", f"Against <a href='{GlossaryEntryType.HUNTER.value}'>Hunters</a>"],
+            }
         },
-        "tooltips": {
-            StatType.DAMAGE: f"{gc.CORE_ARCHER_ATTACK_DAMAGE} per hit ({gc.CORE_ARCHER_ATTACK_DAMAGE / gc.CORE_ARCHER_ANIMATION_ATTACK_DURATION:.1f} per second)",
-            StatType.DEFENSE: f"{gc.CORE_ARCHER_HP} maximum health",
-            StatType.SPEED: f"{gc.CORE_ARCHER_MOVEMENT_SPEED} units per second",
-            StatType.RANGE: f"{gc.CORE_ARCHER_ATTACK_RANGE} units"
+        UnitType.CORE_BARBARIAN: {
+            "name": "Barbarian",
+            "description": f"Barbarians are durable melee units that deal damage in an <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a>.",
+            "stats": {
+                StatType.DEFENSE: defense_stat(gc.CORE_BARBARIAN_HP),
+                StatType.SPEED: speed_stat(gc.CORE_BARBARIAN_MOVEMENT_SPEED),
+                StatType.DAMAGE: damage_stat(gc.CORE_BARBARIAN_ATTACK_DAMAGE / gc.CORE_BARBARIAN_ANIMATION_ATTACK_DURATION, 1.5),
+                StatType.RANGE: range_stat(gc.CORE_BARBARIAN_ATTACK_RANGE),
+                StatType.UTILITY: None
+            },
+            "tooltips": {
+                StatType.DEFENSE: f"{gc.CORE_BARBARIAN_HP} maximum health",
+                StatType.SPEED: f"{gc.CORE_BARBARIAN_MOVEMENT_SPEED} units per second",
+                StatType.DAMAGE: f"{gc.CORE_BARBARIAN_ATTACK_DAMAGE} per hit ({gc.CORE_BARBARIAN_ATTACK_DAMAGE / gc.CORE_BARBARIAN_ANIMATION_ATTACK_DURATION:.1f} per second) in a medium area",
+                StatType.RANGE: f"{gc.CORE_BARBARIAN_ATTACK_RANGE} units",
+                StatType.UTILITY: None
+            },
+            "tips": {
+                "Strong when": ["Against groups of units", "In a large group", "Tanking damage"],
+                "Weak when": ["Against ranged units", "In one-on-one combat with stronger units"],
+            }
         },
-        "tips": {
-            "Strong when": ["Against slow melee units", "In a large group", "Behind other units"],
-            "Weak when": ["Against fast units", f"Against <a href='{GlossaryEntryType.HUNTER.value}'>Hunters</a>"],
-        }
-    },
-    UnitType.CORE_BARBARIAN: {
-        "name": "Barbarian",
-        "description": f"Barbarians are durable melee units that deal damage in an <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a>.",
-        "stats": {
-            StatType.DEFENSE: defense_stat(gc.CORE_BARBARIAN_HP),
-            StatType.SPEED: speed_stat(gc.CORE_BARBARIAN_MOVEMENT_SPEED),
-            StatType.DAMAGE: damage_stat(gc.CORE_BARBARIAN_ATTACK_DAMAGE / gc.CORE_BARBARIAN_ANIMATION_ATTACK_DURATION, 1.5),
-            StatType.RANGE: range_stat(gc.CORE_BARBARIAN_ATTACK_RANGE)
+        UnitType.CORE_CAVALRY: {
+            "name": "Cavalry",
+            "description": "Cavalry are fast and durable, but have low damage.",
+            "stats": {
+                StatType.DEFENSE: defense_stat(gc.CORE_CAVALRY_HP),
+                StatType.SPEED: speed_stat(gc.CORE_CAVALRY_MOVEMENT_SPEED),
+                StatType.DAMAGE: damage_stat(gc.CORE_CAVALRY_ATTACK_DAMAGE / gc.CORE_CAVALRY_ANIMATION_ATTACK_DURATION),
+                StatType.RANGE: range_stat(gc.CORE_CAVALRY_ATTACK_RANGE),
+                StatType.UTILITY: None
+            },
+            "tooltips": {
+                StatType.DEFENSE: f"{gc.CORE_CAVALRY_HP} maximum health",
+                StatType.SPEED: f"{gc.CORE_CAVALRY_MOVEMENT_SPEED} units per second",
+                StatType.DAMAGE: f"{gc.CORE_CAVALRY_ATTACK_DAMAGE} per hit ({gc.CORE_CAVALRY_ATTACK_DAMAGE / gc.CORE_CAVALRY_ANIMATION_ATTACK_DURATION:.1f} per second)",
+                StatType.RANGE: f"{gc.CORE_CAVALRY_ATTACK_RANGE} units",
+                StatType.UTILITY: None
+            },
+            "tips": {
+                "Strong when": ["Against ranged units", "With other fast units", "Tanking damage"],
+                "Weak when": ["Against stronger melee units"],
+            }
         },
-        "tooltips": {
-            StatType.DEFENSE: f"{gc.CORE_BARBARIAN_HP} maximum health",
-            StatType.SPEED: f"{gc.CORE_BARBARIAN_MOVEMENT_SPEED} units per second",
-            StatType.DAMAGE: f"{gc.CORE_BARBARIAN_ATTACK_DAMAGE} per hit ({gc.CORE_BARBARIAN_ATTACK_DAMAGE / gc.CORE_BARBARIAN_ANIMATION_ATTACK_DURATION:.1f} per second) in a medium area",
-            StatType.RANGE: f"{gc.CORE_BARBARIAN_ATTACK_RANGE} units"
+        UnitType.CORE_DUELIST: {
+            "name": "Duelist",
+            "description": "Duelists are fragile melee units that attack very quickly.",
+            "stats": {
+                StatType.DEFENSE: defense_stat(gc.CORE_DUELIST_HP),
+                StatType.SPEED: speed_stat(gc.CORE_DUELIST_MOVEMENT_SPEED),
+                StatType.DAMAGE: damage_stat(gc.CORE_DUELIST_ATTACK_DAMAGE / gc.CORE_DUELIST_ANIMATION_ATTACK_DURATION),
+                StatType.RANGE: range_stat(gc.CORE_DUELIST_ATTACK_RANGE),
+                StatType.UTILITY: None
+            },
+            "tooltips": {
+                StatType.DEFENSE: f"{gc.CORE_DUELIST_HP} maximum health",
+                StatType.SPEED: f"{gc.CORE_DUELIST_MOVEMENT_SPEED} units per second",
+                StatType.DAMAGE: f"{gc.CORE_DUELIST_ATTACK_DAMAGE/7} per hit ({gc.CORE_DUELIST_ATTACK_DAMAGE / gc.CORE_DUELIST_ANIMATION_ATTACK_DURATION:.1f} per second)",
+                StatType.RANGE: f"{gc.CORE_DUELIST_ATTACK_RANGE} units",
+                StatType.UTILITY: None
+            },
+            "tips": {
+                "Strong when": ["Against high health units", "In a large group", "Behind other units"],
+                "Weak when": ["Against ranged units", f"Against <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a> units"],
+            }
         },
-        "tips": {
-            "Strong when": ["Against groups of units", "In a large group", "Tanking damage"],
-            "Weak when": ["Against ranged units", "In one-on-one combat with stronger units"],
-        }
-    },
-    UnitType.CORE_CAVALRY: {
-        "name": "Cavalry",
-        "description": "Cavalry are fast and durable, but have low damage.",
-        "stats": {
-            StatType.DEFENSE: defense_stat(gc.CORE_CAVALRY_HP),
-            StatType.SPEED: speed_stat(gc.CORE_CAVALRY_MOVEMENT_SPEED),
-            StatType.DAMAGE: damage_stat(gc.CORE_CAVALRY_ATTACK_DAMAGE / gc.CORE_CAVALRY_ANIMATION_ATTACK_DURATION),
-            StatType.RANGE: range_stat(gc.CORE_CAVALRY_ATTACK_RANGE)
+        UnitType.CORE_LONGBOWMAN: {
+            "name": "Longbowman",
+            "description": "Longbowmen are ranged units that shoot powerful arrows over very long range.",
+            "stats": {
+                StatType.DEFENSE: defense_stat(gc.CORE_LONGBOWMAN_HP),
+                StatType.DAMAGE: damage_stat(gc.CORE_LONGBOWMAN_ATTACK_DAMAGE / gc.CORE_LONGBOWMAN_ANIMATION_ATTACK_DURATION),
+                StatType.RANGE: range_stat(gc.CORE_LONGBOWMAN_ATTACK_RANGE),
+                StatType.SPEED: speed_stat(gc.CORE_LONGBOWMAN_MOVEMENT_SPEED),
+                StatType.UTILITY: None
+            },
+            "tooltips": {
+                StatType.DEFENSE: f"{gc.CORE_LONGBOWMAN_HP} maximum health",
+                StatType.DAMAGE: f"{gc.CORE_LONGBOWMAN_ATTACK_DAMAGE} per hit ({gc.CORE_LONGBOWMAN_ATTACK_DAMAGE / gc.CORE_LONGBOWMAN_ANIMATION_ATTACK_DURATION:.1f} per second)",
+                StatType.RANGE: f"{gc.CORE_LONGBOWMAN_ATTACK_RANGE} units",
+                StatType.SPEED: f"{gc.CORE_LONGBOWMAN_MOVEMENT_SPEED} units per second",
+                StatType.UTILITY: None
+            },
+            "tips": {
+                "Strong when": ["Against other ranged units", "Against slow melee units", "Against healing units"],
+                "Weak when": ["Against fast melee units"],
+            }
         },
-        "tooltips": {
-            StatType.DEFENSE: f"{gc.CORE_CAVALRY_HP} maximum health",
-            StatType.SPEED: f"{gc.CORE_CAVALRY_MOVEMENT_SPEED} units per second",
-            StatType.DAMAGE: f"{gc.CORE_CAVALRY_ATTACK_DAMAGE} per hit ({gc.CORE_CAVALRY_ATTACK_DAMAGE / gc.CORE_CAVALRY_ANIMATION_ATTACK_DURATION:.1f} per second)",
-            StatType.RANGE: f"{gc.CORE_CAVALRY_ATTACK_RANGE} units"
+        UnitType.CORE_SWORDSMAN: {
+            "name": "Swordsman",
+            "description": "Swordsmen are balanced melee units that deal high damage.",
+            "stats": {
+                StatType.DEFENSE: defense_stat(gc.CORE_SWORDSMAN_HP),
+                StatType.SPEED: speed_stat(gc.CORE_SWORDSMAN_MOVEMENT_SPEED),
+                StatType.DAMAGE: damage_stat(gc.CORE_SWORDSMAN_ATTACK_DAMAGE / gc.CORE_SWORDSMAN_ANIMATION_ATTACK_DURATION),
+                StatType.RANGE: range_stat(gc.CORE_SWORDSMAN_ATTACK_RANGE),
+                StatType.UTILITY: None
+            },
+            "tooltips": {
+                StatType.DEFENSE: f"{gc.CORE_SWORDSMAN_HP} maximum health",
+                StatType.SPEED: f"{gc.CORE_SWORDSMAN_MOVEMENT_SPEED} units per second",
+                StatType.DAMAGE: f"{gc.CORE_SWORDSMAN_ATTACK_DAMAGE} per hit ({gc.CORE_SWORDSMAN_ATTACK_DAMAGE / gc.CORE_SWORDSMAN_ANIMATION_ATTACK_DURATION:.1f} per second)",
+                StatType.RANGE: f"{gc.CORE_SWORDSMAN_ATTACK_RANGE} units",
+                StatType.UTILITY: None
+            },
+            "tips": {
+                "Strong when": ["Against high health units", "Against weaker melee units", "In a large group"],
+                "Weak when": ["Against ranged units"],
+            }
         },
-        "tips": {
-            "Strong when": ["Against ranged units", "With other fast units", "Tanking damage"],
-            "Weak when": ["Against stronger melee units"],
-        }
-    },
-    UnitType.CORE_DUELIST: {
-        "name": "Duelist",
-        "description": "Duelists are fragile melee units that attack very quickly.",
-        "stats": {
-            StatType.DEFENSE: defense_stat(gc.CORE_DUELIST_HP),
-            StatType.SPEED: speed_stat(gc.CORE_DUELIST_MOVEMENT_SPEED),
-            StatType.DAMAGE: damage_stat(gc.CORE_DUELIST_ATTACK_DAMAGE / gc.CORE_DUELIST_ANIMATION_ATTACK_DURATION),
-            StatType.RANGE: range_stat(gc.CORE_DUELIST_ATTACK_RANGE)
+        UnitType.CORE_WIZARD: {
+            "name": "Wizard",
+            "description": f"Wizards shoot fireballs that damage allied and enemy units in a large <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a>.",
+            "stats": {
+                StatType.DEFENSE: defense_stat(gc.CORE_WIZARD_HP),
+                StatType.SPEED: speed_stat(gc.CORE_WIZARD_MOVEMENT_SPEED),
+                StatType.DAMAGE: damage_stat(gc.CORE_WIZARD_ATTACK_DAMAGE / gc.CORE_WIZARD_ANIMATION_ATTACK_DURATION, 2),
+                StatType.RANGE: range_stat(gc.CORE_WIZARD_ATTACK_RANGE),
+                StatType.UTILITY: None
+            },
+            "tooltips": {
+                StatType.DEFENSE: f"{gc.CORE_WIZARD_HP} maximum health",
+                StatType.SPEED: f"{gc.CORE_WIZARD_MOVEMENT_SPEED} units per second",
+                StatType.DAMAGE: f"{gc.CORE_WIZARD_ATTACK_DAMAGE} per hit ({gc.CORE_WIZARD_ATTACK_DAMAGE / gc.CORE_WIZARD_ANIMATION_ATTACK_DURATION:.1f} per second) in a large area",
+                StatType.RANGE: f"{gc.CORE_WIZARD_ATTACK_RANGE} units",
+                StatType.UTILITY: None
+            },
+            "tips": {
+                "Strong when": ["Against large groups", "Against slow units"],
+                "Weak when": ["Against fast melee units", "Allies are in the way", "Against high health units"],
+            }
         },
-        "tooltips": {
-            StatType.DEFENSE: f"{gc.CORE_DUELIST_HP} maximum health",
-            StatType.SPEED: f"{gc.CORE_DUELIST_MOVEMENT_SPEED} units per second",
-            StatType.DAMAGE: f"{gc.CORE_DUELIST_ATTACK_DAMAGE/7} per hit ({gc.CORE_DUELIST_ATTACK_DAMAGE / gc.CORE_DUELIST_ANIMATION_ATTACK_DURATION:.1f} per second)",
-            StatType.RANGE: f"{gc.CORE_DUELIST_ATTACK_RANGE} units"
+        UnitType.CRUSADER_BANNER_BEARER: {
+            "name": "Banner Bearer",
+            "description": f"Banner Bearers are <a href='{GlossaryEntryType.FOLLOWER.value}'>Followers</a> with an <a href='{GlossaryEntryType.AURA.value}'>Aura</a> that boosts damage and movement speed.",
+            "stats": {
+                StatType.DEFENSE: defense_stat(gc.CRUSADER_BANNER_BEARER_HP),
+                StatType.SPEED: speed_stat(gc.CRUSADER_BANNER_BEARER_AURA_MOVEMENT_SPEED),
+                StatType.UTILITY: 8
+            },
+            "tooltips": {
+                StatType.DEFENSE: f"{gc.CRUSADER_BANNER_BEARER_HP} maximum health",
+                StatType.SPEED: f"{gc.CRUSADER_BANNER_BEARER_AURA_MOVEMENT_SPEED} units per second",
+                StatType.UTILITY: f"Aura grants +{int(gc.CRUSADER_BANNER_BEARER_AURA_DAMAGE_PERCENTAGE * 100)}% damage to allies and sets their movement speed to {gc.CRUSADER_BANNER_BEARER_AURA_MOVEMENT_SPEED} units per second in a radius of {gc.CRUSADER_BANNER_BEARER_AURA_RADIUS}"
+            },
+            "tips": {
+                "Strong when": ["In a large group", "With slow allies", f"Against <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a> units"],
+                "Weak when": [f"Against <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a>", f"Against <a href='{GlossaryEntryType.HUNTER.value}'>Hunters</a>"],
+            }
         },
-        "tips": {
-            "Strong when": ["Against high health units", "In a large group", "Behind other units"],
-            "Weak when": ["Against ranged units", f"Against <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a> units"],
-        }
-    },
-    UnitType.CORE_LONGBOWMAN: {
-        "name": "Longbowman",
-        "description": "Longbowmen are ranged units that shoot powerful arrows over very long range.",
-        "stats": {
-            StatType.DEFENSE: defense_stat(gc.CORE_LONGBOWMAN_HP),
-            StatType.DAMAGE: damage_stat(gc.CORE_LONGBOWMAN_ATTACK_DAMAGE / gc.CORE_LONGBOWMAN_ANIMATION_ATTACK_DURATION),
-            StatType.RANGE: range_stat(gc.CORE_LONGBOWMAN_ATTACK_RANGE),
-            StatType.SPEED: speed_stat(gc.CORE_LONGBOWMAN_MOVEMENT_SPEED)
+        UnitType.CRUSADER_BLACK_KNIGHT: {
+            "name": "Black Knight",
+            "description": f"Black Knights are fast, <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a> <a href='{GlossaryEntryType.HUNTER.value}'>Hunters</a> that cause nearby units to <a href='{GlossaryEntryType.FLEE.value}'>Flee</a> on <a href='{GlossaryEntryType.KILLING_BLOW.value}'>Killing Blows</a>.",
+            "stats": {
+                StatType.DEFENSE: defense_stat(gc.CRUSADER_BLACK_KNIGHT_HP, armored=True),
+                StatType.SPEED: speed_stat(gc.CRUSADER_BLACK_KNIGHT_MOVEMENT_SPEED),
+                StatType.DAMAGE: damage_stat(gc.CRUSADER_BLACK_KNIGHT_ATTACK_DAMAGE / gc.CRUSADER_BLACK_KNIGHT_ANIMATION_ATTACK_DURATION),
+                StatType.UTILITY: 7,
+                StatType.RANGE: range_stat(gc.CRUSADER_BLACK_KNIGHT_ATTACK_RANGE)
+            },
+            "tooltips": {
+                StatType.DEFENSE: f"{gc.CRUSADER_BLACK_KNIGHT_HP} maximum health, armored",
+                StatType.SPEED: f"{gc.CRUSADER_BLACK_KNIGHT_MOVEMENT_SPEED} units per second",
+                StatType.DAMAGE: f"{gc.CRUSADER_BLACK_KNIGHT_ATTACK_DAMAGE} per hit ({gc.CRUSADER_BLACK_KNIGHT_ATTACK_DAMAGE / gc.CRUSADER_BLACK_KNIGHT_ANIMATION_ATTACK_DURATION:.1f} per second)",
+                StatType.UTILITY: "Nearby units flee on killing blow",
+                StatType.RANGE: f"{gc.CRUSADER_BLACK_KNIGHT_ATTACK_RANGE} units"
+            },
+            "tips": {
+                "Strong when": ["Against low health units", "Able to kill multiple units quickly", "Against units with low damage per hit"],
+                "Weak when": ["Walking through enemies to get to targets", "Against stronger melee units"],
+            }
         },
-        "tooltips": {
-            StatType.DEFENSE: f"{gc.CORE_LONGBOWMAN_HP} maximum health",
-            StatType.DAMAGE: f"{gc.CORE_LONGBOWMAN_ATTACK_DAMAGE} per hit ({gc.CORE_LONGBOWMAN_ATTACK_DAMAGE / gc.CORE_LONGBOWMAN_ANIMATION_ATTACK_DURATION:.1f} per second)",
-            StatType.RANGE: f"{gc.CORE_LONGBOWMAN_ATTACK_RANGE} units",
-            StatType.SPEED: f"{gc.CORE_LONGBOWMAN_MOVEMENT_SPEED} units per second"
+        UnitType.CRUSADER_CATAPULT: {
+            "name": "Catapult",
+            "description": f"Catapults are immobile ranged units that deal high damage to all units in an <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a>.",
+            "stats": {
+                StatType.DEFENSE: defense_stat(gc.CRUSADER_CATAPULT_HP),
+                StatType.DAMAGE: damage_stat(gc.CRUSADER_CATAPULT_DAMAGE / gc.CRUSADER_CATAPULT_COOLDOWN, 3),
+                StatType.RANGE: range_stat(gc.CRUSADER_CATAPULT_MAXIMUM_RANGE)
+            },
+            "tooltips": {
+                StatType.DEFENSE: f"{gc.CRUSADER_CATAPULT_HP} maximum health",
+                StatType.DAMAGE: f"{gc.CRUSADER_CATAPULT_DAMAGE} per hit ({gc.CRUSADER_CATAPULT_DAMAGE / gc.CRUSADER_CATAPULT_COOLDOWN:.1f} per second) in a medium area",
+                StatType.RANGE: f"Between {gc.CRUSADER_CATAPULT_MINIMUM_RANGE} and {gc.CRUSADER_CATAPULT_MAXIMUM_RANGE} units"
+            },
+            "tips": {
+                "Strong when": ["Against clustered groups", "Against slow units"],
+                "Weak when": ["Against fast units", "Against spread out units", "Enemy units are too close", "Allies are in the way"],
+            }
         },
-        "tips": {
-            "Strong when": ["Against other ranged units", "Against slow melee units", "Against healing units"],
-            "Weak when": ["Against fast melee units"],
-        }
-    },
-    UnitType.CORE_SWORDSMAN: {
-        "name": "Swordsman",
-        "description": "Swordsmen are balanced melee units that deal high damage.",
-        "stats": {
-            StatType.DEFENSE: defense_stat(gc.CORE_SWORDSMAN_HP),
-            StatType.SPEED: speed_stat(gc.CORE_SWORDSMAN_MOVEMENT_SPEED),
-            StatType.DAMAGE: damage_stat(gc.CORE_SWORDSMAN_ATTACK_DAMAGE / gc.CORE_SWORDSMAN_ANIMATION_ATTACK_DURATION),
-            StatType.RANGE: range_stat(gc.CORE_SWORDSMAN_ATTACK_RANGE)
+        UnitType.CRUSADER_CLERIC: {
+            "name": "Healer",
+            "description": f"Healers are <a href='{GlossaryEntryType.FOLLOWER.value}'>Followers</a> that heal the most damaged ally in range.",
+            "stats": {
+                StatType.DEFENSE: defense_stat(gc.CRUSADER_CLERIC_HP),
+                StatType.SPEED: speed_stat(gc.CRUSADER_CLERIC_MOVEMENT_SPEED),
+                StatType.UTILITY: damage_stat(gc.CRUSADER_CLERIC_HEALING / gc.CRUSADER_CLERIC_ANIMATION_ATTACK_DURATION),
+                StatType.RANGE: range_stat(gc.CRUSADER_CLERIC_ATTACK_RANGE)
+            },
+            "tooltips": {
+                StatType.DEFENSE: f"{gc.CRUSADER_CLERIC_HP} maximum health",
+                StatType.SPEED: f"{gc.CRUSADER_CLERIC_MOVEMENT_SPEED} units per second",
+                StatType.UTILITY: f"{gc.CRUSADER_CLERIC_HEALING} health per cast, {gc.CRUSADER_CLERIC_HEALING / gc.CRUSADER_CLERIC_ANIMATION_ATTACK_DURATION:.1f} per second",
+                StatType.RANGE: f"{gc.CRUSADER_CLERIC_ATTACK_RANGE} units"
+            },
+            "tips": {
+                "Strong when": ["In a large group", f"Allies are <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a>", "Against units with low damage per second"],
+                "Weak when": ["Against units with high damage per second", f"Against <a href='{GlossaryEntryType.HUNTER.value}'>Hunters</a>"],
+            }
         },
-        "tooltips": {
-            StatType.DEFENSE: f"{gc.CORE_SWORDSMAN_HP} maximum health",
-            StatType.SPEED: f"{gc.CORE_SWORDSMAN_MOVEMENT_SPEED} units per second",
-            StatType.DAMAGE: f"{gc.CORE_SWORDSMAN_ATTACK_DAMAGE} per hit ({gc.CORE_SWORDSMAN_ATTACK_DAMAGE / gc.CORE_SWORDSMAN_ANIMATION_ATTACK_DURATION:.1f} per second)",
-            StatType.RANGE: f"{gc.CORE_SWORDSMAN_ATTACK_RANGE} units"
+        UnitType.CRUSADER_COMMANDER: {
+            "name": "Commander",
+            "description": f"Commanders are support units with an <a href='{GlossaryEntryType.AURA.value}'>Aura</a> that boosts damage.",
+            "stats": {
+                StatType.DEFENSE: defense_stat(gc.CRUSADER_COMMANDER_HP),
+                StatType.SPEED: speed_stat(gc.CRUSADER_COMMANDER_MOVEMENT_SPEED),
+                StatType.DAMAGE: damage_stat(gc.CRUSADER_COMMANDER_ATTACK_DAMAGE / gc.CRUSADER_COMMANDER_ANIMATION_ATTACK_DURATION),
+                StatType.UTILITY: 6
+            },
+            "tooltips": {
+                StatType.DEFENSE: f"{gc.CRUSADER_COMMANDER_HP} maximum health",
+                StatType.SPEED: f"{gc.CRUSADER_COMMANDER_MOVEMENT_SPEED} units per second",
+                StatType.DAMAGE: f"{gc.CRUSADER_COMMANDER_ATTACK_DAMAGE} per hit ({gc.CRUSADER_COMMANDER_ATTACK_DAMAGE / gc.CRUSADER_COMMANDER_ANIMATION_ATTACK_DURATION:.1f} per second)",
+                StatType.UTILITY: f"Aura grants +{int(gc.CRUSADER_COMMANDER_EMPOWERED_DAMAGE_PERCENTAGE * 100)}% damage to allies in a radius of {gc.CRUSADER_COMMANDER_AURA_RADIUS}"
+            },
+            "tips": {
+                "Strong when": ["In a large group", f"Against <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a> units"],
+                "Weak when": [f"Against <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a>", "When allies are too far away"],
+            }
         },
-        "tips": {
-            "Strong when": ["Against high health units", "Against weaker melee units", "In a large group"],
-            "Weak when": ["Against ranged units"],
-        }
-    },
-    UnitType.CORE_WIZARD: {
-        "name": "Wizard",
-        "description": f"Wizards shoot fireballs that damage allied and enemy units in a large <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a>.",
-        "stats": {
-            StatType.DEFENSE: defense_stat(gc.CORE_WIZARD_HP),
-            StatType.SPEED: speed_stat(gc.CORE_WIZARD_MOVEMENT_SPEED),
-            StatType.DAMAGE: damage_stat(gc.CORE_WIZARD_ATTACK_DAMAGE / gc.CORE_WIZARD_ANIMATION_ATTACK_DURATION, 2),
-            StatType.RANGE: range_stat(gc.CORE_WIZARD_ATTACK_RANGE)
+        UnitType.CRUSADER_CROSSBOWMAN: {
+            "name": "Crossbowman",
+            "description": f"Crossbowmen are medium-ranged <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a> units that need to reload.",
+            "stats": {
+                StatType.DEFENSE: defense_stat(gc.CRUSADER_CROSSBOWMAN_HP, armored=True),
+                StatType.DAMAGE: damage_stat(gc.CRUSADER_CROSSBOWMAN_ATTACK_DAMAGE / (gc.CRUSADER_CROSSBOWMAN_ANIMATION_ATTACK_DURATION + gc.CRUSADER_CROSSBOWMAN_ANIMATION_RELOAD_DURATION/2)),
+                StatType.RANGE: range_stat(gc.CRUSADER_CROSSBOWMAN_ATTACK_RANGE),
+                StatType.SPEED: speed_stat(gc.CRUSADER_CROSSBOWMAN_MOVEMENT_SPEED)
+            },
+            "tooltips": {
+                StatType.DEFENSE: f"{gc.CRUSADER_CROSSBOWMAN_HP} maximum health, armored",
+                StatType.DAMAGE: f"{gc.CRUSADER_CROSSBOWMAN_ATTACK_DAMAGE} per hit ({gc.CRUSADER_CROSSBOWMAN_ATTACK_DAMAGE / (gc.CRUSADER_CROSSBOWMAN_ANIMATION_ATTACK_DURATION):.1f} per second while attacking, {gc.CRUSADER_CROSSBOWMAN_ATTACK_DAMAGE / (gc.CRUSADER_CROSSBOWMAN_ANIMATION_ATTACK_DURATION + gc.CRUSADER_CROSSBOWMAN_ANIMATION_RELOAD_DURATION/2):.1f} per second including reloading). Starts with {gc.CRUSADER_CROSSBOWMAN_STARTING_AMMO} ammo, and can reload to regain ammo, up to {gc.CRUSADER_CROSSBOWMAN_MAX_AMMO}.",
+                StatType.RANGE: f"{gc.CRUSADER_CROSSBOWMAN_ATTACK_RANGE} units",
+                StatType.SPEED: f"{gc.CRUSADER_CROSSBOWMAN_MOVEMENT_SPEED} units per second"
+            },
+            "tips": {
+                "Strong when": ["Able to reload between fights", "Against units with low health", "In a large group", "Against units with low damage per hit"],
+                "Weak when": ["Against long-ranged units", "Against fast units", "Reloading"],
+            }
         },
-        "tooltips": {
-            StatType.DEFENSE: f"{gc.CORE_WIZARD_HP} maximum health",
-            StatType.SPEED: f"{gc.CORE_WIZARD_MOVEMENT_SPEED} units per second",
-            StatType.DAMAGE: f"{gc.CORE_WIZARD_ATTACK_DAMAGE} per hit ({gc.CORE_WIZARD_ATTACK_DAMAGE / gc.CORE_WIZARD_ANIMATION_ATTACK_DURATION:.1f} per second) in a large area",
-            StatType.RANGE: f"{gc.CORE_WIZARD_ATTACK_RANGE} units"
+        UnitType.CRUSADER_DEFENDER: {
+            "name": "Defender",
+            "description": f"Defenders are <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a> units with high health and low damage.",
+            "stats": {
+                StatType.DEFENSE: defense_stat(gc.CRUSADER_DEFENDER_HP, armored=True),
+                StatType.DAMAGE: damage_stat(gc.CRUSADER_DEFENDER_ATTACK_DAMAGE / gc.CRUSADER_DEFENDER_ANIMATION_ATTACK_DURATION),
+                StatType.RANGE: range_stat(gc.CRUSADER_DEFENDER_ATTACK_RANGE),
+                StatType.SPEED: speed_stat(gc.CRUSADER_DEFENDER_MOVEMENT_SPEED)
+            },
+            "tooltips": {
+                StatType.DEFENSE: f"{gc.CRUSADER_DEFENDER_HP} maximum health, armored",
+                StatType.DAMAGE: f"{gc.CRUSADER_DEFENDER_ATTACK_DAMAGE} per hit ({gc.CRUSADER_DEFENDER_ATTACK_DAMAGE / gc.CRUSADER_DEFENDER_ANIMATION_ATTACK_DURATION:.1f} per second)",
+                StatType.RANGE: f"{gc.CRUSADER_DEFENDER_ATTACK_RANGE} units",
+                StatType.SPEED: f"{gc.CRUSADER_DEFENDER_MOVEMENT_SPEED} units per second"
+            },
+            "tips": {
+                "Strong when": ["Tanking damage", "Against units with low damage per hit", "Supported by healing units"],
+                "Weak when": ["Against more powerful melee units", "Against ranged units"],
+            }
         },
-        "tips": {
-            "Strong when": ["Against large groups", "Against slow units"],
-            "Weak when": ["Against fast melee units", "Allies are in the way", "Against high health units"],
-        }
-    },
-    UnitType.CRUSADER_BANNER_BEARER: {
-        "name": "Banner Bearer",
-        "description": f"Banner Bearers are <a href='{GlossaryEntryType.FOLLOWER.value}'>Followers</a> with an <a href='{GlossaryEntryType.AURA.value}'>Aura</a> that boosts damage and movement speed.",
-        "stats": {
-            StatType.DEFENSE: defense_stat(gc.CRUSADER_BANNER_BEARER_HP),
-            StatType.SPEED: speed_stat(gc.CRUSADER_BANNER_BEARER_AURA_MOVEMENT_SPEED),
-            StatType.UTILITY: 8
+        UnitType.CRUSADER_GOLD_KNIGHT: {
+            "name": "Gold Knight",
+            "description": f"Gold Knights are <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a> units with very fast <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a> attacks that heal per enemy hit.",
+            "stats": {
+                StatType.DEFENSE: defense_stat(gc.CRUSADER_GOLD_KNIGHT_HP, armored=True, self_heal_dps=gc.CRUSADER_GOLD_KNIGHT_ATTACK_HEAL / gc.CRUSADER_GOLD_KNIGHT_ANIMATION_ATTACK_DURATION * 1.5),
+                StatType.SPEED: speed_stat(gc.CRUSADER_GOLD_KNIGHT_MOVEMENT_SPEED),
+                StatType.DAMAGE: damage_stat(gc.CRUSADER_GOLD_KNIGHT_ATTACK_DAMAGE / gc.CRUSADER_GOLD_KNIGHT_ANIMATION_ATTACK_DURATION, 1.5),
+                StatType.RANGE: range_stat(gc.CRUSADER_GOLD_KNIGHT_ATTACK_RANGE)
+            },
+            "tooltips": {
+                StatType.DEFENSE: f"{gc.CRUSADER_GOLD_KNIGHT_HP} maximum health, armored. Heals {gc.CRUSADER_GOLD_KNIGHT_ATTACK_HEAL} per enemy hit ({gc.CRUSADER_GOLD_KNIGHT_ATTACK_HEAL / gc.CRUSADER_GOLD_KNIGHT_ANIMATION_ATTACK_DURATION:.1f} per enemy per second)",
+                StatType.SPEED: f"{gc.CRUSADER_GOLD_KNIGHT_MOVEMENT_SPEED} units per second",
+                StatType.DAMAGE: f"{gc.CRUSADER_GOLD_KNIGHT_ATTACK_DAMAGE} per hit, {gc.CRUSADER_GOLD_KNIGHT_ATTACK_DAMAGE / gc.CRUSADER_GOLD_KNIGHT_ANIMATION_ATTACK_DURATION:.1f} per second in a medium area",
+                StatType.RANGE: f"{gc.CRUSADER_GOLD_KNIGHT_ATTACK_RANGE} units"
+            },
+            "tips": {
+                "Strong when": ["Against melee units","Against large groups", "Against units with low damage per hit", "Supported by healing units", "Spreading out incoming damage"],
+                "Weak when": ["Against ranged units", "Against stronger melee units", f"Against <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a> units", "Overwhelmed by high damage"],
+            }
         },
-        "tooltips": {
-            StatType.DEFENSE: f"{gc.CRUSADER_BANNER_BEARER_HP} maximum health",
-            StatType.SPEED: f"{gc.CRUSADER_BANNER_BEARER_AURA_MOVEMENT_SPEED} units per second",
-            StatType.UTILITY: f"Aura grants +{int(gc.CRUSADER_BANNER_BEARER_AURA_DAMAGE_PERCENTAGE * 100)}% damage to allies and sets their movement speed to {gc.CRUSADER_BANNER_BEARER_AURA_MOVEMENT_SPEED} units per second in a radius of {gc.CRUSADER_BANNER_BEARER_AURA_RADIUS}"
+        UnitType.CRUSADER_GUARDIAN_ANGEL: {
+            "name": "Guardian Angel",
+            "description": f"Guardian Angels are <a href='{GlossaryEntryType.FOLLOWER.value}'>Followers</a> that continuously heal the ally they are following.",
+            "stats": {
+                StatType.DEFENSE: defense_stat(gc.CRUSADER_GUARDIAN_ANGEL_HP),
+                StatType.SPEED: speed_stat(gc.CRUSADER_GUARDIAN_ANGEL_MOVEMENT_SPEED),
+                StatType.UTILITY: damage_stat(gc.CRUSADER_GUARDIAN_ANGEL_HEALING / gc.CRUSADER_GUARDIAN_ANGEL_HEAL_COOLDOWN),
+                StatType.RANGE: range_stat(gc.CRUSADER_GUARDIAN_ANGEL_ATTACHMENT_RANGE)
+            },
+            "tooltips": {
+                StatType.DEFENSE: f"{gc.CRUSADER_GUARDIAN_ANGEL_HP} maximum health",
+                StatType.SPEED: f"{gc.CRUSADER_GUARDIAN_ANGEL_MOVEMENT_SPEED} units per second",
+                StatType.UTILITY: f"{gc.CRUSADER_GUARDIAN_ANGEL_HEALING} health per cast, {gc.CRUSADER_GUARDIAN_ANGEL_HEALING / gc.CRUSADER_GUARDIAN_ANGEL_HEAL_COOLDOWN:.1f} per second",
+                StatType.RANGE: f"{gc.CRUSADER_GUARDIAN_ANGEL_ATTACHMENT_RANGE} units"
+            },
+            "tips": {
+                "Strong when": [f"Supporting an <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a> unit", "Supporting ally against a single low-damage enemy"],
+                "Weak when": [f"Against <a href='{GlossaryEntryType.HUNTER.value}'>Hunters</a>", "Following a unit that is full health"],
+            }
         },
-        "tips": {
-            "Strong when": ["In a large group", "With slow allies", f"Against <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a> units"],
-            "Weak when": [f"Against <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a>", f"Against <a href='{GlossaryEntryType.HUNTER.value}'>Hunters</a>"],
-        }
-    },
-    UnitType.CRUSADER_BLACK_KNIGHT: {
-        "name": "Black Knight",
-        "description": f"Black Knights are fast, <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a> <a href='{GlossaryEntryType.HUNTER.value}'>Hunters</a> that cause nearby units to <a href='{GlossaryEntryType.FLEE.value}'>Flee</a> on <a href='{GlossaryEntryType.KILLING_BLOW.value}'>Killing Blows</a>.",
-        "stats": {
-            StatType.DEFENSE: defense_stat(gc.CRUSADER_BLACK_KNIGHT_HP, armored=True),
-            StatType.SPEED: speed_stat(gc.CRUSADER_BLACK_KNIGHT_MOVEMENT_SPEED),
-            StatType.DAMAGE: damage_stat(gc.CRUSADER_BLACK_KNIGHT_ATTACK_DAMAGE / gc.CRUSADER_BLACK_KNIGHT_ANIMATION_ATTACK_DURATION),
-            StatType.UTILITY: 7,
-            StatType.RANGE: range_stat(gc.CRUSADER_BLACK_KNIGHT_ATTACK_RANGE)
+        UnitType.CRUSADER_PALADIN: {
+            "name": "Paladin",
+            "description": f"Paladins are <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a> units that can heal themselves.",
+            "stats": {
+                StatType.DEFENSE: defense_stat(gc.CRUSADER_PALADIN_HP, self_heal_dps=gc.CRUSADER_PALADIN_SKILL_HEAL / gc.CRUSADER_PALADIN_SKILL_COOLDOWN, armored=True),
+                StatType.DAMAGE: damage_stat(gc.CRUSADER_PALADIN_ATTACK_DAMAGE / gc.CRUSADER_PALADIN_ANIMATION_ATTACK_DURATION),
+                StatType.RANGE: range_stat(gc.CRUSADER_PALADIN_ATTACK_RANGE),
+                StatType.SPEED: speed_stat(gc.CRUSADER_PALADIN_MOVEMENT_SPEED)
+            },
+            "tooltips": {
+                StatType.DEFENSE: f"{gc.CRUSADER_PALADIN_HP} maximum health, armored. Heals for {gc.CRUSADER_PALADIN_SKILL_HEAL} per cast ({gc.CRUSADER_PALADIN_SKILL_HEAL / gc.CRUSADER_PALADIN_SKILL_COOLDOWN:.1f} per second)",
+                StatType.DAMAGE: f"{gc.CRUSADER_PALADIN_ATTACK_DAMAGE} per hit ({gc.CRUSADER_PALADIN_ATTACK_DAMAGE / gc.CRUSADER_PALADIN_ANIMATION_ATTACK_DURATION:.1f} per second)",
+                StatType.RANGE: f"{gc.CRUSADER_PALADIN_ATTACK_RANGE} units",
+                StatType.SPEED: f"{gc.CRUSADER_PALADIN_MOVEMENT_SPEED} units per second"
+            },
+            "tips": {
+                "Strong when": ["Tanking damage", "Against units with low damage per hit", "In one-on-one fights", "Supported by healing units"],
+                "Weak when": ["Against units with high damage per hit", "Against units with high damage per second", "Against large groups"],
+            }
         },
-        "tooltips": {
-            StatType.DEFENSE: f"{gc.CRUSADER_BLACK_KNIGHT_HP} maximum health, armored",
-            StatType.SPEED: f"{gc.CRUSADER_BLACK_KNIGHT_MOVEMENT_SPEED} units per second",
-            StatType.DAMAGE: f"{gc.CRUSADER_BLACK_KNIGHT_ATTACK_DAMAGE} per hit ({gc.CRUSADER_BLACK_KNIGHT_ATTACK_DAMAGE / gc.CRUSADER_BLACK_KNIGHT_ANIMATION_ATTACK_DURATION:.1f} per second)",
-            StatType.UTILITY: "Nearby units flee on killing blow",
-            StatType.RANGE: f"{gc.CRUSADER_BLACK_KNIGHT_ATTACK_RANGE} units"
+        UnitType.CRUSADER_PIKEMAN: {
+            "name": "Pikeman",
+            "description": f"Pikemen are melee units with high damage and long reach.",
+            "stats": {
+                StatType.DEFENSE: defense_stat(gc.CRUSADER_PIKEMAN_HP),
+                StatType.DAMAGE: damage_stat(gc.CRUSADER_PIKEMAN_ATTACK_DAMAGE / gc.CRUSADER_PIKEMAN_ANIMATION_ATTACK_DURATION),
+                StatType.RANGE: range_stat(gc.CRUSADER_PIKEMAN_ATTACK_RANGE),
+                StatType.SPEED: speed_stat(gc.CRUSADER_PIKEMAN_MOVEMENT_SPEED)
+            },
+            "tooltips": {
+                StatType.DEFENSE: f"{gc.CRUSADER_PIKEMAN_HP} maximum health",
+                StatType.DAMAGE: f"{gc.CRUSADER_PIKEMAN_ATTACK_DAMAGE} per hit ({gc.CRUSADER_PIKEMAN_ATTACK_DAMAGE / gc.CRUSADER_PIKEMAN_ANIMATION_ATTACK_DURATION:.1f} per second)",
+                StatType.RANGE: f"{gc.CRUSADER_PIKEMAN_ATTACK_RANGE} units",
+                StatType.SPEED: f"{gc.CRUSADER_PIKEMAN_MOVEMENT_SPEED} units per second"
+            },
+            "tips": {
+                "Strong when": [f"Against <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a> units", "In a large group", "Behind other units"],
+                "Weak when": ["Against ranged units"],
+            }
         },
-        "tips": {
-            "Strong when": ["Against low health units", "Able to kill multiple units quickly", "Against units with low damage per hit"],
-            "Weak when": ["Walking through enemies to get to targets", "Against stronger melee units"],
-        }
-    },
-    UnitType.CRUSADER_CATAPULT: {
-        "name": "Catapult",
-        "description": f"Catapults are immobile ranged units that deal high damage to all units in an <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a>.",
-        "stats": {
-            StatType.DEFENSE: defense_stat(gc.CRUSADER_CATAPULT_HP),
-            StatType.DAMAGE: damage_stat(gc.CRUSADER_CATAPULT_DAMAGE / gc.CRUSADER_CATAPULT_COOLDOWN, 3),
-            StatType.RANGE: range_stat(gc.CRUSADER_CATAPULT_MAXIMUM_RANGE)
+        UnitType.CRUSADER_RED_KNIGHT: {
+            "name": "Red Knight",
+            "description": "TODO",
+            "stats": {
+                StatType.DEFENSE: defense_stat(gc.CRUSADER_RED_KNIGHT_HP, armored=True),
+                StatType.DAMAGE: damage_stat(gc.CRUSADER_RED_KNIGHT_ATTACK_DAMAGE / gc.CRUSADER_RED_KNIGHT_ANIMATION_ATTACK_DURATION),
+                StatType.RANGE: range_stat(gc.CRUSADER_RED_KNIGHT_ATTACK_RANGE),    
+                StatType.SPEED: speed_stat(gc.CRUSADER_RED_KNIGHT_MOVEMENT_SPEED)
+            },
+            "tooltips": {
+                StatType.DEFENSE: f"{gc.CRUSADER_RED_KNIGHT_HP} maximum health, armored",
+                StatType.DAMAGE: f"{gc.CRUSADER_RED_KNIGHT_ATTACK_DAMAGE} per hit ({gc.CRUSADER_RED_KNIGHT_ATTACK_DAMAGE / gc.CRUSADER_RED_KNIGHT_ANIMATION_ATTACK_DURATION:.1f} per second)",
+                StatType.RANGE: f"{gc.CRUSADER_RED_KNIGHT_ATTACK_RANGE} units",
+                StatType.SPEED: f"{gc.CRUSADER_RED_KNIGHT_MOVEMENT_SPEED} units per second"
+            },
+            "tips": {
+                "Strong when": ["TODO"],
+                "Weak when": ["TODO"],
+            }
         },
-        "tooltips": {
-            StatType.DEFENSE: f"{gc.CRUSADER_CATAPULT_HP} maximum health",
-            StatType.DAMAGE: f"{gc.CRUSADER_CATAPULT_DAMAGE} per hit ({gc.CRUSADER_CATAPULT_DAMAGE / gc.CRUSADER_CATAPULT_COOLDOWN:.1f} per second) in a medium area",
-            StatType.RANGE: f"Between {gc.CRUSADER_CATAPULT_MINIMUM_RANGE} and {gc.CRUSADER_CATAPULT_MAXIMUM_RANGE} units"
+        UnitType.CRUSADER_SOLDIER: {
+            "name": "Soldier",
+            "description": f"Soliders are <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a> units that can switch between melee and ranged attacks.",
+            "stats": {
+                StatType.DEFENSE: defense_stat(gc.CRUSADER_SOLDIER_HP, armored=True),
+                StatType.DAMAGE: damage_stat(gc.CRUSADER_SOLDIER_MELEE_DAMAGE / gc.CRUSADER_SOLDIER_ANIMATION_MELEE_ATTACK_DURATION),
+                StatType.RANGE: range_stat(gc.CRUSADER_SOLDIER_RANGED_RANGE),
+                StatType.SPEED: speed_stat(gc.CRUSADER_SOLDIER_MOVEMENT_SPEED)
+            },
+            "tooltips": {
+                StatType.DEFENSE: f"{gc.CRUSADER_SOLDIER_HP} maximum health, armored",
+                StatType.DAMAGE: f"Melee: {gc.CRUSADER_SOLDIER_MELEE_DAMAGE} per hit ({gc.CRUSADER_SOLDIER_MELEE_DAMAGE / gc.CRUSADER_SOLDIER_ANIMATION_MELEE_ATTACK_DURATION:.1f} per second), Ranged: {gc.CRUSADER_SOLDIER_RANGED_DAMAGE} per hit ({gc.CRUSADER_SOLDIER_RANGED_DAMAGE / gc.CRUSADER_SOLDIER_ANIMATION_RANGED_ATTACK_DURATION:.1f} per second)",
+                StatType.RANGE: f"Melee: {gc.CRUSADER_SOLDIER_MELEE_RANGE} units, Ranged: {gc.CRUSADER_SOLDIER_RANGED_RANGE} units",
+                StatType.SPEED: f"{gc.CRUSADER_SOLDIER_MOVEMENT_SPEED} units per second"
+            },
+            "tips": {
+                "Strong when": ["Can weaken melee enemies with ranged attacks", "Against units with low damage per hit"],
+                "Weak when": ["Against stronger melee units or ranged units"],
+            }
         },
-        "tips": {
-            "Strong when": ["Against clustered groups", "Against slow units"],
-            "Weak when": ["Against fast units", "Against spread out units", "Enemy units are too close", "Allies are in the way"],
-        }
-    },
-    UnitType.CRUSADER_CLERIC: {
-        "name": "Healer",
-        "description": f"Healers are <a href='{GlossaryEntryType.FOLLOWER.value}'>Followers</a> that heal the most damaged ally in range.",
-        "stats": {
-            StatType.DEFENSE: defense_stat(gc.CRUSADER_CLERIC_HP),
-            StatType.SPEED: speed_stat(gc.CRUSADER_CLERIC_MOVEMENT_SPEED),
-            StatType.UTILITY: damage_stat(gc.CRUSADER_CLERIC_HEALING / gc.CRUSADER_CLERIC_ANIMATION_ATTACK_DURATION),
-            StatType.RANGE: range_stat(gc.CRUSADER_CLERIC_ATTACK_RANGE)
+        UnitType.ZOMBIE_BASIC_ZOMBIE: {
+            "name": "Zombie",
+            "description": f"Zombies are slow, weak melee units that <a href='{GlossaryEntryType.INFECTION.value}'>Infect</a> on hit.",
+            "stats": {
+                StatType.DEFENSE: defense_stat(gc.ZOMBIE_BASIC_ZOMBIE_HP),
+                StatType.SPEED: speed_stat(gc.ZOMBIE_BASIC_ZOMBIE_MOVEMENT_SPEED),
+                StatType.DAMAGE: damage_stat(gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_DAMAGE / gc.ZOMBIE_BASIC_ZOMBIE_ANIMATION_ATTACK_DURATION),
+                StatType.RANGE: range_stat(gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_RANGE),
+                StatType.UTILITY: 2.5
+            },
+            "tooltips": {
+                StatType.DEFENSE: f"{gc.ZOMBIE_BASIC_ZOMBIE_HP} maximum health",
+                StatType.SPEED: f"{gc.ZOMBIE_BASIC_ZOMBIE_MOVEMENT_SPEED} units per second",
+                StatType.DAMAGE: f"{gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_DAMAGE} per hit ({gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_DAMAGE / gc.ZOMBIE_BASIC_ZOMBIE_ANIMATION_ATTACK_DURATION:.1f} per second)",
+                StatType.RANGE: f"{gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_RANGE} units",
+                StatType.UTILITY: f"Infects enemies on hit"
+            },
+            "tips": {
+                "Strong when": ["In a large group", "Against many weak enemies", "Tanking damage"],
+                "Weak when": ["Against ranged units", "Against units with high damage per second", f"Against <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a>"],
+            }
         },
-        "tooltips": {
-            StatType.DEFENSE: f"{gc.CRUSADER_CLERIC_HP} maximum health",
-            StatType.SPEED: f"{gc.CRUSADER_CLERIC_MOVEMENT_SPEED} units per second",
-            StatType.UTILITY: f"{gc.CRUSADER_CLERIC_HEALING} health per cast, {gc.CRUSADER_CLERIC_HEALING / gc.CRUSADER_CLERIC_ANIMATION_ATTACK_DURATION:.1f} per second",
-            StatType.RANGE: f"{gc.CRUSADER_CLERIC_ATTACK_RANGE} units"
+        UnitType.ZOMBIE_BRUTE: {
+            "name": "Brute",
+            "description": f"Brutes are slow melee units that <a href='{GlossaryEntryType.INFECTION.value}'>Infect</a> on hit and carry two <a href='{UnitType.ZOMBIE_BASIC_ZOMBIE.value}'>Zombies</a> into battle.",
+            "stats": {
+                StatType.DEFENSE: defense_stat(gc.ZOMBIE_BRUTE_HP),
+                StatType.SPEED: speed_stat(gc.ZOMBIE_BRUTE_MOVEMENT_SPEED),
+                StatType.DAMAGE: damage_stat(gc.ZOMBIE_BRUTE_ATTACK_DAMAGE / gc.ZOMBIE_BRUTE_ANIMATION_ATTACK_DURATION),
+                StatType.RANGE: range_stat(gc.ZOMBIE_BRUTE_ATTACK_RANGE),
+                StatType.UTILITY: 7.5
+            },
+            "tooltips": {
+                StatType.DEFENSE: f"{gc.ZOMBIE_BRUTE_HP} maximum health",
+                StatType.SPEED: f"{gc.ZOMBIE_BRUTE_MOVEMENT_SPEED} units per second",
+                StatType.DAMAGE: f"{gc.ZOMBIE_BRUTE_ATTACK_DAMAGE} per hit ({gc.ZOMBIE_BRUTE_ATTACK_DAMAGE / gc.ZOMBIE_BRUTE_ANIMATION_ATTACK_DURATION:.1f} per second)",
+                StatType.RANGE: f"{gc.ZOMBIE_BRUTE_ATTACK_RANGE} units",
+                StatType.UTILITY: "Infects enemies on hit, carries two Zombies into battle"
+            },
+            "tips": {
+                "Strong when": ["Against many weak enemies", "In a large group", "Tanking damage"],
+                "Weak when": ["Against ranged units", "Against units with high damage per second", f"Against <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a>"],
+            }
         },
-        "tips": {
-            "Strong when": ["In a large group", f"Allies are <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a>", "Against units with low damage per second"],
-            "Weak when": ["Against units with high damage per second", f"Against <a href='{GlossaryEntryType.HUNTER.value}'>Hunters</a>"],
-        }
-    },
-    UnitType.CRUSADER_COMMANDER: {
-        "name": "Commander",
-        "description": f"Commanders are support units with an <a href='{GlossaryEntryType.AURA.value}'>Aura</a> that boosts damage.",
-        "stats": {
-            StatType.DEFENSE: defense_stat(gc.CRUSADER_COMMANDER_HP),
-            StatType.SPEED: speed_stat(gc.CRUSADER_COMMANDER_MOVEMENT_SPEED),
-            StatType.DAMAGE: damage_stat(gc.CRUSADER_COMMANDER_ATTACK_DAMAGE / gc.CRUSADER_COMMANDER_ANIMATION_ATTACK_DURATION),
-            StatType.UTILITY: 6
+        UnitType.ZOMBIE_GRABBER: {
+            "name": "Grabber",
+            "description": f"Grabbers are slow melee units with long reach that <a href='{GlossaryEntryType.INFECTION.value}'>Infect</a> on hit and can grab and pull enemies towards them.",
+            "stats": {
+                StatType.DEFENSE: defense_stat(gc.ZOMBIE_GRABBER_HP),
+                StatType.SPEED: speed_stat(gc.ZOMBIE_GRABBER_MOVEMENT_SPEED),
+                StatType.DAMAGE: damage_stat(gc.ZOMBIE_GRABBER_ATTACK_DAMAGE / gc.ZOMBIE_GRABBER_ANIMATION_ATTACK_DURATION),
+                StatType.RANGE: range_stat(gc.ZOMBIE_GRABBER_GRAB_MAXIMUM_RANGE),
+                StatType.UTILITY: 7.5
+            },
+            "tooltips": {
+                StatType.DEFENSE: f"{gc.ZOMBIE_GRABBER_HP} maximum health",
+                StatType.SPEED: f"{gc.ZOMBIE_GRABBER_MOVEMENT_SPEED} units per second",
+                StatType.DAMAGE: f"{gc.ZOMBIE_GRABBER_ATTACK_DAMAGE} per hit ({gc.ZOMBIE_GRABBER_ATTACK_DAMAGE / gc.ZOMBIE_GRABBER_ANIMATION_ATTACK_DURATION:.1f} per second), Grab deals {gc.ZOMBIE_GRABBER_GRAB_DAMAGE} per hit with a {gc.ZOMBIE_GRABBER_GRAB_COOLDOWN} second cooldown",
+                StatType.RANGE: f"Melee: {gc.ZOMBIE_GRABBER_ATTACK_RANGE} units, Grab: {gc.ZOMBIE_GRABBER_GRAB_MINIMUM_RANGE} to {gc.ZOMBIE_GRABBER_GRAB_MAXIMUM_RANGE} units",
+                StatType.UTILITY: f"Infects enemies on hit, can grab and pull enemies towards them"
+            },
+            "tips": {
+                "Strong when": ["Pulling enemy units into a group of allies", "In a large group", "Behind other units", "Against ranged units"],
+                "Weak when": ["In one-on-one combat", f"Against <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a>"],
+            }
         },
-        "tooltips": {
-            StatType.DEFENSE: f"{gc.CRUSADER_COMMANDER_HP} maximum health",
-            StatType.SPEED: f"{gc.CRUSADER_COMMANDER_MOVEMENT_SPEED} units per second",
-            StatType.DAMAGE: f"{gc.CRUSADER_COMMANDER_ATTACK_DAMAGE} per hit ({gc.CRUSADER_COMMANDER_ATTACK_DAMAGE / gc.CRUSADER_COMMANDER_ANIMATION_ATTACK_DURATION:.1f} per second)",
-            StatType.UTILITY: f"Aura grants +{int(gc.CRUSADER_COMMANDER_EMPOWERED_DAMAGE_PERCENTAGE * 100)}% damage to allies in a radius of {gc.CRUSADER_COMMANDER_AURA_RADIUS}"
+        UnitType.ZOMBIE_JUMPER: {
+            "name": "Jumper",
+            "description": f"Jumpers are fast, high damage <a href='{GlossaryEntryType.HUNTER.value}'>Hunters</a> that <a href='{GlossaryEntryType.INFECTION.value}'>Infect</a> on hit and can jump to their target.",
+            "stats": {
+                StatType.DEFENSE: defense_stat(gc.ZOMBIE_JUMPER_HP),
+                StatType.SPEED: speed_stat(gc.ZOMBIE_JUMPER_MOVEMENT_SPEED) + 2,
+                StatType.DAMAGE: damage_stat(gc.ZOMBIE_JUMPER_ATTACK_DAMAGE / gc.ZOMBIE_JUMPER_ANIMATION_ATTACK_DURATION),
+                StatType.RANGE: range_stat(gc.ZOMBIE_JUMPER_ATTACK_RANGE),
+                StatType.UTILITY: 2.5
+            }, 
+            "tooltips": {
+                StatType.DEFENSE: f"{gc.ZOMBIE_JUMPER_HP} maximum health",
+                StatType.SPEED: f"{gc.ZOMBIE_JUMPER_MOVEMENT_SPEED} units per second, can jump {gc.ZOMBIE_JUMPER_MAXIMUM_JUMP_RANGE} units every {gc.ZOMBIE_JUMPER_JUMP_COOLDOWN} seconds",
+                StatType.DAMAGE: f"{gc.ZOMBIE_JUMPER_ATTACK_DAMAGE} per hit ({gc.ZOMBIE_JUMPER_ATTACK_DAMAGE / gc.ZOMBIE_JUMPER_ANIMATION_ATTACK_DURATION:.1f} per second). Jump deals {gc.ZOMBIE_JUMPER_JUMP_DAMAGE} damage with a {gc.ZOMBIE_JUMPER_JUMP_COOLDOWN} second cooldown",
+                StatType.RANGE: f"Melee: {gc.ZOMBIE_JUMPER_ATTACK_RANGE} units, Jump: {gc.ZOMBIE_JUMPER_MINIMUM_JUMP_RANGE} to {gc.ZOMBIE_JUMPER_MAXIMUM_JUMP_RANGE} units",
+                StatType.UTILITY: f"Infects enemies on hit"
+            },
+            "tips": {
+                "Strong when": ["Against individual weak enemies", "Enemies are distracted", "Against ranged units"],
+                "Weak when": ["Against stronger melee units", "Against fast melee units"],
+            }
         },
-        "tips": {
-            "Strong when": ["In a large group", f"Against <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a> units"],
-            "Weak when": [f"Against <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a>", "When allies are too far away"],
-        }
-    },
-    UnitType.CRUSADER_CROSSBOWMAN: {
-        "name": "Crossbowman",
-        "description": f"Crossbowmen are medium-ranged <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a> units that need to reload.",
-        "stats": {
-            StatType.DEFENSE: defense_stat(gc.CRUSADER_CROSSBOWMAN_HP, armored=True),
-            StatType.DAMAGE: damage_stat(gc.CRUSADER_CROSSBOWMAN_ATTACK_DAMAGE / (gc.CRUSADER_CROSSBOWMAN_ANIMATION_ATTACK_DURATION + gc.CRUSADER_CROSSBOWMAN_ANIMATION_RELOAD_DURATION/2)),
-            StatType.RANGE: range_stat(gc.CRUSADER_CROSSBOWMAN_ATTACK_RANGE),
-            StatType.SPEED: speed_stat(gc.CRUSADER_CROSSBOWMAN_MOVEMENT_SPEED)
+        UnitType.ZOMBIE_SPITTER: {
+            "name": "Spitter",
+            "description": f"Spitters are slow, short-ranged <a href='{GlossaryEntryType.SPREADER.value}'>Spreaders</a> that <a href='{GlossaryEntryType.POISON.value}'>Poison</a> and <a href='{GlossaryEntryType.INFECTION.value}'>Infect</a> on hit.",
+            "stats": {
+                StatType.DEFENSE: defense_stat(gc.ZOMBIE_SPITTER_HP),
+                StatType.SPEED: speed_stat(gc.ZOMBIE_SPITTER_MOVEMENT_SPEED),
+                StatType.DAMAGE: damage_stat(gc.ZOMBIE_SPITTER_ATTACK_DAMAGE / gc.ZOMBIE_SPITTER_ANIMATION_ATTACK_DURATION, 2/3),
+                StatType.RANGE: range_stat(gc.ZOMBIE_SPITTER_ATTACK_RANGE),
+                StatType.UTILITY: 2.5
+            },
+            "tooltips": {
+                StatType.DEFENSE: f"{gc.ZOMBIE_SPITTER_HP} maximum health",
+                StatType.SPEED: f"{gc.ZOMBIE_SPITTER_MOVEMENT_SPEED} units per second",
+                StatType.DAMAGE: f"{gc.ZOMBIE_SPITTER_ATTACK_DAMAGE} poison damage ({gc.ZOMBIE_SPITTER_ATTACK_DAMAGE/gc.ZOMBIE_INFECTION_DURATION} damage per second per poison) ({gc.ZOMBIE_SPITTER_ATTACK_DAMAGE / gc.ZOMBIE_SPITTER_ANIMATION_ATTACK_DURATION:.1f} per second if poisoning multiple enemies)",
+                StatType.RANGE: f"{gc.ZOMBIE_SPITTER_ATTACK_RANGE} units",
+                StatType.UTILITY: f"Infects enemies on hit"
+            },
+            "tips": {
+                "Strong when": ["Against many weak enemies", "In a large group", "Behind other units"],
+                "Weak when": ["Against melee units", "Against long ranged units", "Against a small number of units", f"Against <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a>"],
+            }
         },
-        "tooltips": {
-            StatType.DEFENSE: f"{gc.CRUSADER_CROSSBOWMAN_HP} maximum health, armored",
-            StatType.DAMAGE: f"{gc.CRUSADER_CROSSBOWMAN_ATTACK_DAMAGE} per hit ({gc.CRUSADER_CROSSBOWMAN_ATTACK_DAMAGE / (gc.CRUSADER_CROSSBOWMAN_ANIMATION_ATTACK_DURATION):.1f} per second while attacking, {gc.CRUSADER_CROSSBOWMAN_ATTACK_DAMAGE / (gc.CRUSADER_CROSSBOWMAN_ANIMATION_ATTACK_DURATION + gc.CRUSADER_CROSSBOWMAN_ANIMATION_RELOAD_DURATION/2):.1f} per second including reloading). Starts with {gc.CRUSADER_CROSSBOWMAN_STARTING_AMMO} ammo, and can reload to regain ammo, up to {gc.CRUSADER_CROSSBOWMAN_MAX_AMMO}.",
-            StatType.RANGE: f"{gc.CRUSADER_CROSSBOWMAN_ATTACK_RANGE} units",
-            StatType.SPEED: f"{gc.CRUSADER_CROSSBOWMAN_MOVEMENT_SPEED} units per second"
+        UnitType.ZOMBIE_TANK: {
+            "name": "Tank",
+            "description": f"Tanks are slow melee units with very high health that <a href='{GlossaryEntryType.INFECTION.value}'>Infect</a> on hit.",
+            "stats": {
+                StatType.DEFENSE: defense_stat(gc.ZOMBIE_TANK_HP),
+                StatType.SPEED: speed_stat(gc.ZOMBIE_TANK_MOVEMENT_SPEED),
+                StatType.DAMAGE: damage_stat(gc.ZOMBIE_TANK_ATTACK_DAMAGE / gc.ZOMBIE_TANK_ANIMATION_ATTACK_DURATION),
+                StatType.RANGE: range_stat(gc.ZOMBIE_TANK_ATTACK_RANGE),
+                StatType.UTILITY: 2.5
+            },
+            "tooltips": {
+                StatType.DEFENSE: f"{gc.ZOMBIE_TANK_HP} maximum health",
+                StatType.SPEED: f"{gc.ZOMBIE_TANK_MOVEMENT_SPEED} units per second",
+                StatType.DAMAGE: f"{gc.ZOMBIE_TANK_ATTACK_DAMAGE} per hit, {gc.ZOMBIE_TANK_ATTACK_DAMAGE / gc.ZOMBIE_TANK_ANIMATION_ATTACK_DURATION:.1f} per second + infection",
+                StatType.RANGE: f"{gc.ZOMBIE_TANK_ATTACK_RANGE} units",
+                StatType.UTILITY: f"Infects enemies on hit"
+            },
+            "tips": {
+                "Strong when": ["In a large group", "Tanking damage"],
+                "Weak when": ["Against ranged units", "Against units with high damage per second"],
+            }
         },
-        "tips": {
-            "Strong when": ["Able to reload between fights", "Against units with low health", "In a large group", "Against units with low damage per hit"],
-            "Weak when": ["Against long-ranged units", "Against fast units", "Reloading"],
-        }
-    },
-    UnitType.CRUSADER_DEFENDER: {
-        "name": "Defender",
-        "description": f"Defenders are <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a> units with high health and low damage.",
-        "stats": {
-            StatType.DEFENSE: defense_stat(gc.CRUSADER_DEFENDER_HP, armored=True),
-            StatType.DAMAGE: damage_stat(gc.CRUSADER_DEFENDER_ATTACK_DAMAGE / gc.CRUSADER_DEFENDER_ANIMATION_ATTACK_DURATION),
-            StatType.RANGE: range_stat(gc.CRUSADER_DEFENDER_ATTACK_RANGE),
-            StatType.SPEED: speed_stat(gc.CRUSADER_DEFENDER_MOVEMENT_SPEED)
-        },
-        "tooltips": {
-            StatType.DEFENSE: f"{gc.CRUSADER_DEFENDER_HP} maximum health, armored",
-            StatType.DAMAGE: f"{gc.CRUSADER_DEFENDER_ATTACK_DAMAGE} per hit ({gc.CRUSADER_DEFENDER_ATTACK_DAMAGE / gc.CRUSADER_DEFENDER_ANIMATION_ATTACK_DURATION:.1f} per second)",
-            StatType.RANGE: f"{gc.CRUSADER_DEFENDER_ATTACK_RANGE} units",
-            StatType.SPEED: f"{gc.CRUSADER_DEFENDER_MOVEMENT_SPEED} units per second"
-        },
-        "tips": {
-            "Strong when": ["Tanking damage", "Against units with low damage per hit", "Supported by healing units"],
-            "Weak when": ["Against more powerful melee units", "Against ranged units"],
-        }
-    },
-    UnitType.CRUSADER_GOLD_KNIGHT: {
-        "name": "Gold Knight",
-        "description": f"Gold Knights are <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a> units with very fast <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a> attacks that heal per enemy hit.",
-        "stats": {
-            StatType.DEFENSE: defense_stat(gc.CRUSADER_GOLD_KNIGHT_HP, armored=True, self_heal_dps=gc.CRUSADER_GOLD_KNIGHT_ATTACK_HEAL / gc.CRUSADER_GOLD_KNIGHT_ANIMATION_ATTACK_DURATION * 1.5),
-            StatType.SPEED: speed_stat(gc.CRUSADER_GOLD_KNIGHT_MOVEMENT_SPEED),
-            StatType.DAMAGE: damage_stat(gc.CRUSADER_GOLD_KNIGHT_ATTACK_DAMAGE / gc.CRUSADER_GOLD_KNIGHT_ANIMATION_ATTACK_DURATION, 1.5),
-            StatType.RANGE: range_stat(gc.CRUSADER_GOLD_KNIGHT_ATTACK_RANGE)
-        },
-        "tooltips": {
-            StatType.DEFENSE: f"{gc.CRUSADER_GOLD_KNIGHT_HP} maximum health, armored. Heals {gc.CRUSADER_GOLD_KNIGHT_ATTACK_HEAL} per enemy hit ({gc.CRUSADER_GOLD_KNIGHT_ATTACK_HEAL / gc.CRUSADER_GOLD_KNIGHT_ANIMATION_ATTACK_DURATION:.1f} per enemy per second)",
-            StatType.SPEED: f"{gc.CRUSADER_GOLD_KNIGHT_MOVEMENT_SPEED} units per second",
-            StatType.DAMAGE: f"{gc.CRUSADER_GOLD_KNIGHT_ATTACK_DAMAGE} per hit, {gc.CRUSADER_GOLD_KNIGHT_ATTACK_DAMAGE / gc.CRUSADER_GOLD_KNIGHT_ANIMATION_ATTACK_DURATION:.1f} per second in a medium area",
-            StatType.RANGE: f"{gc.CRUSADER_GOLD_KNIGHT_ATTACK_RANGE} units"
-        },
-        "tips": {
-            "Strong when": ["Against melee units","Against large groups", "Against units with low damage per hit", "Supported by healing units", "Spreading out incoming damage"],
-            "Weak when": ["Against ranged units", "Against stronger melee units", f"Against <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a> units", "Overwhelmed by high damage"],
-        }
-    },
-    UnitType.CRUSADER_GUARDIAN_ANGEL: {
-        "name": "Guardian Angel",
-        "description": f"Guardian Angels are <a href='{GlossaryEntryType.FOLLOWER.value}'>Followers</a> that continuously heal the ally they are following.",
-        "stats": {
-            StatType.DEFENSE: defense_stat(gc.CRUSADER_GUARDIAN_ANGEL_HP),
-            StatType.SPEED: speed_stat(gc.CRUSADER_GUARDIAN_ANGEL_MOVEMENT_SPEED),
-            StatType.UTILITY: damage_stat(gc.CRUSADER_GUARDIAN_ANGEL_HEALING / gc.CRUSADER_GUARDIAN_ANGEL_HEAL_COOLDOWN),
-            StatType.RANGE: range_stat(gc.CRUSADER_GUARDIAN_ANGEL_ATTACHMENT_RANGE)
-        },
-        "tooltips": {
-            StatType.DEFENSE: f"{gc.CRUSADER_GUARDIAN_ANGEL_HP} maximum health",
-            StatType.SPEED: f"{gc.CRUSADER_GUARDIAN_ANGEL_MOVEMENT_SPEED} units per second",
-            StatType.UTILITY: f"{gc.CRUSADER_GUARDIAN_ANGEL_HEALING} health per cast, {gc.CRUSADER_GUARDIAN_ANGEL_HEALING / gc.CRUSADER_GUARDIAN_ANGEL_HEAL_COOLDOWN:.1f} per second",
-            StatType.RANGE: f"{gc.CRUSADER_GUARDIAN_ANGEL_ATTACHMENT_RANGE} units"
-        },
-        "tips": {
-            "Strong when": [f"Supporting an <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a> unit", "Supporting ally against a single low-damage enemy"],
-            "Weak when": [f"Against <a href='{GlossaryEntryType.HUNTER.value}'>Hunters</a>", "Following a unit that is full health"],
-        }
-    },
-    UnitType.CRUSADER_PALADIN: {
-        "name": "Paladin",
-        "description": f"Paladins are <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a> units that can heal themselves.",
-        "stats": {
-            StatType.DEFENSE: defense_stat(gc.CRUSADER_PALADIN_HP, self_heal_dps=gc.CRUSADER_PALADIN_SKILL_HEAL / gc.CRUSADER_PALADIN_SKILL_COOLDOWN, armored=True),
-            StatType.DAMAGE: damage_stat(gc.CRUSADER_PALADIN_ATTACK_DAMAGE / gc.CRUSADER_PALADIN_ANIMATION_ATTACK_DURATION),
-            StatType.RANGE: range_stat(gc.CRUSADER_PALADIN_ATTACK_RANGE),
-            StatType.SPEED: speed_stat(gc.CRUSADER_PALADIN_MOVEMENT_SPEED)
-        },
-        "tooltips": {
-            StatType.DEFENSE: f"{gc.CRUSADER_PALADIN_HP} maximum health, armored. Heals for {gc.CRUSADER_PALADIN_SKILL_HEAL} per cast ({gc.CRUSADER_PALADIN_SKILL_HEAL / gc.CRUSADER_PALADIN_SKILL_COOLDOWN:.1f} per second)",
-            StatType.DAMAGE: f"{gc.CRUSADER_PALADIN_ATTACK_DAMAGE} per hit ({gc.CRUSADER_PALADIN_ATTACK_DAMAGE / gc.CRUSADER_PALADIN_ANIMATION_ATTACK_DURATION:.1f} per second)",
-            StatType.RANGE: f"{gc.CRUSADER_PALADIN_ATTACK_RANGE} units",
-            StatType.SPEED: f"{gc.CRUSADER_PALADIN_MOVEMENT_SPEED} units per second"
-        },
-        "tips": {
-            "Strong when": ["Tanking damage", "Against units with low damage per hit", "In one-on-one fights", "Supported by healing units"],
-            "Weak when": ["Against units with high damage per hit", "Against units with high damage per second", "Against large groups"],
-        }
-    },
-    UnitType.CRUSADER_PIKEMAN: {
-        "name": "Pikeman",
-        "description": f"Pikemen are melee units with high damage and long reach.",
-        "stats": {
-            StatType.DEFENSE: defense_stat(gc.CRUSADER_PIKEMAN_HP),
-            StatType.DAMAGE: damage_stat(gc.CRUSADER_PIKEMAN_ATTACK_DAMAGE / gc.CRUSADER_PIKEMAN_ANIMATION_ATTACK_DURATION),
-            StatType.RANGE: range_stat(gc.CRUSADER_PIKEMAN_ATTACK_RANGE),
-            StatType.SPEED: speed_stat(gc.CRUSADER_PIKEMAN_MOVEMENT_SPEED)
-        },
-        "tooltips": {
-            StatType.DEFENSE: f"{gc.CRUSADER_PIKEMAN_HP} maximum health",
-            StatType.DAMAGE: f"{gc.CRUSADER_PIKEMAN_ATTACK_DAMAGE} per hit ({gc.CRUSADER_PIKEMAN_ATTACK_DAMAGE / gc.CRUSADER_PIKEMAN_ANIMATION_ATTACK_DURATION:.1f} per second)",
-            StatType.RANGE: f"{gc.CRUSADER_PIKEMAN_ATTACK_RANGE} units",
-            StatType.SPEED: f"{gc.CRUSADER_PIKEMAN_MOVEMENT_SPEED} units per second"
-        },
-        "tips": {
-            "Strong when": [f"Against <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a> units", "In a large group", "Behind other units"],
-            "Weak when": ["Against ranged units"],
-        }
-    },
-    UnitType.CRUSADER_RED_KNIGHT: {
-        "name": "Red Knight",
-        "description": "TODO",
-        "stats": {
-            StatType.DEFENSE: defense_stat(gc.CRUSADER_RED_KNIGHT_HP, armored=True),
-            StatType.DAMAGE: damage_stat(gc.CRUSADER_RED_KNIGHT_ATTACK_DAMAGE / gc.CRUSADER_RED_KNIGHT_ANIMATION_ATTACK_DURATION),
-            StatType.RANGE: range_stat(gc.CRUSADER_RED_KNIGHT_ATTACK_RANGE),    
-            StatType.SPEED: speed_stat(gc.CRUSADER_RED_KNIGHT_MOVEMENT_SPEED)
-        },
-        "tooltips": {
-            StatType.DEFENSE: f"{gc.CRUSADER_RED_KNIGHT_HP} maximum health, armored",
-            StatType.DAMAGE: f"{gc.CRUSADER_RED_KNIGHT_ATTACK_DAMAGE} per hit ({gc.CRUSADER_RED_KNIGHT_ATTACK_DAMAGE / gc.CRUSADER_RED_KNIGHT_ANIMATION_ATTACK_DURATION:.1f} per second)",
-            StatType.RANGE: f"{gc.CRUSADER_RED_KNIGHT_ATTACK_RANGE} units",
-            StatType.SPEED: f"{gc.CRUSADER_RED_KNIGHT_MOVEMENT_SPEED} units per second"
-        },
-        "tips": {
-            "Strong when": ["TODO"],
-            "Weak when": ["TODO"],
-        }
-    },
-    UnitType.CRUSADER_SOLDIER: {
-        "name": "Soldier",
-        "description": f"Soliders are <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a> units that can switch between melee and ranged attacks.",
-        "stats": {
-            StatType.DEFENSE: defense_stat(gc.CRUSADER_SOLDIER_HP, armored=True),
-            StatType.DAMAGE: damage_stat(gc.CRUSADER_SOLDIER_MELEE_DAMAGE / gc.CRUSADER_SOLDIER_ANIMATION_MELEE_ATTACK_DURATION),
-            StatType.RANGE: range_stat(gc.CRUSADER_SOLDIER_RANGED_RANGE),
-            StatType.SPEED: speed_stat(gc.CRUSADER_SOLDIER_MOVEMENT_SPEED)
-        },
-        "tooltips": {
-            StatType.DEFENSE: f"{gc.CRUSADER_SOLDIER_HP} maximum health, armored",
-            StatType.DAMAGE: f"Melee: {gc.CRUSADER_SOLDIER_MELEE_DAMAGE} per hit ({gc.CRUSADER_SOLDIER_MELEE_DAMAGE / gc.CRUSADER_SOLDIER_ANIMATION_MELEE_ATTACK_DURATION:.1f} per second), Ranged: {gc.CRUSADER_SOLDIER_RANGED_DAMAGE} per hit ({gc.CRUSADER_SOLDIER_RANGED_DAMAGE / gc.CRUSADER_SOLDIER_ANIMATION_RANGED_ATTACK_DURATION:.1f} per second)",
-            StatType.RANGE: f"Melee: {gc.CRUSADER_SOLDIER_MELEE_RANGE} units, Ranged: {gc.CRUSADER_SOLDIER_RANGED_RANGE} units",
-            StatType.SPEED: f"{gc.CRUSADER_SOLDIER_MOVEMENT_SPEED} units per second"
-        },
-        "tips": {
-            "Strong when": ["Can weaken melee enemies with ranged attacks", "Against units with low damage per hit"],
-            "Weak when": ["Against stronger melee units or ranged units"],
-        }
-    },
-    UnitType.ZOMBIE_BASIC_ZOMBIE: {
-        "name": "Zombie",
-        "description": f"Zombies are slow, weak melee units that <a href='{GlossaryEntryType.INFECTION.value}'>Infect</a> on hit.",
-        "stats": {
-            StatType.DEFENSE: defense_stat(gc.ZOMBIE_BASIC_ZOMBIE_HP),
-            StatType.SPEED: speed_stat(gc.ZOMBIE_BASIC_ZOMBIE_MOVEMENT_SPEED),
-            StatType.DAMAGE: damage_stat(gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_DAMAGE / gc.ZOMBIE_BASIC_ZOMBIE_ANIMATION_ATTACK_DURATION),
-            StatType.RANGE: range_stat(gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_RANGE),
-            StatType.UTILITY: 2.5
-        },
-        "tooltips": {
-            StatType.DEFENSE: f"{gc.ZOMBIE_BASIC_ZOMBIE_HP} maximum health",
-            StatType.SPEED: f"{gc.ZOMBIE_BASIC_ZOMBIE_MOVEMENT_SPEED} units per second",
-            StatType.DAMAGE: f"{gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_DAMAGE} per hit ({gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_DAMAGE / gc.ZOMBIE_BASIC_ZOMBIE_ANIMATION_ATTACK_DURATION:.1f} per second)",
-            StatType.RANGE: f"{gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_RANGE} units",
-            StatType.UTILITY: f"Infects enemies on hit"
-        },
-        "tips": {
-            "Strong when": ["In a large group", "Against many weak enemies", "Tanking damage"],
-            "Weak when": ["Against ranged units", "Against units with high damage per second", f"Against <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a>"],
-        }
-    },
-    UnitType.ZOMBIE_BRUTE: {
-        "name": "Brute",
-        "description": f"Brutes are slow melee units that <a href='{GlossaryEntryType.INFECTION.value}'>Infect</a> on hit and carry two <a href='{UnitType.ZOMBIE_BASIC_ZOMBIE.value}'>Zombies</a> into battle.",
-        "stats": {
-            StatType.DEFENSE: defense_stat(gc.ZOMBIE_BRUTE_HP),
-            StatType.SPEED: speed_stat(gc.ZOMBIE_BRUTE_MOVEMENT_SPEED),
-            StatType.DAMAGE: damage_stat(gc.ZOMBIE_BRUTE_ATTACK_DAMAGE / gc.ZOMBIE_BRUTE_ANIMATION_ATTACK_DURATION),
-            StatType.RANGE: range_stat(gc.ZOMBIE_BRUTE_ATTACK_RANGE),
-            StatType.UTILITY: 7.5
-        },
-        "tooltips": {
-            StatType.DEFENSE: f"{gc.ZOMBIE_BRUTE_HP} maximum health",
-            StatType.SPEED: f"{gc.ZOMBIE_BRUTE_MOVEMENT_SPEED} units per second",
-            StatType.DAMAGE: f"{gc.ZOMBIE_BRUTE_ATTACK_DAMAGE} per hit ({gc.ZOMBIE_BRUTE_ATTACK_DAMAGE / gc.ZOMBIE_BRUTE_ANIMATION_ATTACK_DURATION:.1f} per second)",
-            StatType.RANGE: f"{gc.ZOMBIE_BRUTE_ATTACK_RANGE} units",
-            StatType.UTILITY: "Infects enemies on hit, carries two Zombies into battle"
-        },
-        "tips": {
-            "Strong when": ["Against many weak enemies", "In a large group", "Tanking damage"],
-            "Weak when": ["Against ranged units", "Against units with high damage per second", f"Against <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a>"],
-        }
-    },
-    UnitType.ZOMBIE_GRABBER: {
-        "name": "Grabber",
-        "description": f"Grabbers are slow melee units with long reach that <a href='{GlossaryEntryType.INFECTION.value}'>Infect</a> on hit and can grab and pull enemies towards them.",
-        "stats": {
-            StatType.DEFENSE: defense_stat(gc.ZOMBIE_GRABBER_HP),
-            StatType.SPEED: speed_stat(gc.ZOMBIE_GRABBER_MOVEMENT_SPEED),
-            StatType.DAMAGE: damage_stat(gc.ZOMBIE_GRABBER_ATTACK_DAMAGE / gc.ZOMBIE_GRABBER_ANIMATION_ATTACK_DURATION),
-            StatType.RANGE: range_stat(gc.ZOMBIE_GRABBER_GRAB_MAXIMUM_RANGE),
-            StatType.UTILITY: 7.5
-        },
-        "tooltips": {
-            StatType.DEFENSE: f"{gc.ZOMBIE_GRABBER_HP} maximum health",
-            StatType.SPEED: f"{gc.ZOMBIE_GRABBER_MOVEMENT_SPEED} units per second",
-            StatType.DAMAGE: f"{gc.ZOMBIE_GRABBER_ATTACK_DAMAGE} per hit ({gc.ZOMBIE_GRABBER_ATTACK_DAMAGE / gc.ZOMBIE_GRABBER_ANIMATION_ATTACK_DURATION:.1f} per second), Grab deals {gc.ZOMBIE_GRABBER_GRAB_DAMAGE} per hit with a {gc.ZOMBIE_GRABBER_GRAB_COOLDOWN} second cooldown",
-            StatType.RANGE: f"Melee: {gc.ZOMBIE_GRABBER_ATTACK_RANGE} units, Grab: {gc.ZOMBIE_GRABBER_GRAB_MINIMUM_RANGE} to {gc.ZOMBIE_GRABBER_GRAB_MAXIMUM_RANGE} units",
-            StatType.UTILITY: f"Infects enemies on hit, can grab and pull enemies towards them"
-        },
-        "tips": {
-            "Strong when": ["Pulling enemy units into a group of allies", "In a large group", "Behind other units", "Against ranged units"],
-            "Weak when": ["In one-on-one combat", f"Against <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a>"],
-        }
-    },
-    UnitType.ZOMBIE_JUMPER: {
-        "name": "Jumper",
-        "description": f"Jumpers are fast, high damage <a href='{GlossaryEntryType.HUNTER.value}'>Hunters</a> that <a href='{GlossaryEntryType.INFECTION.value}'>Infect</a> on hit and can jump to their target.",
-        "stats": {
-            StatType.DEFENSE: defense_stat(gc.ZOMBIE_JUMPER_HP),
-            StatType.SPEED: speed_stat(gc.ZOMBIE_JUMPER_MOVEMENT_SPEED) + 2,
-            StatType.DAMAGE: damage_stat(gc.ZOMBIE_JUMPER_ATTACK_DAMAGE / gc.ZOMBIE_JUMPER_ANIMATION_ATTACK_DURATION),
-            StatType.RANGE: range_stat(gc.ZOMBIE_JUMPER_ATTACK_RANGE),
-            StatType.UTILITY: 2.5
-        }, 
-        "tooltips": {
-            StatType.DEFENSE: f"{gc.ZOMBIE_JUMPER_HP} maximum health",
-            StatType.SPEED: f"{gc.ZOMBIE_JUMPER_MOVEMENT_SPEED} units per second, can jump {gc.ZOMBIE_JUMPER_MAXIMUM_JUMP_RANGE} units every {gc.ZOMBIE_JUMPER_JUMP_COOLDOWN} seconds",
-            StatType.DAMAGE: f"{gc.ZOMBIE_JUMPER_ATTACK_DAMAGE} per hit ({gc.ZOMBIE_JUMPER_ATTACK_DAMAGE / gc.ZOMBIE_JUMPER_ANIMATION_ATTACK_DURATION:.1f} per second). Jump deals {gc.ZOMBIE_JUMPER_JUMP_DAMAGE} damage with a {gc.ZOMBIE_JUMPER_JUMP_COOLDOWN} second cooldown",
-            StatType.RANGE: f"Melee: {gc.ZOMBIE_JUMPER_ATTACK_RANGE} units, Jump: {gc.ZOMBIE_JUMPER_MINIMUM_JUMP_RANGE} to {gc.ZOMBIE_JUMPER_MAXIMUM_JUMP_RANGE} units",
-            StatType.UTILITY: f"Infects enemies on hit"
-        },
-        "tips": {
-            "Strong when": ["Against individual weak enemies", "Enemies are distracted", "Against ranged units"],
-            "Weak when": ["Against stronger melee units", "Against fast melee units"],
-        }
-    },
-    UnitType.ZOMBIE_SPITTER: {
-        "name": "Spitter",
-        "description": f"Spitters are slow, short-ranged <a href='{GlossaryEntryType.SPREADER.value}'>Spreaders</a> that <a href='{GlossaryEntryType.POISON.value}'>Poison</a> and <a href='{GlossaryEntryType.INFECTION.value}'>Infect</a> on hit.",
-        "stats": {
-            StatType.DEFENSE: defense_stat(gc.ZOMBIE_SPITTER_HP),
-            StatType.SPEED: speed_stat(gc.ZOMBIE_SPITTER_MOVEMENT_SPEED),
-            StatType.DAMAGE: damage_stat(gc.ZOMBIE_SPITTER_ATTACK_DAMAGE / gc.ZOMBIE_SPITTER_ANIMATION_ATTACK_DURATION, 2/3),
-            StatType.RANGE: range_stat(gc.ZOMBIE_SPITTER_ATTACK_RANGE),
-            StatType.UTILITY: 2.5
-        },
-        "tooltips": {
-            StatType.DEFENSE: f"{gc.ZOMBIE_SPITTER_HP} maximum health",
-            StatType.SPEED: f"{gc.ZOMBIE_SPITTER_MOVEMENT_SPEED} units per second",
-            StatType.DAMAGE: f"{gc.ZOMBIE_SPITTER_ATTACK_DAMAGE} poison damage ({gc.ZOMBIE_SPITTER_ATTACK_DAMAGE/gc.ZOMBIE_INFECTION_DURATION} damage per second per poison) ({gc.ZOMBIE_SPITTER_ATTACK_DAMAGE / gc.ZOMBIE_SPITTER_ANIMATION_ATTACK_DURATION:.1f} per second if poisoning multiple enemies)",
-            StatType.RANGE: f"{gc.ZOMBIE_SPITTER_ATTACK_RANGE} units",
-            StatType.UTILITY: f"Infects enemies on hit"
-        },
-        "tips": {
-            "Strong when": ["Against many weak enemies", "In a large group", "Behind other units"],
-            "Weak when": ["Against melee units", "Against long ranged units", "Against a small number of units", f"Against <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a>"],
-        }
-    },
-    UnitType.ZOMBIE_TANK: {
-        "name": "Tank",
-        "description": f"Tanks are slow melee units with very high health that <a href='{GlossaryEntryType.INFECTION.value}'>Infect</a> on hit.",
-        "stats": {
-            StatType.DEFENSE: defense_stat(gc.ZOMBIE_TANK_HP),
-            StatType.SPEED: speed_stat(gc.ZOMBIE_TANK_MOVEMENT_SPEED),
-            StatType.DAMAGE: damage_stat(gc.ZOMBIE_TANK_ATTACK_DAMAGE / gc.ZOMBIE_TANK_ANIMATION_ATTACK_DURATION),
-            StatType.RANGE: range_stat(gc.ZOMBIE_TANK_ATTACK_RANGE),
-            StatType.UTILITY: 2.5
-        },
-        "tooltips": {
-            StatType.DEFENSE: f"{gc.ZOMBIE_TANK_HP} maximum health",
-            StatType.SPEED: f"{gc.ZOMBIE_TANK_MOVEMENT_SPEED} units per second",
-            StatType.DAMAGE: f"{gc.ZOMBIE_TANK_ATTACK_DAMAGE} per hit, {gc.ZOMBIE_TANK_ATTACK_DAMAGE / gc.ZOMBIE_TANK_ANIMATION_ATTACK_DURATION:.1f} per second + infection",
-            StatType.RANGE: f"{gc.ZOMBIE_TANK_ATTACK_RANGE} units",
-            StatType.UTILITY: f"Infects enemies on hit"
-        },
-        "tips": {
-            "Strong when": ["In a large group", "Tanking damage"],
-            "Weak when": ["Against ranged units", "Against units with high damage per second"],
-        }
-    },
-    UnitType.WEREBEAR: {
-        "name": "Werebear",
-        "description": "Test unit.",
-        "stats": {
-            StatType.DEFENSE: defense_stat(gc.WEREBEAR_HP),
-            StatType.SPEED: speed_stat(gc.WEREBEAR_MOVEMENT_SPEED),
-            StatType.DAMAGE: damage_stat(gc.WEREBEAR_ATTACK_DAMAGE / gc.WEREBEAR_ANIMATION_ATTACK_DURATION),
-            StatType.RANGE: range_stat(gc.WEREBEAR_ATTACK_RANGE),
-            StatType.UTILITY: 0
-        },
-        "tooltips": {
-            StatType.DEFENSE: f"{gc.WEREBEAR_HP} maximum health",
-            StatType.SPEED: f"{gc.WEREBEAR_MOVEMENT_SPEED} units per second",
-            StatType.DAMAGE: f"{gc.WEREBEAR_ATTACK_DAMAGE} per hit ({gc.WEREBEAR_ATTACK_DAMAGE / gc.WEREBEAR_ANIMATION_ATTACK_DURATION:.1f} per second)",
-            StatType.RANGE: f"{gc.WEREBEAR_ATTACK_RANGE} units",
-            StatType.UTILITY: f"TODO"
-        },
-        "tips": {
-            "Strong when": ["TODO"],
-            "Weak when": ["TODO"],
+        UnitType.WEREBEAR: {
+            "name": "Werebear",
+            "description": "Test unit.",
+            "stats": {
+                StatType.DEFENSE: defense_stat(gc.WEREBEAR_HP),
+                StatType.SPEED: speed_stat(gc.WEREBEAR_MOVEMENT_SPEED),
+                StatType.DAMAGE: damage_stat(gc.WEREBEAR_ATTACK_DAMAGE / gc.WEREBEAR_ANIMATION_ATTACK_DURATION),
+                StatType.RANGE: range_stat(gc.WEREBEAR_ATTACK_RANGE),
+                StatType.UTILITY: 0
+            },
+            "tooltips": {
+                StatType.DEFENSE: f"{gc.WEREBEAR_HP} maximum health",
+                StatType.SPEED: f"{gc.WEREBEAR_MOVEMENT_SPEED} units per second",
+                StatType.DAMAGE: f"{gc.WEREBEAR_ATTACK_DAMAGE} per hit ({gc.WEREBEAR_ATTACK_DAMAGE / gc.WEREBEAR_ANIMATION_ATTACK_DURATION:.1f} per second)",
+                StatType.RANGE: f"{gc.WEREBEAR_ATTACK_RANGE} units",
+                StatType.UTILITY: f"TODO"
+            },
+            "tips": {
+                "Strong when": ["TODO"],
+                "Weak when": ["TODO"],
+            }
         }
     }
-} 
+    
+    # Get base data for this unit type
+    if unit_type not in base_unit_data:
+        raise ValueError(f"Unknown unit type: {unit_type}")
+    
+    data = base_unit_data[unit_type].copy()
+    modified_stats = []
+    
+    # Apply tier-specific modifications for Core Archer
+    if unit_type == UnitType.CORE_ARCHER:
+        if unit_tier == UnitTier.ADVANCED:
+            # Increase damage and range for Advanced Archer
+            data["stats"][StatType.DAMAGE] = damage_stat(gc.CORE_ARCHER_ATTACK_DAMAGE * 1.3 / gc.CORE_ARCHER_ANIMATION_ATTACK_DURATION)
+            data["stats"][StatType.RANGE] = range_stat(gc.CORE_ARCHER_ATTACK_RANGE * 1.2)
+            data["tooltips"][StatType.DAMAGE] = f"{gc.CORE_ARCHER_ATTACK_DAMAGE * 1.3:.0f} per hit ({gc.CORE_ARCHER_ATTACK_DAMAGE * 1.3 / gc.CORE_ARCHER_ANIMATION_ATTACK_DURATION:.1f} per second)"
+            data["tooltips"][StatType.RANGE] = f"{gc.CORE_ARCHER_ATTACK_RANGE * 1.2:.0f} units"
+            modified_stats = [StatType.DAMAGE, StatType.RANGE]
+            data["description"] = "Advanced Archers are experienced ranged units with improved damage and range."
+            
+        elif unit_tier == UnitTier.ELITE:
+            # Increase damage, range, and speed for Elite Archer
+            data["stats"][StatType.DAMAGE] = damage_stat(gc.CORE_ARCHER_ATTACK_DAMAGE * 1.5 / gc.CORE_ARCHER_ANIMATION_ATTACK_DURATION)
+            data["stats"][StatType.RANGE] = range_stat(gc.CORE_ARCHER_ATTACK_RANGE * 1.4)
+            data["stats"][StatType.SPEED] = speed_stat(gc.CORE_ARCHER_MOVEMENT_SPEED * 1.2)
+            data["tooltips"][StatType.DAMAGE] = f"{gc.CORE_ARCHER_ATTACK_DAMAGE * 1.5:.0f} per hit ({gc.CORE_ARCHER_ATTACK_DAMAGE * 1.5 / gc.CORE_ARCHER_ANIMATION_ATTACK_DURATION:.1f} per second)"
+            data["tooltips"][StatType.RANGE] = f"{gc.CORE_ARCHER_ATTACK_RANGE * 1.4:.0f} units"
+            data["tooltips"][StatType.SPEED] = f"{gc.CORE_ARCHER_MOVEMENT_SPEED * 1.2:.1f} units per second"
+            modified_stats = [StatType.DAMAGE, StatType.RANGE, StatType.SPEED]
+            data["description"] = "Elite Archers are master marksmen with superior damage, range, and mobility."
+    
+    # Create UnitData object
+    return UnitData(
+        name=data["name"],
+        description=data["description"],
+        tier=unit_tier,
+        stats=data["stats"].copy(),
+        tooltips=data["tooltips"].copy(),
+        tips=data["tips"].copy(),
+        modified_stats=modified_stats
+    )
+
+# Legacy function for backward compatibility - use get_unit_data instead
+def get_legacy_unit_data():
+    """Legacy function that returns UNIT_DATA dictionary for backward compatibility."""
+    unit_data = {}
+    for unit_type in UnitType:
+        try:
+            unit_data[unit_type] = {
+                "name": get_unit_data(unit_type).name,
+                "description": get_unit_data(unit_type).description,
+                "stats": get_unit_data(unit_type).stats,
+                "tooltips": get_unit_data(unit_type).tooltips,
+                "tips": get_unit_data(unit_type).tips
+            }
+        except ValueError:
+            # Skip units that don't have data yet
+            continue
+    return unit_data
+
+# Create UNIT_DATA for backward compatibility
+UNIT_DATA = get_legacy_unit_data() 

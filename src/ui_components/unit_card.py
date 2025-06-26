@@ -4,7 +4,7 @@ from typing import List, Tuple
 from ui_components.stat_bar import StatBar
 from components.unit_type import UnitType
 from entities.units import Faction, get_unit_sprite_sheet
-from ui_components.game_data import StatType, UNIT_DATA
+from ui_components.game_data import StatType, get_unit_data, UnitTier
 from unit_values import unit_values
 from pygame_gui.elements import UILabel, UIButton, UIImage, UIPanel
 from pygame_gui.core import ObjectID
@@ -22,7 +22,8 @@ class UnitCard:
                  position: Tuple[int, int],
                  name: str,
                  description: str,
-                 unit_type: UnitType):
+                 unit_type: UnitType,
+                 unit_tier: UnitTier = UnitTier.BASIC):
         """
         Initialize a UnitCard component.
         
@@ -32,17 +33,32 @@ class UnitCard:
             name: The name of the unit
             description: The HTML description of the unit (can include links)
             unit_type: The type of unit to display the image for
+            unit_tier: The tier of the unit (Basic, Advanced, Elite)
         """
         self.screen = screen
         self.manager = manager
         self.name = name
         self.stat_bars: List[StatBar] = []
         self.unit_type = unit_type
+        self.unit_tier = unit_tier
+        
+        # Get unit data for this tier
+        self.unit_data = get_unit_data(unit_type, unit_tier)
+        
+        # Add creation_index for positioning system
+        self.creation_index: int = 0
+        
+        # Create window title with tier information
+        faction_name = Faction.faction_of(unit_type).name.title()
+        if unit_tier != UnitTier.BASIC:
+            window_title = f"{name} ({unit_tier.value}) - {faction_name}"
+        else:
+            window_title = f"{name} - {faction_name}"
         
         # Create the window
         self.window = pygame_gui.elements.UIWindow(
             rect=pygame.Rect(position, (300, 475)),
-            window_display_title=f"{name} - {Faction.faction_of(unit_type).name.title()}",
+            window_display_title=window_title,
             manager=manager,
             resizable=False
         )
@@ -83,6 +99,19 @@ class UnitCard:
             manager=manager,
             container=self.point_value_bg
         )
+        
+        # Add tier information if not basic
+        if unit_tier != UnitTier.BASIC:
+            # Add tier label in upper left corner
+            self.tier_label = UILabel(
+                relative_rect=pygame.Rect((5, 5), (80, 20)),
+                text=unit_tier.value,
+                manager=manager,
+                container=self.window,
+                object_id=ObjectID(class_id='@tier_label')
+            )
+        else:
+            self.tier_label = None
         
         # Add description
         full_description = f"{description}"
@@ -152,7 +181,8 @@ class UnitCard:
     def add_stat(self, 
                 stat_type: StatType, 
                 value: int,
-                tooltip_text: str):
+                tooltip_text: str,
+                is_modified: bool = False):
         """
         Add a stat bar to the unit card.
         
@@ -160,6 +190,7 @@ class UnitCard:
             stat_type: The type of stat
             value: The value (0-10) of the stat
             tooltip_text: Text to display when hovering over the stat
+            is_modified: Whether this stat has been modified from base tier
         """
         # Constants for positioning stats
         y_offset = 295
@@ -177,7 +208,8 @@ class UnitCard:
             stat_type=stat_type,
             value=value,
             tooltip_text=tooltip_text,
-            disabled=False
+            disabled=False,
+            is_modified=is_modified
         )
         
         self.stat_bars.append(stat_bar)
@@ -206,7 +238,8 @@ class UnitCard:
             stat_type=stat_type,
             value=0,
             tooltip_text="",
-            disabled=True
+            disabled=True,
+            is_modified=False
         )
         
         self.stat_bars.append(stat_bar)
@@ -238,6 +271,8 @@ class UnitCard:
         self.tips_button.kill()
         self.point_value_label.kill()
         self.point_value_bg.kill()
+        if self.tier_label:
+            self.tier_label.kill()
         
     def update(self, time_delta: float):
         """Update all stat bars and animations."""
@@ -276,7 +311,7 @@ class UnitCard:
         # Import here to avoid circular imports
         from selected_unit_manager import selected_unit_manager
         
-        tips_data = UNIT_DATA[self.unit_type].get("tips", {})
+        tips_data = self.unit_data.tips
         
         if not tips_data:
             content = "No tips available for this unit."
