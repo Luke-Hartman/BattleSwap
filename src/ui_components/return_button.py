@@ -23,20 +23,3 @@ class ReturnButton(UIButton):
             manager=manager
         ) 
         self._clicked_and_disabled = False
-    
-    def process_event(self, event: pygame.event.Event) -> bool:
-        """Override process_event to prevent multiple rapid clicks.
-        
-        Args:
-            event: The pygame event to process.
-            
-        Returns:
-            bool: True if the event was consumed, False otherwise.
-        """
-        # This is to prevent the button from being clicked multiple times in a row
-        if event.type == pygame.MOUSEBUTTONUP:
-            if self._clicked_and_disabled:
-                return False
-            self._clicked_and_disabled = True
-            return super().process_event(event)
-        return super().process_event(event)
