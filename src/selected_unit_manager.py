@@ -6,7 +6,7 @@ import pygame_gui
 from components.unit_type import UnitType
 from ui_components.unit_card import UnitCard
 from ui_components.glossary_entry import GlossaryEntry
-from ui_components.game_data import get_unit_data, UnitTier
+from ui_components.game_data import UNIT_DATA
 from ui_components.game_data import StatType
 from info_mode_manager import info_mode_manager
 
@@ -33,8 +33,46 @@ class SelectedUnitManager:
         self.manager = manager
         self.screen = pygame.display.get_surface()
 
-    def create_unit_card(self, unit_type_str: str, position_hint: Optional[tuple[int, int]] = None) -> bool:
-        """Create a unit card for the specified unit type string."""
+    def create_tips_glossary_entry(self, unit_name: str, tips_content: str) -> Optional[GlossaryEntry]:
+        """Create a tips glossary entry using the positioning system."""
+        if self.manager is None:
+            return None
+            
+        # Check if tips entry already exists
+        tips_title = f"{unit_name} Tips"
+        existing_entry = self._find_existing_glossary_entry(tips_title)
+        if existing_entry is not None:
+            self.bring_card_to_front(existing_entry)
+            return existing_entry
+            
+        position = self.get_next_card_position()
+        
+        new_entry = GlossaryEntry(
+            manager=self.manager,
+            position=position,
+            title=tips_title,
+            content=tips_content
+        )
+        
+        if info_mode_manager.info_mode:
+            card_index = self._get_next_card_index()
+            new_entry.creation_index = card_index
+            self.glossary_entries.append(new_entry)
+        else:
+            # In normal mode, we should still track tips entries for duplicate detection
+            # but they don't need to be in the main list
+            card_index = self._get_next_card_index()
+            new_entry.creation_index = card_index
+            self.glossary_entries.append(new_entry)
+        
+        return new_entry
+
+    def create_glossary_entry_from_link(self, entry_type_str: str, position_hint: Optional[tuple[int, int]] = None) -> bool:
+        """Create a glossary entry from a link click with proper positioning."""
+        return self._create_or_focus_glossary_entry(entry_type_str, position_hint)
+
+    def create_unit_card_from_link(self, unit_type_str: str, position_hint: Optional[tuple[int, int]] = None) -> bool:
+        """Create a unit card from a link click with proper positioning."""
         return self._create_or_focus_unit_card(unit_type_str, position_hint)
 
     def get_next_card_position(self) -> tuple[int, int]:
@@ -179,54 +217,37 @@ class SelectedUnitManager:
             new_entry.creation_index = card_index if card_index is not None else self._get_next_card_index()
             self.glossary_entries.append(new_entry)
         else:
-            # In normal mode, we don't track glossary entries persistently
+            # In normal mode, just create the entry at the calculated position
             if card_index is not None:
                 new_entry.creation_index = card_index
             
         return True
 
-    def create_tips_glossary_entry(self, title: str, content: str) -> None:
-        """Create a tips glossary entry at the mouse position."""
-        mouse_pos = pygame.mouse.get_pos()
-        position = self.get_card_position_near_mouse(mouse_pos)
-        
-        GlossaryEntry(
-            manager=self.manager,
-            position=position,
-            title=f"{title} - Tips",
-            content=content
-        )
-
     def _get_card_index_for_new_card(self) -> int:
-        """Get the index for positioning a new card, avoiding mouse overlap."""
-        cards_per_row = self._calculate_cards_per_row()
-        card_index = self._get_next_card_index()
+        """Get the index where a new card should be placed, considering mouse collision."""
+        if info_mode_manager.info_mode:
+            self._cleanup_dead_cards()
+            intended_index = self._get_next_card_index()
+        else:
+            intended_index = 0
         
-        # Check if the card position would overlap with mouse
-        position = self._calculate_position_from_index(card_index)
+        return self._adjust_index_for_mouse_collision(intended_index)
+
+    def _adjust_index_for_mouse_collision(self, intended_index: int) -> int:
+        """Adjust the index if mouse is in the way."""
+        position = self._calculate_position_from_index(intended_index)
         mouse_pos = pygame.mouse.get_pos()
         
-        # If mouse overlaps, try next position
-        max_attempts = cards_per_row * 3  # Don't loop forever
-        attempts = 0
-        while self._is_mouse_in_card_area(mouse_pos, position) and attempts < max_attempts:
-            card_index += 1
-            position = self._calculate_position_from_index(card_index)
-            attempts += 1
-        
-        return card_index
-
-    def _calculate_cards_per_row(self) -> int:
-        """Calculate how many cards can fit in one row."""
-        if self.screen is None:
-            return 3  # Default fallback
-        
-        available_width = self.screen.get_width() - 2 * self.MARGIN
-        return max(1, available_width // (self.CARD_WIDTH + self.CARD_SPACING))
+        if self._is_mouse_in_card_area(mouse_pos, position):
+            return intended_index + 1
+        else:
+            return intended_index
 
     def _calculate_position_from_index(self, card_index: int) -> tuple[int, int]:
-        """Calculate the position for a card at the given index."""
-        cards_per_row = self._calculate_cards_per_row()
+        """Calculate position from card index using the grid system."""
+        available_width = self.screen.get_width() - 2 * self.MARGIN
+        cards_per_row = max(1, available_width // (self.CARD_WIDTH + self.CARD_SPACING))
+        
         return self._calculate_card_position(card_index, cards_per_row)
 
     def _calculate_card_position(self, card_index: int, cards_per_row: int) -> tuple[int, int]:
@@ -368,28 +389,25 @@ class SelectedUnitManager:
             entry.kill()
         self.glossary_entries.clear()
 
-    def _create_unit_card(self, unit_type: UnitType, position: tuple[int, int], unit_tier: UnitTier = UnitTier.BASIC) -> UnitCard:
+    def _create_unit_card(self, unit_type: UnitType, position: tuple[int, int]) -> UnitCard:
         """Create a unit card with all stats populated."""
-        unit_data = get_unit_data(unit_type, unit_tier)
+        unit_data = UNIT_DATA[unit_type]
         
         new_card = UnitCard(
             screen=self.screen,
             manager=self.manager,
             position=position,
-            name=unit_data.name,
-            description=unit_data.description,
-            unit_type=unit_type,
-            unit_tier=unit_tier
+            name=unit_data["name"],
+            description=unit_data["description"],
+            unit_type=unit_type
         )
         
         for stat_type in StatType:
-            stat_value = unit_data.stats[stat_type]
-            if stat_value is not None:
+            if stat_type in unit_data["stats"]:
                 new_card.add_stat(
                     stat_type=stat_type,
-                    value=int(stat_value),
-                    tooltip_text=unit_data.tooltips[stat_type] or "N/A",
-                    modification_level=unit_data.modification_levels[stat_type]
+                    value=unit_data["stats"][stat_type],
+                    tooltip_text=unit_data["tooltips"][stat_type]
                 )
             else:
                 new_card.skip_stat(stat_type=stat_type)

@@ -106,30 +106,57 @@ GLOSSARY_ENTRIES = {
 def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> UnitData:
     """Get unit data for the specified unit type and tier."""
     
-    # Define base unit data
-    base_unit_data = {
-        UnitType.CORE_ARCHER: {
+    # Define base unit data with tier-specific calculations
+    base_unit_data = {}
+    
+    if unit_type == UnitType.CORE_ARCHER:
+        # Calculate tier-specific multipliers
+        damage_multiplier = range_multiplier = speed_multiplier = 1.0
+        
+        if unit_tier == UnitTier.ADVANCED:
+            damage_multiplier, range_multiplier = 1.3, 1.2
+        elif unit_tier == UnitTier.ELITE:
+            damage_multiplier, range_multiplier, speed_multiplier = 1.5, 1.4, 1.2
+        
+        # Calculate actual values using multipliers
+        archer_damage = gc.CORE_ARCHER_ATTACK_DAMAGE * damage_multiplier
+        archer_range = gc.CORE_ARCHER_ATTACK_RANGE * range_multiplier
+        archer_speed = gc.CORE_ARCHER_MOVEMENT_SPEED * speed_multiplier
+        archer_dps = archer_damage / gc.CORE_ARCHER_ANIMATION_ATTACK_DURATION
+        
+        # Set description based on tier
+        if unit_tier == UnitTier.ADVANCED:
+            description = "Advanced Archers are experienced ranged units with improved damage and range."
+        elif unit_tier == UnitTier.ELITE:
+            description = "Elite Archers are master marksmen with superior damage, range, and mobility."
+        else:
+            description = "Archers are basic ranged units that can target units from afar."
+            
+        base_unit_data[UnitType.CORE_ARCHER] = {
             "name": "Archer",
-            "description": "Archers are basic ranged units that deal damage from a distance.",
+            "description": description,
             "stats": {
-                StatType.DAMAGE: damage_stat(gc.CORE_ARCHER_ATTACK_DAMAGE / gc.CORE_ARCHER_ANIMATION_ATTACK_DURATION),
                 StatType.DEFENSE: defense_stat(gc.CORE_ARCHER_HP),
-                StatType.SPEED: speed_stat(gc.CORE_ARCHER_MOVEMENT_SPEED),
-                StatType.RANGE: range_stat(gc.CORE_ARCHER_ATTACK_RANGE),
+                StatType.SPEED: speed_stat(archer_speed),
+                StatType.DAMAGE: damage_stat(archer_dps),
+                StatType.RANGE: range_stat(archer_range),
                 StatType.UTILITY: None
             },
             "tooltips": {
-                StatType.DAMAGE: f"{gc.CORE_ARCHER_ATTACK_DAMAGE} per hit ({gc.CORE_ARCHER_ATTACK_DAMAGE / gc.CORE_ARCHER_ANIMATION_ATTACK_DURATION:.1f} per second)",
                 StatType.DEFENSE: f"{gc.CORE_ARCHER_HP} maximum health",
-                StatType.SPEED: f"{gc.CORE_ARCHER_MOVEMENT_SPEED} units per second",
-                StatType.RANGE: f"{gc.CORE_ARCHER_ATTACK_RANGE} units",
+                StatType.SPEED: f"{archer_speed:.1f} units per second",
+                StatType.DAMAGE: f"{archer_damage:.0f} per hit ({archer_dps:.1f} per second)",
+                StatType.RANGE: f"{archer_range:.0f} units",
                 StatType.UTILITY: None
             },
             "tips": {
-                "Strong when": ["Against slow melee units", "In a large group", "Behind other units"],
-                "Weak when": ["Against fast units", f"Against <a href='{GlossaryEntryType.HUNTER.value}'>Hunters</a>"],
+                "Strong when": ["Against high health units", "Against weaker melee units", "In a large group"],
+                "Weak when": ["Against ranged units"],
             }
-        },
+        }
+    
+    # Add other unit types with their base data
+    base_unit_data.update({
         UnitType.CORE_BARBARIAN: {
             "name": "Barbarian",
             "description": f"Barbarians are durable melee units that deal damage in an <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a>.",
@@ -674,60 +701,73 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
                 "Weak when": ["TODO"],
             }
         }
-    }
+    })
     
     # Get base data for this unit type
     if unit_type not in base_unit_data:
         raise ValueError(f"Unknown unit type: {unit_type}")
     
     data = base_unit_data[unit_type].copy()
-    modified_stats = []
     
-    # Apply tier-specific modifications for Core Archer
-    if unit_type == UnitType.CORE_ARCHER:
-        if unit_tier == UnitTier.ADVANCED:
-            # Increase damage and range for Advanced Archer
-            data["stats"][StatType.DAMAGE] = damage_stat(gc.CORE_ARCHER_ATTACK_DAMAGE * 1.3 / gc.CORE_ARCHER_ANIMATION_ATTACK_DURATION)
-            data["stats"][StatType.RANGE] = range_stat(gc.CORE_ARCHER_ATTACK_RANGE * 1.2)
-            data["tooltips"][StatType.DAMAGE] = f"{gc.CORE_ARCHER_ATTACK_DAMAGE * 1.3:.0f} per hit ({gc.CORE_ARCHER_ATTACK_DAMAGE * 1.3 / gc.CORE_ARCHER_ANIMATION_ATTACK_DURATION:.1f} per second)"
-            data["tooltips"][StatType.RANGE] = f"{gc.CORE_ARCHER_ATTACK_RANGE * 1.2:.0f} units"
-            modified_stats = [StatType.DAMAGE, StatType.RANGE]
-            data["description"] = "Advanced Archers are experienced ranged units with improved damage and range."
-            
-        elif unit_tier == UnitTier.ELITE:
-            # Increase damage, range, and speed for Elite Archer
-            data["stats"][StatType.DAMAGE] = damage_stat(gc.CORE_ARCHER_ATTACK_DAMAGE * 1.5 / gc.CORE_ARCHER_ANIMATION_ATTACK_DURATION)
-            data["stats"][StatType.RANGE] = range_stat(gc.CORE_ARCHER_ATTACK_RANGE * 1.4)
-            data["stats"][StatType.SPEED] = speed_stat(gc.CORE_ARCHER_MOVEMENT_SPEED * 1.2)
-            data["tooltips"][StatType.DAMAGE] = f"{gc.CORE_ARCHER_ATTACK_DAMAGE * 1.5:.0f} per hit ({gc.CORE_ARCHER_ATTACK_DAMAGE * 1.5 / gc.CORE_ARCHER_ANIMATION_ATTACK_DURATION:.1f} per second)"
-            data["tooltips"][StatType.RANGE] = f"{gc.CORE_ARCHER_ATTACK_RANGE * 1.4:.0f} units"
-            data["tooltips"][StatType.SPEED] = f"{gc.CORE_ARCHER_MOVEMENT_SPEED * 1.2:.1f} units per second"
-            modified_stats = [StatType.DAMAGE, StatType.RANGE, StatType.SPEED]
-            data["description"] = "Elite Archers are master marksmen with superior damage, range, and mobility."
-    
-    # Calculate modification levels for each stat
-    modification_levels = {}
-    if unit_type == UnitType.CORE_ARCHER:
+    # Auto-determine modification levels by comparing stats across tiers
+    def get_modification_levels(unit_type: UnitType, current_tier: UnitTier) -> Dict[StatType, int]:
+        """Automatically determine modification levels by comparing stats across tiers."""
+        modification_levels = {}
+        
+        # Get stats for all tiers
+        basic_data = get_unit_data_internal(unit_type, UnitTier.BASIC) if current_tier != UnitTier.BASIC else data
+        advanced_data = get_unit_data_internal(unit_type, UnitTier.ADVANCED) if current_tier != UnitTier.ADVANCED else data
+        elite_data = get_unit_data_internal(unit_type, UnitTier.ELITE) if current_tier != UnitTier.ELITE else data
+        
         for stat_type in StatType:
             level = 0
-            # For Basic tier, no modifications
-            if unit_tier == UnitTier.BASIC:
-                level = 0
-            # For Advanced tier, count modifications up to Advanced
-            elif unit_tier == UnitTier.ADVANCED:
-                if stat_type in [StatType.DAMAGE, StatType.RANGE]:
-                    level = 1  # Modified in Advanced tier
-            # For Elite tier, count modifications in both Advanced and Elite
-            elif unit_tier == UnitTier.ELITE:
-                if stat_type in [StatType.DAMAGE, StatType.RANGE]:
-                    level = 2  # Modified in both Advanced and Elite tiers
-                elif stat_type == StatType.SPEED:
-                    level = 1  # Only modified in Elite tier
+            basic_val = basic_data["stats"][stat_type]
+            
+            # Only count modifications for stats that exist
+            if basic_val is not None:
+                advanced_val = advanced_data["stats"][stat_type]
+                elite_val = elite_data["stats"][stat_type]
+                
+                # Count how many tiers show improvements up to current tier
+                if current_tier in [UnitTier.ADVANCED, UnitTier.ELITE] and advanced_val != basic_val:
+                    level += 1
+                if current_tier == UnitTier.ELITE and elite_val != advanced_val:
+                    level += 1
+                    
             modification_levels[stat_type] = level
-    else:
-        # For other units, no modifications yet
-        for stat_type in StatType:
-            modification_levels[stat_type] = 0
+        return modification_levels
+
+    def get_unit_data_internal(unit_type: UnitType, tier: UnitTier) -> Dict:
+        """Internal helper to get unit data without modification levels to avoid recursion."""
+        # Calculate tier-specific values
+        damage_mult = range_mult = speed_mult = 1.0
+        
+        if unit_type == UnitType.CORE_ARCHER:
+            if tier == UnitTier.ADVANCED:
+                damage_mult, range_mult = 1.3, 1.2
+            elif tier == UnitTier.ELITE:
+                damage_mult, range_mult, speed_mult = 1.5, 1.4, 1.2
+                
+            archer_damage = gc.CORE_ARCHER_ATTACK_DAMAGE * damage_mult
+            archer_range = gc.CORE_ARCHER_ATTACK_RANGE * range_mult  
+            archer_speed = gc.CORE_ARCHER_MOVEMENT_SPEED * speed_mult
+            archer_dps = archer_damage / gc.CORE_ARCHER_ANIMATION_ATTACK_DURATION
+            
+            return {
+                "stats": {
+                    StatType.DEFENSE: defense_stat(gc.CORE_ARCHER_HP),
+                    StatType.SPEED: speed_stat(archer_speed),
+                    StatType.DAMAGE: damage_stat(archer_dps),
+                    StatType.RANGE: range_stat(archer_range),
+                    StatType.UTILITY: None
+                }
+            }
+        
+        # For other units, return base data
+        return base_unit_data[unit_type]
+    
+    modification_levels = get_modification_levels(unit_type, unit_tier)
+    modified_stats = [stat for stat, level in modification_levels.items() if level > 0]
     
     # Create UnitData object
     return UnitData(
