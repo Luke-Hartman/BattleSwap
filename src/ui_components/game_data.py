@@ -74,6 +74,7 @@ class UnitData:
     tooltips: Dict[StatType, Optional[str]]
     tips: Dict[str, List[str]]
     modified_stats: List[StatType]  # Stats that have been modified from base tier
+    modification_levels: Dict[StatType, int]
     
     def __post_init__(self):
         """Ensure all StatType values are explicitly specified."""
@@ -704,6 +705,30 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             modified_stats = [StatType.DAMAGE, StatType.RANGE, StatType.SPEED]
             data["description"] = "Elite Archers are master marksmen with superior damage, range, and mobility."
     
+    # Calculate modification levels for each stat
+    modification_levels = {}
+    if unit_type == UnitType.CORE_ARCHER:
+        for stat_type in StatType:
+            level = 0
+            # For Basic tier, no modifications
+            if unit_tier == UnitTier.BASIC:
+                level = 0
+            # For Advanced tier, count modifications up to Advanced
+            elif unit_tier == UnitTier.ADVANCED:
+                if stat_type in [StatType.DAMAGE, StatType.RANGE]:
+                    level = 1  # Modified in Advanced tier
+            # For Elite tier, count modifications in both Advanced and Elite
+            elif unit_tier == UnitTier.ELITE:
+                if stat_type in [StatType.DAMAGE, StatType.RANGE]:
+                    level = 2  # Modified in both Advanced and Elite tiers
+                elif stat_type == StatType.SPEED:
+                    level = 1  # Only modified in Elite tier
+            modification_levels[stat_type] = level
+    else:
+        # For other units, no modifications yet
+        for stat_type in StatType:
+            modification_levels[stat_type] = 0
+    
     # Create UnitData object
     return UnitData(
         name=data["name"],
@@ -712,7 +737,8 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         stats=data["stats"].copy(),
         tooltips=data["tooltips"].copy(),
         tips=data["tips"].copy(),
-        modified_stats=modified_stats
+        modified_stats=modified_stats,
+        modification_levels=modification_levels
     )
 
 # Legacy function for backward compatibility - use get_unit_data instead

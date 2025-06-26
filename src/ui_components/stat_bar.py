@@ -35,7 +35,7 @@ class StatBar:
                  tooltip_text: str,
                  container: Optional[pygame_gui.elements.UIPanel] = None,
                  disabled: bool = False,
-                 is_modified: bool = False):
+                 modification_level: int = 0):
         """
         Initialize a StatBar component.
         
@@ -47,7 +47,7 @@ class StatBar:
             tooltip_text: Text to display when hovering over the bar
             container: Optional parent container
             disabled: Whether this stat is disabled
-            is_modified: Whether this stat has been modified from base tier
+            modification_level: How many tiers this stat has been modified in (0=none, 1=one tier, 2=two tiers)
         """
         self.manager = manager
         self.rect = rect
@@ -58,7 +58,7 @@ class StatBar:
         self.max_value = 10
         self.tooltip_text = tooltip_text if not disabled else "N/A"
         self.disabled = disabled
-        self.is_modified = is_modified
+        self.modification_level = modification_level
         
         # Text title size and spacing
         self.title_width = 55
@@ -72,10 +72,12 @@ class StatBar:
             20
         )
         
-        # Add modified indicator to title if the stat is modified
+        # Add modification indicators to title based on modification level
         title_text = self.STAT_TITLES[stat_type]
-        if self.is_modified:
-            title_text += " ⬆"  # Up arrow to indicate enhancement
+        if self.modification_level > 0:
+            # Add appropriate number of up arrows
+            arrows = "⬆" * self.modification_level
+            title_text += f" {arrows}"
             
         self.title_element = pygame_gui.elements.UILabel(
             relative_rect=title_rect,
@@ -149,7 +151,7 @@ class StatBar:
         else:
             fill_color = stat_color
             # Make modified stats slightly brighter
-            if self.is_modified:
+            if self.modification_level > 0:
                 fill_color = tuple(min(255, int(c * 1.2)) for c in stat_color)
         
         # Unfilled segment color (dark gray)
@@ -164,7 +166,7 @@ class StatBar:
                 # Fully filled segment
                 pygame.draw.rect(self.segments_surface, fill_color, segment_rect)
                 # Add a subtle border for modified stats
-                if self.is_modified and not self.disabled:
+                if self.modification_level > 0:
                     pygame.draw.rect(self.segments_surface, (255, 255, 255), segment_rect, 1)
             elif i == full_segments and has_half:
                 # Half-filled segment
@@ -174,7 +176,7 @@ class StatBar:
                 half_rect = pygame.Rect(segment_x, 0, self.segment_width // 2, self.segment_height)
                 pygame.draw.rect(self.segments_surface, fill_color, half_rect)
                 # Add border for modified stats
-                if self.is_modified and not self.disabled:
+                if self.modification_level > 0:
                     pygame.draw.rect(self.segments_surface, (255, 255, 255), half_rect, 1)
             else:
                 # Unfilled segment

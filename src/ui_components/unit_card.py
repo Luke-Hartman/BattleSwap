@@ -178,42 +178,36 @@ class UnitCard:
         # Update the UIImage with the new surface
         self.unit_display.set_image(display_surface)
     
-    def add_stat(self, 
-                stat_type: StatType, 
-                value: int,
-                tooltip_text: str,
-                is_modified: bool = False):
+    def add_stat(self, stat_type: StatType, value: int, tooltip_text: str, modification_level: int = 0):
         """
         Add a stat bar to the unit card.
         
         Args:
-            stat_type: The type of stat
-            value: The value (0-10) of the stat
-            tooltip_text: Text to display when hovering over the stat
-            is_modified: Whether this stat has been modified from base tier
+            stat_type: The type of stat to add
+            value: The stat value (0-10)
+            tooltip_text: Tooltip text for the stat
+            modification_level: How many tiers this stat has been modified in
         """
         # Constants for positioning stats
         y_offset = 295
         bar_height = 20
         spacing = 3
         
-        # Create the stat bar
+        # Create and add the stat bar
         stat_bar = StatBar(
             manager=self.manager,
             rect=pygame.Rect(
                 (10, y_offset + len(self.stat_bars) * (bar_height + spacing)), 
                 (280, bar_height)
             ),
-            container=self.window,
             stat_type=stat_type,
             value=value,
             tooltip_text=tooltip_text,
-            disabled=False,
-            is_modified=is_modified
+            container=self.window,
+            modification_level=modification_level
         )
         
         self.stat_bars.append(stat_bar)
-        return stat_bar
 
     def skip_stat(self, stat_type: StatType):
         """
@@ -239,7 +233,7 @@ class UnitCard:
             value=0,
             tooltip_text="",
             disabled=True,
-            is_modified=False
+            modification_level=0
         )
         
         self.stat_bars.append(stat_bar)
