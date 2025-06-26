@@ -4,7 +4,7 @@ from typing import Optional
 from ui_components.game_data import StatType
 
 class StatBar:
-    """A UI component that displays a named stat with a value from 0-10 as segmented bars with icons."""
+    """A UI component that displays a named stat with a value from 0-10 as segmented bars with text titles."""
     
     # Define colors for each stat type
     STAT_COLORS = {
@@ -15,13 +15,13 @@ class StatBar:
         StatType.UTILITY: (150, 50, 200)
     }
     
-    # Icon paths for each stat type
-    STAT_ICONS = {
-        StatType.DAMAGE: "assets/icons/DamageIcon.png",
-        StatType.DEFENSE: "assets/icons/DefenseIcon.png",
-        StatType.SPEED: "assets/icons/SpeedIcon.png",
-        StatType.RANGE: "assets/icons/RangeIcon.png",
-        StatType.UTILITY: "assets/icons/UtilityIcon.png"
+    # Text titles for each stat type
+    STAT_TITLES = {
+        StatType.DAMAGE: "Damage",
+        StatType.DEFENSE: "Defense", 
+        StatType.SPEED: "Speed",
+        StatType.RANGE: "Range",
+        StatType.UTILITY: "Utility"
     }
     
     # Number of segments to display
@@ -54,40 +54,36 @@ class StatBar:
         self.name = stat_type.value
         self.value = value
         self.max_value = 10
-        self.tooltip_text = f"{stat_type.value.title()}: {tooltip_text}" if not disabled else f"{stat_type.value.title()}: N/A"
+        self.tooltip_text = tooltip_text if not disabled else "N/A"
         self.disabled = disabled
         
-        # Icon size and spacing
-        self.icon_size = rect.height
-        self.icon_spacing = 10
+        # Text title size and spacing
+        self.title_width = 55
+        self.title_spacing = 10
         
-        # Load and scale the icon
-        icon_path = self.STAT_ICONS[stat_type]
-        self.icon_surface = pygame.image.load(icon_path)
-        self.icon_surface = pygame.transform.scale(self.icon_surface, (self.icon_size, self.icon_size))
-        
-        # Create icon UI element
-        icon_rect = pygame.Rect(
+        # Create text title element
+        title_rect = pygame.Rect(
             rect.x, 
-            rect.y + (rect.height - self.icon_size) // 2,  # Center vertically
-            self.icon_size,
-            self.icon_size
+            rect.y + (rect.height - 20) // 2,  # Center vertically
+            self.title_width,
+            20
         )
-        self.icon_element = pygame_gui.elements.UIImage(
-            relative_rect=icon_rect,
-            image_surface=self.icon_surface,
+        self.title_element = pygame_gui.elements.UILabel(
+            relative_rect=title_rect,
+            text=self.STAT_TITLES[stat_type],
             manager=manager,
-            container=container
+            container=container,
+            object_id=pygame_gui.core.ObjectID(object_id='@right_aligned_text')
         )
         
-        # Set tooltip on icon if not disabled
-        self.icon_element.set_tooltip(self.tooltip_text, delay=0)
+        # Set tooltip on title if not disabled
+        self.title_element.set_tooltip(self.tooltip_text, delay=0)
         
-        # Calculate bar area
+        # Calculate bar area - make it narrower and move it right to maintain same right edge
         self.bar_rect = pygame.Rect(
-            rect.x + self.icon_size + self.icon_spacing,
+            rect.x + self.title_width + self.title_spacing,
             rect.y,
-            rect.width - self.icon_size - self.icon_spacing,
+            rect.width - self.title_width - self.title_spacing,
             rect.height
         )
         
@@ -182,5 +178,5 @@ class StatBar:
         
     def kill(self):
         """Remove the stat bar from the UI."""
-        self.icon_element.kill()
+        self.title_element.kill()
         self.segments_element.kill() 
