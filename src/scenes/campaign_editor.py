@@ -12,7 +12,7 @@ from scene_utils import mouse_over_ui
 from scenes.events import PreviousSceneEvent, SetupBattleSceneEvent
 from scenes.scene import Scene
 from ui_components.return_button import ReturnButton
-from world_map_view import BorderState, FillState, WorldMapView, HexState
+from world_map_view import BorderState, BattleFillState, UpgradeFillState, HexType, HexState, WorldMapView
 from ui_components.tip_box import TipBox
 from ui_components.save_battle_dialog import SaveBattleDialog
 from ui_components.corruption_icon import CorruptionIcon
@@ -341,12 +341,13 @@ class CampaignEditorScene(Scene):
                         clicked_hex == self.move_target_hex):
                         # Then move the battle to the clicked hex
                         battle = self.world_map_view.get_battle_from_hex(self.selected_hex)
-                        updated_battle = battle.model_copy(update={'hex_coords': clicked_hex})
-                        update_battle(battle, updated_battle)
-                        self.world_map_view.rebuild(get_battles())
-                        self.selected_hex = None
-                        self.move_target_hex = None
-                        self.create_context_buttons()
+                        if battle is not None:
+                            updated_battle = battle.model_copy(update={'hex_coords': clicked_hex})
+                            update_battle(battle, updated_battle)
+                            self.world_map_view.rebuild(get_battles())
+                            self.selected_hex = None
+                            self.move_target_hex = None
+                            self.create_context_buttons()
                     else:
                         # Select the clicked hex, whether it has a battle or not
                         self.selected_hex = clicked_hex
@@ -368,13 +369,14 @@ class CampaignEditorScene(Scene):
 
                     # Update battle info for hovered battle when no battle is selected
                     if self.selected_hex is None:
-                        battle = self.world_map_view.get_battle_from_hex(hovered_hex)
+                        battle = self.world_map_view.get_battle_from_hex(hovered_hex) if hovered_hex is not None else None
                         self.update_battle_info(battle)
 
                     # When moving a battle, show the potential move target
                     if (
                         self.selected_hex is not None and 
                         self.world_map_view.get_battle_from_hex(self.selected_hex) is not None and 
+                        hovered_hex is not None and
                         self.world_map_view.get_battle_from_hex(hovered_hex) is None and
                         not self.world_map_view.get_upgrade_hex_from_hex(hovered_hex)
                     ):
@@ -384,15 +386,55 @@ class CampaignEditorScene(Scene):
                 self.world_map_view.camera.process_event(event)
             self.manager.process_events(event)
 
-        states = defaultdict(HexState)
+        states = defaultdict(lambda: HexState(HexType.BATTLE))
+        
+        # Set corrupted battles
         for hex_coords in self.world_map_view.corrupted_hexes:
-            states[hex_coords].border = BorderState.RED_BORDER
+            current_state = states[hex_coords]
+            states[hex_coords] = HexState(
+                current_state.hex_type,
+                current_state.battle_fill,
+                current_state.upgrade_fill,
+                BorderState.RED_BORDER
+            )
+            
+        # Set selected hex
         if self.selected_hex is not None:
-            states[self.selected_hex].border = BorderState.YELLOW_BORDER
+            current_state = states[self.selected_hex]
+            states[self.selected_hex] = HexState(
+                current_state.hex_type,
+                current_state.battle_fill,
+                current_state.upgrade_fill,
+                BorderState.YELLOW_BORDER
+            )
+            
+        # Set move target hex
         if self.move_target_hex is not None:
-            states[self.move_target_hex].border = BorderState.GREEN_BORDER
+            current_state = states[self.move_target_hex]
+            states[self.move_target_hex] = HexState(
+                current_state.hex_type,
+                current_state.battle_fill,
+                current_state.upgrade_fill,
+                BorderState.GREEN_BORDER
+            )
+            
+        # Set hovered hex
         if self.hovered_hex is not None:
-            states[self.hovered_hex].fill = FillState.HIGHLIGHTED
+            current_state = states[self.hovered_hex]
+            if current_state.hex_type == HexType.BATTLE:
+                highlighted_fill = BattleFillState.HIGHLIGHTED
+                upgrade_fill = current_state.upgrade_fill
+            else:
+                highlighted_fill = current_state.battle_fill
+                upgrade_fill = UpgradeFillState.HIGHLIGHTED
+                
+            states[self.hovered_hex] = HexState(
+                current_state.hex_type,
+                highlighted_fill,
+                upgrade_fill,
+                current_state.border
+            )
+            
         self.world_map_view.reset_hex_states()
         self.world_map_view.update_hex_state(states)
 

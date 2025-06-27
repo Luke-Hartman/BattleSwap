@@ -38,13 +38,28 @@ from selected_unit_manager import selected_unit_manager
 from progress_manager import progress_manager
 
 
-class FillState(Enum):
-    """State determining how a hex should be filled."""
+class HexType(Enum):
+    """Type of hex - battle or upgrade."""
+    BATTLE = auto()
+    UPGRADE = auto()
+
+
+class BattleFillState(Enum):
+    """State determining how a battle hex should be filled."""
     NORMAL = auto()
     HIGHLIGHTED = auto()
     UNFOCUSED = auto()
     FOGGED = auto()
-    UPGRADE_HEX = auto()
+
+
+class UpgradeFillState(Enum):
+    """State determining how an upgrade hex should be filled."""
+    NORMAL = auto()
+    HIGHLIGHTED = auto()
+    UNFOCUSED = auto()
+    FOGGED = auto()
+    CLAIMED = auto()
+
 
 class BorderState(Enum):
     """State determining how a hex border should be drawn."""
@@ -54,16 +69,27 @@ class BorderState(Enum):
     RED_BORDER = auto()
     DARK_RED_BORDER = auto()
 
+
 class HexState:
     """Combined state for both fill and border of a hex."""
-    def __init__(self, fill: FillState = FillState.NORMAL, border: BorderState = BorderState.NORMAL):
-        self.fill = fill
+    def __init__(self, 
+                 hex_type: HexType, 
+                 battle_fill: BattleFillState = BattleFillState.NORMAL,
+                 upgrade_fill: UpgradeFillState = UpgradeFillState.NORMAL,
+                 border: BorderState = BorderState.NORMAL):
+        self.hex_type = hex_type
+        self.battle_fill = battle_fill
+        self.upgrade_fill = upgrade_fill
         self.border = border
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, HexState):
             return NotImplemented
-        return self.fill == other.fill and self.border == other.border
+        return (self.hex_type == other.hex_type and 
+                self.battle_fill == other.battle_fill and
+                self.upgrade_fill == other.upgrade_fill and 
+                self.border == other.border)
+
 
 class WorldMapView:
     # Configuration constants
@@ -127,6 +153,14 @@ class WorldMapView:
         """Check if the given hex coordinates contain an upgrade hex."""
         return progress_manager and hex_coords in progress_manager.upgrade_hexes
 
+    def get_hex_type(self, hex_coords: Tuple[int, int]) -> Optional[HexType]:
+        """Get the type of hex at the given coordinates."""
+        if self.get_battle_from_hex(hex_coords) is not None:
+            return HexType.BATTLE
+        elif self.get_upgrade_hex_from_hex(hex_coords):
+            return HexType.UPGRADE
+        return None
+
     def focus_hovered_unit(self) -> None:
         """Focus the unit under the mouse cursor."""
         if not self.manager.get_hovering_any_element():
@@ -173,7 +207,8 @@ class WorldMapView:
         
         for battle in self.battles.values():
             # Don't draw/update units for fogged battles
-            if self.hex_states.get(battle.hex_coords, HexState()).fill == FillState.FOGGED:
+            hex_state = self.hex_states.get(battle.hex_coords, HexState(HexType.BATTLE))
+            if hex_state.battle_fill == BattleFillState.FOGGED:
                 continue
             
             esper.switch_world(battle.id)
@@ -194,12 +229,17 @@ class WorldMapView:
         
         # Add states for all battle hexes
         for battle in self.battles.values():
-            self.hex_states[battle.hex_coords] = HexState()
+            self.hex_states[battle.hex_coords] = HexState(HexType.BATTLE)
         
         # Add states for all upgrade hexes
         if progress_manager:
             for hex_coords in progress_manager.upgrade_hexes.keys():
-                self.hex_states[hex_coords] = HexState(fill=FillState.UPGRADE_HEX)
+                # Check if upgrade hex is claimed
+                if hex_coords in progress_manager.solutions:
+                    upgrade_fill = UpgradeFillState.CLAIMED
+                else:
+                    upgrade_fill = UpgradeFillState.NORMAL
+                self.hex_states[hex_coords] = HexState(HexType.UPGRADE, upgrade_fill=upgrade_fill)
     
     def add_unit(self, battle_id: str, unit_type: UnitType, position: Tuple[int, int], team: TeamType) -> None:
         """
@@ -338,7 +378,7 @@ class WorldMapView:
             return
 
         # Draw base hex fill based on hex type
-        if self.get_battle_from_hex(coords) is not None:
+        if state.hex_type == HexType.BATTLE:
             # Regular battle hex
             draw_polygon(
                 screen=self.screen, 
@@ -348,19 +388,27 @@ class WorldMapView:
                 alpha=None,
                 world_coords=False,
             )
-        elif state.fill == FillState.UPGRADE_HEX:
-            # Upgrade hex - purple color
+        elif state.hex_type == HexType.UPGRADE:
+            # Upgrade hex - choose color based on claimed state
+            if state.upgrade_fill == UpgradeFillState.CLAIMED:
+                # Darker purple for claimed upgrade hexes
+                base_color = (96, 0, 96)
+            else:
+                # Regular purple for unclaimed upgrade hexes
+                base_color = (128, 0, 128)
+            
             draw_polygon(
                 screen=self.screen, 
                 polygon=screen_polygon, 
                 camera=self.camera, 
-                color=(128, 0, 128),  # Purple color for upgrade hexes
+                color=base_color,
                 alpha=None,
                 world_coords=False,
             )
 
         # Draw fill overlay based on state
-        if state.fill == FillState.HIGHLIGHTED:
+        if ((state.hex_type == HexType.BATTLE and state.battle_fill == BattleFillState.HIGHLIGHTED) or
+            (state.hex_type == HexType.UPGRADE and state.upgrade_fill == UpgradeFillState.HIGHLIGHTED)):
             draw_polygon(
                 screen=self.screen, 
                 polygon=screen_polygon, 
@@ -369,7 +417,8 @@ class WorldMapView:
                 alpha=gc.MAP_HIGHLIGHT_COLOR[3],
                 world_coords=False,
             )
-        elif state.fill == FillState.FOGGED:
+        elif ((state.hex_type == HexType.BATTLE and state.battle_fill == BattleFillState.FOGGED) or
+              (state.hex_type == HexType.UPGRADE and state.upgrade_fill == UpgradeFillState.FOGGED)):
             draw_polygon(
                 screen=self.screen, 
                 polygon=screen_polygon, 
@@ -378,7 +427,8 @@ class WorldMapView:
                 alpha=gc.MAP_FOG_COLOR[3],
                 world_coords=False,
             )
-        elif state.fill == FillState.UNFOCUSED:
+        elif ((state.hex_type == HexType.BATTLE and state.battle_fill == BattleFillState.UNFOCUSED) or
+              (state.hex_type == HexType.UPGRADE and state.upgrade_fill == UpgradeFillState.UNFOCUSED)):
             draw_polygon(
                 screen=self.screen, 
                 polygon=screen_polygon, 
@@ -413,7 +463,7 @@ class WorldMapView:
         )
         
         # Get the most prominent border state of the two hexes
-        border_states = [self.hex_states.get(coords, HexState()).border for coords in edge]
+        border_states = [self.hex_states.get(coords, HexState(HexType.BATTLE)).border for coords in edge]
         if BorderState.YELLOW_BORDER in border_states:
             color = (255, 255, 0)
             width = 2

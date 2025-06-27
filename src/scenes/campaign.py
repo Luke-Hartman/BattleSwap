@@ -21,7 +21,7 @@ from ui_components.return_button import ReturnButton
 from ui_components.feedback_button import FeedbackButton
 from ui_components.corruption_panel import CorruptionPanel
 from ui_components.corruption_congratulations_panel import CorruptionCongratulationsPanel
-from world_map_view import BorderState, FillState, WorldMapView, HexState
+from world_map_view import BorderState, BattleFillState, UpgradeFillState, HexType, HexState, WorldMapView
 from scene_utils import use_world
 from ui_components.progress_panel import ProgressPanel
 from ui_components.congratulations_panel import CongratulationsPanel
@@ -289,7 +289,7 @@ class CampaignScene(Scene):
                         is_upgrade_hex = False
 
                     # Handle battle hexes
-                    if (battle is not None and 
+                    if (battle is not None and progress_manager and
                         clicked_hex in progress_manager.available_battles()):
                         # If clicking the same hex that's already selected, trigger the button
                         if clicked_hex == self.selected_battle_hex:
@@ -307,7 +307,7 @@ class CampaignScene(Scene):
                             if self.progress_panel is not None:
                                 self.progress_panel.update_battle(battle)
                     # Handle upgrade hexes
-                                         elif (is_upgrade_hex and progress_manager and
+                    elif (is_upgrade_hex and progress_manager and
                            clicked_hex in progress_manager.available_battles() and
                            progress_manager.is_upgrade_hex_available(clicked_hex)):
                         # If clicking the same hex that's already selected, trigger claim
@@ -346,10 +346,14 @@ class CampaignScene(Scene):
                     self.hovered_battle_hex = None
                     
                     # Only hover available battle hexes or upgrade hexes that aren't selected
-                    battle = self.world_map_view.get_battle_from_hex(hovered_hex)
-                    is_upgrade_hex = self.world_map_view.get_upgrade_hex_from_hex(hovered_hex)
+                    if hovered_hex is not None:
+                        battle = self.world_map_view.get_battle_from_hex(hovered_hex)
+                        is_upgrade_hex = self.world_map_view.get_upgrade_hex_from_hex(hovered_hex)
+                    else:
+                        battle = None
+                        is_upgrade_hex = False
                     
-                                         if ((battle is not None and progress_manager and hovered_hex in progress_manager.available_battles()) or
+                    if ((battle is not None and progress_manager and hovered_hex in progress_manager.available_battles()) or
                          (is_upgrade_hex and progress_manager and hovered_hex in progress_manager.available_battles())):
                         self.hovered_battle_hex = hovered_hex
                         
@@ -368,56 +372,104 @@ class CampaignScene(Scene):
             if self.barracks is not None:
                 self.barracks.handle_event(event)
         # Update hex states while preserving fog of war
+        if not progress_manager:
+            return super().update(time_delta, events)
+            
         available_battles = progress_manager.available_battles()
-        states = defaultdict(HexState)
+        states = defaultdict(lambda: HexState(HexType.BATTLE))
+        
         for battle in get_battles():
             if battle.hex_coords is not None:
+                hex_type = HexType.BATTLE
+                battle_fill = BattleFillState.NORMAL
+                border = BorderState.NORMAL
+                
                 # Mark corrupted battles with appropriate border color
                 if progress_manager.is_battle_corrupted(battle.hex_coords):
                     if battle.hex_coords in progress_manager.solutions:
                         solution = progress_manager.solutions[battle.hex_coords]
                         if solution.solved_corrupted:
                             # Dark red border for corrupted battles that have been beaten in their corrupted state
-                            states[battle.hex_coords].border = BorderState.DARK_RED_BORDER
+                            border = BorderState.DARK_RED_BORDER
                         else:
                             # Red border for corrupted battles that haven't been beaten in their corrupted state
-                            states[battle.hex_coords].border = BorderState.RED_BORDER
+                            border = BorderState.RED_BORDER
                     else:
                         # Red border for corrupted battles that haven't been beaten yet
-                        states[battle.hex_coords].border = BorderState.RED_BORDER
+                        border = BorderState.RED_BORDER
                 
                 if battle.hex_coords in available_battles:
-                    # Mark available battles with green border if not yet solved
+                    # Mark available battles with unfocused fill if not yet solved
                     if battle.hex_coords not in progress_manager.solutions:
-                        states[battle.hex_coords].fill = FillState.UNFOCUSED
+                        battle_fill = BattleFillState.UNFOCUSED
                 else:
-                    states[battle.hex_coords].fill = FillState.FOGGED
+                    battle_fill = BattleFillState.FOGGED
 
-                # Handle upgrade hexes
-        if progress_manager:
-            for hex_coords, upgrade_hex in progress_manager.upgrade_hexes.items():
-                # Mark corrupted upgrade hexes with appropriate border color
-                if progress_manager.is_battle_corrupted(hex_coords):
-                    if upgrade_hex.claimed_corrupted:
+                states[battle.hex_coords] = HexState(hex_type, battle_fill=battle_fill, border=border)
+
+        # Handle upgrade hexes
+        for hex_coords in progress_manager.upgrade_hexes.keys():
+            hex_type = HexType.UPGRADE
+            upgrade_fill = UpgradeFillState.NORMAL
+            border = BorderState.NORMAL
+            
+            # Check if upgrade hex is claimed
+            if hex_coords in progress_manager.solutions:
+                upgrade_fill = UpgradeFillState.CLAIMED
+            
+            # Mark corrupted upgrade hexes with appropriate border color
+            if progress_manager.is_battle_corrupted(hex_coords):
+                if hex_coords in progress_manager.solutions:
+                    solution = progress_manager.solutions[hex_coords]
+                    if solution.solved_corrupted:
                         # Dark red border for claimed corrupted upgrade hexes
-                        states[hex_coords].border = BorderState.DARK_RED_BORDER
+                        border = BorderState.DARK_RED_BORDER
                     else:
                         # Red border for unclaimed corrupted upgrade hexes
-                        states[hex_coords].border = BorderState.RED_BORDER
-                
-                if hex_coords in available_battles:
-                    # Available upgrade hexes get unfocused fill if not claimed
-                    if not upgrade_hex.claimed and hex_coords not in progress_manager.corrupted_hexes:
-                        states[hex_coords].fill = FillState.UNFOCUSED
-                    elif not upgrade_hex.claimed_corrupted and hex_coords in progress_manager.corrupted_hexes:
-                        states[hex_coords].fill = FillState.UNFOCUSED
+                        border = BorderState.RED_BORDER
                 else:
-                    states[hex_coords].fill = FillState.FOGGED
+                    # Red border for unclaimed corrupted upgrade hexes
+                    border = BorderState.RED_BORDER
+            
+            if hex_coords in available_battles:
+                # Available upgrade hexes get unfocused fill if not claimed
+                if hex_coords not in progress_manager.solutions:
+                    upgrade_fill = UpgradeFillState.UNFOCUSED
+                elif (hex_coords in progress_manager.corrupted_hexes and 
+                      hex_coords in progress_manager.solutions and 
+                      not progress_manager.solutions[hex_coords].solved_corrupted):
+                    upgrade_fill = UpgradeFillState.UNFOCUSED
+            else:
+                upgrade_fill = UpgradeFillState.FOGGED
 
+            states[hex_coords] = HexState(hex_type, upgrade_fill=upgrade_fill, border=border)
+
+        # Handle selection and hover states
         if self.selected_battle_hex is not None:
-            states[self.selected_battle_hex].border = BorderState.YELLOW_BORDER
+            current_state = states[self.selected_battle_hex]
+            states[self.selected_battle_hex] = HexState(
+                current_state.hex_type,
+                current_state.battle_fill,
+                current_state.upgrade_fill,
+                BorderState.YELLOW_BORDER
+            )
+            
         if self.hovered_battle_hex is not None:
-            states[self.hovered_battle_hex].fill = FillState.HIGHLIGHTED
+            current_state = states[self.hovered_battle_hex]
+            if current_state.hex_type == HexType.BATTLE:
+                highlighted_fill = BattleFillState.HIGHLIGHTED
+                upgrade_fill = current_state.upgrade_fill
+            else:
+                highlighted_fill = current_state.battle_fill
+                upgrade_fill = UpgradeFillState.HIGHLIGHTED
+                
+            states[self.hovered_battle_hex] = HexState(
+                current_state.hex_type,
+                highlighted_fill,
+                upgrade_fill,
+                current_state.border
+            )
+            
         self.world_map_view.reset_hex_states()
         self.world_map_view.update_hex_state(states)
         

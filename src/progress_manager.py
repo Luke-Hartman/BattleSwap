@@ -40,8 +40,6 @@ def calculate_total_available_points() -> int:
 class UpgradeHex(BaseModel):
     """An upgrade hex that grants credits when claimed."""
     hex_coords: Tuple[int, int]
-    claimed: bool = False
-    claimed_corrupted: bool = False
 
     @field_serializer('hex_coords')
     def serialize_hex_coords(self, hex_coords: Tuple[int, int]) -> List[int]:
@@ -58,6 +56,7 @@ class Solution(BaseModel):
     hex_coords: Tuple[int, int]
     unit_placements: List[Tuple[UnitType, Tuple[float, float]]]
     solved_corrupted: bool
+    is_upgrade_hex: bool = False  # New field to distinguish upgrade hex solutions
 
     @field_serializer('hex_coords')
     def serialize_hex_coords(self, hex_coords: Tuple[int, int]) -> List[int]:
@@ -134,6 +133,9 @@ class ProgressManager(BaseModel):
         if not battle.grades or battle.hex_coords not in self.solutions:
             return None
         solution = self.solutions[battle.hex_coords]
+        # Only calculate grades for actual battles, not upgrade hexes
+        if solution.is_upgrade_hex:
+            return None
         points_used = calculate_points_for_units(solution.unit_placements)
         return battle.grades.get_grade(points_used)
     
@@ -149,6 +151,9 @@ class ProgressManager(BaseModel):
             if not battle.grades or battle.hex_coords not in self.solutions:
                 continue
             solution = self.solutions[battle.hex_coords]
+            # Only include actual battles in grade calculation, not upgrade hexes
+            if solution.is_upgrade_hex:
+                continue
             points_used += calculate_points_for_units(solution.unit_placements)
             total_a_cutoff += battle.grades.a_cutoff
             total_b_cutoff += battle.grades.b_cutoff
@@ -174,10 +179,13 @@ class ProgressManager(BaseModel):
         total_cutoffs = defaultdict(int)
         for battle in battles.get_battles():
             if battle.grades and battle.hex_coords in self.solutions:
-                total_cutoffs['a'] += battle.grades.a_cutoff
-                total_cutoffs['b'] += battle.grades.b_cutoff
-                total_cutoffs['c'] += battle.grades.c_cutoff
-                total_cutoffs['d'] += battle.grades.d_cutoff
+                solution = self.solutions[battle.hex_coords]
+                # Only include actual battles in grade calculation, not upgrade hexes
+                if not solution.is_upgrade_hex:
+                    total_cutoffs['a'] += battle.grades.a_cutoff
+                    total_cutoffs['b'] += battle.grades.b_cutoff
+                    total_cutoffs['c'] += battle.grades.c_cutoff
+                    total_cutoffs['d'] += battle.grades.d_cutoff
         return dict(total_cutoffs)
 
     def available_units(self, current_battle: Optional[battles.Battle]) -> Dict[UnitType, int]:
@@ -186,18 +194,25 @@ class ProgressManager(BaseModel):
         units.update(battles.starting_units)
         # Handle units from battles other than the current one
         for coords in self.solutions:
+            solution = self.solutions[coords]
+            # Skip upgrade hexes as they don't provide/consume units
+            if solution.is_upgrade_hex:
+                continue
             if current_battle is not None and current_battle.hex_coords == coords:
                 continue
             battle = battles.get_battle_coords(coords)
             for (unit_type, _) in battle.enemies:
                 units[unit_type] += 1
-            for (unit_type, _) in self.solutions[coords].unit_placements:
+            for (unit_type, _) in solution.unit_placements:
                 units[unit_type] -= 1
         # Handle units from the current battle
         if current_battle is not None and current_battle.allies is not None:
             if current_battle.hex_coords in self.solutions:
-                for (unit_type, _) in current_battle.enemies:
-                    units[unit_type] += 1
+                solution = self.solutions[current_battle.hex_coords]
+                # Only process unit exchanges for actual battles
+                if not solution.is_upgrade_hex:
+                    for (unit_type, _) in current_battle.enemies:
+                        units[unit_type] += 1
             for (unit_type, _) in current_battle.allies:
                 units[unit_type] -= 1
         for unit_type, count in units.items():
@@ -208,13 +223,14 @@ class ProgressManager(BaseModel):
         """Get the available battles for the player."""
         available_battles = [(0, 0)]  # 0, 0 is always available
         
-        # Add all battles that have been solved already
+        # Add all solved hexes (both battles and upgrade hexes)
         available_battles.extend([coords for coords in self.solutions if coords != (0, 0)])
         
-        # Add all upgrade hexes that haven't been corrupted yet or have been claimed while corrupted
-        for coords, upgrade_hex in self.upgrade_hexes.items():
-            if coords not in self.corrupted_hexes or upgrade_hex.claimed_corrupted:
-                available_battles.append(coords)
+        # Add unclaimed upgrade hexes that are adjacent to solved hexes
+        for coords in self.upgrade_hexes.keys():
+            if coords not in self.solutions and coords not in available_battles:
+                if any(neighbor in self.solutions for neighbor in hex_neighbors(coords)):
+                    available_battles.append(coords)
         
         # If there are uncompleted corrupted battles, don't allow new battles to be unlocked
         if self.has_uncompleted_corrupted_battles():
@@ -235,10 +251,10 @@ class ProgressManager(BaseModel):
                     progress = True
             
             # Also unlock upgrade hexes adjacent to solved battles
-            for coords, upgrade_hex in self.upgrade_hexes.items():
+            for coords in self.upgrade_hexes.keys():
                 if (
                     coords not in available_battles
-                    and any(neighbor in self.solutions or neighbor in self.upgrade_hexes for neighbor in hex_neighbors(coords))
+                    and any(neighbor in self.solutions for neighbor in hex_neighbors(coords))
                 ):
                     available_battles.append(coords)
                     progress = True
@@ -250,7 +266,10 @@ class ProgressManager(BaseModel):
         all_battles = battles.get_battles()
         for battle in all_battles:
             if battle.hex_coords in self.solutions:
-                battle.allies = self.solutions[battle.hex_coords].unit_placements
+                solution = self.solutions[battle.hex_coords]
+                # Only set allies for actual battles, not upgrade hexes
+                if not solution.is_upgrade_hex:
+                    battle.allies = solution.unit_placements
         return all_battles
 
     def save_solution(self, solution: Solution) -> None:
@@ -266,7 +285,8 @@ class ProgressManager(BaseModel):
     
     def should_show_corruption_congratulations(self) -> bool:
         return all(
-            battle.hex_coords in self.solutions and self.solutions[battle.hex_coords].solved_corrupted for battle in battles.get_battles()
+            battle.hex_coords in self.solutions and self.solutions[battle.hex_coords].solved_corrupted 
+            for battle in battles.get_battles()
             if not battle.is_test
         ) and not self.game_completed_corruption
 
@@ -305,21 +325,18 @@ class ProgressManager(BaseModel):
 
     def corrupt_battles(self) -> List[Tuple[int, int]]:
         """Corrupt a number of completed battles based on the game constants."""
-        # Get all completed battles and claimed upgrade hexes that can be corrupted
-        completed_battles = [coord for coord in self.solutions 
-                            if coord not in self.corrupted_hexes]
-        claimed_upgrade_hexes = [coord for coord, upgrade_hex in self.upgrade_hexes.items()
-                               if upgrade_hex.claimed and coord not in self.corrupted_hexes]
+        # Get all solved hexes (battles and upgrade hexes) that can be corrupted
+        solved_hexes = [coord for coord in self.solutions.keys() 
+                       if coord not in self.corrupted_hexes]
         
-        all_corruptable = completed_battles + claimed_upgrade_hexes
-        if not all_corruptable:
+        if not solved_hexes:
             return []
         
-        num_corruptions = min(gc.CORRUPTION_BATTLE_COUNT, len(all_corruptable))
-        battles_to_corrupt = random.sample(all_corruptable, num_corruptions)
-        self.corrupted_hexes.extend(battles_to_corrupt)
+        num_corruptions = min(gc.CORRUPTION_BATTLE_COUNT, len(solved_hexes))
+        hexes_to_corrupt = random.sample(solved_hexes, num_corruptions)
+        self.corrupted_hexes.extend(hexes_to_corrupt)
         save_progress()
-        return battles_to_corrupt
+        return hexes_to_corrupt
         
     def is_battle_corrupted(self, hex_coords: Tuple[int, int]) -> bool:
         """Check if a battle is corrupted."""
@@ -328,14 +345,8 @@ class ProgressManager(BaseModel):
     def has_uncompleted_corrupted_battles(self) -> bool:
         """Check if there are any corrupted battles that need to be cleared."""
         for coords in self.corrupted_hexes:
-            if coords in self.solutions:
-                # This is a regular battle hex
-                if not self.has_solved_corrupted_battle(coords):
-                    return True
-            elif coords in self.upgrade_hexes:
-                # This is an upgrade hex
-                if not self.upgrade_hexes[coords].claimed_corrupted:
-                    return True
+            if coords not in self.solutions or not self.solutions[coords].solved_corrupted:
+                return True
         return False
 
     def has_solved_corrupted_battle(self, hex_coords: Tuple[int, int]) -> bool:
@@ -389,7 +400,9 @@ class ProgressManager(BaseModel):
         """Remove an upgrade hex at the given coordinates."""
         if hex_coords in self.upgrade_hexes:
             del self.upgrade_hexes[hex_coords]
-            # Also remove from corrupted hexes if it was corrupted
+            # Also remove from solutions and corrupted hexes if it was claimed/corrupted
+            if hex_coords in self.solutions:
+                del self.solutions[hex_coords]
             if hex_coords in self.corrupted_hexes:
                 self.corrupted_hexes.remove(hex_coords)
             save_progress()
@@ -399,36 +412,57 @@ class ProgressManager(BaseModel):
         if hex_coords not in self.upgrade_hexes:
             return False
         
-        upgrade_hex = self.upgrade_hexes[hex_coords]
         is_corrupted = hex_coords in self.corrupted_hexes
         
-        if is_corrupted:
-            if not upgrade_hex.claimed_corrupted:
-                upgrade_hex.claimed_corrupted = True
-                self.elite_credits += 1
-                save_progress()
-                return True
-        else:
-            if not upgrade_hex.claimed:
-                upgrade_hex.claimed = True
-                self.advanced_credits += 1
-                save_progress()
-                return True
+        # Check if already claimed
+        if hex_coords in self.solutions:
+            solution = self.solutions[hex_coords]
+            if is_corrupted and solution.solved_corrupted:
+                return False  # Already claimed corrupted
+            if not is_corrupted and not solution.solved_corrupted:
+                return False  # Already claimed normal
         
-        return False
+        # Create or update solution
+        if hex_coords in self.solutions:
+            # Update existing solution to mark corrupted as solved
+            solution = self.solutions[hex_coords]
+            solution.solved_corrupted = True
+            self.elite_credits += 1
+        else:
+            # Create new solution
+            solution = Solution(
+                hex_coords=hex_coords,
+                unit_placements=[],  # Empty for upgrade hexes
+                solved_corrupted=is_corrupted,
+                is_upgrade_hex=True
+            )
+            self.solutions[hex_coords] = solution
+            if is_corrupted:
+                self.elite_credits += 1
+            else:
+                self.advanced_credits += 1
+        
+        save_progress()
+        return True
 
     def is_upgrade_hex_available(self, hex_coords: Tuple[int, int]) -> bool:
         """Check if an upgrade hex is available to be claimed."""
         if hex_coords not in self.upgrade_hexes:
             return False
         
-        upgrade_hex = self.upgrade_hexes[hex_coords]
         is_corrupted = hex_coords in self.corrupted_hexes
         
+        if hex_coords not in self.solutions:
+            # Never claimed before
+            return True
+        
+        solution = self.solutions[hex_coords]
         if is_corrupted:
-            return not upgrade_hex.claimed_corrupted
+            # Can claim if corrupted but not yet solved as corrupted
+            return not solution.solved_corrupted
         else:
-            return not upgrade_hex.claimed
+            # Can't claim if already solved normally (and not corrupted)
+            return False
 
 def get_progress_path() -> Path:
     """Get the path to the progress file."""
