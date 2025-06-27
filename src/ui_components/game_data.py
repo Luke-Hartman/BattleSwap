@@ -139,7 +139,11 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             },
             modified_stats=[StatType.DAMAGE],
             modification_levels={
-                StatType.DAMAGE: 1 if unit_tier == UnitTier.ADVANCED else 2 if unit_tier == UnitTier.ELITE else 0
+                StatType.DAMAGE: 1 if unit_tier == UnitTier.ADVANCED else 2 if unit_tier == UnitTier.ELITE else 0,
+                StatType.DEFENSE: 0,
+                StatType.SPEED: 0,
+                StatType.RANGE: 0,
+                StatType.UTILITY: 0
             }
         )
     
