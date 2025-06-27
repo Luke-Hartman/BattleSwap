@@ -319,7 +319,8 @@ def create_core_archer(
             width=16,
             height=32,
         ),
-        corruption_powers=corruption_powers
+        corruption_powers=corruption_powers,
+        tier=tier
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -429,7 +430,8 @@ def create_core_barbarian(
             width=20,
             height=38,
         ),
-        corruption_powers=corruption_powers
+        corruption_powers=corruption_powers,
+        tier=tier
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -514,7 +516,8 @@ def create_core_cavalry(
             width=32,
             height=46,
         ),
-        corruption_powers=corruption_powers
+        corruption_powers=corruption_powers,
+        tier=tier
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -596,7 +599,8 @@ def create_core_duelist(
             width=16,
             height=36,
         ),
-        corruption_powers=corruption_powers
+        corruption_powers=corruption_powers,
+        tier=tier
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -708,7 +712,8 @@ def create_core_longbowman(
             width=16,
             height=36,
         ),
-        corruption_powers=corruption_powers
+        corruption_powers=corruption_powers,
+        tier=tier
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -812,7 +817,8 @@ def create_core_swordsman(
             width=16,
             height=32,
         ),
-        corruption_powers=corruption_powers
+        corruption_powers=corruption_powers,
+        tier=tier
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -896,7 +902,8 @@ def create_core_wizard(
             width=24,
             height=36,
         ),
-        corruption_powers=corruption_powers
+        corruption_powers=corruption_powers,
+        tier=tier
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -1011,7 +1018,8 @@ def create_crusader_banner_bearer(
             width=16,
             height=36,
         ),
-        corruption_powers=corruption_powers
+        corruption_powers=corruption_powers,
+        tier=tier
     )
     esper.add_component(entity, Follower())
     targetting_strategy = TargetStrategy(
@@ -1126,7 +1134,8 @@ def create_crusader_black_knight(
             width=30,
             height=54,
         ),
-        corruption_powers=corruption_powers
+        corruption_powers=corruption_powers,
+        tier=tier
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -1246,7 +1255,8 @@ def create_crusader_catapult(
             width=100,
             height=20,
         ),
-        corruption_powers=corruption_powers
+        corruption_powers=corruption_powers,
+        tier=tier
     )
     esper.add_component(entity, Immobile())
     targetting_strategy = TargetStrategy(
@@ -1358,7 +1368,8 @@ def create_crusader_cleric(
             width=16,
             height=36,
         ),
-        corruption_powers=corruption_powers
+        corruption_powers=corruption_powers,
+        tier=tier
     )
     esper.add_component(entity, Follower())
     target_leader = TargetStrategy(
@@ -1507,7 +1518,8 @@ def create_crusader_commander(
             width=16,
             height=36,
         ),
-        corruption_powers=corruption_powers
+        corruption_powers=corruption_powers,
+        tier=tier
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -1610,7 +1622,8 @@ def create_crusader_crossbowman(
             width=16,
             height=36,
         ),
-        corruption_powers=corruption_powers
+        corruption_powers=corruption_powers,
+        tier=tier
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -1787,7 +1800,8 @@ def create_crusader_defender(
             width=16,
             height=32,
         ),
-        corruption_powers=corruption_powers
+        corruption_powers=corruption_powers,
+        tier=tier
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -1870,7 +1884,8 @@ def create_crusader_gold_knight(
             width=16,
             height=38,
         ),
-        corruption_powers=corruption_powers
+        corruption_powers=corruption_powers,
+        tier=tier
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -1957,7 +1972,8 @@ def create_crusader_guardian_angel(
             width=16,
             height=22,
         ),
-        corruption_powers=corruption_powers
+        corruption_powers=corruption_powers,
+        tier=tier
     )
     esper.add_component(entity, SmoothMovement())
     esper.add_component(entity, Follower())
@@ -2084,7 +2100,8 @@ def create_crusader_paladin(
             width=30,
             height=54,
         ),
-        corruption_powers=corruption_powers
+        corruption_powers=corruption_powers,
+        tier=tier
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -2186,7 +2203,8 @@ def create_crusader_pikeman(
             width=16,
             height=32,
         ),
-        corruption_powers=corruption_powers
+        corruption_powers=corruption_powers,
+        tier=tier
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -2309,7 +2327,8 @@ def create_crusader_red_knight(
             width=16,
             height=34,
         ),
-        corruption_powers=corruption_powers
+        corruption_powers=corruption_powers,
+        tier=tier
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -2442,7 +2461,8 @@ def create_crusader_soldier(
             width=16,
             height=32,
         ),
-        corruption_powers=corruption_powers
+        corruption_powers=corruption_powers,
+        tier=tier
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -2640,7 +2660,8 @@ def create_werebear(
             width=24,
             height=40,
         ),
-        corruption_powers=corruption_powers
+        corruption_powers=corruption_powers,
+        tier=tier
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -2709,7 +2730,8 @@ def create_zombie_basic_zombie(
         movement_speed=gc.ZOMBIE_BASIC_ZOMBIE_MOVEMENT_SPEED,
         health=gc.ZOMBIE_BASIC_ZOMBIE_HP,
         hitbox=Hitbox(width=16, height=32),
-        corruption_powers=corruption_powers
+        corruption_powers=corruption_powers,
+        tier=tier
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -2793,7 +2815,8 @@ def create_zombie_brute(
         movement_speed=gc.ZOMBIE_BRUTE_MOVEMENT_SPEED,
         health=gc.ZOMBIE_BRUTE_HP,
         hitbox=Hitbox(width=24, height=48),
-        corruption_powers=corruption_powers
+        corruption_powers=corruption_powers,
+        tier=tier
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -2936,7 +2959,8 @@ def create_zombie_jumper(
         movement_speed=gc.ZOMBIE_JUMPER_MOVEMENT_SPEED,
         health=gc.ZOMBIE_JUMPER_HP,
         hitbox=Hitbox(width=16, height=32),
-        corruption_powers=corruption_powers
+        corruption_powers=corruption_powers,
+        tier=tier
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -3070,7 +3094,8 @@ def create_zombie_spitter(
             width=16,
             height=32,
         ),
-        corruption_powers=corruption_powers
+        corruption_powers=corruption_powers,
+        tier=tier
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -3209,7 +3234,8 @@ def create_zombie_tank(
         movement_speed=gc.ZOMBIE_TANK_MOVEMENT_SPEED,
         health=gc.ZOMBIE_TANK_HP,
         hitbox=Hitbox(width=32, height=64),
-        corruption_powers=corruption_powers
+        corruption_powers=corruption_powers,
+        tier=tier
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -3293,7 +3319,8 @@ def create_zombie_grabber(
             width=16,
             height=32,
         ),
-        corruption_powers=corruption_powers
+        corruption_powers=corruption_powers,
+        tier=tier
     )
     targetting_strategy = TargetStrategy(
         rankings=[

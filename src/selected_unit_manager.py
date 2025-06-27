@@ -408,7 +408,7 @@ class SelectedUnitManager:
                     stat_type=stat_type,
                     value=int(stat_value),
                     tooltip_text=unit_data.tooltips[stat_type] or "N/A",
-                    modification_level=unit_data.modification_levels[stat_type]
+                    modification_level=unit_data.modification_levels.get(stat_type, 0)
                 )
             else:
                 new_card.skip_stat(stat_type=stat_type)
