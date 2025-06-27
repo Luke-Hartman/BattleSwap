@@ -26,6 +26,7 @@ from scene_utils import use_world
 from ui_components.progress_panel import ProgressPanel
 from ui_components.congratulations_panel import CongratulationsPanel
 from ui_components.corruption_icon import CorruptionIcon
+from ui_components.unit_upgrade_ui import UnitUpgradeUI
 
 class CampaignScene(Scene):
     """A 2D hex grid world map for progressing through the campaign."""
@@ -78,6 +79,7 @@ class CampaignScene(Scene):
         self.congratulations_panel = None
         self.corruption_congratulations_panel = None
         self.corruption_dialog = None
+        self.unit_upgrade_ui = None
         self.check_panels()
         self.create_ui()
         
@@ -115,6 +117,13 @@ class CampaignScene(Scene):
         """Create the UI elements for the world map scene."""
         self.return_button = ReturnButton(self.manager)
         self.feedback_button = FeedbackButton(self.manager)
+        
+        # Add unit upgrade button
+        self.unit_upgrade_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((20, 20), (120, 40)),
+            text="Unit Upgrades",
+            manager=self.manager
+        )
     def create_context_buttons(self) -> None:
         """Create context-sensitive buttons based on selected hex."""
         # Clear existing buttons
@@ -199,6 +208,10 @@ class CampaignScene(Scene):
                 self.check_panels()
                 continue
 
+            # Handle unit upgrade UI events if it exists
+            if self.unit_upgrade_ui is not None and self.unit_upgrade_ui.handle_event(event):
+                continue
+
             self.handle_escape(event)
 
             # Add enter key handling
@@ -218,6 +231,13 @@ class CampaignScene(Scene):
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.return_button:
                         pygame.event.post(PreviousSceneEvent().to_event())
+                    elif event.ui_element == self.unit_upgrade_button:
+                        if self.unit_upgrade_ui is None:
+                            self.unit_upgrade_ui = UnitUpgradeUI(self.manager)
+                        else:
+                            # If already open, bring to front
+                            if hasattr(self.unit_upgrade_ui, 'bring_to_front'):
+                                self.unit_upgrade_ui.bring_to_front()
                     elif event.ui_element in (
                         self.context_buttons.get("battle"),
                         self.context_buttons.get("improve")
@@ -231,6 +251,11 @@ class CampaignScene(Scene):
                                 developer_mode=False,
                             ).to_event()
                         )
+                elif event.user_type == pygame_gui.UI_WINDOW_CLOSE:
+                    # Handle unit upgrade UI window close
+                    if (self.unit_upgrade_ui is not None and 
+                        event.ui_element == self.unit_upgrade_ui):
+                        self.unit_upgrade_ui = None
 
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_LEFT:
                 # Only process clicks if not over UI elements
@@ -356,6 +381,10 @@ class CampaignScene(Scene):
                                 color = gc.TEAM1_COLOR if team.type == TeamType.TEAM1 else gc.TEAM2_COLOR
                                 pygame.draw.circle(self.screen, color, screen_pos, radius * self.world_map_view.camera.scale, width=1)
         
+        # Update unit upgrade UI if it exists
+        if self.unit_upgrade_ui is not None:
+            self.unit_upgrade_ui.update(time_delta)
+            
         self.manager.update(time_delta)
         self.manager.draw_ui(self.screen)
         return super().update(time_delta, events)

@@ -10,6 +10,7 @@ from platformdirs import user_config_dir
 
 import battles
 from components.unit_type import UnitType
+from components.unit_tier import UnitTier
 from corrupted_hexes import CorruptedHexes
 from unit_values import unit_values
 from hex_grid import hex_neighbors
@@ -68,6 +69,11 @@ class ProgressManager(BaseModel):
     game_completed: bool = False
     game_completed_corruption: bool = False
     corrupted_hexes: CorruptedHexes = []
+    # Unit tier tracking - each unit type starts at BASIC tier
+    unit_tiers: Dict[UnitType, UnitTier] = {}
+    # Currencies for upgrading units
+    advanced_credits: int = 10  # For BASIC -> ADVANCED upgrades
+    elite_credits: int = 10  # For ADVANCED -> ELITE upgrades
 
     @field_serializer('solutions')
     def serialize_solutions(self, solutions: Dict[Tuple[int, int], Solution]) -> Dict[str, Any]:
@@ -270,6 +276,44 @@ class ProgressManager(BaseModel):
         return (hex_coords in self.solutions and 
                 hex_coords in self.corrupted_hexes and 
                 self.solutions[hex_coords].solved_corrupted)
+
+    def get_unit_tier(self, unit_type: UnitType) -> UnitTier:
+        """Get the current tier for a unit type."""
+        return self.unit_tiers.get(unit_type, UnitTier.BASIC)
+
+    def can_upgrade_unit(self, unit_type: UnitType) -> bool:
+        """Check if a unit can be upgraded."""
+        current_tier = self.get_unit_tier(unit_type)
+        if not current_tier.can_upgrade():
+            return False
+        
+        cost_type = current_tier.get_upgrade_cost_type()
+        if cost_type == "advanced_credits":
+            return self.advanced_credits >= 1
+        elif cost_type == "elite_credits":
+            return self.elite_credits >= 1
+        return False
+
+    def upgrade_unit(self, unit_type: UnitType) -> bool:
+        """Upgrade a unit to the next tier. Returns True if successful."""
+        if not self.can_upgrade_unit(unit_type):
+            return False
+        
+        current_tier = self.get_unit_tier(unit_type)
+        cost_type = current_tier.get_upgrade_cost_type()
+        
+        # Deduct currency
+        if cost_type == "advanced_credits":
+            self.advanced_credits -= 1
+        elif cost_type == "elite_credits":
+            self.elite_credits -= 1
+        else:
+            return False
+        
+        # Upgrade tier
+        self.unit_tiers[unit_type] = current_tier.next_tier()
+        save_progress()
+        return True
 
 def get_progress_path() -> Path:
     """Get the path to the progress file."""
