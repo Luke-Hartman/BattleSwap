@@ -10,6 +10,7 @@ from platformdirs import user_config_dir
 
 import battles
 from components.unit_type import UnitType
+from components.unit_tier import UnitTier
 from corrupted_hexes import CorruptedHexes
 from unit_values import unit_values
 from hex_grid import hex_neighbors
@@ -68,6 +69,9 @@ class ProgressManager(BaseModel):
     game_completed: bool = False
     game_completed_corruption: bool = False
     corrupted_hexes: CorruptedHexes = []
+    advanced_credits: int = 10
+    elite_credits: int = 10
+    unit_tiers: Dict[UnitType, UnitTier] = {}
 
     @field_serializer('solutions')
     def serialize_solutions(self, solutions: Dict[Tuple[int, int], Solution]) -> Dict[str, Any]:
@@ -81,6 +85,16 @@ class ProgressManager(BaseModel):
                 coords = tuple(json.loads(key))
                 result[coords] = Solution.model_validate(solution_data)
             return result
+        return value
+
+    @field_serializer('unit_tiers')
+    def serialize_unit_tiers(self, unit_tiers: Dict[UnitType, UnitTier]) -> Dict[str, str]:
+        return {unit_type.value: tier.value for unit_type, tier in unit_tiers.items()}
+
+    @field_validator('unit_tiers', mode='before')
+    def parse_unit_tiers(cls, value: Any) -> Dict[UnitType, UnitTier]:
+        if isinstance(value, dict):
+            return {UnitType(unit_type): UnitTier(tier) for unit_type, tier in value.items()}
         return value
 
     def calculate_battle_grade(self, battle: battles.Battle) -> Optional[str]:
@@ -271,6 +285,42 @@ class ProgressManager(BaseModel):
                 hex_coords in self.corrupted_hexes and 
                 self.solutions[hex_coords].solved_corrupted)
 
+    def get_unit_tier(self, unit_type: UnitType) -> UnitTier:
+        """Get the current tier of a unit type."""
+        return self.unit_tiers.get(unit_type, UnitTier.BASIC)
+
+    def can_upgrade_unit(self, unit_type: UnitType) -> bool:
+        """Check if a unit can be upgraded to the next tier."""
+        current_tier = self.get_unit_tier(unit_type)
+        if current_tier == UnitTier.BASIC:
+            return self.advanced_credits > 0
+        elif current_tier == UnitTier.ADVANCED:
+            return self.elite_credits > 0
+        return False
+
+    def upgrade_unit(self, unit_type: UnitType) -> bool:
+        """Upgrade a unit to the next tier. Returns True if successful."""
+        current_tier = self.get_unit_tier(unit_type)
+        
+        if current_tier == UnitTier.BASIC and self.advanced_credits > 0:
+            self.unit_tiers[unit_type] = UnitTier.ADVANCED
+            self.advanced_credits -= 1
+            save_progress()
+            return True
+        elif current_tier == UnitTier.ADVANCED and self.elite_credits > 0:
+            self.unit_tiers[unit_type] = UnitTier.ELITE
+            self.elite_credits -= 1
+            save_progress()
+            return True
+        
+        return False
+
+    def add_credits(self, advanced: int = 0, elite: int = 0) -> None:
+        """Add credits to the player's account."""
+        self.advanced_credits += advanced
+        self.elite_credits += elite
+        save_progress()
+
 def get_progress_path() -> Path:
     """Get the path to the progress file."""
     progress_dir = Path(user_config_dir("battleswap"))
@@ -340,6 +390,9 @@ def reset_progress() -> None:
     global progress_manager
     progress_manager.solutions = {}
     progress_manager.corrupted_hexes = []
+    progress_manager.advanced_credits = 10
+    progress_manager.elite_credits = 10
+    progress_manager.unit_tiers = {}
     save_progress()
 
 def has_incompatible_save() -> bool:
