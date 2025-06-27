@@ -35,6 +35,7 @@ from ui_components.corruption_power_editor import CorruptionPowerEditorDialog
 from corruption_powers import CorruptionPower
 from selected_unit_manager import selected_unit_manager
 from components.sprite_sheet import SpriteSheet
+from components.unit_tier import UnitTier
 
 
 class SetupBattleScene(Scene):
@@ -251,12 +252,22 @@ class SetupBattleScene(Scene):
         if value is None:
             self.selected_partial_unit = None
             return
+        
+        # Use appropriate tier based on team
+        if placement_team == TeamType.TEAM1:
+            # Player units use their current tier
+            tier = progress_manager.get_unit_tier(value) if progress_manager else UnitTier.BASIC
+        else:
+            # Enemy units are always basic tier
+            tier = UnitTier.BASIC
+            
         self.selected_partial_unit = create_unit(
             x=0,
             y=0,
             unit_type=value,
             team=placement_team,
-            corruption_powers=self.battle.corruption_powers
+            corruption_powers=self.battle.corruption_powers,
+            tier=tier
         )
         esper.add_component(self.selected_partial_unit, Placing())
         # This shouldn't be needed anymore, but it used to be here, and so bugs
@@ -365,13 +376,22 @@ class SetupBattleScene(Scene):
             self.group_unit_offsets.append((offset_x, offset_y))
             self.group_unit_types.append(unit_type_comp.type)
             
+            # Use appropriate tier based on team
+            if placement_team == TeamType.TEAM1:
+                # Player units use their current tier
+                tier = progress_manager.get_unit_tier(unit_type_comp.type) if progress_manager else UnitTier.BASIC
+            else:
+                # Enemy units are always basic tier
+                tier = UnitTier.BASIC
+            
             # Create transparent partial unit
             partial_unit = create_unit(
                 x=mouse_world_pos[0] + offset_x,
                 y=mouse_world_pos[1] + offset_y,
                 unit_type=unit_type_comp.type,
                 team=placement_team,
-                corruption_powers=self.battle.corruption_powers
+                corruption_powers=self.battle.corruption_powers,
+                tier=tier
             )
             esper.add_component(partial_unit, Placing())
             esper.add_component(partial_unit, Transparency(alpha=128))
@@ -420,12 +440,13 @@ class SetupBattleScene(Scene):
             clipped_pos = clip_to_polygon(legal_area, placement_pos[0], placement_pos[1])
             
             # Create the unit
-            self.world_map_view.add_unit(
-                self.battle_id,
-                unit_type,
-                clipped_pos,
-                self.group_placement_team,
-            )
+            if self.group_placement_team is not None:
+                self.world_map_view.add_unit(
+                    self.battle_id,
+                    unit_type,
+                    (int(clipped_pos[0]), int(clipped_pos[1])),
+                    self.group_placement_team,
+                )
         
         # Clear the group pickup
         self.clear_group_pickup()

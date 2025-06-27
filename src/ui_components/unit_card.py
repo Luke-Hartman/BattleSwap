@@ -141,7 +141,7 @@ class UnitCard:
             manager=manager,
             container=self.window
         )
-        self.sprite_sheet = get_unit_sprite_sheet(unit_type)
+        self.sprite_sheet = get_unit_sprite_sheet(unit_type, unit_tier)
         
         # Animation state tracking
         self.animation_time = 0.0

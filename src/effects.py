@@ -978,6 +978,7 @@ class CreatesUnit(Effect):
             raise ValueError(f"Invalid recipient: {self.recipient}")
         
         from entities.units import create_unit
+        from components.unit_tier import UnitTier
 
         position = esper.component_for_entity(recipient, Position)
         entity = create_unit(
@@ -985,7 +986,8 @@ class CreatesUnit(Effect):
             y=position.y + self.offset[1],
             unit_type=self.unit_type,
             team=self.team,
-            corruption_powers=self.corruption_powers
+            corruption_powers=self.corruption_powers,
+            tier=UnitTier.BASIC
         )
         esper.add_component(entity, Team(type=self.team))
 

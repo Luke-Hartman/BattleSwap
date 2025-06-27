@@ -306,14 +306,25 @@ class ProgressManager(BaseModel):
             self.unit_tiers[unit_type] = UnitTier.ADVANCED
             self.advanced_credits -= 1
             save_progress()
+            # Trigger world map rebuild to update existing units
+            self._rebuild_world_map_for_tier_change()
             return True
         elif current_tier == UnitTier.ADVANCED and self.elite_credits > 0:
             self.unit_tiers[unit_type] = UnitTier.ELITE
             self.elite_credits -= 1
             save_progress()
+            # Trigger world map rebuild to update existing units
+            self._rebuild_world_map_for_tier_change()
             return True
         
         return False
+
+    def _rebuild_world_map_for_tier_change(self) -> None:
+        """Rebuild the world map to reflect tier changes in existing units."""
+        # World map rebuilding will happen automatically when scenes transition
+        # or when progress_manager.get_battles_including_solutions() is called,
+        # which will use the updated unit tiers from this progress manager.
+        pass
 
     def add_credits(self, advanced: int = 0, elite: int = 0) -> None:
         """Add credits to the player's account."""

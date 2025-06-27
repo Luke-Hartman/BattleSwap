@@ -5,6 +5,7 @@ from components.dying import Dying, OnDeathEffect
 from components.forced_movement import ForcedMovement
 from components.position import Position
 from components.unit_type import UnitType, UnitTypeComponent
+from components.unit_tier import UnitTier
 from components.transparent import Transparency
 from entities.units import create_unit
 from events import DEATH, DeathEvent, emit_event
@@ -28,7 +29,7 @@ class DyingProcessor(esper.Processor):
                     for effect in on_death.effects:
                         effect.apply(owner=ent, parent=ent, target=None)
 
-            # Handle zombie infection
+            # Handle zombie infection - infected zombies are always basic tier
             zombie_infection = Infected().get_active_zombie_infection(ent)
             if zombie_infection:
                 position = esper.component_for_entity(ent, Position)
@@ -37,7 +38,8 @@ class DyingProcessor(esper.Processor):
                     y=position.y,
                     team=zombie_infection.team,
                     unit_type=UnitType.ZOMBIE_BASIC_ZOMBIE,
-                    corruption_powers=zombie_infection.corruption_powers
+                    corruption_powers=zombie_infection.corruption_powers,
+                    tier=UnitTier.BASIC
                 )
                 esper.add_component(ent, Transparency(alpha=0))
             

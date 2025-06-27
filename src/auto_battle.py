@@ -7,6 +7,7 @@ from components.position import Position
 from components.team import Team, TeamType
 from components.unit_state import State, UnitState
 from components.unit_type import UnitType, UnitTypeComponent
+from components.unit_tier import UnitTier
 
 from corruption_powers import CorruptionPower
 from processors.ability_processor import AbilityProcessor
@@ -124,11 +125,11 @@ def simulate_battle(
     previous_world = esper.current_world
     esper.switch_world("simulation")
     
-    # Create units for both teams
+    # Create units for both teams - use BASIC tier for battle simulation consistency
     for unit_type, position in ally_placements:
-        create_unit(x=position[0], y=position[1], unit_type=unit_type, team=TeamType.TEAM1, corruption_powers=corruption_powers)
+        create_unit(x=position[0], y=position[1], unit_type=unit_type, team=TeamType.TEAM1, corruption_powers=corruption_powers, tier=UnitTier.BASIC)
     for unit_type, position in enemy_placements:
-        create_unit(x=position[0], y=position[1], unit_type=unit_type, team=TeamType.TEAM2, corruption_powers=corruption_powers)
+        create_unit(x=position[0], y=position[1], unit_type=unit_type, team=TeamType.TEAM2, corruption_powers=corruption_powers, tier=UnitTier.BASIC)
     
     # Run the battle simulation
     outcome = None

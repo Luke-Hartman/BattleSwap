@@ -36,6 +36,7 @@ from time_manager import time_manager
 from components.focus import Focus
 from selected_unit_manager import selected_unit_manager
 from progress_manager import progress_manager
+from components.unit_tier import UnitTier
 
 
 class FillState(Enum):
@@ -103,20 +104,25 @@ class WorldMapView:
 
             world_x, world_y = axial_to_world(*battle.hex_coords)
             for unit_type, position in battle.allies or []:
+                # Use player's current tier for ally units
+                tier = progress_manager.get_unit_tier(unit_type) if progress_manager else UnitTier.BASIC
                 create_unit(
                     position[0] + world_x,
                     position[1] + world_y,
                     unit_type,
                     TeamType.TEAM1,
-                    corruption_powers=corruption_powers
+                    corruption_powers=corruption_powers,
+                    tier=tier
                 )
             for unit_type, position in battle.enemies:
+                # Enemy units are always basic tier
                 create_unit(
                     position[0] + world_x,
                     position[1] + world_y,
                     unit_type,
                     TeamType.TEAM2,
-                    corruption_powers=corruption_powers
+                    corruption_powers=corruption_powers,
+                    tier=UnitTier.BASIC
                 )
 
     def get_battle_from_hex(self, hex_coords: Tuple[int, int]) -> Optional[Battle]:
@@ -204,12 +210,21 @@ class WorldMapView:
         # Only apply corruption powers if the battle is corrupted
         corruption_powers = self.battles[battle_id].corruption_powers if is_corrupted else None
         
+        # Use appropriate tier based on team
+        if team == TeamType.TEAM1:
+            # Player units use their current tier
+            tier = progress_manager.get_unit_tier(unit_type) if progress_manager else UnitTier.BASIC
+        else:
+            # Enemy units are always basic tier
+            tier = UnitTier.BASIC
+        
         create_unit(
             position[0],
             position[1],
             unit_type,
             team,
-            corruption_powers=corruption_powers
+            corruption_powers=corruption_powers,
+            tier=tier
         )
         if team == TeamType.TEAM1:
             if self.battles[battle_id].allies is None:

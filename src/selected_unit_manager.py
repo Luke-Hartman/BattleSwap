@@ -8,6 +8,7 @@ from ui_components.unit_card import UnitCard
 from ui_components.glossary_entry import GlossaryEntry
 from ui_components.game_data import get_unit_data, UnitTier, StatType, GLOSSARY_ENTRIES
 from info_mode_manager import info_mode_manager
+from progress_manager import progress_manager
 
 class SelectedUnitManager:
     """Service for managing the stats card UI."""
@@ -390,7 +391,9 @@ class SelectedUnitManager:
 
     def _create_unit_card(self, unit_type: UnitType, position: tuple[int, int]) -> UnitCard:
         """Create a unit card with all stats populated."""
-        unit_data = get_unit_data(unit_type, UnitTier.BASIC)
+        # Use the current tier from progress manager instead of always BASIC
+        unit_tier = progress_manager.get_unit_tier(unit_type) if progress_manager else UnitTier.BASIC
+        unit_data = get_unit_data(unit_type, unit_tier)
         
         new_card = UnitCard(
             screen=self.screen,
@@ -398,7 +401,8 @@ class SelectedUnitManager:
             position=position,
             name=unit_data.name,
             description=unit_data.description,
-            unit_type=unit_type
+            unit_type=unit_type,
+            unit_tier=unit_tier
         )
         
         for stat_type in StatType:

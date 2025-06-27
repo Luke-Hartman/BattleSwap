@@ -319,7 +319,8 @@ def create_core_archer(
             width=16,
             height=32,
         ),
-        corruption_powers=corruption_powers
+        corruption_powers=corruption_powers,
+        tier=tier
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -429,7 +430,8 @@ def create_core_barbarian(
             width=20,
             height=38,
         ),
-        corruption_powers=corruption_powers
+        corruption_powers=corruption_powers,
+        tier=tier
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -509,12 +511,13 @@ def create_core_cavalry(
         team=team,
         unit_type=UnitType.CORE_CAVALRY,
         movement_speed=gc.CORE_CAVALRY_MOVEMENT_SPEED,
-        health=gc.  CORE_CAVALRY_HP,
+        health=gc.CORE_CAVALRY_HP,
         hitbox=Hitbox(
             width=32,
             height=46,
         ),
-        corruption_powers=corruption_powers
+        corruption_powers=corruption_powers,
+        tier=tier
     )
     targetting_strategy = TargetStrategy(
         rankings=[
