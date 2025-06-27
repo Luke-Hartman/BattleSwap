@@ -363,6 +363,117 @@
             "border_width": "0",
             "shadow_width": "0"
         }
+    },
+    "@unit_tier_basic": {
+        "colours": {
+            "normal_bg": "#8C9FA1",
+            "hovered_bg": "#A0B4B6",
+            "disabled_bg": "#677476",
+            "selected_bg": "#5C7A7C",
+            "active_bg": "#4E5D63",
+            "normal_border": "#EEEBE1",
+            "hovered_border": "#FFFFFF",
+            "disabled_border": "#AEACA5",
+            "selected_border": "#FFFFFF",
+            "active_border": "#FFFFFF"
+        },
+        "misc": {
+            "border_width": "3",
+            "shape": "rectangle"
+        }
+    },
+    "@unit_tier_advanced": {
+        "colours": {
+            "normal_bg": "#8C9FA1",
+            "hovered_bg": "#A0B4B6",
+            "disabled_bg": "#677476",
+            "selected_bg": "#5C7A7C",
+            "active_bg": "#4E5D63",
+            "normal_border": "#8A2BE2",
+            "hovered_border": "#9932CC",
+            "disabled_border": "#AEACA5",
+            "selected_border": "#9932CC",
+            "active_border": "#9932CC"
+        },
+        "misc": {
+            "border_width": "3",
+            "shape": "rectangle"
+        }
+    },
+    "@unit_tier_elite": {
+        "colours": {
+            "normal_bg": "#8C9FA1",
+            "hovered_bg": "#A0B4B6",
+            "disabled_bg": "#677476",
+            "selected_bg": "#5C7A7C",
+            "active_bg": "#4E5D63",
+            "normal_border": "#FF8C00",
+            "hovered_border": "#FFA500",
+            "disabled_border": "#AEACA5",
+            "selected_border": "#FFA500",
+            "active_border": "#FFA500"
+        },
+        "misc": {
+            "border_width": "3",
+            "shape": "rectangle"
+        }
+    },
+    "@unit_card_basic": {
+        "colours": {
+            "normal_bg": "#36495E",
+            "normal_border": "#EEEBE1"
+        },
+        "misc": {
+            "border_width": "3",
+            "shape": "rounded_rectangle",
+            "shape_corner_radius": "10"
+        }
+    },
+    "@unit_card_advanced": {
+        "colours": {
+            "normal_bg": "#36495E",
+            "normal_border": "#8A2BE2"
+        },
+        "misc": {
+            "border_width": "3",
+            "shape": "rounded_rectangle",
+            "shape_corner_radius": "10"
+        }
+    },
+    "@unit_card_elite": {
+        "colours": {
+            "normal_bg": "#36495E",
+            "normal_border": "#FF8C00"
+        },
+        "misc": {
+            "border_width": "3",
+            "shape": "rounded_rectangle",
+            "shape_corner_radius": "10"
+        }
+    },
+    "@current_tier_text": {
+        "colours": {
+            "normal_text": "#00FF00"
+        },
+        "misc": {
+            "text_horiz_alignment": "center"
+        }
+    },
+    "@locked_tier_text": {
+        "colours": {
+            "normal_text": "#FF0000"
+        },
+        "misc": {
+            "text_horiz_alignment": "center"
+        }
+    },
+    "@available_tier_text": {
+        "colours": {
+            "normal_text": "#FFFF00"
+        },
+        "misc": {
+            "text_horiz_alignment": "center"
+        }
     }
 }
     

@@ -697,6 +697,25 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
     
     data = base_unit_data[unit_type].copy()
     
+    # Apply tier modifiers to stats (for now, simplified tier system)
+    modified_stats = []
+    modification_levels = {}
+    
+    # Initialize modification levels
+    for stat_type in StatType:
+        modification_levels[stat_type] = 0
+    
+    # For non-CORE_ARCHER units, apply simple tier bonuses
+    if unit_tier != UnitTier.BASIC:
+        # Apply damage bonus for higher tiers
+        if StatType.DAMAGE in data["stats"] and data["stats"][StatType.DAMAGE] is not None:
+            if unit_tier == UnitTier.ADVANCED:
+                data["stats"][StatType.DAMAGE] *= 1.5
+                modification_levels[StatType.DAMAGE] = 1
+            elif unit_tier == UnitTier.ELITE:
+                data["stats"][StatType.DAMAGE] *= 2.0
+                modification_levels[StatType.DAMAGE] = 2
+            modified_stats.append(StatType.DAMAGE)
 
     # Create UnitData object
     return UnitData(
@@ -706,6 +725,6 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         stats=data["stats"],
         tooltips=data["tooltips"],
         tips=data["tips"],
-        modified_stats=data["modified_stats"],
-        modification_levels=data["modification_levels"]
+        modified_stats=modified_stats,
+        modification_levels=modification_levels
     )
