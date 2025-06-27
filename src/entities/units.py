@@ -4,6 +4,7 @@ This module contains functions for creating different types of units with their 
 """
 
 from enum import Enum
+from components.unit_tier import UnitTier, UnitTierComponent
 import esper
 import pygame
 import os
@@ -219,7 +220,14 @@ def _get_corruption_power(
             return power
     return None
 
-def create_unit(x: int, y: int, unit_type: UnitType, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
+def create_unit(
+    x: int,
+    y: int,
+    unit_type: UnitType,
+    team: TeamType,
+    corruption_powers: Optional[List[CorruptionPower]],
+    tier: UnitTier = UnitTier.BASIC,
+) -> int:
     """Create a unit entity with all necessary components."""
     return {
         UnitType.CORE_ARCHER: create_core_archer,
@@ -249,7 +257,7 @@ def create_unit(x: int, y: int, unit_type: UnitType, team: TeamType, corruption_
         UnitType.ZOMBIE_JUMPER: create_zombie_jumper,
         UnitType.ZOMBIE_SPITTER: create_zombie_spitter,
         UnitType.ZOMBIE_TANK: create_zombie_tank,
-    }[unit_type](x, y, team, corruption_powers)
+    }[unit_type](x, y, team, corruption_powers, tier)
 
 def unit_base_entity(
         x: int,
@@ -259,7 +267,8 @@ def unit_base_entity(
         movement_speed: float,
         health: int,
         hitbox: Hitbox,
-        corruption_powers: Optional[List[CorruptionPower]]
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
     ) -> int:
     """Create a unit entity with all components shared by all units."""
     entity = esper.create_entity()
@@ -288,9 +297,16 @@ def unit_base_entity(
     damage_power = _get_corruption_power(corruption_powers, IncreasedDamage, team)
     if damage_power is not None:
         esper.add_component(entity, IncreasedDamageComponent(increase_percent=damage_power.increase_percent))
+    esper.add_component(entity, UnitTierComponent(tier))
     return entity
 
-def create_core_archer(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
+def create_core_archer(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+    ) -> int:
     """Create an archer entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -316,6 +332,11 @@ def create_core_archer(x: int, y: int, team: TeamType, corruption_powers: Option
         Destination(target_strategy=targetting_strategy, x_offset=0)
     )
     esper.add_component(entity, RangeIndicator(ranges=[gc.CORE_ARCHER_ATTACK_RANGE]))
+    arrow_damage = gc.CORE_ARCHER_ATTACK_DAMAGE
+    if tier == UnitTier.ADVANCED:
+        arrow_damage = arrow_damage * 1.5
+    elif tier == UnitTier.ELITE:
+        arrow_damage = arrow_damage * 2
     esper.add_component(
         entity,
         Abilities(
@@ -360,7 +381,7 @@ def create_core_archer(x: int, y: int, team: TeamType, corruption_powers: Option
                             CreatesProjectile(
                                 projectile_speed=gc.CORE_ARCHER_PROJECTILE_SPEED,
                                 effects=[
-                                    Damages(damage=gc.CORE_ARCHER_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                                    Damages(damage=arrow_damage, recipient=Recipient.TARGET),
                                 ],
                                 visual=Visual.Arrow,
                                 projectile_offset_x=5*gc.MINIFOLKS_SCALE,
@@ -378,7 +399,7 @@ def create_core_archer(x: int, y: int, team: TeamType, corruption_powers: Option
             ]
         )
     )
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CORE_ARCHER))
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CORE_ARCHER, tier))
     esper.add_component(entity, AnimationEffects({
         AnimationType.WALKING: {
             frame: [PlaySound(sound_effects=[
@@ -389,7 +410,13 @@ def create_core_archer(x: int, y: int, team: TeamType, corruption_powers: Option
     }))
     return entity
 
-def create_core_barbarian(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
+def create_core_barbarian(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+    ) -> int:
     """Create a barbarian entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -457,7 +484,7 @@ def create_core_barbarian(x: int, y: int, team: TeamType, corruption_powers: Opt
             ]
         )
     )
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CORE_BARBARIAN))
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CORE_BARBARIAN, tier))
     esper.add_component(entity, AnimationEffects({
         AnimationType.WALKING: {
             frame: [PlaySound(sound_effects=[
@@ -468,7 +495,13 @@ def create_core_barbarian(x: int, y: int, team: TeamType, corruption_powers: Opt
     }))
     return entity
 
-def create_core_cavalry(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
+def create_core_cavalry(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+    ) -> int:
     """Create a cavalry entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -533,7 +566,7 @@ def create_core_cavalry(x: int, y: int, team: TeamType, corruption_powers: Optio
             ]
         )
     )
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CORE_CAVALRY))
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CORE_CAVALRY, tier))
     esper.add_component(entity, AnimationEffects({
         AnimationType.WALKING: {
             frame: [PlaySound(sound_effects=[
@@ -544,7 +577,13 @@ def create_core_cavalry(x: int, y: int, team: TeamType, corruption_powers: Optio
     }))
     return entity
 
-def create_core_duelist(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
+def create_core_duelist(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+    ) -> int:
     """Create a duelist entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -639,7 +678,7 @@ def create_core_duelist(x: int, y: int, team: TeamType, corruption_powers: Optio
             ]
         )
     )
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CORE_DUELIST))
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CORE_DUELIST, tier))
     esper.add_component(entity, AnimationEffects({
         AnimationType.WALKING: {
             frame: [PlaySound(sound_effects=[
@@ -650,7 +689,13 @@ def create_core_duelist(x: int, y: int, team: TeamType, corruption_powers: Optio
     }))
     return entity
 
-def create_core_longbowman(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
+def create_core_longbowman(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+    ) -> int:
     """Create a longbowman entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -736,7 +781,7 @@ def create_core_longbowman(x: int, y: int, team: TeamType, corruption_powers: Op
     )
     esper.add_component(
         entity,
-        get_unit_sprite_sheet(UnitType.CORE_LONGBOWMAN)
+        get_unit_sprite_sheet(UnitType.CORE_LONGBOWMAN, tier)
     )
     esper.add_component(entity, AnimationEffects({
         AnimationType.WALKING: {
@@ -748,7 +793,13 @@ def create_core_longbowman(x: int, y: int, team: TeamType, corruption_powers: Op
     }))
     return entity
 
-def create_core_swordsman(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
+def create_core_swordsman(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+    ) -> int:
     """Create a swordsman entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -815,7 +866,7 @@ def create_core_swordsman(x: int, y: int, team: TeamType, corruption_powers: Opt
             ]
         )
     )
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CORE_SWORDSMAN))
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CORE_SWORDSMAN, tier))
     esper.add_component(entity, AnimationEffects({
         AnimationType.WALKING: {
             frame: [PlaySound(sound_effects=[
@@ -826,7 +877,13 @@ def create_core_swordsman(x: int, y: int, team: TeamType, corruption_powers: Opt
     }))
     return entity
 
-def create_core_wizard(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
+def create_core_wizard(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+    ) -> int:
     """Create a wizard entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -924,7 +981,7 @@ def create_core_wizard(x: int, y: int, team: TeamType, corruption_powers: Option
             ]
         )
     )
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CORE_WIZARD))
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CORE_WIZARD, tier))
     esper.add_component(entity, AnimationEffects({
         AnimationType.WALKING: {
             frame: [PlaySound(sound_effects=[
@@ -935,7 +992,13 @@ def create_core_wizard(x: int, y: int, team: TeamType, corruption_powers: Option
     }))
     return entity
 
-def create_crusader_banner_bearer(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
+def create_crusader_banner_bearer(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+    ) -> int:
     """Create a banner bearer entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -1031,7 +1094,7 @@ def create_crusader_banner_bearer(x: int, y: int, team: TeamType, corruption_pow
         )
     )
     esper.add_component(entity, SmoothMovement())
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_BANNER_BEARER))
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_BANNER_BEARER, tier))
     esper.add_component(entity, AnimationEffects({
         AnimationType.WALKING: {
             0: [PlaySound(SoundEffect("bannerbearer_drum_1.wav", volume=0.5, channel="drum"))],
@@ -1044,7 +1107,13 @@ def create_crusader_banner_bearer(x: int, y: int, team: TeamType, corruption_pow
     }))
     return entity
 
-def create_crusader_black_knight(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
+def create_crusader_black_knight(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+    ) -> int:
     """Create a black knight entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -1147,7 +1216,7 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType, corruption_powe
             ]
         )
     )
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_BLACK_KNIGHT))
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_BLACK_KNIGHT, tier))
     esper.add_component(entity, AnimationEffects({
         AnimationType.WALKING: {
             frame: [PlaySound(sound_effects=[
@@ -1158,7 +1227,13 @@ def create_crusader_black_knight(x: int, y: int, team: TeamType, corruption_powe
     }))
     return entity
 
-def create_crusader_catapult(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
+def create_crusader_catapult(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+    ) -> int:
     """Create a catapult entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -1261,10 +1336,16 @@ def create_crusader_catapult(x: int, y: int, team: TeamType, corruption_powers: 
             ]
         )
     )
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_CATAPULT))
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_CATAPULT, tier))
     return entity
 
-def create_crusader_cleric(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
+def create_crusader_cleric(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+    ) -> int:
     """Create a cleric entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -1396,7 +1477,7 @@ def create_crusader_cleric(x: int, y: int, team: TeamType, corruption_powers: Op
             ]
         )
     )
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_CLERIC))
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_CLERIC, tier))
     esper.add_component(entity, AnimationEffects({
         AnimationType.WALKING: {
             frame: [PlaySound(sound_effects=[
@@ -1407,7 +1488,13 @@ def create_crusader_cleric(x: int, y: int, team: TeamType, corruption_powers: Op
     }))
     return entity
 
-def create_crusader_commander(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
+def create_crusader_commander(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+    ) -> int:
     """Create a commander entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -1493,7 +1580,7 @@ def create_crusader_commander(x: int, y: int, team: TeamType, corruption_powers:
             color=(255, 215, 0),
         )
     )
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_COMMANDER))
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_COMMANDER, tier))
     esper.add_component(entity, AnimationEffects({
         AnimationType.WALKING: {
             frame: [PlaySound(sound_effects=[
@@ -1504,7 +1591,13 @@ def create_crusader_commander(x: int, y: int, team: TeamType, corruption_powers:
     }))
     return entity
 
-def create_crusader_crossbowman(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
+def create_crusader_crossbowman(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+    ) -> int:
     """Create a crossbowman entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -1663,7 +1756,7 @@ def create_crusader_crossbowman(x: int, y: int, team: TeamType, corruption_power
     ))
     esper.add_component(
         entity,
-        get_unit_sprite_sheet(UnitType.CRUSADER_CROSSBOWMAN)
+        get_unit_sprite_sheet(UnitType.CRUSADER_CROSSBOWMAN, tier)
     )
     esper.add_component(entity, AnimationEffects({
         AnimationType.WALKING: {
@@ -1675,7 +1768,13 @@ def create_crusader_crossbowman(x: int, y: int, team: TeamType, corruption_power
     }))
     return entity
 
-def create_crusader_defender(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
+def create_crusader_defender(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+    ) -> int:
     """Create a defender entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -1741,7 +1840,7 @@ def create_crusader_defender(x: int, y: int, team: TeamType, corruption_powers: 
             ]
         )
     )
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_DEFENDER))
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_DEFENDER, tier))
     esper.add_component(entity, AnimationEffects({
         AnimationType.WALKING: {
             frame: [PlaySound(sound_effects=[
@@ -1752,7 +1851,13 @@ def create_crusader_defender(x: int, y: int, team: TeamType, corruption_powers: 
     }))
     return entity
 
-def create_crusader_gold_knight(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
+def create_crusader_gold_knight(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+    ) -> int:
     """Create a gold knight entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -1822,7 +1927,7 @@ def create_crusader_gold_knight(x: int, y: int, team: TeamType, corruption_power
             ]
         )
     )
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_GOLD_KNIGHT))
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_GOLD_KNIGHT, tier))
     esper.add_component(entity, AnimationEffects({
         AnimationType.WALKING: {
             frame: [PlaySound(sound_effects=[
@@ -1833,7 +1938,13 @@ def create_crusader_gold_knight(x: int, y: int, team: TeamType, corruption_power
     }))
     return entity
 
-def create_crusader_guardian_angel(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
+def create_crusader_guardian_angel(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+    ) -> int:
     """Create an angel entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -1942,7 +2053,7 @@ def create_crusader_guardian_angel(x: int, y: int, team: TeamType, corruption_po
     )
     esper.add_component(
         entity,
-        get_unit_sprite_sheet(UnitType.CRUSADER_GUARDIAN_ANGEL)
+        get_unit_sprite_sheet(UnitType.CRUSADER_GUARDIAN_ANGEL, tier)
     )
     esper.add_component(entity, AnimationEffects({
         AnimationType.WALKING: {
@@ -1954,7 +2065,13 @@ def create_crusader_guardian_angel(x: int, y: int, team: TeamType, corruption_po
     }))
     return entity
 
-def create_crusader_paladin(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
+def create_crusader_paladin(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+    ) -> int:
     """Create a paladin entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -2039,7 +2156,7 @@ def create_crusader_paladin(x: int, y: int, team: TeamType, corruption_powers: O
             ]
         )
     )
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_PALADIN))
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_PALADIN, tier))
     esper.add_component(entity, AnimationEffects({
         AnimationType.WALKING: {
             frame: [PlaySound(sound_effects=[
@@ -2050,7 +2167,13 @@ def create_crusader_paladin(x: int, y: int, team: TeamType, corruption_powers: O
     }))
     return entity
 
-def create_crusader_pikeman(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
+def create_crusader_pikeman(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+    ) -> int:
     """Create a pikeman entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -2156,7 +2279,7 @@ def create_crusader_pikeman(x: int, y: int, team: TeamType, corruption_powers: O
             ]
         )
     )
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_PIKEMAN))
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_PIKEMAN, tier))
     esper.add_component(entity, AnimationEffects({
         AnimationType.WALKING: {
             frame: [PlaySound(sound_effects=[
@@ -2167,7 +2290,13 @@ def create_crusader_pikeman(x: int, y: int, team: TeamType, corruption_powers: O
     }))
     return entity
 
-def create_crusader_red_knight(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
+def create_crusader_red_knight(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+    ) -> int:
     """Create a red knight entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -2281,7 +2410,7 @@ def create_crusader_red_knight(x: int, y: int, team: TeamType, corruption_powers
             ]
         )
     )
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_RED_KNIGHT))
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_RED_KNIGHT, tier))
     esper.add_component(entity, AnimationEffects({
         AnimationType.WALKING: {
             frame: [PlaySound(sound_effects=[
@@ -2292,7 +2421,13 @@ def create_crusader_red_knight(x: int, y: int, team: TeamType, corruption_powers
     }))
     return entity
 
-def create_crusader_soldier(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
+def create_crusader_soldier(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+    ) -> int:
     """Create a soldier entity with all necessary components."""
     MELEE = 0
     RANGED = 1
@@ -2475,7 +2610,7 @@ def create_crusader_soldier(x: int, y: int, team: TeamType, corruption_powers: O
             ]
         )
     )
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_SOLDIER))
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_SOLDIER, tier))
     esper.add_component(entity, AnimationEffects({
         AnimationType.WALKING: {
             frame: [PlaySound(sound_effects=[
@@ -2486,7 +2621,13 @@ def create_crusader_soldier(x: int, y: int, team: TeamType, corruption_powers: O
     }))
     return entity
 
-def create_werebear(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
+def create_werebear(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+    ) -> int:
     """Create a werebear entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -2548,11 +2689,17 @@ def create_werebear(x: int, y: int, team: TeamType, corruption_powers: Optional[
     )
     esper.add_component(
         entity,
-        get_unit_sprite_sheet(UnitType.WEREBEAR)
+        get_unit_sprite_sheet(UnitType.WEREBEAR, tier)
     )
     return entity
 
-def create_zombie_basic_zombie(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
+def create_zombie_basic_zombie(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+    ) -> int:
     """Create a zombie entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -2618,7 +2765,7 @@ def create_zombie_basic_zombie(x: int, y: int, team: TeamType, corruption_powers
     esper.add_component(entity, ImmuneToZombieInfection())
     esper.add_component(
         entity,
-        get_unit_sprite_sheet(UnitType.ZOMBIE_BASIC_ZOMBIE)
+        get_unit_sprite_sheet(UnitType.ZOMBIE_BASIC_ZOMBIE, tier)
     )
     esper.add_component(entity, AnimationEffects({
         AnimationType.WALKING: {
@@ -2630,7 +2777,13 @@ def create_zombie_basic_zombie(x: int, y: int, team: TeamType, corruption_powers
     }))
     return entity
 
-def create_zombie_brute(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
+def create_zombie_brute(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+    ) -> int:
     """Create a brute zombie entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -2756,7 +2909,7 @@ def create_zombie_brute(x: int, y: int, team: TeamType, corruption_powers: Optio
         )
     )
     esper.add_component(entity, ImmuneToZombieInfection())
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.ZOMBIE_BRUTE))
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.ZOMBIE_BRUTE, tier))
     esper.add_component(entity, AnimationEffects({
         AnimationType.WALKING: {
             frame: [PlaySound(sound_effects=[
@@ -2767,7 +2920,13 @@ def create_zombie_brute(x: int, y: int, team: TeamType, corruption_powers: Optio
     }))
     return entity
 
-def create_zombie_jumper(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
+def create_zombie_jumper(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+    ) -> int:
     """Create a jumper zombie entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -2881,7 +3040,7 @@ def create_zombie_jumper(x: int, y: int, team: TeamType, corruption_powers: Opti
         )
     )
     esper.add_component(entity, ImmuneToZombieInfection())
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.ZOMBIE_JUMPER))
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.ZOMBIE_JUMPER, tier))
     esper.add_component(entity, AnimationEffects({
         AnimationType.WALKING: {
             frame: [PlaySound(sound_effects=[
@@ -2892,7 +3051,13 @@ def create_zombie_jumper(x: int, y: int, team: TeamType, corruption_powers: Opti
     }))
     return entity
 
-def create_zombie_spitter(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
+def create_zombie_spitter(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+    ) -> int:
     """Create a spitter entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -3025,10 +3190,16 @@ def create_zombie_spitter(x: int, y: int, team: TeamType, corruption_powers: Opt
             ]
         )
     )
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.ZOMBIE_SPITTER))
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.ZOMBIE_SPITTER, tier))
     return entity
 
-def create_zombie_tank(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
+def create_zombie_tank(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+    ) -> int:
     """Create a tank zombie entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -3092,7 +3263,7 @@ def create_zombie_tank(x: int, y: int, team: TeamType, corruption_powers: Option
         )
     )
     esper.add_component(entity, ImmuneToZombieInfection())
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.ZOMBIE_TANK))
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.ZOMBIE_TANK, tier))
     esper.add_component(entity, AnimationEffects({
         AnimationType.WALKING: {
             frame: [PlaySound(sound_effects=[
@@ -3103,7 +3274,13 @@ def create_zombie_tank(x: int, y: int, team: TeamType, corruption_powers: Option
     }))
     return entity
 
-def create_zombie_grabber(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]]) -> int:
+def create_zombie_grabber(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+    ) -> int:
     """Create a grabber entity with all necessary components."""
     entity = unit_base_entity(
         x=x,
@@ -3267,10 +3444,10 @@ def create_zombie_grabber(x: int, y: int, team: TeamType, corruption_powers: Opt
             ]
         )
     )
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.ZOMBIE_GRABBER))
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.ZOMBIE_GRABBER, tier))
     return entity
 
-def get_unit_sprite_sheet(unit_type: UnitType) -> SpriteSheet:
+def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
     if unit_type == UnitType.CORE_ARCHER:
         return SpriteSheet(
             surface=sprite_sheets[UnitType.CORE_ARCHER],
