@@ -130,48 +130,83 @@ class CampaignScene(Scene):
             return
 
         battle = self.world_map_view.get_battle_from_hex(self.selected_battle_hex)
-        if battle is None:
-            return
-
-        if battle.hex_coords in self.world_map_view.corrupted_hexes:
-            icon_size = (48, 48)
-            icon_position = (pygame.display.Info().current_w - icon_size[0] - 15, 50)
-            self.corruption_icon = CorruptionIcon(
-                manager=self.manager,
-                position=icon_position,
-                size=icon_size,
-                battle_hex_coords=battle.hex_coords,
-                corruption_powers=battle.corruption_powers
-            )
-
-        button_width = 120
-        button_height = 40
-        bottom_margin = 20 + (self.barracks.rect.height - 25) if self.barracks is not None else 20
+        is_upgrade_hex = self.world_map_view.get_upgrade_hex_from_hex(self.selected_battle_hex)
         
-        # Calculate position for single centered button
-        screen_rect = self.screen.get_rect()
-        start_x = (screen_rect.width - button_width) // 2
-        y = screen_rect.height - bottom_margin - button_height
+        if battle is not None:
+            if battle.hex_coords in self.world_map_view.corrupted_hexes:
+                icon_size = (48, 48)
+                icon_position = (pygame.display.Info().current_w - icon_size[0] - 15, 50)
+                self.corruption_icon = CorruptionIcon(
+                    manager=self.manager,
+                    position=icon_position,
+                    size=icon_size,
+                    battle_hex_coords=battle.hex_coords,
+                    corruption_powers=battle.corruption_powers
+                )
 
-        # Show different button based on whether battle is solved
-        if battle.hex_coords in progress_manager.solutions:
-            self.context_buttons["improve"] = pygame_gui.elements.UIButton(
+            button_width = 120
+            button_height = 40
+            bottom_margin = 20 + (self.barracks.rect.height - 25) if self.barracks is not None else 20
+            
+            # Calculate position for single centered button
+            screen_rect = self.screen.get_rect()
+            start_x = (screen_rect.width - button_width) // 2
+            y = screen_rect.height - bottom_margin - button_height
+
+            # Show different button based on whether battle is solved
+            if progress_manager and battle.hex_coords in progress_manager.solutions:
+                self.context_buttons["improve"] = pygame_gui.elements.UIButton(
+                    relative_rect=pygame.Rect(
+                        (start_x, y),
+                        (button_width, button_height)
+                    ),
+                    text="Improve",
+                    manager=self.manager
+                )
+            else:
+                self.context_buttons["battle"] = pygame_gui.elements.UIButton(
+                    relative_rect=pygame.Rect(
+                        (start_x, y),
+                        (button_width, button_height)
+                    ),
+                    text="Battle",
+                    manager=self.manager
+                )
+        elif is_upgrade_hex and progress_manager and progress_manager.is_upgrade_hex_available(self.selected_battle_hex):
+            # Show claim button for available upgrade hexes
+            button_width = 120
+            button_height = 40
+            bottom_margin = 20 + (self.barracks.rect.height - 25) if self.barracks is not None else 20
+            
+            screen_rect = self.screen.get_rect()
+            start_x = (screen_rect.width - button_width) // 2
+            y = screen_rect.height - bottom_margin - button_height
+
+            self.context_buttons["claim"] = pygame_gui.elements.UIButton(
                 relative_rect=pygame.Rect(
                     (start_x, y),
                     (button_width, button_height)
                 ),
-                text="Improve",
+                text="Claim",
                 manager=self.manager
             )
-        else:
-            self.context_buttons["battle"] = pygame_gui.elements.UIButton(
-                relative_rect=pygame.Rect(
-                    (start_x, y),
-                    (button_width, button_height)
-                ),
-                text="Battle",
-                manager=self.manager
-            )
+
+    def claim_upgrade_hex(self, hex_coords: Tuple[int, int]) -> None:
+        """Claim an upgrade hex and play appropriate sound."""
+        if progress_manager and progress_manager.claim_upgrade_hex(hex_coords):
+            # Play a sound effect - using existing sound for now
+            emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                filename="heal.wav",  # Using heal sound as temporary claim sound
+                volume=0.7
+            ))
+            
+            # Update barracks if it exists
+            if self.barracks is not None:
+                self.barracks.update_available_units(progress_manager.available_units(None))
+            
+            # Clear selection to refresh UI
+            self.selected_battle_hex = None
+            self.create_context_buttons()
 
     def update(self, time_delta: float, events: list[pygame.event.Event]) -> bool:
         """Update the world map scene."""
@@ -185,8 +220,13 @@ class CampaignScene(Scene):
                 
                 # If we have corrupted battles, hover over the first one
                 if self.corrupted_battles and len(self.corrupted_battles) > 0:
-                    battle = self.world_map_view.get_battle_from_hex(self.corrupted_battles[0])
-                    self.world_map_view.move_camera_above_battle(battle.id)
+                    first_corrupted = self.corrupted_battles[0]
+                    battle = self.world_map_view.get_battle_from_hex(first_corrupted)
+                    if battle:
+                        self.world_map_view.move_camera_above_battle(battle.id)
+                    else:
+                        # Might be an upgrade hex
+                        self.world_map_view.move_camera_above_hex(first_corrupted)
                 continue
 
             # Handle congratulations panel events first if it exists
@@ -205,9 +245,10 @@ class CampaignScene(Scene):
             if (event.type == pygame.KEYDOWN and 
                 event.key == pygame.K_RETURN and 
                 self.selected_battle_hex is not None):
-                # Simulate clicking the battle/improve button
+                # Simulate clicking the battle/improve/claim button
                 button = (self.context_buttons.get("battle") or 
-                         self.context_buttons.get("improve"))
+                         self.context_buttons.get("improve") or
+                         self.context_buttons.get("claim"))
                 if button is not None:
                     pygame.event.post(pygame.event.Event(
                         pygame.USEREVENT,
@@ -231,14 +272,23 @@ class CampaignScene(Scene):
                                 developer_mode=False,
                             ).to_event()
                         )
+                    elif event.ui_element == self.context_buttons.get("claim"):
+                        # Claim the upgrade hex
+                        if self.selected_battle_hex is not None:
+                            self.claim_upgrade_hex(self.selected_battle_hex)
 
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_LEFT:
                 # Only process clicks if not over UI elements
                 if not self.manager.get_hovering_any_element():
                     clicked_hex = self.world_map_view.get_hex_at_mouse_pos()
-                    battle = self.world_map_view.get_battle_from_hex(clicked_hex)
+                    if clicked_hex is not None:
+                        battle = self.world_map_view.get_battle_from_hex(clicked_hex)
+                        is_upgrade_hex = self.world_map_view.get_upgrade_hex_from_hex(clicked_hex)
+                    else:
+                        battle = None
+                        is_upgrade_hex = False
 
-                    # Only select if clicking an available battle hex
+                    # Handle battle hexes
                     if (battle is not None and 
                         clicked_hex in progress_manager.available_battles()):
                         # If clicking the same hex that's already selected, trigger the button
@@ -256,6 +306,19 @@ class CampaignScene(Scene):
                             # Update grades panel with selected battle
                             if self.progress_panel is not None:
                                 self.progress_panel.update_battle(battle)
+                    # Handle upgrade hexes
+                                         elif (is_upgrade_hex and progress_manager and
+                           clicked_hex in progress_manager.available_battles() and
+                           progress_manager.is_upgrade_hex_available(clicked_hex)):
+                        # If clicking the same hex that's already selected, trigger claim
+                        if clicked_hex == self.selected_battle_hex:
+                            self.claim_upgrade_hex(clicked_hex)
+                        else:
+                            self.selected_battle_hex = clicked_hex
+                            self.create_context_buttons()
+                            # Update grades panel with no battle
+                            if self.progress_panel is not None:
+                                self.progress_panel.update_battle(None)
                     else:
                         self.selected_battle_hex = None
                         self.create_context_buttons()
@@ -282,19 +345,19 @@ class CampaignScene(Scene):
                     old_hovered_hex = self.hovered_battle_hex
                     self.hovered_battle_hex = None
                     
-                    # Only hover available battle hexes that aren't selected
-                    if (
-                        self.world_map_view.get_battle_from_hex(hovered_hex) is not None and
-                        hovered_hex in progress_manager.available_battles()
-                    ):
+                    # Only hover available battle hexes or upgrade hexes that aren't selected
+                    battle = self.world_map_view.get_battle_from_hex(hovered_hex)
+                    is_upgrade_hex = self.world_map_view.get_upgrade_hex_from_hex(hovered_hex)
+                    
+                                         if ((battle is not None and progress_manager and hovered_hex in progress_manager.available_battles()) or
+                         (is_upgrade_hex and progress_manager and hovered_hex in progress_manager.available_battles())):
                         self.hovered_battle_hex = hovered_hex
                         
                     # Update grades panel if hover state changed and no battle is selected
                     if (self.progress_panel is not None and 
                         self.selected_battle_hex is None and 
                         old_hovered_hex != self.hovered_battle_hex):
-                        if self.hovered_battle_hex is not None:
-                            battle = self.world_map_view.get_battle_from_hex(self.hovered_battle_hex)
+                        if self.hovered_battle_hex is not None and battle is not None:
                             self.progress_panel.update_battle(battle)
                         else:
                             self.progress_panel.update_battle(None)
@@ -329,6 +392,27 @@ class CampaignScene(Scene):
                         states[battle.hex_coords].fill = FillState.UNFOCUSED
                 else:
                     states[battle.hex_coords].fill = FillState.FOGGED
+
+                # Handle upgrade hexes
+        if progress_manager:
+            for hex_coords, upgrade_hex in progress_manager.upgrade_hexes.items():
+                # Mark corrupted upgrade hexes with appropriate border color
+                if progress_manager.is_battle_corrupted(hex_coords):
+                    if upgrade_hex.claimed_corrupted:
+                        # Dark red border for claimed corrupted upgrade hexes
+                        states[hex_coords].border = BorderState.DARK_RED_BORDER
+                    else:
+                        # Red border for unclaimed corrupted upgrade hexes
+                        states[hex_coords].border = BorderState.RED_BORDER
+                
+                if hex_coords in available_battles:
+                    # Available upgrade hexes get unfocused fill if not claimed
+                    if not upgrade_hex.claimed and hex_coords not in progress_manager.corrupted_hexes:
+                        states[hex_coords].fill = FillState.UNFOCUSED
+                    elif not upgrade_hex.claimed_corrupted and hex_coords in progress_manager.corrupted_hexes:
+                        states[hex_coords].fill = FillState.UNFOCUSED
+                else:
+                    states[hex_coords].fill = FillState.FOGGED
 
         if self.selected_battle_hex is not None:
             states[self.selected_battle_hex].border = BorderState.YELLOW_BORDER

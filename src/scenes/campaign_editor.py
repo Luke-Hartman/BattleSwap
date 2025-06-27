@@ -17,6 +17,7 @@ from ui_components.tip_box import TipBox
 from ui_components.save_battle_dialog import SaveBattleDialog
 from ui_components.corruption_icon import CorruptionIcon
 from selected_unit_manager import selected_unit_manager
+from progress_manager import progress_manager
 
 class CampaignEditorScene(Scene):
     """Scene for editing the campaign."""
@@ -45,6 +46,10 @@ class CampaignEditorScene(Scene):
         self.tip_box: Optional[TipBox] = None
         self.corruption_icon: Optional[CorruptionIcon] = None
         
+        # Store counter labels
+        self.battle_count_label: Optional[pygame_gui.elements.UILabel] = None
+        self.upgrade_hex_count_label: Optional[pygame_gui.elements.UILabel] = None
+        
         self.create_ui()
 
     def create_ui(self) -> None:
@@ -55,6 +60,37 @@ class CampaignEditorScene(Scene):
         
         self.return_button = ReturnButton(
             manager=self.manager,
+        )
+        
+        # Create counter labels
+        self.update_counter_labels()
+
+    def update_counter_labels(self) -> None:
+        """Update the counter labels showing battle and upgrade hex counts."""
+        # Clean up existing labels
+        if self.battle_count_label is not None:
+            self.battle_count_label.kill()
+        if self.upgrade_hex_count_label is not None:
+            self.upgrade_hex_count_label.kill()
+        
+        # Count battles and upgrade hexes
+        battle_count = len([b for b in get_battles() if b.hex_coords is not None and not b.is_test])
+        upgrade_hex_count = len(progress_manager.upgrade_hexes) if progress_manager else 0
+        
+        # Create new labels
+        label_width = 200
+        label_height = 30
+        
+        self.battle_count_label = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect((10, 60), (label_width, label_height)),
+            text=f"Battles: {battle_count}",
+            manager=self.manager
+        )
+        
+        self.upgrade_hex_count_label = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect((10, 90), (label_width, label_height)),
+            text=f"Upgrade Hexes: {upgrade_hex_count}",
+            manager=self.manager
         )
 
     def update_battle_info(self, battle: Optional[Battle]) -> None:
@@ -104,6 +140,7 @@ class CampaignEditorScene(Scene):
             return
 
         battle = self.world_map_view.get_battle_from_hex(self.selected_hex)
+        is_upgrade_hex = self.world_map_view.get_upgrade_hex_from_hex(self.selected_hex)
         self.update_battle_info(battle)
 
         button_width = 120
@@ -114,7 +151,7 @@ class CampaignEditorScene(Scene):
         # Calculate starting position for buttons
         screen_rect = self.screen.get_rect()
         
-        if self.world_map_view.get_battle_from_hex(self.selected_hex) is not None:
+        if battle is not None:
             # Three buttons for battle hexes
             total_width = (button_width * 3) + (padding * 2)
             start_x = (screen_rect.width - total_width) // 2
@@ -156,9 +193,23 @@ class CampaignEditorScene(Scene):
                 text="Toggle Corruption",
                 manager=self.manager
             )
-        else:
-            # One button for empty hexes
+        elif is_upgrade_hex:
+            # One button for upgrade hexes
             start_x = (screen_rect.width - button_width) // 2
+            y = screen_rect.height - bottom_margin - button_height
+
+            self.context_buttons["delete_upgrade"] = pygame_gui.elements.UIButton(
+                relative_rect=pygame.Rect(
+                    (start_x, y),
+                    (button_width, button_height)
+                ),
+                text="Delete Upgrade Hex",
+                manager=self.manager
+            )
+        else:
+            # Two buttons for empty hexes
+            total_width = (button_width * 2) + padding
+            start_x = (screen_rect.width - total_width) // 2
             y = screen_rect.height - bottom_margin - button_height
 
             self.context_buttons["create"] = pygame_gui.elements.UIButton(
@@ -167,6 +218,15 @@ class CampaignEditorScene(Scene):
                     (button_width, button_height)
                 ),
                 text="Create Battle",
+                manager=self.manager
+            )
+            
+            self.context_buttons["create_upgrade"] = pygame_gui.elements.UIButton(
+                relative_rect=pygame.Rect(
+                    (start_x + button_width + padding, y),
+                    (button_width, button_height)
+                ),
+                text="Create Upgrade Hex",
                 manager=self.manager
             )
 
@@ -204,6 +264,20 @@ class CampaignEditorScene(Scene):
                             hex_coords=self.selected_hex,
                             show_test_button=False  # Only show save battle button
                         )
+                    elif event.ui_element == self.context_buttons.get("create_upgrade"):
+                        # Create a new upgrade hex at the selected hex
+                        if progress_manager and self.selected_hex:
+                            progress_manager.add_upgrade_hex(self.selected_hex)
+                            self.world_map_view.rebuild(get_battles())
+                            self.update_counter_labels()
+                            self.create_context_buttons()
+                    elif event.ui_element == self.context_buttons.get("delete_upgrade"):
+                        # Delete the upgrade hex at the selected hex
+                        if progress_manager and self.selected_hex:
+                            progress_manager.remove_upgrade_hex(self.selected_hex)
+                            self.world_map_view.rebuild(get_battles())
+                            self.update_counter_labels()
+                            self.create_context_buttons()
                     elif event.ui_element == self.context_buttons.get("edit"):
                         # Edit the selected battle's name and tip
                         battle = self.world_map_view.get_battle_from_hex(self.selected_hex)
@@ -223,6 +297,7 @@ class CampaignEditorScene(Scene):
                             battles.delete_battle(battle.id)
                             self.selected_hex = None
                             self.world_map_view.rebuild(get_battles())
+                            self.update_counter_labels()
                             self.create_context_buttons()
                     elif event.ui_element == self.context_buttons.get("corruption"):
                         # Toggle corruption for the selected battle
@@ -243,12 +318,14 @@ class CampaignEditorScene(Scene):
                             self.save_battle_dialog.kill()
                             delattr(self, 'save_battle_dialog')
                             self.world_map_view.rebuild(get_battles())
+                            self.update_counter_labels()
                             self.create_context_buttons()
                         elif event.ui_element == self.save_battle_dialog.save_test_button:
                             self.save_battle_dialog.save_battle(is_test=True)
                             self.save_battle_dialog.kill()
                             delattr(self, 'save_battle_dialog')
                             self.world_map_view.rebuild(get_battles())
+                            self.update_counter_labels()
                             self.create_context_buttons()
                         elif event.ui_element == self.save_battle_dialog.cancel_button:
                             self.save_battle_dialog.kill()
@@ -298,7 +375,8 @@ class CampaignEditorScene(Scene):
                     if (
                         self.selected_hex is not None and 
                         self.world_map_view.get_battle_from_hex(self.selected_hex) is not None and 
-                        self.world_map_view.get_battle_from_hex(hovered_hex) is None
+                        self.world_map_view.get_battle_from_hex(hovered_hex) is None and
+                        not self.world_map_view.get_upgrade_hex_from_hex(hovered_hex)
                     ):
                         self.move_target_hex = hovered_hex
 
