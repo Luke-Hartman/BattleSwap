@@ -61,7 +61,7 @@ class StatBar:
         self.modification_level = modification_level
         
         # Text title size and spacing
-        self.title_width = 55
+        self.title_width = 75
         self.title_spacing = 10
         
         # Create text title element
@@ -75,9 +75,9 @@ class StatBar:
         # Add modification indicators to title based on modification level
         title_text = self.STAT_TITLES[stat_type]
         if self.modification_level > 0:
-            # Add appropriate number of up arrows
-            arrows = "⬆" * self.modification_level
-            title_text += f" {arrows}"
+            # Add appropriate number of plus signs
+            pluses = "+" * self.modification_level
+            title_text += pluses
             
         self.title_element = pygame_gui.elements.UILabel(
             relative_rect=title_rect,

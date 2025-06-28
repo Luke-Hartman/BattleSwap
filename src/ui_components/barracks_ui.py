@@ -87,10 +87,10 @@ class UnitCount(UIPanel):
 
     def handle_event(self, event: pygame.event.Event) -> bool:
         if event.type == pygame_gui.UI_BUTTON_ON_HOVERED and event.ui_element == self.button:
-            selected_unit_manager.selected_unit_type = self.unit_type
+            selected_unit_manager.set_selected_unit_with_tier(self.unit_type, None)
             return True
         elif event.type == pygame_gui.UI_BUTTON_ON_UNHOVERED and event.ui_element == self.button:
-            selected_unit_manager.selected_unit_type = None
+            selected_unit_manager.set_selected_unit_with_tier(None, None)
             return True
         return False
 

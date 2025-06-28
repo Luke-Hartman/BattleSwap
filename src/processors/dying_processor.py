@@ -4,10 +4,13 @@ import esper
 from components.dying import Dying, OnDeathEffect
 from components.forced_movement import ForcedMovement
 from components.position import Position
+from components.team import Team, TeamType
+from components.unit_tier import UnitTier
 from components.unit_type import UnitType, UnitTypeComponent
 from components.transparent import Transparency
 from entities.units import create_unit
 from events import DEATH, DeathEvent, emit_event
+from progress_manager import progress_manager
 from unit_condition import Infected
 from voice import play_death
 
@@ -32,12 +35,23 @@ class DyingProcessor(esper.Processor):
             zombie_infection = Infected().get_active_zombie_infection(ent)
             if zombie_infection:
                 position = esper.component_for_entity(ent, Position)
+                team = esper.component_for_entity(ent, Team)
+                
+                # Determine the appropriate tier for the zombie
+                if team.type == TeamType.TEAM1 and progress_manager:
+                    # Player units should create zombies of the player's zombie tier
+                    tier = progress_manager.get_unit_tier(UnitType.ZOMBIE_BASIC_ZOMBIE)
+                else:
+                    # Enemy units create basic tier zombies
+                    tier = UnitTier.BASIC
+                
                 create_unit(
                     x=position.x,
                     y=position.y,
                     team=zombie_infection.team,
                     unit_type=UnitType.ZOMBIE_BASIC_ZOMBIE,
-                    corruption_powers=zombie_infection.corruption_powers
+                    corruption_powers=zombie_infection.corruption_powers,
+                    tier=tier
                 )
                 esper.add_component(ent, Transparency(alpha=0))
             

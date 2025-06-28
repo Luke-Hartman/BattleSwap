@@ -35,6 +35,7 @@ from ui_components.corruption_power_editor import CorruptionPowerEditorDialog
 from corruption_powers import CorruptionPower
 from selected_unit_manager import selected_unit_manager
 from components.sprite_sheet import SpriteSheet
+from components.unit_tier import UnitTier
 
 
 class SetupBattleScene(Scene):
@@ -256,7 +257,8 @@ class SetupBattleScene(Scene):
             y=0,
             unit_type=value,
             team=placement_team,
-            corruption_powers=self.battle.corruption_powers
+            corruption_powers=self.battle.corruption_powers,
+            tier=progress_manager.get_unit_tier(value) if value and placement_team == TeamType.TEAM1 else UnitTier.BASIC
         )
         esper.add_component(self.selected_partial_unit, Placing())
         # This shouldn't be needed anymore, but it used to be here, and so bugs
@@ -371,7 +373,8 @@ class SetupBattleScene(Scene):
                 y=mouse_world_pos[1] + offset_y,
                 unit_type=unit_type_comp.type,
                 team=placement_team,
-                corruption_powers=self.battle.corruption_powers
+                corruption_powers=self.battle.corruption_powers,
+                tier=progress_manager.get_unit_tier(unit_type_comp.type) if placement_team == TeamType.TEAM1 else UnitTier.BASIC
             )
             esper.add_component(partial_unit, Placing())
             esper.add_component(partial_unit, Transparency(alpha=128))

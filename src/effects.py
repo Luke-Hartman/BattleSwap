@@ -978,14 +978,26 @@ class CreatesUnit(Effect):
             raise ValueError(f"Invalid recipient: {self.recipient}")
         
         from entities.units import create_unit
+        from progress_manager import progress_manager
+        from components.unit_tier import UnitTier
 
         position = esper.component_for_entity(recipient, Position)
+        
+        # Determine the appropriate tier for the unit
+        if self.team == TeamType.TEAM1 and progress_manager:
+            # Player units should use their upgraded tier
+            tier = progress_manager.get_unit_tier(self.unit_type)
+        else:
+            # Enemy units and units without progress manager use basic tier
+            tier = UnitTier.BASIC
+        
         entity = create_unit(
             x=position.x + self.offset[0],
             y=position.y + self.offset[1],
             unit_type=self.unit_type,
             team=self.team,
-            corruption_powers=self.corruption_powers
+            corruption_powers=self.corruption_powers,
+            tier=tier
         )
         esper.add_component(entity, Team(type=self.team))
 

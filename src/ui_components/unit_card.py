@@ -1,6 +1,6 @@
 import pygame
 import pygame_gui
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 from ui_components.stat_bar import StatBar
 from components.unit_type import UnitType
 from entities.units import Faction, get_unit_sprite_sheet
@@ -23,17 +23,22 @@ class UnitCard:
                  name: str,
                  description: str,
                  unit_type: UnitType,
-                 unit_tier: UnitTier = UnitTier.BASIC):
+                 unit_tier: UnitTier = UnitTier.BASIC,
+                 container: Optional[pygame_gui.core.UIContainer] = None,
+                 padding: int = 0):
         """
         Initialize a UnitCard component.
         
         Args:
+            screen: The pygame surface
             manager: The UI manager for this component
-            position: The (x, y) position to place the window
+            position: The (x, y) position to place the window (ignored if container is provided)
             name: The name of the unit
             description: The HTML description of the unit (can include links)
             unit_type: The type of unit to display the image for
             unit_tier: The tier of the unit (Basic, Advanced, Elite)
+            container: Optional container to place the card in (if None, creates a window)
+            padding: Padding around the unit card
         """
         self.screen = screen
         self.manager = manager
@@ -41,6 +46,8 @@ class UnitCard:
         self.stat_bars: List[StatBar] = []
         self.unit_type = unit_type
         self.unit_tier = unit_tier
+        self.container = container
+        self.padding = padding
         
         # Get unit data for this tier
         self.unit_data = get_unit_data(unit_type, unit_tier)
@@ -50,29 +57,36 @@ class UnitCard:
         
         # Create window title with tier information
         faction_name = Faction.faction_of(unit_type).name.title()
-        if unit_tier != UnitTier.BASIC:
-            window_title = f"{name} ({unit_tier.value}) - {faction_name}"
+        window_title = name
+        
+        # Create the window or use the provided container
+        if container is None:
+            # Create a window if no container provided
+            self.window = pygame_gui.elements.UIWindow(
+                rect=pygame.Rect(position, (300, 475)),
+                window_display_title=window_title,
+                manager=manager,
+                resizable=False
+            )
+            self.card_container = self.window
         else:
-            window_title = f"{name} - {faction_name}"
+            # Use the provided container
+            self.window = None
+            self.card_container = container
         
-        # Create the window
-        self.window = pygame_gui.elements.UIWindow(
-            rect=pygame.Rect(position, (300, 475)),
-            window_display_title=window_title,
-            manager=manager,
-            resizable=False
-        )
-        
+        # Adjust sizes for padding
+        card_width = 300 - 2 * self.padding
+        card_height_top = 200  # Height of image area remains 200
         # Create a surface for the unit display area
-        unit_display_surface = pygame.Surface((300, 200))
+        unit_display_surface = pygame.Surface((card_width, card_height_top))
         unit_display_surface.fill(gc.MAP_BATTLEFIELD_COLOR)
         
         # Add the unit display as a UIImage
         self.unit_display = UIImage(
-            relative_rect=pygame.Rect((0, 0), (300, 200)),
+            relative_rect=pygame.Rect((self.padding, self.padding), (card_width, card_height_top)),
             image_surface=unit_display_surface,
             manager=manager,
-            container=self.window
+            container=self.card_container
         )
         
         # Add point value box in upper right corner
@@ -85,9 +99,9 @@ class UnitCard:
         
         # Create a background panel for the point value (touching top right corner)
         self.point_value_bg = UIPanel(
-            relative_rect=pygame.Rect((300 - box_width, 0), (box_width, box_height)),
+            relative_rect=pygame.Rect((300 - box_width - self.padding, self.padding), (box_width, box_height)),
             manager=manager,
-            container=self.window,
+            container=self.card_container,
             margins={'left': 0, 'right': 0, 'top': 0, 'bottom': 0},
             object_id=ObjectID(object_id='#point_value_box')
         )
@@ -99,47 +113,54 @@ class UnitCard:
             manager=manager,
             container=self.point_value_bg
         )
+        # Add faction label in upper left corner
+        self.faction_label = UILabel(
+            relative_rect=pygame.Rect((self.padding + 10, self.padding + 5), (150, 20)),
+            text=f"Faction: {faction_name}",
+            manager=manager,
+            container=self.card_container,
+            object_id=ObjectID(class_id='@left_aligned_text')
+        )
         
-        # Add tier information if not basic
-        if unit_tier != UnitTier.BASIC:
-            # Add tier label in upper left corner
-            self.tier_label = UILabel(
-                relative_rect=pygame.Rect((5, 5), (80, 20)),
-                text=unit_tier.value,
-                manager=manager,
-                container=self.window,
-                object_id=ObjectID(class_id='@tier_label')
-            )
-        else:
-            self.tier_label = None
+        # Add tier label below faction label
+        self.tier_label = UILabel(
+            relative_rect=pygame.Rect((self.padding + 10, self.padding + 25), (150, 20)),
+            text=f"Tier: {unit_tier.value}",
+            manager=manager,
+            container=self.card_container,
+            object_id=ObjectID(class_id='@left_aligned_text')
+        )
         
         # Add description
         full_description = f"{description}"
         
         # Add unit description with clickable links
         self.text = pygame_gui.elements.UITextBox(
-            relative_rect=pygame.Rect((0, 200), (300, 90)),
+            relative_rect=pygame.Rect((self.padding, self.padding + 200), (card_width, 90)),
             html_text=full_description,
             manager=manager,
-            container=self.window
+            container=self.card_container
         )
         
         # Store the window reference in the text box's container for link handling
-        self.text.ui_container.window = self.window
+        if self.window is not None:
+            self.text.ui_container.window = self.window
+        elif hasattr(container, 'window'):
+            self.text.ui_container.window = container.window
 
         # Add bottom row with label and Tips button
-        bottom_y = 410
+        bottom_y = 410 + self.padding  # Move down if padding at top
         self.bottom_label = UILabel(
-            relative_rect=pygame.Rect((10, bottom_y), (180, 30)),
+            relative_rect=pygame.Rect((self.padding + 10, bottom_y), (180, 30)),
             text="",
             manager=manager,
-            container=self.window
+            container=self.card_container
         )
         self.tips_button = UIButton(
-            relative_rect=pygame.Rect((300-90, bottom_y), (80, 30)),
+            relative_rect=pygame.Rect((300 - 90 - self.padding, bottom_y), (80, 30)),
             text="Tips",
             manager=manager,
-            container=self.window
+            container=self.card_container
         )
         self.sprite_sheet = get_unit_sprite_sheet(unit_type, tier=unit_tier)
         
@@ -203,7 +224,7 @@ class UnitCard:
             stat_type=stat_type,
             value=value,
             tooltip_text=tooltip_text,
-            container=self.window,
+            container=self.card_container,
             modification_level=modification_level
         )
         
@@ -228,7 +249,7 @@ class UnitCard:
                 (10, y_offset + len(self.stat_bars) * (bar_height + spacing)), 
                 (280, bar_height)
             ),
-            container=self.window,
+            container=self.card_container,
             stat_type=stat_type,
             value=0,
             tooltip_text="",
@@ -240,12 +261,12 @@ class UnitCard:
         return stat_bar
     
     def get_window(self):
-        """Get the window element for this unit card."""
-        return self.window
+        """Get the window element for this unit card, or the container if no window."""
+        return self.window if self.window is not None else self.card_container
     
     def bring_to_front(self):
         """Bring this unit card to the front, simulating a click behavior."""
-        if self.window.alive():
+        if self.window is not None and self.window.alive():
             # Use pygame-gui's built-in bring_to_front method if available
             if hasattr(self.manager, 'bring_to_front'):
                 self.manager.bring_to_front(self.window)
@@ -260,11 +281,15 @@ class UnitCard:
     
     def kill(self):
         """Remove the unit card from the UI."""
-        self.window.kill()
+        if self.window is not None:
+            self.window.kill()
+        # Note: If using a container, the container owner is responsible for cleanup
         self.bottom_label.kill()
         self.tips_button.kill()
         self.point_value_label.kill()
         self.point_value_bg.kill()
+        if self.faction_label:
+            self.faction_label.kill()
         if self.tier_label:
             self.tier_label.kill()
         
@@ -275,10 +300,15 @@ class UnitCard:
         for stat_bar in self.stat_bars:
             stat_bar.update(time_delta)
 
-        if info_mode_manager.info_mode:
-            self.bottom_label.set_text(f"Press {info_mode_manager.modifier_key} to close")
+        # Only show the info mode text if this is a standalone window (not in a panel)
+        if self.window is not None:
+            if info_mode_manager.info_mode:
+                self.bottom_label.set_text(f"Press {info_mode_manager.modifier_key} to close")
+            else:
+                self.bottom_label.set_text(f"Press {info_mode_manager.modifier_key} to keep open")
         else:
-            self.bottom_label.set_text(f"Press {info_mode_manager.modifier_key} to keep open")
+            # When in a panel, leave the bottom label empty
+            self.bottom_label.set_text("")
         
         # Update animation
         self.animation_time += time_delta
@@ -332,7 +362,7 @@ class UnitCard:
 
     def process_event(self, event):
         """Process UI events for the unit card (e.g., Tips button click). Returns True if handled."""
-        if event.type == pygame_gui.UI_BUTTON_PRESSED and event.ui_element == self.tips_button:
+        if event.type == pygame.USEREVENT and event.user_type == pygame_gui.UI_BUTTON_PRESSED and event.ui_element == self.tips_button:
             self.show_tips()
             return True
         return False 

@@ -21,6 +21,7 @@ from ui_components.return_button import ReturnButton
 from ui_components.feedback_button import FeedbackButton
 from ui_components.corruption_panel import CorruptionPanel
 from ui_components.corruption_congratulations_panel import CorruptionCongratulationsPanel
+from ui_components.upgrade_window import UpgradeWindow
 from world_map_view import BorderState, FillState, WorldMapView, HexState
 from scene_utils import use_world
 from ui_components.progress_panel import ProgressPanel
@@ -78,6 +79,7 @@ class CampaignScene(Scene):
         self.congratulations_panel = None
         self.corruption_congratulations_panel = None
         self.corruption_dialog = None
+        self.upgrade_window = None
         self.check_panels()
         self.create_ui()
         
@@ -115,6 +117,20 @@ class CampaignScene(Scene):
         """Create the UI elements for the world map scene."""
         self.return_button = ReturnButton(self.manager)
         self.feedback_button = FeedbackButton(self.manager)
+        
+        # Create upgrade button in top right
+        button_width = 120
+        button_height = 40
+        screen_rect = self.screen.get_rect()
+        upgrade_button_x = screen_rect.width - button_width - 20
+        upgrade_button_y = 20
+        
+        self.upgrade_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect(upgrade_button_x, upgrade_button_y, button_width, button_height),
+            text="Upgrade Units",
+            manager=self.manager
+        )
+
     def create_context_buttons(self) -> None:
         """Create context-sensitive buttons based on selected hex."""
         # Clear existing buttons
@@ -199,6 +215,10 @@ class CampaignScene(Scene):
                 self.check_panels()
                 continue
 
+            # Handle upgrade window events if it exists
+            if self.upgrade_window is not None and self.upgrade_window.handle_event(event):
+                continue
+
             self.handle_escape(event)
 
             # Add enter key handling
@@ -218,6 +238,11 @@ class CampaignScene(Scene):
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.return_button:
                         pygame.event.post(PreviousSceneEvent().to_event())
+                    elif event.ui_element == self.upgrade_button:
+                        # Create a new upgrade window each time
+                        if self.upgrade_window is not None:
+                            self.upgrade_window.kill()
+                        self.upgrade_window = UpgradeWindow(self.manager)
                     elif event.ui_element in (
                         self.context_buttons.get("battle"),
                         self.context_buttons.get("improve")
@@ -358,4 +383,9 @@ class CampaignScene(Scene):
         
         self.manager.update(time_delta)
         self.manager.draw_ui(self.screen)
+
+        # Update upgrade window if it exists
+        if self.upgrade_window is not None:
+            self.upgrade_window.update(time_delta)
+
         return super().update(time_delta, events)

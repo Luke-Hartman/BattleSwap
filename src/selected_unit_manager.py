@@ -4,10 +4,12 @@ import pygame
 import pygame_gui
 
 from components.unit_type import UnitType
+from components.unit_tier import UnitTier
 from ui_components.unit_card import UnitCard
 from ui_components.glossary_entry import GlossaryEntry
 from ui_components.game_data import get_unit_data, UnitTier, StatType, GLOSSARY_ENTRIES
 from info_mode_manager import info_mode_manager
+from progress_manager import progress_manager
 
 class SelectedUnitManager:
     """Service for managing the stats card UI."""
@@ -24,6 +26,7 @@ class SelectedUnitManager:
         self.unit_cards: List[UnitCard] = []  # For info mode (multiple cards)
         self.glossary_entries: List[GlossaryEntry] = []  # For info mode glossary entries
         self._selected_unit_type: Optional[UnitType] = None
+        self._selected_unit_tier: Optional[UnitTier] = None
         self.manager: Optional[pygame_gui.UIManager] = None
         self.screen: Optional[pygame.Surface] = None
 
@@ -70,9 +73,9 @@ class SelectedUnitManager:
         """Create a glossary entry from a link click with proper positioning."""
         return self._create_or_focus_glossary_entry(entry_type_str, position_hint)
 
-    def create_unit_card_from_link(self, unit_type_str: str, position_hint: Optional[tuple[int, int]] = None) -> bool:
+    def create_unit_card_from_link(self, unit_type_str: str, unit_tier: UnitTier, position_hint: Optional[tuple[int, int]] = None) -> bool:
         """Create a unit card from a link click with proper positioning."""
-        return self._create_or_focus_unit_card(unit_type_str, position_hint)
+        return self._create_or_focus_unit_card(unit_type_str, unit_tier, position_hint)
 
     def get_next_card_position(self) -> tuple[int, int]:
         """Get the next available position for a new card, avoiding overlaps and mouse."""
@@ -123,7 +126,16 @@ class SelectedUnitManager:
         mouse_pos = pygame.mouse.get_pos()
         
         if self._is_unit_type(link_target):
-            return self._create_or_focus_unit_card(link_target, mouse_pos)
+            # For link clicks, use the tier from progress manager
+            target_unit_type = None
+            for unit_type in UnitType:
+                if unit_type.value == link_target:
+                    target_unit_type = unit_type
+                    break
+            if target_unit_type is None:
+                return False
+            unit_tier = progress_manager.get_unit_tier(target_unit_type)
+            return self._create_or_focus_unit_card(link_target, unit_tier, mouse_pos)
         else:
             return self._create_or_focus_glossary_entry(link_target, mouse_pos)
 
@@ -134,7 +146,7 @@ class SelectedUnitManager:
                 return True
         return False
 
-    def _create_or_focus_unit_card(self, unit_type_str: str, position_hint: Optional[tuple[int, int]] = None) -> bool:
+    def _create_or_focus_unit_card(self, unit_type_str: str, unit_tier: UnitTier, position_hint: Optional[tuple[int, int]] = None) -> bool:
         """Create a new unit card or bring existing one to front."""
         target_unit_type = None
         for unit_type in UnitType:
@@ -147,7 +159,7 @@ class SelectedUnitManager:
         
         self._cleanup_dead_cards()
         
-        existing_card = self._find_existing_unit_card(target_unit_type)
+        existing_card = self._find_existing_unit_card(target_unit_type, unit_tier)
         if existing_card is not None:
             self.bring_card_to_front(existing_card)
             return True
@@ -159,7 +171,7 @@ class SelectedUnitManager:
             card_index = self._get_card_index_for_new_card()
             position = self._calculate_position_from_index(card_index)
         
-        new_card = self._create_unit_card(target_unit_type, position)
+        new_card = self._create_unit_card(target_unit_type, position, unit_tier)
         
         if info_mode_manager.info_mode:
             new_card.creation_index = card_index if card_index is not None else self._get_next_card_index()
@@ -312,10 +324,10 @@ class SelectedUnitManager:
         mouse_pos = pygame.mouse.get_pos()
         return self._is_mouse_in_card_area(mouse_pos, position)
 
-    def _find_existing_unit_card(self, unit_type: UnitType) -> Optional[UnitCard]:
-        """Find an existing unit card of the given type."""
+    def _find_existing_unit_card(self, unit_type: UnitType, unit_tier: UnitTier) -> Optional[UnitCard]:
+        """Find an existing unit card of the given type and tier."""
         for card in self.unit_cards:
-            if card.unit_type == unit_type:
+            if card.unit_type == unit_type and card.unit_tier == unit_tier:
                 return card
         return None
 
@@ -340,6 +352,29 @@ class SelectedUnitManager:
             if not info_mode_manager.info_mode:
                 self._hide_stats()
             self._selected_unit_type = value
+            # Reset tier to None when unit type changes
+            self._selected_unit_tier = None
+            self._show_stats()
+
+    @property
+    def selected_unit_tier(self) -> Optional[UnitTier]:
+        return self._selected_unit_tier
+    
+    @selected_unit_tier.setter
+    def selected_unit_tier(self, value: Optional[UnitTier]) -> None:
+        if self._selected_unit_tier != value:
+            if not info_mode_manager.info_mode:
+                self._hide_stats()
+            self._selected_unit_tier = value
+            self._show_stats()
+
+    def set_selected_unit_with_tier(self, unit_type: Optional[UnitType], unit_tier: Optional[UnitTier] = None) -> None:
+        """Set both the selected unit type and tier at once."""
+        if self._selected_unit_type != unit_type or self._selected_unit_tier != unit_tier:
+            if not info_mode_manager.info_mode:
+                self._hide_stats()
+            self._selected_unit_type = unit_type
+            self._selected_unit_tier = unit_tier
             self._show_stats()
 
     def _show_stats(self) -> None:
@@ -349,7 +384,15 @@ class SelectedUnitManager:
         if self._selected_unit_type is None:
             return
         
-        self._create_or_focus_unit_card(self._selected_unit_type.value)
+        # Determine the tier to use
+        if self._selected_unit_tier is not None:
+            # Use the explicitly set tier (for units on battlefield)
+            unit_tier = self._selected_unit_tier
+        else:
+            # Use the tier from progress manager (for barracks buttons)
+            unit_tier = progress_manager.get_unit_tier(self._selected_unit_type)
+        
+        self._create_or_focus_unit_card(self._selected_unit_type.value, unit_tier)
 
     def _hide_stats(self) -> None:
         """Hide the unit card(s) if they exist."""
@@ -388,9 +431,9 @@ class SelectedUnitManager:
             entry.kill()
         self.glossary_entries.clear()
 
-    def _create_unit_card(self, unit_type: UnitType, position: tuple[int, int]) -> UnitCard:
+    def _create_unit_card(self, unit_type: UnitType, position: tuple[int, int], unit_tier: UnitTier) -> UnitCard:
         """Create a unit card with all stats populated."""
-        unit_data = get_unit_data(unit_type, UnitTier.BASIC)
+        unit_data = get_unit_data(unit_type, unit_tier)
         
         new_card = UnitCard(
             screen=self.screen,
@@ -398,7 +441,9 @@ class SelectedUnitManager:
             position=position,
             name=unit_data.name,
             description=unit_data.description,
-            unit_type=unit_type
+            unit_type=unit_type,
+            unit_tier=unit_tier,
+            container=None
         )
         
         for stat_type in StatType:

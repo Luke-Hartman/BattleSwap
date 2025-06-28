@@ -13,6 +13,7 @@ from battles import Battle
 from components.position import Position
 from components.team import Team, TeamType
 from components.unit_type import UnitType, UnitTypeComponent
+from components.unit_tier import UnitTier, UnitTierComponent
 from entities.units import create_unit
 from processors.animation_processor import AnimationProcessor
 from processors.orientation_processor import OrientationProcessor
@@ -103,12 +104,18 @@ class WorldMapView:
 
             world_x, world_y = axial_to_world(*battle.hex_coords)
             for unit_type, position in battle.allies or []:
+                # Get the appropriate tier for player units
+                if progress_manager:
+                    tier = progress_manager.get_unit_tier(unit_type)
+                else:
+                    tier = UnitTier.BASIC
                 create_unit(
                     position[0] + world_x,
                     position[1] + world_y,
                     unit_type,
                     TeamType.TEAM1,
-                    corruption_powers=corruption_powers
+                    corruption_powers=corruption_powers,
+                    tier=tier
                 )
             for unit_type, position in battle.enemies:
                 create_unit(
@@ -133,9 +140,11 @@ class WorldMapView:
                 if hovered_unit is not None:
                     esper.add_component(hovered_unit, Focus())
                     unit_type = esper.component_for_entity(hovered_unit, UnitTypeComponent).type
-                    selected_unit_manager.selected_unit_type = unit_type
+                    # Get the unit tier from the entity
+                    unit_tier = esper.component_for_entity(hovered_unit, UnitTierComponent).tier
+                    selected_unit_manager.set_selected_unit_with_tier(unit_type, unit_tier)
                 else:
-                    selected_unit_manager.selected_unit_type = None
+                    selected_unit_manager.set_selected_unit_with_tier(None, None)
 
     # ------------------------------
     # Public API
@@ -204,12 +213,21 @@ class WorldMapView:
         # Only apply corruption powers if the battle is corrupted
         corruption_powers = self.battles[battle_id].corruption_powers if is_corrupted else None
         
+        # Get the appropriate tier for the unit
+        if team == TeamType.TEAM1 and progress_manager:
+            # Player units should use their upgraded tier
+            tier = progress_manager.get_unit_tier(unit_type)
+        else:
+            # Enemy units and units without progress manager use basic tier
+            tier = UnitTier.BASIC
+        
         create_unit(
             position[0],
             position[1],
             unit_type,
             team,
-            corruption_powers=corruption_powers
+            corruption_powers=corruption_powers,
+            tier=tier
         )
         if team == TeamType.TEAM1:
             if self.battles[battle_id].allies is None:

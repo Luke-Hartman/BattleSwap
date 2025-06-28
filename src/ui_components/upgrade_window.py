@@ -1,0 +1,600 @@
+"""Unit upgrade window UI component."""
+
+import pygame
+import pygame_gui
+from typing import Optional, Dict, List
+from pygame_gui.core import ObjectID
+
+from components.unit_type import UnitType
+from components.unit_tier import UnitTier
+from entities.units import unit_theme_ids, Faction
+from progress_manager import progress_manager
+from ui_components.unit_card import UnitCard
+from ui_components.game_data import get_unit_data, StatType
+
+
+class UnitIconButton(pygame_gui.elements.UIButton):
+    """A button that displays a unit icon for selection."""
+    
+    size = 80  # Same size as barracks
+    
+    def __init__(self, 
+        x_pos: int,
+        y_pos: int,
+        unit_type: UnitType,
+        manager: pygame_gui.UIManager,
+        container: Optional[pygame_gui.core.UIContainer] = None,
+    ):
+        self.unit_type = unit_type
+        super().__init__(
+            relative_rect=pygame.Rect((x_pos, y_pos), (self.size, self.size)),
+            text="",
+            manager=manager,
+            container=container,
+            object_id=ObjectID(class_id="@unit_count", object_id=unit_theme_ids[unit_type]),
+        )
+        self.can_hover = lambda: True
+
+
+class UpgradeWindow:
+    """A large modal window for upgrading units."""
+    
+    def __init__(self, manager: pygame_gui.UIManager):
+        """Initialize the upgrade window."""
+        self.manager = manager
+        self.window = None
+        self.close_button = None
+        self.selected_unit_type: Optional[UnitType] = None
+        self.unit_buttons: List[UnitIconButton] = []
+        # Initialize upgrade dialogs list
+        if not hasattr(self.manager, 'upgrade_dialogs'):
+            self.manager.upgrade_dialogs = []
+        self._create_window()
+    
+    def _create_window(self) -> None:
+        """Create the upgrade window and its contents."""
+        # Get screen dimensions
+        screen_info = pygame.display.Info()
+        screen_width = screen_info.current_w
+        screen_height = screen_info.current_h
+        
+        # Window size (large but not full screen)
+        window_width = min(1200, screen_width - 100)
+        window_height = min(800, screen_height - 100)
+        
+        # Center the window
+        window_x = (screen_width - window_width) // 2
+        window_y = (screen_height - window_height) // 2
+        
+        # Create the main window
+        self.window = pygame_gui.elements.UIWindow(
+            rect=pygame.Rect(window_x, window_y, window_width, window_height),
+            manager=self.manager,
+            window_display_title="Unit Upgrades",
+            resizable=True,
+        )
+        
+        # Create close button in the top-right corner
+        close_button_size = (30, 30)
+        close_button_x = window_width - close_button_size[0] - 10
+        close_button_y = 10
+        
+        self.close_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect(close_button_x, close_button_y, *close_button_size),
+            text="X",
+            manager=self.manager,
+            container=self.window,
+            anchors={'left': 'right',
+                    'right': 'right',
+                    'top': 'top',
+                    'bottom': 'top'}
+        )
+        
+        # Create top section (unit selection)
+        top_section_height = 200
+        top_section = pygame_gui.elements.UIPanel(
+            relative_rect=pygame.Rect(3, 3, window_width - 6, top_section_height - 3),
+            manager=self.manager,
+            container=self.window,
+            anchors={'left': 'left',
+                    'right': 'right',
+                    'top': 'top',
+                    'bottom': 'top'}
+        )
+        
+        # Create scrolling container for unit grid
+        scroll_container = pygame_gui.elements.UIScrollingContainer(
+            relative_rect=pygame.Rect(0, 0, window_width - 6, top_section_height - 6),
+            manager=self.manager,
+            container=top_section,
+            allow_scroll_y=True,
+            allow_scroll_x=False
+        )
+        
+        # Create unit grid in scrolling container
+        self._create_unit_grid(scroll_container, window_width - 12, top_section_height - 12)
+        
+        # Create bottom section (upgrade details)
+        bottom_section = pygame_gui.elements.UIPanel(
+            relative_rect=pygame.Rect(3, top_section_height, window_width - 6, window_height - top_section_height - 30),
+            manager=self.manager,
+            container=self.window,
+            anchors={'left': 'left',
+                    'right': 'right',
+                    'top': 'top',
+                    'bottom': 'bottom'}
+        )
+        self.bottom_section = bottom_section  # Store reference for later use
+        
+        # Create three panels for unit cards (Basic, Advanced, Elite)
+        card_width = 300
+        card_height = 475
+        panel_spacing = 20
+        total_width = card_width * 3 + panel_spacing * 2
+        start_x = (window_width - 6 - total_width) // 2  # Center the cards
+        card_margin = 20  # Margin above and below cards
+        
+        self.basic_panel = pygame_gui.elements.UIPanel(
+            relative_rect=pygame.Rect(start_x, card_margin, card_width, card_height),
+            manager=self.manager,
+            container=bottom_section,
+            object_id=ObjectID(object_id='#upgrade_card_panel')
+        )
+        
+        self.advanced_panel = pygame_gui.elements.UIPanel(
+            relative_rect=pygame.Rect(start_x + card_width + panel_spacing, card_margin, card_width, card_height),
+            manager=self.manager,
+            container=bottom_section,
+            object_id=ObjectID(object_id='#upgrade_card_panel')
+        )
+        
+        self.elite_panel = pygame_gui.elements.UIPanel(
+            relative_rect=pygame.Rect(start_x + (card_width + panel_spacing) * 2, card_margin, card_width, card_height),
+            manager=self.manager,
+            container=bottom_section,
+            object_id=ObjectID(object_id='#upgrade_card_panel')
+        )
+        
+        # Initialize unit cards as None
+        self.basic_card = None
+        self.advanced_card = None
+        self.elite_card = None
+        
+        # Add upgrade button at the bottom of the window
+        upgrade_button_y = card_margin + card_height + 10  # Position just below the cards
+        self.upgrade_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((window_width - 130, upgrade_button_y), (100, 30)),
+            text="Upgrade",
+            manager=self.manager,
+            container=bottom_section
+        )
+        self.upgrade_button.disable()  # Start disabled until a unit is selected
+        self.upgrade_button.set_tooltip("Select a unit to upgrade")
+        
+        # Add credit display
+        self.credit_label = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect((10, upgrade_button_y), (250, 30)),
+            text="",
+            manager=self.manager,
+            container=bottom_section
+        )
+        self._update_credit_display()
+    
+    def _select_unit(self, unit_type: UnitType) -> None:
+        """Select a unit and update the UI accordingly."""
+        # Unselect all other buttons
+        for button in self.unit_buttons:
+            if button.unit_type != unit_type:
+                button.unselect()
+            else:
+                button.select()
+        
+        self.selected_unit_type = unit_type
+        self._update_upgrade_details()
+        self._update_upgrade_button_state()
+        self._update_credit_display()
+    
+    def _create_unit_grid(self, container: pygame_gui.elements.UIPanel, container_width: int, container_height: int) -> None:
+        """Create a grid of unit icons in the given container."""
+        # Get available units from progress manager
+        available_units = progress_manager.available_units(None)
+        
+        # Filter to only show units that the player has
+        player_units = {unit_type: count for unit_type, count in available_units.items() if count > 0}
+        
+        if not player_units:
+            # Show message if no units available
+            no_units_label = pygame_gui.elements.UILabel(
+                relative_rect=pygame.Rect(10, 50, container_width - 20, 30),
+                text="No units available for upgrade",
+                manager=self.manager,
+                container=container,
+                anchors={'left': 'left',
+                        'right': 'right',
+                        'top': 'top',
+                        'bottom': 'bottom'}
+            )
+            return
+        
+        # Calculate grid layout
+        icon_size = UnitIconButton.size
+        padding = 5  # Reduced from 10 to 5
+        icons_per_row = max(1, (container_width - padding) // (icon_size + padding))
+        
+        # Create unit buttons in a grid
+        row = 0
+        col = 0
+        y_offset = 10  # Start with small padding from top
+        
+        for unit_type, count in sorted(player_units.items(), key=lambda x: x[0].value):
+            x_pos = col * (icon_size + padding) + padding
+            y_pos = row * (icon_size + padding) + y_offset
+            
+            unit_button = UnitIconButton(
+                x_pos=x_pos,
+                y_pos=y_pos,
+                unit_type=unit_type,
+                manager=self.manager,
+                container=container
+            )
+            self.unit_buttons.append(unit_button)
+            
+            # Move to next position
+            col += 1
+            if col >= icons_per_row:
+                col = 0
+                row += 1
+    
+    def _update_upgrade_details(self) -> None:
+        """Update the upgrade details section based on selected unit."""
+        if self.selected_unit_type is None:
+            # Clear any existing cards
+            self._clear_unit_cards()
+            # Recreate panels with default theme
+            self._recreate_panels_with_theme('#upgrade_card_panel')
+            return
+        
+        # Clear existing cards
+        self._clear_unit_cards()
+        
+        # Get current tier of the selected unit
+        current_tier = progress_manager.get_unit_tier(self.selected_unit_type)
+        
+        # Determine which panel should have the current tier theme
+        current_theme = '#upgrade_card_panel_current'
+        default_theme = '#upgrade_card_panel'
+        
+        if current_tier == UnitTier.BASIC:
+            self._recreate_panels_with_theme(default_theme, basic_theme=current_theme)
+        elif current_tier == UnitTier.ADVANCED:
+            self._recreate_panels_with_theme(default_theme, advanced_theme=current_theme)
+        elif current_tier == UnitTier.ELITE:
+            self._recreate_panels_with_theme(default_theme, elite_theme=current_theme)
+        else:
+            self._recreate_panels_with_theme(default_theme)
+        
+        # Create unit cards for each tier
+        self._create_unit_cards()
+    
+    def _clear_unit_cards(self) -> None:
+        """Clear all unit cards."""
+        if self.basic_card is not None:
+            self.basic_card.kill()
+            self.basic_card = None
+        if self.advanced_card is not None:
+            self.advanced_card.kill()
+            self.advanced_card = None
+        if self.elite_card is not None:
+            self.elite_card.kill()
+            self.elite_card = None
+    
+    def _create_unit_cards(self) -> None:
+        """Create unit cards for all three tiers."""
+        if self.selected_unit_type is None:
+            return
+        
+        # Create Basic tier card
+        basic_data = get_unit_data(self.selected_unit_type, UnitTier.BASIC)
+        self.basic_card = UnitCard(
+            screen=pygame.display.get_surface(),
+            manager=self.manager,
+            position=(0, 0),  # Position doesn't matter when using container
+            name=basic_data.name,
+            description=basic_data.description,
+            unit_type=self.selected_unit_type,
+            unit_tier=UnitTier.BASIC,
+            container=self.basic_panel,
+            padding=10
+        )
+        
+        # Add stats to basic card
+        for stat_type in StatType:
+            stat_value = basic_data.stats[stat_type]
+            if stat_value is not None:
+                self.basic_card.add_stat(
+                    stat_type=stat_type,
+                    value=int(stat_value),
+                    tooltip_text=basic_data.tooltips[stat_type] or "N/A",
+                    modification_level=basic_data.modification_levels.get(stat_type, 0)
+                )
+            else:
+                self.basic_card.skip_stat(stat_type=stat_type)
+        
+        # Create Advanced tier card
+        advanced_data = get_unit_data(self.selected_unit_type, UnitTier.ADVANCED)
+        self.advanced_card = UnitCard(
+            screen=pygame.display.get_surface(),
+            manager=self.manager,
+            position=(0, 0),
+            name=advanced_data.name,
+            description=advanced_data.description,
+            unit_type=self.selected_unit_type,
+            unit_tier=UnitTier.ADVANCED,
+            container=self.advanced_panel,
+            padding=10
+        )
+        
+        # Add stats to advanced card
+        for stat_type in StatType:
+            stat_value = advanced_data.stats[stat_type]
+            if stat_value is not None:
+                self.advanced_card.add_stat(
+                    stat_type=stat_type,
+                    value=int(stat_value),
+                    tooltip_text=advanced_data.tooltips[stat_type] or "N/A",
+                    modification_level=advanced_data.modification_levels.get(stat_type, 0)
+                )
+            else:
+                self.advanced_card.skip_stat(stat_type=stat_type)
+        
+        # Create Elite tier card
+        elite_data = get_unit_data(self.selected_unit_type, UnitTier.ELITE)
+        self.elite_card = UnitCard(
+            screen=pygame.display.get_surface(),
+            manager=self.manager,
+            position=(0, 0),
+            name=elite_data.name,
+            description=elite_data.description,
+            unit_type=self.selected_unit_type,
+            unit_tier=UnitTier.ELITE,
+            container=self.elite_panel,
+            padding=10
+        )
+        
+        # Add stats to elite card
+        for stat_type in StatType:
+            stat_value = elite_data.stats[stat_type]
+            if stat_value is not None:
+                self.elite_card.add_stat(
+                    stat_type=stat_type,
+                    value=int(stat_value),
+                    tooltip_text=elite_data.tooltips[stat_type] or "N/A",
+                    modification_level=elite_data.modification_levels.get(stat_type, 0)
+                )
+            else:
+                self.elite_card.skip_stat(stat_type=stat_type)
+    
+    def update(self, time_delta: float) -> None:
+        """Update the upgrade window and its unit cards."""
+        # Update unit cards if they exist
+        if self.basic_card:
+            self.basic_card.update(time_delta)
+        if self.advanced_card:
+            self.advanced_card.update(time_delta)
+        if self.elite_card:
+            self.elite_card.update(time_delta)
+    
+    def handle_event(self, event: pygame.event.Event) -> bool:
+        """Handle events for the upgrade window. Returns True if event was handled."""
+        if event.type == pygame.USEREVENT:
+            if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+                if event.ui_element == self.close_button:
+                    self.kill()
+                    return True
+                
+                # Handle unit selection
+                for unit_button in self.unit_buttons:
+                    if event.ui_element == unit_button:
+                        self._select_unit(unit_button.unit_type)
+                        return True
+                
+                # Handle upgrade button click
+                if event.ui_element == self.upgrade_button:
+                    self._show_upgrade_confirmation()
+                    return True
+                
+                # Handle upgrade dialog events
+                if hasattr(self.manager, 'upgrade_dialogs'):
+                    for dialog in self.manager.upgrade_dialogs[:]:  # Copy list to avoid modification during iteration
+                        if event.ui_element == dialog.confirm_button:
+                            # Perform the upgrade
+                            success = dialog.progress_manager.upgrade_unit(dialog.unit_type)
+                            if success:
+                                # Close the dialog
+                                dialog.kill()
+                                self.manager.upgrade_dialogs.remove(dialog)
+                                # Refresh the upgrade details
+                                self._update_upgrade_details()
+                                self._update_upgrade_button_state()
+                                self._update_credit_display()
+                                return True
+                        elif event.ui_element == dialog.cancel_button:
+                            # Close the dialog without upgrading
+                            dialog.kill()
+                            self.manager.upgrade_dialogs.remove(dialog)
+                            return True
+                
+                # Handle unit card events (tips, upgrade buttons)
+                if self.basic_card:
+                    if self.basic_card.process_event(event):
+                        return True
+                if self.advanced_card:
+                    if self.advanced_card.process_event(event):
+                        return True
+                if self.elite_card:
+                    if self.elite_card.process_event(event):
+                        return True
+        
+        return False
+    
+    def kill(self) -> None:
+        """Clean up the upgrade window."""
+        # Clean up unit cards
+        self._clear_unit_cards()
+        
+        if self.window is not None:
+            self.window.kill()
+            self.window = None
+        if self.close_button is not None:
+            self.close_button.kill()
+            self.close_button = None
+        # Clean up unit buttons
+        for button in self.unit_buttons:
+            button.kill()
+        self.unit_buttons.clear()
+        
+        # Clean up upgrade button and credit label
+        if self.upgrade_button:
+            self.upgrade_button.kill()
+        if self.credit_label:
+            self.credit_label.kill()
+    
+    def _update_credit_display(self) -> None:
+        """Update the credit display based on the selected unit."""
+        # Show available credits
+        advanced_credits = progress_manager.advanced_credits
+        elite_credits = progress_manager.elite_credits
+        self.credit_label.set_text(f"Credits - Advanced: {advanced_credits} | Elite: {elite_credits}")
+    
+    def _update_upgrade_button_state(self) -> None:
+        """Update the upgrade button state based on selected unit and available credits."""
+        if self.selected_unit_type is None:
+            self.upgrade_button.disable()
+            self.upgrade_button.set_tooltip("Select a unit to upgrade")
+            return
+        
+        current_tier = progress_manager.get_unit_tier(self.selected_unit_type)
+        
+        # Check if unit can be upgraded
+        if current_tier == UnitTier.ELITE:
+            self.upgrade_button.disable()
+            self.upgrade_button.set_tooltip("Unit is already at maximum tier")
+        elif not progress_manager.can_upgrade_unit(self.selected_unit_type):
+            self.upgrade_button.disable()
+            if current_tier == UnitTier.BASIC:
+                self.upgrade_button.set_tooltip("Not enough Advanced credits")
+            else:  # current_tier == UnitTier.ADVANCED
+                self.upgrade_button.set_tooltip("Not enough Elite credits")
+        else:
+            next_tier = UnitTier.ADVANCED if current_tier == UnitTier.BASIC else UnitTier.ELITE
+            self.upgrade_button.enable()
+            self.upgrade_button.set_tooltip(f"Upgrade to {next_tier.value}")
+    
+    def _show_upgrade_confirmation(self) -> None:
+        """Show a confirmation dialog for upgrading the selected unit."""
+        if self.selected_unit_type is None:
+            return
+        
+        current_tier = progress_manager.get_unit_tier(self.selected_unit_type)
+        next_tier = UnitTier.ADVANCED if current_tier == UnitTier.BASIC else UnitTier.ELITE
+        credit_type = "Advanced" if current_tier == UnitTier.BASIC else "Elite"
+        unit_name = get_unit_data(self.selected_unit_type, current_tier).name
+        
+        # Create confirmation dialog
+        screen_info = pygame.display.Info()
+        dialog_width = 400
+        dialog_height = 220
+        dialog_x = (screen_info.current_w - dialog_width) // 2
+        dialog_y = (screen_info.current_h - dialog_height) // 2
+        
+        # Create the dialog window
+        dialog = pygame_gui.elements.UIWindow(
+            rect=pygame.Rect(dialog_x, dialog_y, dialog_width, dialog_height),
+            manager=self.manager,
+            window_display_title="Confirm Upgrade",
+            resizable=False
+        )
+        
+        # Add warning text
+        warning_text = pygame_gui.elements.UITextBox(
+            relative_rect=pygame.Rect(10, 10, dialog_width - 20, 100),
+            html_text=f"<b>Warning: This action is not reversible!</b><br><br>"
+                     f"Upgrade {unit_name} from {current_tier.value} to {next_tier.value}?<br>"
+                     f"This will cost 1 {credit_type} credit.",
+            manager=self.manager,
+            container=dialog
+        )
+        
+        # Add confirm and cancel buttons
+        confirm_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect(dialog_width - 180, dialog_height - 60, 80, 30),
+            text="Confirm",
+            manager=self.manager,
+            container=dialog
+        )
+        
+        cancel_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect(dialog_width - 90, dialog_height - 60, 80, 30),
+            text="Cancel",
+            manager=self.manager,
+            container=dialog
+        )
+        
+        # Store references for event handling
+        dialog.confirm_button = confirm_button
+        dialog.cancel_button = cancel_button
+        dialog.unit_type = self.selected_unit_type
+        dialog.progress_manager = progress_manager
+        
+        # Show the dialog
+        dialog.show()
+        
+        # Add to upgrade dialogs list
+        self.manager.upgrade_dialogs.append(dialog)
+
+    def _recreate_panels_with_theme(self, theme: str, basic_theme: str = '', advanced_theme: str = '', elite_theme: str = '') -> None:
+        """Recreate panels with the specified theme."""
+        # Kill existing panels
+        if self.basic_panel:
+            self.basic_panel.kill()
+        if self.advanced_panel:
+            self.advanced_panel.kill()
+        if self.elite_panel:
+            self.elite_panel.kill()
+        
+        # Use the stored bottom section reference
+        bottom_section = self.bottom_section
+        
+        # Recreate panels with the specified themes
+        card_width = 300
+        card_height = 475
+        panel_spacing = 20
+        total_width = card_width * 3 + panel_spacing * 2
+        start_x = (self.window.rect.width - 6 - total_width) // 2
+        card_margin = 20
+        
+        # Use the specified themes or default to the main theme
+        basic_theme_id = ObjectID(object_id=basic_theme) if basic_theme else ObjectID(object_id=theme)
+        advanced_theme_id = ObjectID(object_id=advanced_theme) if advanced_theme else ObjectID(object_id=theme)
+        elite_theme_id = ObjectID(object_id=elite_theme) if elite_theme else ObjectID(object_id=theme)
+        
+        self.basic_panel = pygame_gui.elements.UIPanel(
+            relative_rect=pygame.Rect(start_x, card_margin, card_width, card_height),
+            manager=self.manager,
+            container=bottom_section,
+            object_id=basic_theme_id
+        )
+        
+        self.advanced_panel = pygame_gui.elements.UIPanel(
+            relative_rect=pygame.Rect(start_x + card_width + panel_spacing, card_margin, card_width, card_height),
+            manager=self.manager,
+            container=bottom_section,
+            object_id=advanced_theme_id
+        )
+        
+        self.elite_panel = pygame_gui.elements.UIPanel(
+            relative_rect=pygame.Rect(start_x + (card_width + panel_spacing) * 2, card_margin, card_width, card_height),
+            manager=self.manager,
+            container=bottom_section,
+            object_id=elite_theme_id
+        ) 

@@ -26,6 +26,27 @@
             "shape_corner_radius": "10"
         }
     },
+    "#upgrade_card_panel": {
+        "colours": {},
+        "misc": {
+            "shape": "rounded_rectangle",
+            "shape_corner_radius": "10"
+        }
+    },
+    "#upgrade_card_panel_current": {
+        "colours": {
+            "normal_border": "#FFD700",
+            "hovered_border": "#FFD700",
+            "disabled_border": "#FFD700",
+            "selected_border": "#FFD700",
+            "active_border": "#FFD700"
+        },
+        "misc": {
+            "shape": "rounded_rectangle",
+            "shape_corner_radius": "10",
+            "border_width": "3"
+        }
+    },
     "button": {
         "colours": {
         },
