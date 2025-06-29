@@ -226,8 +226,10 @@ class WorldMapView:
             # Player units should use their upgraded tier
             tier = progress_manager.get_unit_tier(unit_type)
         else:
-            # Enemy units and units without progress manager use basic tier
-            tier = UnitTier.BASIC
+            if is_corrupted:
+                tier = UnitTier.ELITE
+            else:
+                tier = UnitTier.BASIC
         
         create_unit(
             position[0],

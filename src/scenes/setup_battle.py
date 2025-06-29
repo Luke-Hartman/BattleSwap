@@ -374,7 +374,7 @@ class SetupBattleScene(Scene):
                 unit_type=unit_type_comp.type,
                 team=placement_team,
                 corruption_powers=self.battle.corruption_powers,
-                tier=progress_manager.get_unit_tier(unit_type_comp.type) if placement_team == TeamType.TEAM1 else UnitTier.BASIC
+                tier=progress_manager.get_unit_tier(unit_type_comp.type)
             )
             esper.add_component(partial_unit, Placing())
             esper.add_component(partial_unit, Transparency(alpha=128))

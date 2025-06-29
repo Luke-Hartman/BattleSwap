@@ -6,6 +6,7 @@ import esper
 from components.position import Position
 from components.team import Team, TeamType
 from components.unit_state import State, UnitState
+from components.unit_tier import UnitTier
 from components.unit_type import UnitType, UnitTypeComponent
 
 from corruption_powers import CorruptionPower
@@ -128,7 +129,8 @@ def simulate_battle(
     for unit_type, position in ally_placements:
         create_unit(x=position[0], y=position[1], unit_type=unit_type, team=TeamType.TEAM1, corruption_powers=corruption_powers)
     for unit_type, position in enemy_placements:
-        create_unit(x=position[0], y=position[1], unit_type=unit_type, team=TeamType.TEAM2, corruption_powers=corruption_powers)
+        tier = UnitTier.ELITE if corruption_powers is not None else UnitTier.BASIC
+        create_unit(x=position[0], y=position[1], unit_type=unit_type, team=TeamType.TEAM2, corruption_powers=corruption_powers, tier=tier)
     
     # Run the battle simulation
     outcome = None

@@ -42,8 +42,10 @@ class DyingProcessor(esper.Processor):
                     # Player units should create zombies of the player's zombie tier
                     tier = progress_manager.get_unit_tier(UnitType.ZOMBIE_BASIC_ZOMBIE)
                 else:
-                    # Enemy units create basic tier zombies
-                    tier = UnitTier.BASIC
+                    if zombie_infection.corruption_powers is not None:
+                        tier = UnitTier.ELITE
+                    else:
+                        tier = UnitTier.BASIC
                 
                 create_unit(
                     x=position.x,

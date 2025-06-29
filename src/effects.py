@@ -988,8 +988,10 @@ class CreatesUnit(Effect):
             # Player units should use their upgraded tier
             tier = progress_manager.get_unit_tier(self.unit_type)
         else:
-            # Enemy units and units without progress manager use basic tier
-            tier = UnitTier.BASIC
+            if self.corruption_powers is not None:
+                tier = UnitTier.ELITE
+            else:
+                tier = UnitTier.BASIC
         
         entity = create_unit(
             x=position.x + self.offset[0],
