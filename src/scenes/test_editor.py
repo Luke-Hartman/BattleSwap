@@ -305,10 +305,11 @@ class TestEditorScene(Scene):
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.return_button:
-                        pygame.event.post(PreviousSceneEvent().to_event())
+                        pygame.event.post(PreviousSceneEvent(current_scene_id=id(self)).to_event())
                     elif event.ui_element.text == "New Sandbox":
                         pygame.event.post(
                             SetupBattleSceneEvent(
+                                current_scene_id=id(self),
                                 world_map_view=None,
                                 battle_id=None,
                                 sandbox_mode=True,
@@ -342,6 +343,7 @@ class TestEditorScene(Scene):
                         )
                         pygame.event.post(
                             SetupBattleSceneEvent(
+                                current_scene_id=id(self),
                                 world_map_view=world_map_view,
                                 battle_id=battle_id,
                                 sandbox_mode=True,

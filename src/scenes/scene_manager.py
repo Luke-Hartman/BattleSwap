@@ -23,6 +23,7 @@ from scenes.events import (
     CAMPAIGN_SCENE_EVENT,
     SETTINGS_SCENE_EVENT,
     BattleSceneEvent,
+    DeveloperToolsSceneEvent,
     PreviousSceneEvent,
     SetupBattleSceneEvent,
     TestEditorSceneEvent,
@@ -36,6 +37,8 @@ from scenes.campaign import CampaignScene
 from scenes.main_menu import MainMenuScene
 from scenes.developer_tools import DeveloperToolsScene
 from scenes.settings import SettingsScene
+from world_map_view import WorldMapView
+from progress_manager import progress_manager
 
 def get_resource_path(relative_path: str) -> Path:
     """Get absolute path to resource, works for dev and for PyInstaller."""
@@ -90,6 +93,8 @@ class SceneManager:
         )
         self.developer_mode = developer_mode
         self.current_scene = MainMenuScene(screen, self.manager, self.developer_mode)
+        print("starting scene", self.current_scene, id(self.current_scene))
+        print()
 
     def cleanup(self, add_to_stack: bool = True) -> None:
         """Clean up the current scene and save its state."""
@@ -157,20 +162,29 @@ class SceneManager:
         """Update the current scene and handle scene transitions."""
         if not self.current_scene:
             return False
-
         for event in events:
             if event.type == PREVIOUS_SCENE_EVENT:
                 validated_event = PreviousSceneEvent.model_validate(event.dict)
-                for _ in range(validated_event.n):
-                    previous_state = self.scene_stack.pop()
+                if validated_event.current_scene_id != id(self.current_scene):
+                    continue
+                previous_state = self.scene_stack.pop()
+                print("Going to previous scene")
+                print("current_scene", self.current_scene, id(self.current_scene))
+                print("scene_stack", self.scene_stack)
+                print("validated_event", validated_event)
                 self.cleanup(add_to_stack=False)
+
                 self.current_scene = previous_state.scene_type(
                     **previous_state.params
                 )
+                print("new scene", self.current_scene, id(self.current_scene))
+                print()
                 if previous_state.camera_state:
                     previous_state.camera_state.restore_position()
             elif event.type == BATTLE_SCENE_EVENT:
                 validated_event = BattleSceneEvent.model_validate(event.dict)
+                if validated_event.current_scene_id != id(self.current_scene):
+                    continue
                 self.cleanup()
                 self.current_scene = BattleScene(
                     screen=self.screen,
@@ -181,8 +195,10 @@ class SceneManager:
                     developer_mode=self.developer_mode,
                 )
             elif event.type == SETUP_BATTLE_SCENE_EVENT:
-                self.cleanup()
                 validated_event = SetupBattleSceneEvent.model_validate(event.dict)
+                if validated_event.current_scene_id != id(self.current_scene):
+                    continue
+                self.cleanup()
                 if validated_event.world_map_view is not None:
                     camera = validated_event.world_map_view.camera
                     battle = validated_event.world_map_view.battles[validated_event.battle_id]
@@ -201,37 +217,63 @@ class SceneManager:
                     developer_mode=validated_event.developer_mode,
                 )
             elif event.type == TEST_EDITOR_SCENE_EVENT:
-                self.cleanup()
                 validated_event = TestEditorSceneEvent.model_validate(event.dict)
+                if validated_event.current_scene_id != id(self.current_scene):
+                    continue
+                self.cleanup()
                 self.current_scene = TestEditorScene(
                     screen=self.screen,
                     manager=self.manager,
                 )
             elif event.type == CAMPAIGN_EDITOR_SCENE_EVENT:
-                self.cleanup()
                 validated_event = CampaignEditorSceneEvent.model_validate(event.dict)
+                if validated_event.current_scene_id != id(self.current_scene):
+                    continue
+                self.cleanup()
                 self.current_scene = CampaignEditorScene(
                     screen=self.screen,
                     manager=self.manager,
                     world_map_view=validated_event.world_map_view,
                 )
             elif event.type == CAMPAIGN_SCENE_EVENT:
-                self.cleanup()
                 validated_event = CampaignSceneEvent.model_validate(event.dict)
+                if validated_event.current_scene_id != id(self.current_scene):
+                    continue
+                print("Going to campaign scene")
+                print("validated_event", validated_event)
+                print("current_scene", self.current_scene, id(self.current_scene))
+                print("scene_stack before cleanup", self.scene_stack)
+                self.cleanup()
+                print("stack after cleanup", self.scene_stack)
+                camera = Camera(zoom=1/2)
+                world_map_view = WorldMapView(
+                    screen=self.screen,
+                    manager=self.manager,
+                    battles=progress_manager.get_battles_including_solutions(),
+                    camera=camera,
+                    corrupted_hexes=progress_manager.corrupted_hexes
+                )
                 self.current_scene = CampaignScene(
                     screen=self.screen,
                     manager=self.manager,
-                    world_map_view=validated_event.world_map_view,
+                    world_map_view=world_map_view,
                 )
+                print("new scene", self.current_scene, id(self.current_scene))
+                print()
             elif event.type == DEVELOPER_TOOLS_SCENE_EVENT:
+                validated_event = DeveloperToolsSceneEvent.model_validate(event.dict)
+                if validated_event.current_scene_id != id(self.current_scene):
+                    continue
                 self.cleanup()
                 self.current_scene = DeveloperToolsScene(
                     screen=self.screen,
                     manager=self.manager,
                 )
             elif event.type == SETTINGS_SCENE_EVENT:
-                self.cleanup()
                 validated_event = SettingsSceneEvent.model_validate(event.dict)
+                if validated_event.current_scene_id != id(self.current_scene):
+                    continue
+                self.cleanup()
                 self.current_scene = SettingsScene(
                     screen=self.screen,
                     manager=self.manager,

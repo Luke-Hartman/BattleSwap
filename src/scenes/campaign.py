@@ -237,7 +237,7 @@ class CampaignScene(Scene):
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.return_button:
-                        pygame.event.post(PreviousSceneEvent().to_event())
+                        pygame.event.post(PreviousSceneEvent(current_scene_id=id(self)).to_event())
                     elif event.ui_element == self.upgrade_button:
                         # Create a new upgrade window each time
                         if self.upgrade_window is not None:
@@ -250,6 +250,7 @@ class CampaignScene(Scene):
                         battle = self.world_map_view.get_battle_from_hex(self.selected_battle_hex)
                         pygame.event.post(
                             SetupBattleSceneEvent(
+                                current_scene_id=id(self),
                                 world_map_view=self.world_map_view,
                                 battle_id=battle.id,
                                 sandbox_mode=False,

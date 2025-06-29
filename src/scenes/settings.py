@@ -230,7 +230,7 @@ class SettingsScene(Scene):
                                 blocking=True
                             )
                         else:
-                            pygame.event.post(PreviousSceneEvent().to_event())
+                            pygame.event.post(PreviousSceneEvent(current_scene_id=id(self)).to_event())
                 elif event.user_type == pygame_gui.UI_CONFIRMATION_DIALOG_CONFIRMED:
                     if event.ui_element == self.confirmation_dialog:
                         # Revert to initial values before leaving
@@ -239,7 +239,7 @@ class SettingsScene(Scene):
                         emit_event(CHANGE_MUSIC_VOLUME, event=ChangeMusicVolumeEvent(
                             volume=settings.MUSIC_VOLUME,
                         ))
-                        pygame.event.post(PreviousSceneEvent().to_event())
+                        pygame.event.post(PreviousSceneEvent(current_scene_id=id(self)).to_event())
 
             self.manager.process_events(event)
 

@@ -331,7 +331,7 @@ class SetupBattleScene(Scene):
         else:
             self.world_map_view.move_camera_above_battle(self.battle_id)
             self.world_map_view.rebuild(battles=progress_manager.get_battles_including_solutions())
-            pygame.event.post(PreviousSceneEvent().to_event())
+            pygame.event.post(PreviousSceneEvent(current_scene_id=id(self)).to_event())
 
     def pickup_group_of_units(self, unit_ids: List[int], mouse_world_pos: Tuple[float, float], placement_team: TeamType) -> None:
         """Pick up a group of units as transparent previews, like single unit pickup."""
@@ -663,6 +663,7 @@ class SetupBattleScene(Scene):
                     elif event.ui_element == self.start_button:
                         pygame.event.post(
                             BattleSceneEvent(
+                                current_scene_id=id(self),
                                 world_map_view=self.world_map_view,
                                 battle_id=self.battle_id,
                                 sandbox_mode=self.sandbox_mode,
@@ -713,7 +714,7 @@ class SetupBattleScene(Scene):
                     if self.confirmation_dialog is not None and event.ui_element == self.confirmation_dialog:
                         self.world_map_view.move_camera_above_battle(self.battle_id)
                         self.world_map_view.rebuild(battles=progress_manager.get_battles_including_solutions())
-                        pygame.event.post(PreviousSceneEvent().to_event())
+                        pygame.event.post(PreviousSceneEvent(current_scene_id=id(self)).to_event())
                         return super().update(time_delta, events)
 
             if event.type == pygame.MOUSEBUTTONDOWN and not mouse_over_ui(self.manager):

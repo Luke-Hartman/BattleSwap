@@ -99,20 +99,12 @@ class DeveloperToolsScene(Scene):
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.campaign_editor_button:
-                        camera = Camera(zoom=1/2)
-                        world_map_view = WorldMapView(
-                            screen=self.screen,
-                            manager=self.manager,
-                            battles=battles.get_battles(),
-                            camera=camera,
-                            corrupted_hexes=[],
-                        )
                         pygame.event.post(CampaignEditorSceneEvent(
-                            world_map_view=world_map_view,
+                            current_scene_id=id(self),
                         ).to_event())
                     
                     elif event.ui_element == self.test_editor_button:
-                        pygame.event.post(TestEditorSceneEvent().to_event())
+                        pygame.event.post(TestEditorSceneEvent(current_scene_id=id(self)).to_event())
                     
                     elif event.ui_element == self.sandbox_button:
                         battle = battles.Battle(
@@ -133,6 +125,7 @@ class DeveloperToolsScene(Scene):
                             corrupted_hexes=[],
                         )
                         pygame.event.post(SetupBattleSceneEvent(
+                            current_scene_id=id(self),
                             world_map_view=world_map_view,
                             battle_id=battle.id,
                             sandbox_mode=True,
@@ -140,7 +133,7 @@ class DeveloperToolsScene(Scene):
                         ).to_event())
                     
                     elif event.ui_element == self.return_button:
-                        pygame.event.post(PreviousSceneEvent().to_event())
+                        pygame.event.post(PreviousSceneEvent(current_scene_id=id(self)).to_event())
 
             self.manager.process_events(event)
 

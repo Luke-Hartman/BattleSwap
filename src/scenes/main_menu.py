@@ -166,20 +166,13 @@ class MainMenuScene(Scene):
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.campaign_button:
-                        camera = Camera(zoom=1/2)
-                        world_map_view = WorldMapView(
-                            screen=self.screen,
-                            manager=self.manager,
-                            battles=progress_manager.get_battles_including_solutions(),
-                            camera=camera,
-                            corrupted_hexes=progress_manager.corrupted_hexes
-                        )
                         pygame.event.post(CampaignSceneEvent(
-                            world_map_view=world_map_view,
+                            current_scene_id=id(self),
                         ).to_event())
                     
                     elif event.ui_element == self.sandbox_button:
                         pygame.event.post(SetupBattleSceneEvent(
+                            current_scene_id=id(self),
                             world_map_view=None,
                             battle_id=None,
                             sandbox_mode=True,
@@ -187,10 +180,10 @@ class MainMenuScene(Scene):
                         ).to_event())
                     
                     elif event.ui_element == self.settings_button:
-                        pygame.event.post(SettingsSceneEvent().to_event())
+                        pygame.event.post(SettingsSceneEvent(current_scene_id=id(self)).to_event())
 
                     elif event.ui_element == self.developer_button:
-                        pygame.event.post(DeveloperToolsSceneEvent().to_event())
+                        pygame.event.post(DeveloperToolsSceneEvent(current_scene_id=id(self)).to_event())
 
                     elif event.ui_element == self.exit_button:
                         return self.handle_quit()

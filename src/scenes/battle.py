@@ -83,7 +83,7 @@ class BattleScene(Scene):
         }
         self.world_map_view.reset_hex_states()
         self.world_map_view.update_hex_state(fogged_states)
-        pygame.event.post(PreviousSceneEvent(n=n).to_event())
+        pygame.event.post(PreviousSceneEvent(current_scene_id=id(self), n=n).to_event())
 
     def create_victory_panel(self) -> None:
         """Create the victory panel with large text and buttons."""
@@ -295,7 +295,7 @@ class BattleScene(Scene):
                         return super().update(time_delta, events)
                     elif hasattr(self, 'improve_button') and event.ui_element == self.improve_button:
                         self.world_map_view.rebuild(self.world_map_view.battles.values())
-                        pygame.event.post(PreviousSceneEvent().to_event())
+                        pygame.event.post(PreviousSceneEvent(current_scene_id=id(self)).to_event())
                         return super().update(time_delta, events)
                     elif hasattr(self, 'save_button') and event.ui_element == self.save_button:
                         # Check if the current solution could be a best solution
@@ -365,11 +365,11 @@ class BattleScene(Scene):
                         else:
                             self.world_map_view.rebuild(progress_manager.get_battles_including_solutions())
                             self.world_map_view.move_camera_above_battle(self.battle_id)
-                            pygame.event.post(PreviousSceneEvent(n=2).to_event())
+                            pygame.event.post(PreviousSceneEvent(current_scene_id=id(self), n=2).to_event())
                             return super().update(time_delta, events)
                     elif hasattr(self, 'try_again_button') and event.ui_element == self.try_again_button:
                         self.world_map_view.rebuild(self.world_map_view.battles.values())
-                        pygame.event.post(PreviousSceneEvent().to_event())
+                        pygame.event.post(PreviousSceneEvent(current_scene_id=id(self)).to_event())
                         return super().update(time_delta, events)
                     elif hasattr(self, 'leave_button') and event.ui_element == self.leave_button:
                         self.world_map_view.rebuild(progress_manager.get_battles_including_solutions())

@@ -19,6 +19,13 @@ SETTINGS_SCENE_EVENT = pygame.event.custom_type()
 class PyGameEvent(BaseModel):
     """Base class for pygame events."""
     
+    current_scene_id: int
+    """The Python id() of the scene that created this event.
+    
+    This is used to prevent multiple of the same scene from being created when a user
+    rapidly presses the return button or otherwise creates multiple scene transition events.
+    """
+    
     class Config:
         arbitrary_types_allowed = True
 
@@ -80,8 +87,6 @@ class CampaignEditorSceneEvent(PyGameEvent):
 
 class CampaignSceneEvent(PyGameEvent):
     """Event for transitioning to the campaign scene."""
-
-    world_map_view: WorldMapView
 
     @property
     def _type(self) -> int:
