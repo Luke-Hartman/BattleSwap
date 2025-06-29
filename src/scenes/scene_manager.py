@@ -225,7 +225,13 @@ class SceneManager:
                 self.current_scene = CampaignEditorScene(
                     screen=self.screen,
                     manager=self.manager,
-                    world_map_view=validated_event.world_map_view,
+                    world_map_view=WorldMapView(
+                        screen=self.screen,
+                        manager=self.manager,
+                        battles=progress_manager.get_battles_including_solutions(),
+                        camera=Camera(zoom=1/4),
+                        corrupted_hexes=progress_manager.corrupted_hexes
+                    )
                 )
             elif event.type == CAMPAIGN_SCENE_EVENT:
                 validated_event = CampaignSceneEvent.model_validate(event.dict)

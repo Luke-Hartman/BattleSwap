@@ -79,8 +79,6 @@ class PreviousSceneEvent(PyGameEvent):
 class CampaignEditorSceneEvent(PyGameEvent):
     """Event for transitioning to the campaign editor scene."""
 
-    world_map_view: WorldMapView
-
     @property
     def _type(self) -> int:
         return CAMPAIGN_EDITOR_SCENE_EVENT

@@ -461,10 +461,9 @@ class UpgradeWindow:
     
     def _update_credit_display(self) -> None:
         """Update the credit display based on the selected unit."""
-        # Show available credits
-        advanced_credits = progress_manager.advanced_credits
-        elite_credits = progress_manager.elite_credits
-        self.credit_label.set_text(f"Credits - Advanced: {advanced_credits} | Elite: {elite_credits}")
+        # Show available credits using the new calculation method
+        available_advanced, available_elite = progress_manager.calculate_available_credits()
+        self.credit_label.set_text(f"Credits - Advanced: {available_advanced} | Elite: {available_elite}")
     
     def _update_upgrade_button_state(self) -> None:
         """Update the upgrade button state based on selected unit and available credits."""
@@ -495,15 +494,10 @@ class UpgradeWindow:
         if self.selected_unit_type is None:
             return
         
-        current_tier = progress_manager.get_unit_tier(self.selected_unit_type)
-        next_tier = UnitTier.ADVANCED if current_tier == UnitTier.BASIC else UnitTier.ELITE
-        credit_type = "Advanced" if current_tier == UnitTier.BASIC else "Elite"
-        unit_name = get_unit_data(self.selected_unit_type, current_tier).name
-        
         # Create confirmation dialog
         screen_info = pygame.display.Info()
-        dialog_width = 400
-        dialog_height = 220
+        dialog_width = 200
+        dialog_height = 150  # Increased to accommodate title bar and buttons
         dialog_x = (screen_info.current_w - dialog_width) // 2
         dialog_y = (screen_info.current_h - dialog_height) // 2
         
@@ -511,31 +505,29 @@ class UpgradeWindow:
         dialog = pygame_gui.elements.UIWindow(
             rect=pygame.Rect(dialog_x, dialog_y, dialog_width, dialog_height),
             manager=self.manager,
-            window_display_title="Confirm Upgrade",
+            window_display_title="Confirm",
             resizable=False
         )
         
-        # Add warning text
-        warning_text = pygame_gui.elements.UITextBox(
-            relative_rect=pygame.Rect(10, 10, dialog_width - 20, 100),
-            html_text=f"<b>Warning: This action is not reversible!</b><br><br>"
-                     f"Upgrade {unit_name} from {current_tier.value} to {next_tier.value}?<br>"
-                     f"This will cost 1 {credit_type} credit.",
+        # Add simple question text - centered with less margin
+        question_text = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect(0, 30, dialog_width, 30),
+            text="Are you sure?",
             manager=self.manager,
             container=dialog
         )
         
-        # Add confirm and cancel buttons
+        # Add confirm and cancel buttons - positioned higher up
         confirm_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(dialog_width - 180, dialog_height - 60, 80, 30),
-            text="Confirm",
+            relative_rect=pygame.Rect(20, 80, 70, 30),
+            text="Yes",
             manager=self.manager,
             container=dialog
         )
         
         cancel_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(dialog_width - 90, dialog_height - 60, 80, 30),
-            text="Cancel",
+            relative_rect=pygame.Rect(110, 80, 70, 30),
+            text="No",
             manager=self.manager,
             container=dialog
         )

@@ -13,6 +13,7 @@ from scenes.events import PreviousSceneEvent, SetupBattleSceneEvent
 from scenes.scene import Scene
 from ui_components.return_button import ReturnButton
 from world_map_view import BorderState, FillState, WorldMapView, HexState
+import upgrade_hexes
 from ui_components.tip_box import TipBox
 from ui_components.save_battle_dialog import SaveBattleDialog
 from ui_components.corruption_icon import CorruptionIcon
@@ -157,8 +158,9 @@ class CampaignEditorScene(Scene):
                 manager=self.manager
             )
         else:
-            # One button for empty hexes
-            start_x = (screen_rect.width - button_width) // 2
+            # Two buttons for empty hexes
+            total_width = (button_width * 2) + padding
+            start_x = (screen_rect.width - total_width) // 2
             y = screen_rect.height - bottom_margin - button_height
 
             self.context_buttons["create"] = pygame_gui.elements.UIButton(
@@ -167,6 +169,15 @@ class CampaignEditorScene(Scene):
                     (button_width, button_height)
                 ),
                 text="Create Battle",
+                manager=self.manager
+            )
+            
+            self.context_buttons["create_upgrade"] = pygame_gui.elements.UIButton(
+                relative_rect=pygame.Rect(
+                    (start_x + button_width + padding, y),
+                    (button_width, button_height)
+                ),
+                text="Create Upgrade",
                 manager=self.manager
             )
 
@@ -205,6 +216,14 @@ class CampaignEditorScene(Scene):
                             hex_coords=self.selected_hex,
                             show_test_button=False  # Only show save battle button
                         )
+                    elif event.ui_element == self.context_buttons.get("create_upgrade"):
+                        # Create a new upgrade hex at the selected hex
+                        if self.selected_hex is not None:
+                            # Add the upgrade hex and rebuild the view
+                            upgrade_hexes.add_upgrade_hex(self.selected_hex)
+                            self.world_map_view.rebuild(get_battles())
+                            self.selected_hex = None
+                            self.create_context_buttons()
                     elif event.ui_element == self.context_buttons.get("edit"):
                         # Edit the selected battle's name and tip
                         battle = self.world_map_view.get_battle_from_hex(self.selected_hex)

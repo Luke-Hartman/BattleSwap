@@ -37,6 +37,7 @@ from time_manager import time_manager
 from components.focus import Focus
 from selected_unit_manager import selected_unit_manager
 from progress_manager import progress_manager
+import upgrade_hexes
 
 
 class FillState(Enum):
@@ -55,7 +56,7 @@ class BorderState(Enum):
     DARK_RED_BORDER = auto()
 
 class HexState:
-    """Combined state for both fill and border of a hex."""
+    """Combined state for fill and border of a hex."""
     def __init__(self, fill: FillState = FillState.NORMAL, border: BorderState = BorderState.NORMAL):
         self.fill = fill
         self.border = border
@@ -189,10 +190,17 @@ class WorldMapView:
 
     def reset_hex_states(self) -> None:
         """Reset the state of all hexes to normal."""
+        # Initialize states for all battle hexes
         self.hex_states = {
             battle.hex_coords: HexState()
             for battle in self.battles.values()
         }
+        # Initialize states for all upgrade hexes
+        for coords in upgrade_hexes.get_upgrade_hexes():
+            if coords not in self.hex_states:
+                self.hex_states[coords] = HexState()
+    
+
     
     def add_unit(self, battle_id: str, unit_type: UnitType, position: Tuple[int, int], team: TeamType) -> None:
         """
@@ -319,9 +327,12 @@ class WorldMapView:
 
     def _draw_hexes(self) -> None:
         """Draw the fills and overlays of all hexes currently visible."""
-        for coords in self.hex_states.keys():
+        # Get all hex coordinates that have either a state or a type
+        all_hex_coords = set(self.hex_states.keys()) | set(upgrade_hexes.get_upgrade_hexes())
+        
+        for coords in all_hex_coords:
             if not self._is_hex_off_screen(coords):
-                state = self.hex_states[coords]
+                state = self.hex_states.get(coords, HexState())
                 self._draw_single_hex(coords, state)
 
 
@@ -339,8 +350,10 @@ class WorldMapView:
             # Hex is completely off screen
             return
 
-        # Draw base hex fill
-        if self.get_battle_from_hex(coords) is not None:
+        is_upgrade_hex = upgrade_hexes.is_upgrade_hex(coords)
+
+        # Draw base hex fill based on type
+        if self.get_battle_from_hex(coords) is not None or is_upgrade_hex:
             draw_polygon(
                 screen=self.screen, 
                 polygon=screen_polygon, 
@@ -379,12 +392,48 @@ class WorldMapView:
                 world_coords=False,
             )
 
+        # Draw yellow star for upgrade hexes
+        if is_upgrade_hex:
+            self._draw_upgrade_star(coords)
+
+    def _draw_upgrade_star(self, coords: Tuple[int, int]) -> None:
+        """Draw a yellow star in the center of an upgrade hex."""
+        import math
+        
+        # Get the center of the hex in world coordinates
+        center_x, center_y = axial_to_world(*coords)
+        
+        # Convert to screen coordinates
+        screen_x, screen_y = self.camera.world_to_screen(center_x, center_y)
+        
+        # Calculate star size based on zoom level
+        base_radius = 150  # 5x bigger than before
+        outer_radius = base_radius * self.camera.zoom
+        inner_radius = outer_radius * 0.4
+
+        
+        # Create star points (5-pointed star)
+        points = []
+        for i in range(10):  # 10 points for 5-pointed star (outer and inner points)
+            angle = (i * math.pi) / 5  # 36 degrees per step
+            if i % 2 == 0:  # Outer point
+                radius = outer_radius
+            else:  # Inner point
+                radius = inner_radius
+            
+            x = screen_x + radius * math.cos(angle - math.pi / 2)  # Rotate -90 degrees to point up
+            y = screen_y + radius * math.sin(angle - math.pi / 2)
+            points.append((x, y))
+        
+        # Draw the star
+        pygame.draw.polygon(self.screen, (255, 255, 0), points)  # Yellow color
 
     def _draw_visible_edges(self) -> None:
         """Draw edges between adjacent hexes."""
+        all_hex_coords = set(self.hex_states.keys())
         on_screen_hexes = set(
             coords
-            for coords in self.hex_states.keys()
+            for coords in all_hex_coords
             if not self._is_hex_off_screen(coords)
         )
         edges = get_edges_for_hexes(on_screen_hexes)
@@ -394,7 +443,8 @@ class WorldMapView:
     def _draw_edge(self, edge: frozenset[Tuple[int,int]]) -> None:
         """Draw a single edge (line) between two adjacent hexes."""
         is_battle_edge = any(
-            self.get_battle_from_hex(coords) is not None
+            self.get_battle_from_hex(coords) is not None or 
+            upgrade_hexes.is_upgrade_hex(coords)
             for coords in edge
         )
         

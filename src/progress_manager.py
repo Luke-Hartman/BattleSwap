@@ -4,6 +4,7 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Any
 import json
+from enum import Enum
 
 from pydantic import BaseModel, ValidationError, field_serializer, field_validator
 from platformdirs import user_config_dir
@@ -20,6 +21,14 @@ import random
 # Current version of the progress manager
 # Increment this when making breaking changes to save file format
 CURRENT_VERSION = 1
+
+class HexLifecycleState(Enum):
+    """Enum representing the lifecycle state of a hex (battle or upgrade)."""
+    FOGGED = "fogged"        # Not adjacent to any claimed hex, inaccessible
+    UNCLAIMED = "unclaimed"  # Adjacent to claimed hex, accessible but never claimed/solved
+    CLAIMED = "claimed"      # Claimed/solved once, never corrupted
+    CORRUPTED = "corrupted"  # Claimed/solved once, then corrupted (can be claimed/solved again)
+    RECLAIMED = "reclaimed"  # Claimed/solved twice (once normal, once corrupted)
 
 def calculate_points_for_units(units: List[Tuple[UnitType, Tuple[float, float]]]) -> int:
     """Calculate total points for a list of unit placements."""
@@ -68,10 +77,9 @@ class ProgressManager(BaseModel):
     solutions: Dict[Tuple[int, int], Solution] = {}
     game_completed: bool = False
     game_completed_corruption: bool = False
-    corrupted_hexes: CorruptedHexes = []
-    advanced_credits: int = 10
-    elite_credits: int = 10
+    corrupted_hexes: CorruptedHexes = []  # Keep for battle compatibility
     unit_tiers: Dict[UnitType, UnitTier] = {}
+    hex_states: Dict[Tuple[int, int], HexLifecycleState] = {}
 
     @field_serializer('solutions')
     def serialize_solutions(self, solutions: Dict[Tuple[int, int], Solution]) -> Dict[str, Any]:
@@ -95,6 +103,20 @@ class ProgressManager(BaseModel):
     def parse_unit_tiers(cls, value: Any) -> Dict[UnitType, UnitTier]:
         if isinstance(value, dict):
             return {UnitType(unit_type): UnitTier(tier) for unit_type, tier in value.items()}
+        return value
+
+    @field_serializer('hex_states')
+    def serialize_hex_states(self, hex_states: Dict[Tuple[int, int], HexLifecycleState]) -> Dict[str, str]:
+        return {str(list(coords)): state.value for coords, state in hex_states.items()}
+
+    @field_validator('hex_states', mode='before')
+    def parse_hex_states(cls, value: Any) -> Dict[Tuple[int, int], HexLifecycleState]:
+        if isinstance(value, dict):
+            result = {}
+            for key, state_value in value.items():
+                coords = tuple(json.loads(key))
+                result[coords] = HexLifecycleState(state_value)
+            return result
         return value
 
     def calculate_battle_grade(self, battle: battles.Battle) -> Optional[str]:
@@ -257,26 +279,54 @@ class ProgressManager(BaseModel):
         ) and not all_levels_already_corrupted
 
     def corrupt_battles(self) -> List[Tuple[int, int]]:
-        """Corrupt a number of completed battles based on the game constants."""
+        """Corrupt a number of completed battles and claimed upgrade hexes based on the game constants."""
+        import upgrade_hexes
+        
+        # Include completed battles that aren't corrupted yet
         completed_battles = [coord for coord in self.solutions 
                             if coord not in self.corrupted_hexes]
-        if not completed_battles:
+        
+        # Include upgrade hexes that are in CLAIMED state (can be corrupted)
+        corruptible_upgrade_hexes = [coord for coord, state in self.hex_states.items()
+                                   if upgrade_hexes.is_upgrade_hex(coord) and state == HexLifecycleState.CLAIMED]
+        
+        corruption_pool = completed_battles + corruptible_upgrade_hexes
+        
+        if not corruption_pool:
             return []
-        num_corruptions = min(gc.CORRUPTION_BATTLE_COUNT, len(completed_battles))
-        battles_to_corrupt = random.sample(completed_battles, num_corruptions)
-        self.corrupted_hexes.extend(battles_to_corrupt)
+        num_corruptions = min(gc.CORRUPTION_BATTLE_COUNT, len(corruption_pool))
+        hexes_to_corrupt = random.sample(corruption_pool, num_corruptions)
+        
+        # Update states and corrupted_hexes list
+        for coords in hexes_to_corrupt:
+            if upgrade_hexes.is_upgrade_hex(coords):
+                # Change upgrade hex from CLAIMED to CORRUPTED
+                self.set_hex_state(coords, HexLifecycleState.CORRUPTED)
+            else:
+                # Add battle to corrupted_hexes list (keeping old system for battles)
+                self.corrupted_hexes.append(coords)
+        
         save_progress()
-        return battles_to_corrupt
+        return hexes_to_corrupt
         
     def is_battle_corrupted(self, hex_coords: Tuple[int, int]) -> bool:
         """Check if a battle is corrupted."""
         return hex_coords in self.corrupted_hexes
         
     def has_uncompleted_corrupted_battles(self) -> bool:
-        """Check if there are any corrupted battles that need to be cleared."""
+        """Check if there are any corrupted battles or upgrade hexes that need to be cleared."""
+        import upgrade_hexes
+        
+        # Check for corrupted battles (using old system)
         for coords in self.corrupted_hexes:
             if not self.has_solved_corrupted_battle(coords):
                 return True
+        
+        # Check for corrupted upgrade hexes (using new lifecycle system)
+        for coords, state in self.hex_states.items():
+            if upgrade_hexes.is_upgrade_hex(coords) and state == HexLifecycleState.CORRUPTED:
+                return True
+        
         return False
 
     def has_solved_corrupted_battle(self, hex_coords: Tuple[int, int]) -> bool:
@@ -292,34 +342,125 @@ class ProgressManager(BaseModel):
     def can_upgrade_unit(self, unit_type: UnitType) -> bool:
         """Check if a unit can be upgraded to the next tier."""
         current_tier = self.get_unit_tier(unit_type)
+        available_advanced, available_elite = self.calculate_available_credits()
+        
         if current_tier == UnitTier.BASIC:
-            return self.advanced_credits > 0
+            return available_advanced > 0
         elif current_tier == UnitTier.ADVANCED:
-            return self.elite_credits > 0
+            return available_elite > 0
         return False
 
     def upgrade_unit(self, unit_type: UnitType) -> bool:
         """Upgrade a unit to the next tier. Returns True if successful."""
         current_tier = self.get_unit_tier(unit_type)
+        available_advanced, available_elite = self.calculate_available_credits()
         
-        if current_tier == UnitTier.BASIC and self.advanced_credits > 0:
+        if current_tier == UnitTier.BASIC and available_advanced > 0:
             self.unit_tiers[unit_type] = UnitTier.ADVANCED
-            self.advanced_credits -= 1
             save_progress()
             return True
-        elif current_tier == UnitTier.ADVANCED and self.elite_credits > 0:
+        elif current_tier == UnitTier.ADVANCED and available_elite > 0:
             self.unit_tiers[unit_type] = UnitTier.ELITE
-            self.elite_credits -= 1
             save_progress()
             return True
         
         return False
 
-    def add_credits(self, advanced: int = 0, elite: int = 0) -> None:
-        """Add credits to the player's account."""
-        self.advanced_credits += advanced
-        self.elite_credits += elite
+    def get_hex_state(self, hex_coords: Tuple[int, int]) -> HexLifecycleState:
+        """Get the current lifecycle state of a hex."""
+        return self.hex_states.get(hex_coords, HexLifecycleState.FOGGED)
+
+    def set_hex_state(self, hex_coords: Tuple[int, int], state: HexLifecycleState) -> None:
+        """Set the lifecycle state of a hex."""
+        if state == HexLifecycleState.FOGGED:
+            # Remove from dict if fogged (default state)
+            self.hex_states.pop(hex_coords, None)
+        else:
+            self.hex_states[hex_coords] = state
         save_progress()
+
+    def is_upgrade_hex_accessible(self, hex_coords: Tuple[int, int]) -> bool:
+        """Check if an upgrade hex is accessible (adjacent to a claimed hex)."""
+        import upgrade_hexes
+        
+        if not upgrade_hexes.is_upgrade_hex(hex_coords):
+            return False
+            
+        # Check if adjacent to any claimed upgrade hex or solved battle
+        for neighbor_coords in hex_neighbors(hex_coords):
+            # Check if neighbor is a solved battle
+            if neighbor_coords in self.solutions:
+                return True
+            # Check if neighbor is a claimed upgrade hex (any state except FOGGED)
+            neighbor_state = self.get_hex_state(neighbor_coords)
+            if upgrade_hexes.is_upgrade_hex(neighbor_coords) and neighbor_state != HexLifecycleState.FOGGED:
+                return True
+        
+        return False
+
+    def get_effective_hex_state(self, hex_coords: Tuple[int, int]) -> HexLifecycleState:
+        """Get the effective state of a hex, considering accessibility for upgrade hexes."""
+        import upgrade_hexes
+        
+        stored_state = self.get_hex_state(hex_coords)
+        
+        # For upgrade hexes, check if they should be accessible
+        if upgrade_hexes.is_upgrade_hex(hex_coords):
+            if stored_state == HexLifecycleState.FOGGED:
+                # If fogged, check if it should become accessible
+                if self.is_upgrade_hex_accessible(hex_coords):
+                    return HexLifecycleState.UNCLAIMED
+                else:
+                    return HexLifecycleState.FOGGED
+        
+        return stored_state
+
+
+
+    def is_upgrade_hex_claimable(self, hex_coords: Tuple[int, int]) -> bool:
+        """Check if an upgrade hex can be claimed."""
+        state = self.get_effective_hex_state(hex_coords)
+        return state == HexLifecycleState.UNCLAIMED or state == HexLifecycleState.CORRUPTED
+
+    def claim_upgrade_hex(self, hex_coords: Tuple[int, int]) -> bool:
+        """Claim an upgrade hex. Returns True if successful."""
+        current_state = self.get_effective_hex_state(hex_coords)
+        
+        if current_state == HexLifecycleState.UNCLAIMED:
+            # First claim - goes to CLAIMED state
+            self.set_hex_state(hex_coords, HexLifecycleState.CLAIMED)
+            return True
+        elif current_state == HexLifecycleState.CORRUPTED:
+            # Second claim (after corruption) - goes to RECLAIMED state
+            self.set_hex_state(hex_coords, HexLifecycleState.RECLAIMED)
+            return True
+        
+        return False  # Already claimed or reclaimed
+
+    def calculate_available_credits(self) -> Tuple[int, int]:
+        """Calculate available advanced and elite credits based on hex lifecycle states minus upgraded units."""
+        import upgrade_hexes
+        
+        # Count upgraded units by tier
+        advanced_upgrades = sum(1 for tier in self.unit_tiers.values() if tier == UnitTier.ADVANCED)
+        elite_upgrades = sum(1 for tier in self.unit_tiers.values() if tier == UnitTier.ELITE)
+        
+        # Count upgrade hexes by their lifecycle state
+        advanced_credits_earned = 0
+        elite_credits_earned = 0
+        
+        for coords, state in self.hex_states.items():
+            if upgrade_hexes.is_upgrade_hex(coords):
+                if state in [HexLifecycleState.CLAIMED, HexLifecycleState.CORRUPTED, HexLifecycleState.RECLAIMED]:
+                    advanced_credits_earned += 1  # First claim gives advanced credit
+                if state == HexLifecycleState.RECLAIMED:
+                    elite_credits_earned += 1  # Second claim (after corruption) gives elite credit
+        
+        # Calculate available credits
+        available_advanced = max(0, advanced_credits_earned - advanced_upgrades - elite_upgrades)
+        available_elite = max(0, elite_credits_earned - elite_upgrades)
+        
+        return available_advanced, available_elite
 
 def get_progress_path() -> Path:
     """Get the path to the progress file."""
@@ -390,9 +531,8 @@ def reset_progress() -> None:
     global progress_manager
     progress_manager.solutions = {}
     progress_manager.corrupted_hexes = []
-    progress_manager.advanced_credits = 10
-    progress_manager.elite_credits = 10
     progress_manager.unit_tiers = {}
+    progress_manager.hex_states = {}
     save_progress()
 
 def has_incompatible_save() -> bool:
