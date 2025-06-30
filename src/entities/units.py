@@ -33,8 +33,8 @@ from components.aura import Aura
 from components.position import Position
 from components.animation import AnimationState, AnimationType
 from components.sprite_sheet import SpriteSheet
-from components.status_effect import CrusaderBannerBearerEmpowered, Fleeing, Healing, DamageOverTime, StatusEffects, ZombieInfection, CrusaderBannerBearerMovementSpeedBuff
-from target_strategy import ByCurrentHealth, ByDistance, ByMaxHealth, ByMissingHealth, ConditionPenalty, TargetStrategy, WeightedRanking
+from components.status_effect import CrusaderBannerBearerEmpowered, Fleeing, Healing, DamageOverTime, StatusEffects, ZombieInfection, CrusaderBannerBearerMovementSpeedBuff, CrusaderBannerBearerAbilitySpeedBuff
+from target_strategy import ByCurrentHealth, ByDistance, ByMissingHealth, ConditionPenalty, TargetStrategy, WeightedRanking
 from components.destination import Destination
 from components.team import Team, TeamType
 from components.unit_state import State, UnitState
@@ -332,12 +332,13 @@ def create_core_archer(
         entity,
         Destination(target_strategy=targetting_strategy, x_offset=0)
     )
-    esper.add_component(entity, RangeIndicator(ranges=[gc.CORE_ARCHER_ATTACK_RANGE]))
+    # Determine range based on tier - Elite gets 50% more range
+    attack_range = gc.CORE_ARCHER_ATTACK_RANGE
+    if tier == UnitTier.ELITE:
+        attack_range = attack_range * 1.5
+    
+    esper.add_component(entity, RangeIndicator(ranges=[attack_range]))
     arrow_damage = gc.CORE_ARCHER_ATTACK_DAMAGE
-    if tier == UnitTier.ADVANCED:
-        arrow_damage = arrow_damage * 1.5
-    elif tier == UnitTier.ELITE:
-        arrow_damage = arrow_damage * 2
     esper.add_component(
         entity,
         Abilities(
@@ -351,7 +352,7 @@ def create_core_archer(
                                 Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=gc.CORE_ARCHER_ATTACK_RANGE,
+                                    distance=attack_range,
                                     y_bias=None
                                 )
                             ])
@@ -364,7 +365,7 @@ def create_core_archer(
                                 Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=gc.CORE_ARCHER_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    distance=attack_range + gc.TARGETTING_GRACE_DISTANCE,
                                     y_bias=None
                                 )
                             ])
@@ -419,13 +420,27 @@ def create_core_barbarian(
         tier: UnitTier,
     ) -> int:
     """Create a barbarian entity with all necessary components."""
+    # Calculate tier-specific values
+    barbarian_health = gc.CORE_BARBARIAN_HP
+    barbarian_damage = gc.CORE_BARBARIAN_ATTACK_DAMAGE
+    barbarian_movement_speed = gc.CORE_BARBARIAN_MOVEMENT_SPEED
+    
+    # Advanced tier (and Elite): 25% more health and damage
+    if tier == UnitTier.ADVANCED or tier == UnitTier.ELITE:
+        barbarian_health = barbarian_health * 1.25
+        barbarian_damage = barbarian_damage * 1.25
+    
+    # Elite tier: additional 25% faster movement speed 
+    if tier == UnitTier.ELITE:
+        barbarian_movement_speed = barbarian_movement_speed * 1.25
+    
     entity = unit_base_entity(
         x=x,
         y=y,
         team=team,
         unit_type=UnitType.CORE_BARBARIAN,
-        movement_speed=gc.CORE_BARBARIAN_MOVEMENT_SPEED,
-        health=gc.CORE_BARBARIAN_HP,
+        movement_speed=barbarian_movement_speed,
+        health=barbarian_health,
         hitbox=Hitbox(
             width=20,
             height=38,
@@ -467,7 +482,7 @@ def create_core_barbarian(
                         6: [
                             CreatesVisualAoE(
                                 effects=[
-                                    Damages(damage=gc.CORE_BARBARIAN_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                                    Damages(damage=barbarian_damage, recipient=Recipient.TARGET),
                                 ],
                                 duration=gc.CORE_BARBARIAN_ANIMATION_ATTACK_DURATION*4/12,
                                 scale=gc.TINY_RPG_SCALE,
@@ -505,13 +520,26 @@ def create_core_cavalry(
         tier: UnitTier,
     ) -> int:
     """Create a cavalry entity with all necessary components."""
+    # Calculate tier-specific values
+    cavalry_health = gc.CORE_CAVALRY_HP
+    cavalry_damage = gc.CORE_CAVALRY_ATTACK_DAMAGE
+    
+    # Basic tier (and Advanced): 50% more health
+    if tier == UnitTier.BASIC or tier == UnitTier.ADVANCED:
+        cavalry_health = cavalry_health * 1.5
+    
+    # Elite tier: 75% more health and 50% damage
+    elif tier == UnitTier.ELITE:
+        cavalry_health = cavalry_health * 1.75  # Total 1.75x = 75% increase
+        cavalry_damage = cavalry_damage * 1.5
+    
     entity = unit_base_entity(
         x=x,
         y=y,
         team=team,
         unit_type=UnitType.CORE_CAVALRY,
         movement_speed=gc.CORE_CAVALRY_MOVEMENT_SPEED,
-        health=gc.  CORE_CAVALRY_HP,
+        health=cavalry_health,
         hitbox=Hitbox(
             width=32,
             height=46,
@@ -560,7 +588,7 @@ def create_core_cavalry(
                         )
                     ],
                     effects={3: [
-                        Damages(damage=gc.CORE_CAVALRY_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                        Damages(damage=cavalry_damage, recipient=Recipient.TARGET),
                         PlaySound([
                             (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
                         ]),
@@ -616,6 +644,12 @@ def create_core_duelist(
         (SoundEffect(filename=f"quick_sword_thrust{i}.wav", volume=0.75), 1.0)
         for i in range(1, 6)
     ]
+    if tier == UnitTier.BASIC:
+        hits_per_frame = 2
+    elif tier == UnitTier.ADVANCED:
+        hits_per_frame = 3
+    elif tier == UnitTier.ELITE:
+        hits_per_frame = 4
     esper.add_component(
         entity,
         Abilities(
@@ -649,32 +683,25 @@ def create_core_duelist(
                         )
                     ],
                     effects={
-                        5: [
-                            Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE/7, recipient=Recipient.TARGET),
+                        5: [Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE, recipient=Recipient.TARGET)] * hits_per_frame + [
                             PlaySound(sound_effects),
                         ],
-                        6: [
-                            Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE/7, recipient=Recipient.TARGET),
+                        6: [Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE, recipient=Recipient.TARGET)] * hits_per_frame + [
                             PlaySound(sound_effects),
                         ],
-                        7: [
-                            Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE/7, recipient=Recipient.TARGET),
+                        7: [Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE, recipient=Recipient.TARGET)] * hits_per_frame + [
                             PlaySound(sound_effects),
                         ],
-                        8: [
-                            Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE/7, recipient=Recipient.TARGET),
+                        8: [Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE, recipient=Recipient.TARGET)] * hits_per_frame + [
                             PlaySound(sound_effects),
                         ],
-                        9: [
-                            Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE/7, recipient=Recipient.TARGET),
+                        9: [Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE, recipient=Recipient.TARGET)] * hits_per_frame + [
                             PlaySound(sound_effects),
                         ],
-                        10: [
-                            Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE/7, recipient=Recipient.TARGET),
+                        10: [Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE, recipient=Recipient.TARGET)] * hits_per_frame + [
                             PlaySound(sound_effects),
                         ],
-                        11: [
-                            Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE/7, recipient=Recipient.TARGET),
+                        11: [Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE, recipient=Recipient.TARGET)] * hits_per_frame + [
                             PlaySound(sound_effects),
                         ],
                     },
@@ -715,12 +742,26 @@ def create_core_longbowman(
         corruption_powers=corruption_powers,
         tier=tier
     )
-    targetting_strategy = TargetStrategy(
-        rankings=[
-            ByDistance(entity=entity, y_bias=2, ascending=True),
-        ],
-        unit_condition=All([OnTeam(team=team.other()), Alive()])
-    )
+    # Elite tier becomes hunters (prioritize low health targets)
+    if tier == UnitTier.ELITE:
+        targetting_strategy = TargetStrategy(
+            rankings=[
+                WeightedRanking(
+                    rankings={
+                        ByDistance(entity=entity, y_bias=2, ascending=True): 1,
+                        ByCurrentHealth(ascending=False): -0.6,
+                    },
+                ),
+            ],
+            unit_condition=All([OnTeam(team=team.other()), Alive()])
+        )
+    else:
+        targetting_strategy = TargetStrategy(
+            rankings=[
+                ByDistance(entity=entity, y_bias=2, ascending=True),
+            ],
+            unit_condition=All([OnTeam(team=team.other()), Alive()])
+        )
 
     esper.add_component(
         entity,
@@ -806,13 +847,27 @@ def create_core_swordsman(
         tier: UnitTier,
     ) -> int:
     """Create a swordsman entity with all necessary components."""
+    # Calculate tier-specific values
+    swordsman_health = gc.CORE_SWORDSMAN_HP
+    swordsman_damage = gc.CORE_SWORDSMAN_ATTACK_DAMAGE
+    
+    # Advanced tier: 25% more health and damage
+    if tier == UnitTier.ADVANCED:
+        swordsman_health = swordsman_health * 1.25
+        swordsman_damage = swordsman_damage * 1.25
+    
+    # Elite tier: 50% more health and damage (total)
+    elif tier == UnitTier.ELITE:
+        swordsman_health = swordsman_health * 1.5
+        swordsman_damage = swordsman_damage * 1.5
+    
     entity = unit_base_entity(
         x=x,
         y=y,
         team=team,
         unit_type=UnitType.CORE_SWORDSMAN,
         movement_speed=gc.CORE_SWORDSMAN_MOVEMENT_SPEED,
-        health=gc.CORE_SWORDSMAN_HP,
+        health=swordsman_health,
         hitbox=Hitbox(
             width=16,
             height=32,
@@ -862,7 +917,7 @@ def create_core_swordsman(
                     ],
                     effects={
                         2: [
-                            Damages(damage=gc.CORE_SWORDSMAN_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                            Damages(damage=swordsman_damage, recipient=Recipient.TARGET),
                             PlaySound([
                                 (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
                             ]),
@@ -891,6 +946,17 @@ def create_core_wizard(
         tier: UnitTier,
     ) -> int:
     """Create a wizard entity with all necessary components."""
+    # Calculate tier-specific damage
+    wizard_damage = gc.CORE_WIZARD_ATTACK_DAMAGE
+    
+    # Advanced tier: 50% more damage
+    if tier == UnitTier.ADVANCED:
+        wizard_damage = wizard_damage * 1.5
+    
+    # Elite tier: 100% more damage total
+    elif tier == UnitTier.ELITE:
+        wizard_damage = wizard_damage * 2.0
+    
     entity = unit_base_entity(
         x=x,
         y=y,
@@ -961,7 +1027,7 @@ def create_core_wizard(
                                 effects=[
                                     CreatesCircleAoE(
                                         effects=[
-                                            Damages(damage=gc.CORE_WIZARD_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                                            Damages(damage=wizard_damage, recipient=Recipient.TARGET),
                                         ],
                                         radius=9*gc.CORE_WIZARD_FIREBALL_AOE_SCALE,
                                         unit_condition=All([Alive(), Grounded()]),
@@ -1007,13 +1073,24 @@ def create_crusader_banner_bearer(
         tier: UnitTier,
     ) -> int:
     """Create a banner bearer entity with all necessary components."""
+    # Calculate tier-specific health
+    banner_bearer_health = gc.CRUSADER_BANNER_BEARER_HP
+    
+    # Advanced tier: 50% more health
+    if tier == UnitTier.ADVANCED:
+        banner_bearer_health = banner_bearer_health * 1.5
+    
+    # Elite tier: 100% more health total
+    elif tier == UnitTier.ELITE:
+        banner_bearer_health = banner_bearer_health * 2.0
+    
     entity = unit_base_entity(
         x=x,
         y=y,
         team=team,
         unit_type=UnitType.CRUSADER_BANNER_BEARER,
         movement_speed=gc.CRUSADER_BANNER_BEARER_AURA_MOVEMENT_SPEED,
-        health=gc.CRUSADER_BANNER_BEARER_HP,
+        health=banner_bearer_health,
         hitbox=Hitbox(
             width=16,
             height=36,
@@ -1077,21 +1154,39 @@ def create_crusader_banner_bearer(
             ]
         )
     )
+    # Build aura effects based on tier
+    aura_effects = [
+        # All tiers get movement speed buff
+        AppliesStatusEffect(
+            status_effect=CrusaderBannerBearerMovementSpeedBuff(time_remaining=gc.DEFAULT_AURA_PERIOD),
+            recipient=Recipient.TARGET
+        )
+    ]
+    
+    # Advanced and Elite tiers get damage buff back
+    if tier == UnitTier.ADVANCED or tier == UnitTier.ELITE:
+        aura_effects.append(
+            AppliesStatusEffect(
+                status_effect=CrusaderBannerBearerEmpowered(time_remaining=gc.DEFAULT_AURA_PERIOD),
+                recipient=Recipient.TARGET
+            )
+        )
+    
+    # Elite tier gets ability speed buff
+    if tier == UnitTier.ELITE:
+        aura_effects.append(
+            AppliesStatusEffect(
+                status_effect=CrusaderBannerBearerAbilitySpeedBuff(time_remaining=gc.DEFAULT_AURA_PERIOD),
+                recipient=Recipient.TARGET
+            )
+        )
+    
     esper.add_component(
         entity,
         Aura(
             owner=entity,
             radius=gc.CRUSADER_BANNER_BEARER_AURA_RADIUS,
-            effects=[
-                AppliesStatusEffect(
-                    status_effect=CrusaderBannerBearerEmpowered(time_remaining=gc.DEFAULT_AURA_PERIOD),
-                    recipient=Recipient.TARGET
-                ),
-                AppliesStatusEffect(
-                    status_effect=CrusaderBannerBearerMovementSpeedBuff(time_remaining=gc.DEFAULT_AURA_PERIOD),
-                    recipient=Recipient.TARGET
-                )
-            ],
+            effects=aura_effects,
             period=gc.DEFAULT_AURA_PERIOD,
             owner_condition=Alive(),
             unit_condition=All([
@@ -1123,13 +1218,27 @@ def create_crusader_black_knight(
         tier: UnitTier,
     ) -> int:
     """Create a black knight entity with all necessary components."""
+    # Calculate tier-specific values
+    black_knight_health = gc.CRUSADER_BLACK_KNIGHT_HP
+    black_knight_movement_speed = gc.CRUSADER_BLACK_KNIGHT_MOVEMENT_SPEED
+    black_knight_damage = gc.CRUSADER_BLACK_KNIGHT_ATTACK_DAMAGE
+    
+    # Advanced tier (and Elite): 25% more health and speed
+    if tier == UnitTier.ADVANCED or tier == UnitTier.ELITE:
+        black_knight_health = black_knight_health * 1.25
+        black_knight_movement_speed = black_knight_movement_speed * 1.25
+    
+    # Elite tier: 50% more damage
+    if tier == UnitTier.ELITE:
+        black_knight_damage = black_knight_damage * 1.5
+    
     entity = unit_base_entity(
         x=x,
         y=y,
         team=team,
         unit_type=UnitType.CRUSADER_BLACK_KNIGHT,
-        movement_speed=gc.CRUSADER_BLACK_KNIGHT_MOVEMENT_SPEED,
-        health=gc.CRUSADER_BLACK_KNIGHT_HP,
+        movement_speed=black_knight_movement_speed,
+        health=black_knight_health,
         hitbox=Hitbox(
             width=30,
             height=54,
@@ -1185,7 +1294,7 @@ def create_crusader_black_knight(
                     ],
                     effects={2: [
                         Damages(
-                            damage=gc.CRUSADER_BLACK_KNIGHT_ATTACK_DAMAGE,
+                            damage=black_knight_damage,
                             recipient=Recipient.TARGET,
                             on_kill_effects=[
                                 CreatesVisualAoE(
@@ -1244,13 +1353,29 @@ def create_crusader_catapult(
         tier: UnitTier,
     ) -> int:
     """Create a catapult entity with all necessary components."""
+    # Calculate tier-specific values
+    catapult_health = gc.CRUSADER_CATAPULT_HP
+    catapult_damage = gc.CRUSADER_CATAPULT_DAMAGE
+    catapult_min_range = gc.CRUSADER_CATAPULT_MINIMUM_RANGE
+    catapult_max_range = gc.CRUSADER_CATAPULT_MAXIMUM_RANGE
+    
+    # Advanced tier (and Elite): 25% more health and damage
+    if tier == UnitTier.ADVANCED or tier == UnitTier.ELITE:
+        catapult_health = catapult_health * 1.25
+        catapult_damage = catapult_damage * 1.25
+    
+    # Elite tier: half minimum range and 25% more maximum range
+    if tier == UnitTier.ELITE:
+        catapult_min_range = catapult_min_range * 0.5
+        catapult_max_range = catapult_max_range * 1.25
+    
     entity = unit_base_entity(
         x=x,
         y=y,
         team=team,
         unit_type=UnitType.CRUSADER_CATAPULT,
         movement_speed=0,
-        health=gc.CRUSADER_CATAPULT_HP,
+        health=catapult_health,
         hitbox=Hitbox(
             width=100,
             height=20,
@@ -1270,19 +1395,19 @@ def create_crusader_catapult(
                 Grounded(),
                 MaximumDistanceFromEntity(
                     entity=entity,
-                    distance=gc.CRUSADER_CATAPULT_MAXIMUM_RANGE,
+                    distance=catapult_max_range,
                     y_bias=None
                 ),
                 MinimumDistanceFromEntity(
                     entity=entity,
-                    distance=gc.CRUSADER_CATAPULT_MINIMUM_RANGE,
+                    distance=catapult_min_range,
                     y_bias=None
                 )
             ]
         )
     )
     esper.add_component(entity, Destination(target_strategy=targetting_strategy, x_offset=0))
-    esper.add_component(entity, RangeIndicator(ranges=[gc.CRUSADER_CATAPULT_MINIMUM_RANGE, gc.CRUSADER_CATAPULT_MAXIMUM_RANGE]))
+    esper.add_component(entity, RangeIndicator(ranges=[catapult_min_range, catapult_max_range]))
     esper.add_component(
         entity,
         Abilities(
@@ -1305,7 +1430,7 @@ def create_crusader_catapult(
                                 effects=[
                                     CreatesCircleAoE(
                                         effects=[
-                                            Damages(damage=gc.CRUSADER_CATAPULT_DAMAGE, recipient=Recipient.TARGET)
+                                            Damages(damage=catapult_damage, recipient=Recipient.TARGET)
                                         ],
                                         radius=10 * gc.CRUSADER_CATAPULT_AOE_SCALE,
                                         unit_condition=All([Alive(), Grounded()]),
@@ -1328,8 +1453,8 @@ def create_crusader_catapult(
                                     ),
                                     PlaySound(SoundEffect(filename="boulder_impact.wav", volume=0.60)),
                                 ],
-                                max_range=gc.CRUSADER_CATAPULT_MAXIMUM_RANGE,
-                                min_range=gc.CRUSADER_CATAPULT_MINIMUM_RANGE,
+                                max_range=catapult_max_range,
+                                min_range=catapult_min_range,
                                 visual=Visual.CrusaderCatapultBall,
                                 offset=(-50, -65),
                                 angular_velocity=3,
@@ -1357,6 +1482,13 @@ def create_crusader_cleric(
         tier: UnitTier,
     ) -> int:
     """Create a cleric entity with all necessary components."""
+    # Calculate tier-specific range
+    cleric_range = gc.CRUSADER_CLERIC_ATTACK_RANGE
+    
+    # Advanced tier (and Elite): 100% increased range
+    if tier == UnitTier.ADVANCED or tier == UnitTier.ELITE:
+        cleric_range = cleric_range * 2.0
+    
     entity = unit_base_entity(
         x=x,
         y=y,
@@ -1413,7 +1545,7 @@ def create_crusader_cleric(
     )
     esper.add_component(
         entity,
-        RangeIndicator(ranges=[gc.CRUSADER_CLERIC_ATTACK_RANGE])
+        RangeIndicator(ranges=[cleric_range])
     )
     esper.add_component(
         entity,
@@ -1457,7 +1589,7 @@ def create_crusader_cleric(
                                 Alive(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=gc.CRUSADER_CLERIC_ATTACK_RANGE,
+                                    distance=cleric_range,
                                     y_bias=None
                                 ),
                                 HealthBelowPercent(percent=1),
@@ -1789,13 +1921,25 @@ def create_crusader_defender(
         tier: UnitTier,
     ) -> int:
     """Create a defender entity with all necessary components."""
+    # Calculate tier-specific values
+    defender_health = gc.CRUSADER_DEFENDER_HP
+    defender_damage = gc.CRUSADER_DEFENDER_ATTACK_DAMAGE
+    
+    # Advanced tier (and Elite): 35% increased damage
+    if tier == UnitTier.ADVANCED or tier == UnitTier.ELITE:
+        defender_damage = defender_damage * 1.35
+    
+    # Elite tier: 50% increased health
+    if tier == UnitTier.ELITE:
+        defender_health = defender_health * 1.5
+    
     entity = unit_base_entity(
         x=x,
         y=y,
         team=team,
         unit_type=UnitType.CRUSADER_DEFENDER,
         movement_speed=gc.CRUSADER_DEFENDER_MOVEMENT_SPEED,
-        health=gc.CRUSADER_DEFENDER_HP,
+        health=defender_health,
         hitbox=Hitbox(
             width=16,
             height=32,
@@ -1845,7 +1989,7 @@ def create_crusader_defender(
                         )
                     ],
                     effects={4: [
-                        Damages(damage=gc.CRUSADER_DEFENDER_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                        Damages(damage=defender_damage, recipient=Recipient.TARGET),
                         PlaySound([
                             (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
                         ]),
@@ -1873,13 +2017,30 @@ def create_crusader_gold_knight(
         tier: UnitTier,
     ) -> int:
     """Create a gold knight entity with all necessary components."""
+    # Calculate tier-specific values
+    gold_knight_health = gc.CRUSADER_GOLD_KNIGHT_HP
+    gold_knight_damage = gc.CRUSADER_GOLD_KNIGHT_ATTACK_DAMAGE
+    gold_knight_healing = gc.CRUSADER_GOLD_KNIGHT_ATTACK_HEAL
+    
+    # Advanced tier: 20% increased damage, healing, and health
+    if tier == UnitTier.ADVANCED:
+        gold_knight_health = gold_knight_health * 1.2
+        gold_knight_damage = gold_knight_damage * 1.2
+        gold_knight_healing = gold_knight_healing * 1.2
+    
+    # Elite tier: 40% increased damage, healing, and health (total)
+    elif tier == UnitTier.ELITE:
+        gold_knight_health = gold_knight_health * 1.4
+        gold_knight_damage = gold_knight_damage * 1.4
+        gold_knight_healing = gold_knight_healing * 1.4
+    
     entity = unit_base_entity(
         x=x,
         y=y,
         team=team,
         unit_type=UnitType.CRUSADER_GOLD_KNIGHT,
         movement_speed=gc.CRUSADER_GOLD_KNIGHT_MOVEMENT_SPEED,
-        health=gc.CRUSADER_GOLD_KNIGHT_HP,
+        health=gold_knight_health,
         hitbox=Hitbox(
             width=16,
             height=38,
@@ -1922,8 +2083,8 @@ def create_crusader_gold_knight(
                         0: [
                             CreatesVisualAoE(
                                 effects=[
-                                    Damages(damage=gc.CRUSADER_GOLD_KNIGHT_ATTACK_DAMAGE, recipient=Recipient.TARGET),
-                                    Heals(amount=gc.CRUSADER_GOLD_KNIGHT_ATTACK_HEAL, recipient=Recipient.OWNER)
+                                    Damages(damage=gold_knight_damage, recipient=Recipient.TARGET),
+                                    Heals(amount=gold_knight_healing, recipient=Recipient.OWNER)
                                 ],
                                 duration=gc.CRUSADER_GOLD_KNIGHT_ANIMATION_ATTACK_DURATION,
                                 scale=gc.TINY_RPG_SCALE,
@@ -1961,6 +2122,17 @@ def create_crusader_guardian_angel(
         tier: UnitTier,
     ) -> int:
     """Create an angel entity with all necessary components."""
+    # Calculate tier-specific healing
+    guardian_angel_healing = gc.CRUSADER_GUARDIAN_ANGEL_HEALING
+    
+    # Advanced tier: 50% increased healing
+    if tier == UnitTier.ADVANCED:
+        guardian_angel_healing = guardian_angel_healing * 1.5
+    
+    # Elite tier: 100% increased healing (total)
+    elif tier == UnitTier.ELITE:
+        guardian_angel_healing = guardian_angel_healing * 2.0
+    
     entity = unit_base_entity(
         x=x,
         y=y,
@@ -2049,7 +2221,7 @@ def create_crusader_guardian_angel(
                     ],
                     effects=[
                         AppliesStatusEffect(
-                            status_effect=Healing(time_remaining=gc.CRUSADER_GUARDIAN_ANGEL_HEAL_COOLDOWN, dps=gc.CRUSADER_GUARDIAN_ANGEL_HEALING/gc.CRUSADER_GUARDIAN_ANGEL_HEAL_COOLDOWN),
+                            status_effect=Healing(time_remaining=gc.CRUSADER_GUARDIAN_ANGEL_HEAL_COOLDOWN, dps=guardian_angel_healing/gc.CRUSADER_GUARDIAN_ANGEL_HEAL_COOLDOWN),
                             recipient=Recipient.TARGET
                         ),
                         CreatesAttachedVisual(
@@ -2089,12 +2261,24 @@ def create_crusader_paladin(
         tier: UnitTier,
     ) -> int:
     """Create a paladin entity with all necessary components."""
+    # Calculate tier-specific values
+    paladin_damage = gc.CRUSADER_PALADIN_ATTACK_DAMAGE
+    paladin_movement_speed = gc.CRUSADER_PALADIN_MOVEMENT_SPEED
+    
+    # Advanced tier (and Elite): 100% increased damage
+    if tier == UnitTier.ADVANCED or tier == UnitTier.ELITE:
+        paladin_damage = paladin_damage * 2.0
+    
+    # Elite tier: 25% increased movement speed
+    if tier == UnitTier.ELITE:
+        paladin_movement_speed = paladin_movement_speed * 1.25
+    
     entity = unit_base_entity(
         x=x,
         y=y,
         team=team,
         unit_type=UnitType.CRUSADER_PALADIN,
-        movement_speed=gc.CRUSADER_PALADIN_MOVEMENT_SPEED,
+        movement_speed=paladin_movement_speed,
         health=gc.CRUSADER_PALADIN_HP,
         hitbox=Hitbox(
             width=30,
@@ -2164,7 +2348,7 @@ def create_crusader_paladin(
                         )
                     ],
                     effects={3: [
-                        Damages(damage=gc.CRUSADER_PALADIN_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                        Damages(damage=paladin_damage, recipient=Recipient.TARGET),
                         PlaySound([
                             (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
                         ]),
@@ -2192,13 +2376,27 @@ def create_crusader_pikeman(
         tier: UnitTier,
     ) -> int:
     """Create a pikeman entity with all necessary components."""
+    # Calculate tier-specific values
+    pikeman_health = gc.CRUSADER_PIKEMAN_HP
+    pikeman_damage = gc.CRUSADER_PIKEMAN_ATTACK_DAMAGE
+    
+    # Advanced tier: 30% increased damage, 15% increased health
+    if tier == UnitTier.ADVANCED:
+        pikeman_damage = pikeman_damage * 1.3
+        pikeman_health = pikeman_health * 1.15
+    
+    # Elite tier: 60% increased damage total, 30% increased health total
+    elif tier == UnitTier.ELITE:
+        pikeman_damage = pikeman_damage * 1.6
+        pikeman_health = pikeman_health * 1.3
+    
     entity = unit_base_entity(
         x=x,
         y=y,
         team=team,
         unit_type=UnitType.CRUSADER_PIKEMAN,
         movement_speed=gc.CRUSADER_PIKEMAN_MOVEMENT_SPEED,
-        health=gc.CRUSADER_PIKEMAN_HP,
+        health=pikeman_health,
         hitbox=Hitbox(
             width=16,
             height=32,
@@ -2275,7 +2473,7 @@ def create_crusader_pikeman(
                         SatisfiesUnitCondition(unit_condition=InStance(stance=PIKE_DOWN))
                     ],
                     effects={3: [
-                        Damages(damage=gc.CRUSADER_PIKEMAN_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                        Damages(damage=pikeman_damage, recipient=Recipient.TARGET),
                         PlaySound([
                             (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
                         ]),
@@ -2448,6 +2646,26 @@ def create_crusader_soldier(
         tier: UnitTier,
     ) -> int:
     """Create a soldier entity with all necessary components."""
+    # Calculate tier-specific values
+    soldier_health = gc.CRUSADER_SOLDIER_HP
+    soldier_melee_damage = gc.CRUSADER_SOLDIER_MELEE_DAMAGE
+    soldier_ranged_damage = gc.CORE_ARCHER_ATTACK_DAMAGE
+    soldier_ranged_range = gc.CRUSADER_SOLDIER_RANGED_RANGE
+    
+    # Advanced tier: 20% increased health, damage, and range (bow only)
+    if tier == UnitTier.ADVANCED:
+        soldier_health = soldier_health * 1.2
+        soldier_melee_damage = soldier_melee_damage * 1.2
+        soldier_ranged_damage = soldier_ranged_damage * 1.2
+        soldier_ranged_range = soldier_ranged_range * 1.2
+    
+    # Elite tier: 40% increased health, damage, and range (bow only) total
+    elif tier == UnitTier.ELITE:
+        soldier_health = soldier_health * 1.4
+        soldier_melee_damage = soldier_melee_damage * 1.4
+        soldier_ranged_damage = soldier_ranged_damage * 1.4
+        soldier_ranged_range = soldier_ranged_range * 1.4
+    
     MELEE = 0
     RANGED = 1
     entity = unit_base_entity(
@@ -2456,7 +2674,7 @@ def create_crusader_soldier(
         team=team,
         unit_type=UnitType.CRUSADER_SOLDIER,
         movement_speed=gc.CRUSADER_SOLDIER_MOVEMENT_SPEED,
-        health=gc.CRUSADER_SOLDIER_HP,
+        health=soldier_health,
         hitbox=Hitbox(
             width=16,
             height=32,
@@ -2476,7 +2694,7 @@ def create_crusader_soldier(
     )
     esper.add_component(
         entity,
-        RangeIndicator(ranges=[gc.CRUSADER_SOLDIER_RANGED_RANGE])
+        RangeIndicator(ranges=[soldier_ranged_range])
     )
     esper.add_component(entity, Stance(stance=RANGED))
     esper.add_component(entity, Armor(flat_reduction=gc.ARMOR_FLAT_DAMAGE_REDUCTION, percent_reduction=gc.ARMOR_PERCENT_DAMAGE_REDUCTION))
@@ -2562,7 +2780,7 @@ def create_crusader_soldier(
                     ],
                     effects={
                         3: [
-                            Damages(damage=gc.CRUSADER_SOLDIER_MELEE_DAMAGE, recipient=Recipient.TARGET),
+                            Damages(damage=soldier_melee_damage, recipient=Recipient.TARGET),
                             PlaySound([
                                 (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
                             ]),
@@ -2580,7 +2798,7 @@ def create_crusader_soldier(
                                 Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=gc.CRUSADER_SOLDIER_RANGED_RANGE,
+                                    distance=soldier_ranged_range,
                                     y_bias=None,
                                 ),
                             ])
@@ -2593,7 +2811,7 @@ def create_crusader_soldier(
                                 Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=gc.CRUSADER_SOLDIER_RANGED_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    distance=soldier_ranged_range + gc.TARGETTING_GRACE_DISTANCE,
                                     y_bias=None
                                 ),
                                 MinimumDistanceFromEntity(
@@ -2612,7 +2830,7 @@ def create_crusader_soldier(
                             CreatesProjectile(
                                 projectile_speed=gc.CORE_ARCHER_PROJECTILE_SPEED,
                                 effects=[
-                                    Damages(damage=gc.CORE_ARCHER_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                                    Damages(damage=soldier_ranged_damage, recipient=Recipient.TARGET),
                                 ],
                                 visual=Visual.Arrow,
                                 projectile_offset_x=5*gc.MINIFOLKS_SCALE,
@@ -2722,13 +2940,24 @@ def create_zombie_basic_zombie(
         tier: UnitTier,
     ) -> int:
     """Create a zombie entity with all necessary components."""
+    # Calculate tier-specific health
+    zombie_health = gc.ZOMBIE_BASIC_ZOMBIE_HP
+    
+    # Advanced tier: 50% increased health
+    if tier == UnitTier.ADVANCED:
+        zombie_health = zombie_health * 1.5
+    
+    # Elite tier: 100% increased health total
+    elif tier == UnitTier.ELITE:
+        zombie_health = zombie_health * 2.0
+    
     entity = unit_base_entity(
         x=x,
         y=y,
         team=team,
         unit_type=UnitType.ZOMBIE_BASIC_ZOMBIE,
         movement_speed=gc.ZOMBIE_BASIC_ZOMBIE_MOVEMENT_SPEED,
-        health=gc.ZOMBIE_BASIC_ZOMBIE_HP,
+        health=zombie_health,
         hitbox=Hitbox(width=16, height=32),
         corruption_powers=corruption_powers,
         tier=tier
@@ -2807,13 +3036,27 @@ def create_zombie_brute(
         tier: UnitTier,
     ) -> int:
     """Create a brute zombie entity with all necessary components."""
+    # Calculate tier-specific values
+    brute_health = gc.ZOMBIE_BRUTE_HP
+    brute_damage = gc.ZOMBIE_BRUTE_ATTACK_DAMAGE
+    
+    # Advanced tier: 25% increased health and damage
+    if tier == UnitTier.ADVANCED:
+        brute_health = brute_health * 1.25
+        brute_damage = brute_damage * 1.25
+    
+    # Elite tier: 50% increased health and damage total
+    elif tier == UnitTier.ELITE:
+        brute_health = brute_health * 1.5
+        brute_damage = brute_damage * 1.5
+    
     entity = unit_base_entity(
         x=x,
         y=y,
         team=team,
         unit_type=UnitType.ZOMBIE_BRUTE,
         movement_speed=gc.ZOMBIE_BRUTE_MOVEMENT_SPEED,
-        health=gc.ZOMBIE_BRUTE_HP,
+        health=brute_health,
         hitbox=Hitbox(width=24, height=48),
         corruption_powers=corruption_powers,
         tier=tier
@@ -2921,7 +3164,7 @@ def create_zombie_brute(
                         )
                     ],
                     effects={3: [
-                        Damages(damage=gc.ZOMBIE_BRUTE_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                        Damages(damage=brute_damage, recipient=Recipient.TARGET),
                         AppliesStatusEffect(
                             status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers),
                             recipient=Recipient.TARGET
@@ -2951,13 +3194,27 @@ def create_zombie_jumper(
         tier: UnitTier,
     ) -> int:
     """Create a jumper zombie entity with all necessary components."""
+    # Calculate tier-specific values
+    jumper_health = gc.ZOMBIE_JUMPER_HP
+    jumper_movement_speed = gc.ZOMBIE_JUMPER_MOVEMENT_SPEED
+    
+    # Advanced tier: 30% more health, 15% more movement speed
+    if tier == UnitTier.ADVANCED:
+        jumper_health = jumper_health * 1.3
+        jumper_movement_speed = jumper_movement_speed * 1.15
+    
+    # Elite tier: 60% more health total, 30% more movement speed total
+    elif tier == UnitTier.ELITE:
+        jumper_health = jumper_health * 1.6
+        jumper_movement_speed = jumper_movement_speed * 1.3
+    
     entity = unit_base_entity(
         x=x,
         y=y,
         team=team,
         unit_type=UnitType.ZOMBIE_JUMPER,
-        movement_speed=gc.ZOMBIE_JUMPER_MOVEMENT_SPEED,
-        health=gc.ZOMBIE_JUMPER_HP,
+        movement_speed=jumper_movement_speed,
+        health=jumper_health,
         hitbox=Hitbox(width=16, height=32),
         corruption_powers=corruption_powers,
         tier=tier
@@ -3083,6 +3340,20 @@ def create_zombie_spitter(
         tier: UnitTier,
     ) -> int:
     """Create a spitter entity with all necessary components."""
+    # Calculate tier-specific damage values
+    spitter_damage = gc.ZOMBIE_SPITTER_ATTACK_DAMAGE
+    melee_damage = gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_DAMAGE
+    
+    # Advanced tier: 50% increased damage
+    if tier == UnitTier.ADVANCED:
+        spitter_damage = spitter_damage * 1.5
+        melee_damage = melee_damage * 1.5
+    
+    # Elite tier: 100% increased damage total
+    elif tier == UnitTier.ELITE:
+        spitter_damage = spitter_damage * 2.0
+        melee_damage = melee_damage * 2.0
+    
     entity = unit_base_entity(
         x=x,
         y=y,
@@ -3163,7 +3434,7 @@ def create_zombie_spitter(
                                     AppliesStatusEffect(
                                         status_effect=DamageOverTime(
                                             time_remaining=gc.ZOMBIE_INFECTION_DURATION,
-                                            dps=gc.ZOMBIE_SPITTER_ATTACK_DAMAGE/gc.ZOMBIE_INFECTION_DURATION,
+                                            dps=spitter_damage/gc.ZOMBIE_INFECTION_DURATION,
                                         ),
                                         recipient=Recipient.TARGET
                                     )
@@ -3205,7 +3476,7 @@ def create_zombie_spitter(
                         )
                     ],
                     effects={3: [
-                        Damages(damage=gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                        Damages(damage=melee_damage, recipient=Recipient.TARGET),
                         AppliesStatusEffect(
                             status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers),
                             recipient=Recipient.TARGET
@@ -3226,13 +3497,24 @@ def create_zombie_tank(
         tier: UnitTier,
     ) -> int:
     """Create a tank zombie entity with all necessary components."""
+    # Calculate tier-specific health
+    tank_health = gc.ZOMBIE_TANK_HP
+    
+    # Advanced tier: 50% increased health
+    if tier == UnitTier.ADVANCED:
+        tank_health = tank_health * 1.5
+    
+    # Elite tier: 100% increased health total
+    elif tier == UnitTier.ELITE:
+        tank_health = tank_health * 2.0
+    
     entity = unit_base_entity(
         x=x,
         y=y,
         team=team,
         unit_type=UnitType.ZOMBIE_TANK,
         movement_speed=gc.ZOMBIE_TANK_MOVEMENT_SPEED,
-        health=gc.ZOMBIE_TANK_HP,
+        health=tank_health,
         hitbox=Hitbox(width=32, height=64),
         corruption_powers=corruption_powers,
         tier=tier
@@ -3308,13 +3590,30 @@ def create_zombie_grabber(
         tier: UnitTier,
     ) -> int:
     """Create a grabber entity with all necessary components."""
+    # Calculate tier-specific values
+    grabber_health = gc.ZOMBIE_GRABBER_HP
+    grab_damage = gc.ZOMBIE_GRABBER_GRAB_DAMAGE
+    melee_damage = gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_DAMAGE
+    
+    # Advanced tier: 50% increased health and damage
+    if tier == UnitTier.ADVANCED:
+        grabber_health = grabber_health * 1.5
+        grab_damage = grab_damage * 1.5
+        melee_damage = melee_damage * 1.5
+    
+    # Elite tier: 100% increased health and damage total
+    elif tier == UnitTier.ELITE:
+        grabber_health = grabber_health * 2.0
+        grab_damage = grab_damage * 2.0
+        melee_damage = melee_damage * 2.0
+    
     entity = unit_base_entity(
         x=x,
         y=y,
         team=team,
         unit_type=UnitType.ZOMBIE_GRABBER,
         movement_speed=gc.ZOMBIE_GRABBER_MOVEMENT_SPEED,
-        health=gc.ZOMBIE_GRABBER_HP,
+        health=grabber_health,
         hitbox=Hitbox(
             width=16,
             height=32,
@@ -3395,7 +3694,7 @@ def create_zombie_grabber(
                                 projectile_speed=gc.ZOMBIE_GRABBER_GRAB_PROJECTILE_SPEED,
                                 effects=[
                                     RememberTarget(recipient=Recipient.OWNER),
-                                    Damages(damage=gc.ZOMBIE_GRABBER_GRAB_DAMAGE, recipient=Recipient.TARGET),
+                                    Damages(damage=grab_damage, recipient=Recipient.TARGET),
                                     AppliesStatusEffect(
                                         status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers),
                                         recipient=Recipient.TARGET
@@ -3461,7 +3760,7 @@ def create_zombie_grabber(
                         )
                     ],
                     effects={3: [
-                        Damages(damage=gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                        Damages(damage=melee_damage, recipient=Recipient.TARGET),
                         AppliesStatusEffect(
                             status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers),
                             recipient=Recipient.TARGET
@@ -3476,6 +3775,12 @@ def create_zombie_grabber(
 
 def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
     if unit_type == UnitType.CORE_ARCHER:
+        # Advanced tier gets 50% faster rate of fire (attack animation 50% faster)
+        # Elite tier keeps this upgrade plus gets additional range
+        attack_animation_duration = gc.CORE_ARCHER_ANIMATION_ATTACK_DURATION
+        if tier == UnitTier.ADVANCED or tier == UnitTier.ELITE:
+            attack_animation_duration = attack_animation_duration * 2/3  # 50% faster = 2/3 duration
+        
         return SpriteSheet(
             surface=sprite_sheets[UnitType.CORE_ARCHER],
             frame_width=32,
@@ -3486,7 +3791,7 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
             animation_durations={
                 AnimationType.IDLE: gc.CORE_ARCHER_ANIMATION_IDLE_DURATION,
                 AnimationType.WALKING: gc.CORE_ARCHER_ANIMATION_WALKING_DURATION,
-                AnimationType.ABILITY1: gc.CORE_ARCHER_ANIMATION_ATTACK_DURATION,
+                AnimationType.ABILITY1: attack_animation_duration,
                 AnimationType.DYING: gc.CORE_ARCHER_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(0, -8),
@@ -3495,6 +3800,13 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
             }
         )
     if unit_type == UnitType.CORE_BARBARIAN:
+        # Elite tier gets 25% faster attack speed and idle animation (25% faster)
+        attack_animation_duration = gc.CORE_BARBARIAN_ANIMATION_ATTACK_DURATION
+        idle_animation_duration = gc.CORE_BARBARIAN_ANIMATION_IDLE_DURATION
+        if tier == UnitTier.ELITE:
+            attack_animation_duration = attack_animation_duration * 0.8  # 25% faster = 0.8x duration
+            idle_animation_duration = idle_animation_duration * 0.8  # 25% faster = 0.8x duration
+        
         return SpriteSheet(
             surface=sprite_sheets[UnitType.CORE_BARBARIAN],
             frame_width=100,
@@ -3503,9 +3815,9 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
             frames={AnimationType.IDLE: 6, AnimationType.WALKING: 9, AnimationType.ABILITY1: 12, AnimationType.DYING: 4},
             rows={AnimationType.IDLE: 1, AnimationType.WALKING: 4, AnimationType.ABILITY1: 10, AnimationType.DYING: 19},
             animation_durations={
-                AnimationType.IDLE: gc.CORE_BARBARIAN_ANIMATION_IDLE_DURATION,
+                AnimationType.IDLE: idle_animation_duration,
                 AnimationType.WALKING: gc.CORE_BARBARIAN_ANIMATION_WALKING_DURATION,
-                AnimationType.ABILITY1: gc.CORE_BARBARIAN_ANIMATION_ATTACK_DURATION,
+                AnimationType.ABILITY1: attack_animation_duration,
                 AnimationType.DYING: gc.CORE_BARBARIAN_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(-2, 2),
@@ -3552,6 +3864,11 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
         }
     )
     if unit_type == UnitType.CORE_LONGBOWMAN:
+        # Advanced tier (and Elite): 33.33% more attack speed
+        attack_animation_duration = gc.CORE_LONGBOWMAN_ANIMATION_ATTACK_DURATION
+        if tier == UnitTier.ADVANCED or tier == UnitTier.ELITE:
+            attack_animation_duration = attack_animation_duration * 0.75  # 33.33% faster = 0.75x duration
+        
         return SpriteSheet(
             surface=sprite_sheets[UnitType.CORE_LONGBOWMAN],
             frame_width=100,
@@ -3562,7 +3879,7 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
             animation_durations={
                 AnimationType.IDLE: gc.CORE_LONGBOWMAN_ANIMATION_IDLE_DURATION,
                 AnimationType.WALKING: gc.CORE_LONGBOWMAN_ANIMATION_WALKING_DURATION,
-                AnimationType.ABILITY1: gc.CORE_LONGBOWMAN_ANIMATION_ATTACK_DURATION,
+                AnimationType.ABILITY1: attack_animation_duration,
                 AnimationType.DYING: gc.CORE_LONGBOWMAN_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(0, 2),
@@ -3673,6 +3990,11 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
             }
         )
     if unit_type == UnitType.CRUSADER_CLERIC:
+        # Elite tier: 50% faster casting speed
+        attack_animation_duration = gc.CRUSADER_CLERIC_ANIMATION_ATTACK_DURATION
+        if tier == UnitTier.ELITE:
+            attack_animation_duration = attack_animation_duration * 2/3  # 50% faster = 2/3 duration
+        
         return SpriteSheet(
             surface=sprite_sheets[UnitType.CRUSADER_CLERIC],
             frame_width=100,
@@ -3683,7 +4005,7 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
             animation_durations={
                 AnimationType.IDLE: gc.CRUSADER_CLERIC_ANIMATION_IDLE_DURATION,
                 AnimationType.WALKING: gc.CRUSADER_CLERIC_ANIMATION_WALKING_DURATION,
-                AnimationType.ABILITY1: gc.CRUSADER_CLERIC_ANIMATION_ATTACK_DURATION,
+                AnimationType.ABILITY1: attack_animation_duration,
                 AnimationType.DYING: gc.CRUSADER_CLERIC_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(0, 2),
@@ -3731,6 +4053,11 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
             }
         )
     if unit_type == UnitType.CRUSADER_DEFENDER:
+        # Advanced tier (and Elite): 35% increased ability speed
+        attack_animation_duration = gc.CRUSADER_DEFENDER_ANIMATION_ATTACK_DURATION
+        if tier == UnitTier.ADVANCED or tier == UnitTier.ELITE:
+            attack_animation_duration = attack_animation_duration / 1.35  # 35% faster
+        
         return SpriteSheet(
             surface=sprite_sheets[UnitType.CRUSADER_DEFENDER],
             frame_width=32,
@@ -3741,7 +4068,7 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
             animation_durations={
                 AnimationType.IDLE: gc.CRUSADER_DEFENDER_ANIMATION_IDLE_DURATION,
                 AnimationType.WALKING: gc.CRUSADER_DEFENDER_ANIMATION_WALKING_DURATION,
-                AnimationType.ABILITY1: gc.CRUSADER_DEFENDER_ANIMATION_ATTACK_DURATION,
+                AnimationType.ABILITY1: attack_animation_duration,
                 AnimationType.DYING: gc.CRUSADER_DEFENDER_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(0, -8),
@@ -3787,6 +4114,16 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
             }
         )
     if unit_type == UnitType.CRUSADER_PALADIN:
+        # Elite tier: 25% increased ability speed (idle, healing, and attack animation)
+        idle_animation_duration = gc.CRUSADER_PALADIN_ANIMATION_IDLE_DURATION
+        healing_animation_duration = gc.CRUSADER_PALADIN_ANIMATION_SKILL_DURATION
+        attack_animation_duration = gc.CRUSADER_PALADIN_ANIMATION_ATTACK_DURATION
+        
+        if tier == UnitTier.ELITE:
+            idle_animation_duration = idle_animation_duration * 0.8  # 25% faster = 0.8x duration
+            healing_animation_duration = healing_animation_duration * 0.8  # 25% faster = 0.8x duration
+            attack_animation_duration = attack_animation_duration * 0.8  # 25% faster = 0.8x duration
+        
         return SpriteSheet(
             surface=sprite_sheets[UnitType.CRUSADER_PALADIN],
             frame_width=100,
@@ -3795,10 +4132,10 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
             frames={AnimationType.IDLE: 6, AnimationType.WALKING: 8, AnimationType.ABILITY1: 13, AnimationType.ABILITY2: 6, AnimationType.DYING: 4},
             rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 7, AnimationType.ABILITY2: 3, AnimationType.DYING: 6},
             animation_durations={
-                AnimationType.IDLE: gc.CRUSADER_PALADIN_ANIMATION_IDLE_DURATION,
+                AnimationType.IDLE: idle_animation_duration,
                 AnimationType.WALKING: gc.CRUSADER_PALADIN_ANIMATION_WALKING_DURATION,
-                AnimationType.ABILITY1: gc.CRUSADER_PALADIN_ANIMATION_SKILL_DURATION,
-                AnimationType.ABILITY2: gc.CRUSADER_PALADIN_ANIMATION_ATTACK_DURATION,
+                AnimationType.ABILITY1: healing_animation_duration,
+                AnimationType.ABILITY2: attack_animation_duration,
                 AnimationType.DYING: gc.CRUSADER_PALADIN_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(0, 7),
@@ -3927,6 +4264,18 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
             }
         )
     if unit_type == UnitType.ZOMBIE_JUMPER:
+        # Advanced tier (and Elite): 15% faster action speed (idle and attack)
+        # Elite tier: 30% faster action speed total (idle and attack)
+        idle_animation_duration = gc.ZOMBIE_JUMPER_ANIMATION_IDLE_DURATION
+        attack_animation_duration = gc.ZOMBIE_JUMPER_ANIMATION_ATTACK_DURATION
+        
+        if tier == UnitTier.ADVANCED:
+            idle_animation_duration = idle_animation_duration / 1.15  # 15% faster
+            attack_animation_duration = attack_animation_duration / 1.15  # 15% faster
+        elif tier == UnitTier.ELITE:
+            idle_animation_duration = idle_animation_duration / 1.3  # 30% faster
+            attack_animation_duration = attack_animation_duration / 1.3  # 30% faster
+        
         return SpriteSheet(
             surface=sprite_sheets[UnitType.ZOMBIE_JUMPER],
             frame_width=100,
@@ -3949,9 +4298,9 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
                 AnimationType.AIRBORNE: 0,
             },
             animation_durations={
-                AnimationType.IDLE: gc.ZOMBIE_JUMPER_ANIMATION_IDLE_DURATION,
+                AnimationType.IDLE: idle_animation_duration,
                 AnimationType.WALKING: gc.ZOMBIE_JUMPER_ANIMATION_WALKING_DURATION,
-                AnimationType.ABILITY1: gc.ZOMBIE_JUMPER_ANIMATION_ATTACK_DURATION,
+                AnimationType.ABILITY1: attack_animation_duration,
                 AnimationType.ABILITY2: gc.ZOMBIE_JUMPER_ANIMATION_JUMPING_DURATION,
                 AnimationType.DYING: gc.ZOMBIE_JUMPER_ANIMATION_DYING_DURATION,
                 AnimationType.AIRBORNE: gc.ZOMBIE_JUMPER_ANIMATION_AIRBORNE_DURATION,

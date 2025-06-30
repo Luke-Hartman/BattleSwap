@@ -214,7 +214,7 @@ class UnitCard:
         
         Args:
             stat_type: The type of stat to add
-            value: The stat value (0-10)
+            value: The stat value (0-20)
             tooltip_text: Tooltip text for the stat
             modification_level: How many tiers this stat has been modified in
         """

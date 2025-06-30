@@ -11,6 +11,7 @@ import esper
 from components.ability import Abilities
 from components.animation import AnimationState, AnimationType
 from components.corruption import IncreasedAbilitySpeedComponent
+from components.status_effect import StatusEffects, CrusaderBannerBearerAbilitySpeedBuff
 from components.destination import Destination
 from components.forced_movement import ForcedMovement
 from components.movement import Movement
@@ -102,10 +103,20 @@ class AnimationProcessor(esper.Processor):
                     else:
                         scale = 1
                     anim_state.time_elapsed += dt * scale
-                elif esper.has_component(ent, IncreasedAbilitySpeedComponent):
-                    anim_state.time_elapsed += dt * (1 + esper.component_for_entity(ent, IncreasedAbilitySpeedComponent).increase_percent / 100)
                 else:
-                    anim_state.time_elapsed += dt
+                    # Check for ability speed increases from corruption powers or status effects
+                    speed_multiplier = 1.0
+                    
+                    if esper.has_component(ent, IncreasedAbilitySpeedComponent):
+                        speed_multiplier *= (1 + esper.component_for_entity(ent, IncreasedAbilitySpeedComponent).increase_percent / 100)
+                    
+                    if esper.has_component(ent, StatusEffects):
+                        status_effects = esper.component_for_entity(ent, StatusEffects)
+                        for status_effect in status_effects.active_effects():
+                            if isinstance(status_effect, CrusaderBannerBearerAbilitySpeedBuff):
+                                speed_multiplier *= (1 + status_effect.ability_speed_increase_percent / 100)
+                    
+                    anim_state.time_elapsed += dt * speed_multiplier
 
             # Update the animation frame based on the current time
             total_duration = sprite_sheet.animation_durations[anim_state.type]

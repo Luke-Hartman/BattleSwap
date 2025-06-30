@@ -2,7 +2,7 @@
 
 from components.dying import Dying
 from components.health import Health
-from components.status_effect import CrusaderBannerBearerEmpowered, CrusaderBannerBearerMovementSpeedBuff, Fleeing, Healing, DamageOverTime, StatusEffects, ZombieInfection
+from components.status_effect import CrusaderBannerBearerEmpowered, CrusaderBannerBearerMovementSpeedBuff, CrusaderBannerBearerAbilitySpeedBuff, Fleeing, Healing, DamageOverTime, StatusEffects, ZombieInfection
 import esper
 
 from components.unit_state import State, UnitState
@@ -25,6 +25,9 @@ class StatusEffectProcessor(esper.Processor):
                     pass
                 elif isinstance(status_effect, CrusaderBannerBearerMovementSpeedBuff):
                     # Handled in the pursuing processor
+                    pass
+                elif isinstance(status_effect, CrusaderBannerBearerAbilitySpeedBuff):
+                    # Handled in the animation processor
                     pass
                 elif isinstance(status_effect, Fleeing):
                     # Handled in the fleeing processor

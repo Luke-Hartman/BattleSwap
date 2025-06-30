@@ -4,7 +4,7 @@ from typing import Optional
 from ui_components.game_data import StatType
 
 class StatBar:
-    """A UI component that displays a named stat with a value from 0-10 as segmented bars with text titles."""
+    """A UI component that displays a named stat with a value from 0-20 as segmented bars with text titles."""
     
     # Define colors for each stat type
     STAT_COLORS = {
@@ -43,7 +43,7 @@ class StatBar:
             manager: The UI manager for this component
             rect: Position and size of the component
             stat_type: Type of stat to display
-            value: Current value (0-10)
+            value: Current value (0-20)
             tooltip_text: Text to display when hovering over the bar
             container: Optional parent container
             disabled: Whether this stat is disabled
@@ -55,7 +55,7 @@ class StatBar:
         self.stat_type = stat_type
         self.name = stat_type.value
         self.value = value
-        self.max_value = 10
+        self.max_value = 20
         self.tooltip_text = tooltip_text if not disabled else "N/A"
         self.disabled = disabled
         self.modification_level = modification_level
@@ -121,26 +121,24 @@ class StatBar:
         # Clear the surface
         self.segments_surface.fill((0, 0, 0, 0))
         
-        # Calculate segments to fill
-        # We have 5 segments, values 0-10
-        # Each segment represents 2 values
-        # But we want any non-zero value to show at least half a segment
+        # Calculate segments to fill with quarter precision
+        # We have 5 segments, values 0-20
+        # Each segment represents 4 values, with quarter increments
+        # Values 0-20 map to 0-5 segments with quarter precision
         
         if self.value == 0:
-            # Nothing filled
             filled_segments = 0.0
-        elif self.value == 1:
-            # Special case: show half a segment for value 1
-            filled_segments = 0.5
         else:
-            # Values 2-10 map linearly: 2->1, 3->1.5, 4->2, ..., 10->5
-            filled_segments = self.value / 2.0
+            # Map values 1-20 to quarter increments
+            # Value 1 = 0.25, Value 2 = 0.5, Value 3 = 0.75, Value 4 = 1.0, etc.
+            filled_segments = self.value / 4.0
         
-        # Convert to full and half segments
+        # Calculate full segments and fractional part
         full_segments = int(filled_segments)
-        has_half = (filled_segments - full_segments) >= 0.5
-        if full_segments == 0 and self.value > 0:
-            has_half = True
+        fraction = filled_segments - full_segments
+        
+        # Round fraction to nearest quarter (0, 0.25, 0.5, 0.75, 1.0)
+        quarter_level = round(fraction * 4) / 4
         
         # Get the stat color
         stat_color = self.STAT_COLORS[self.stat_type]
@@ -168,16 +166,26 @@ class StatBar:
                 # Add a subtle border for modified stats
                 if self.modification_level > 0:
                     pygame.draw.rect(self.segments_surface, (255, 255, 255), segment_rect, 1)
-            elif i == full_segments and has_half:
-                # Half-filled segment
+            elif i == full_segments and quarter_level > 0:
+                # Partially filled segment
                 # Draw the unfilled background first
                 pygame.draw.rect(self.segments_surface, unfilled_color, segment_rect)
-                # Then draw the half-filled portion on top
-                half_rect = pygame.Rect(segment_x, 0, self.segment_width // 2, self.segment_height)
-                pygame.draw.rect(self.segments_surface, fill_color, half_rect)
-                # Add border for modified stats
-                if self.modification_level > 0:
-                    pygame.draw.rect(self.segments_surface, (255, 255, 255), half_rect, 1)
+                
+                # Calculate the width of the filled portion based on quarter level
+                if quarter_level >= 1.0:
+                    # Full segment (shouldn't happen here, but handle it)
+                    fill_width = self.segment_width
+                else:
+                    # Quarter level: 0.25 = 1/4, 0.5 = 1/2, 0.75 = 3/4
+                    fill_width = int(self.segment_width * quarter_level)
+                
+                # Draw the filled portion
+                if fill_width > 0:
+                    fill_rect = pygame.Rect(segment_x, 0, fill_width, self.segment_height)
+                    pygame.draw.rect(self.segments_surface, fill_color, fill_rect)
+                    # Add border for modified stats
+                    if self.modification_level > 0:
+                        pygame.draw.rect(self.segments_surface, (255, 255, 255), fill_rect, 1)
             else:
                 # Unfilled segment
                 pygame.draw.rect(self.segments_surface, unfilled_color, segment_rect)
