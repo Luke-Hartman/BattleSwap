@@ -50,6 +50,7 @@ class GlossaryEntryType(enum.Enum):
     KILLING_BLOW = "Killing Blow"
     POINTS = "Points"
     SPREADER = "Spreader"
+    UPGRADE = "Upgrade"
 
 class StatType(enum.Enum):
     """Types of stats that units can have."""
@@ -85,7 +86,7 @@ GLOSSARY_ENTRIES = {
     GlossaryEntryType.ARMORED: f"Armored units take {gc.ARMOR_FLAT_DAMAGE_REDUCTION} flat reduced damage, and have {gc.ARMOR_PERCENT_DAMAGE_REDUCTION}% damage reduction (after flat reduction). Maximum damage reduction is capped at {gc.MAX_ARMOR_DAMAGE_REDUCTION}%.",
     GlossaryEntryType.AURA: "Auras apply effects to nearby units. Some units may not be affected, such as units on the same team.",
     GlossaryEntryType.BARRACKS: "The Barracks contains your available army. It can be accessed at the bottom of the screen.",
-    GlossaryEntryType.CORRUPTION: f"Corruption reopens up to {gc.CORRUPTION_BATTLE_COUNT} battles you've already completed, with modifiers to increase their difficulty. To continue, you must defeat these corrupted battles again. Corruption can activate when you exceed {gc.CORRUPTION_TRIGGER_POINTS} <a href='{GlossaryEntryType.POINTS.value}'>Points</a> in your <a href='{GlossaryEntryType.BARRACKS.value}'>Barracks</a>. Efficient players can corrupt and reconquer every battle.",
+    GlossaryEntryType.CORRUPTION: f"Corruption reopens up to {gc.CORRUPTION_BATTLE_COUNT} battle or upgrade hexes you've already claimed, with modifiers to increase their difficulty including <a href='{GlossaryEntryType.UPGRADE.value}'>upgrading</a> all enemy units to Elite. To continue, you must reclaim these hexes. Corruption can activate when you exceed {gc.CORRUPTION_TRIGGER_POINTS} <a href='{GlossaryEntryType.POINTS.value}'>Points</a> in your <a href='{GlossaryEntryType.BARRACKS.value}'>Barracks</a>. Corruption is required to <a href='{GlossaryEntryType.UPGRADE.value}'>upgrade</a> your units to Elite. Efficient players can corrupt and reconquer every battle.",
     GlossaryEntryType.FACTION: "Factions are groups of units that share a common theme. Enemy armies are made up of units from a specific faction plus the core units, while players are free to mix and match units from different factions.",
     GlossaryEntryType.FLEE: "Fleeing units move away from the source of the effect at a reduced speed for 2 seconds.",
     GlossaryEntryType.FOLLOWER: "Follower units follow a nearby friendly non-follower unit until it is killed.",
@@ -94,7 +95,8 @@ GLOSSARY_ENTRIES = {
     GlossaryEntryType.INFECTION: f"Infected units turn into <a href='{UnitType.ZOMBIE_BASIC_ZOMBIE.value}'>Zombies</a> when they die. Infection lasts for 2 seconds.",
     GlossaryEntryType.KILLING_BLOW: "A killing blow is when an instance of damage is enough to kill a unit. Some units have special abilities that trigger when they deal a killing blow.",
     GlossaryEntryType.POINTS: f"Points represent the value of a unit. When you have more than {gc.CORRUPTION_TRIGGER_POINTS} points of units in your <a href='{GlossaryEntryType.BARRACKS.value}'>Barracks</a>, <a href='{GlossaryEntryType.CORRUPTION.value}'>Corruption</a> will trigger.",
-    GlossaryEntryType.SPREADER: f"While most units target the nearest enemy unit, Spreaders prioritize units that are not <a href='{GlossaryEntryType.INFECTION.value}'>Infected</a>."
+    GlossaryEntryType.SPREADER: f"While most units target the nearest enemy unit, Spreaders prioritize units that are not <a href='{GlossaryEntryType.INFECTION.value}'>Infected</a>.",
+    GlossaryEntryType.UPGRADE: "Units come in three tiers: Basic, Advanced and Elite. All units start as Basic. You can find special upgrade hexes to promote your units from Basic to Advanced. To promote a unit to Elite, one of your upgrade hexes must be <a href='{GlossaryEntryType.CORRUPTION.value}'>Corrupted</a>. Enemy units start as Basic, but become Elite when they are <a href='{GlossaryEntryType.CORRUPTION.value}'>Corrupted</a>."
 }
 
 def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> UnitData:

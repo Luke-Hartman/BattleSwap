@@ -1,5 +1,6 @@
 import pygame
 import pygame_gui
+import pygame_gui.core
 from typing import List, Tuple, Optional
 from ui_components.stat_bar import StatBar
 from components.unit_type import UnitType
@@ -168,6 +169,14 @@ class UnitCard:
         self.animation_time = 0.0
         self.current_frame = 0
         
+        # Flash animation state
+        self.flash_time = 0.0
+        self.flash_duration = 1.0  # Total flash duration in seconds
+        self.flash_alternations = 6  # Number of border switches (3 full cycles)
+        self.flash_interval = self.flash_duration / self.flash_alternations
+        self.is_flashing = False
+        self.flash_state = False  # False = normal, True = flash theme
+        
         # Update the unit display with sprite sheet animation
         self.update_unit_display()
     
@@ -265,19 +274,31 @@ class UnitCard:
         return self.window if self.window is not None else self.card_container
     
     def bring_to_front(self):
-        """Bring this unit card to the front, simulating a click behavior."""
+        """Bring this unit card to the front with a flash effect."""
         if self.window is not None and self.window.alive():
-            # Use pygame-gui's built-in bring_to_front method if available
-            if hasattr(self.manager, 'bring_to_front'):
-                self.manager.bring_to_front(self.window)
-            # Fallback: use the window's change_layer method
-            elif hasattr(self.window, 'change_layer'):
-                # Find the highest layer currently in use and add 1
-                current_max = 0
-                for element in self.manager.get_root_container().elements:
-                    if hasattr(element, '_layer'):
-                        current_max = max(current_max, element._layer)
-                self.window.change_layer(current_max + 1)
+            # Use pygame-gui's window stack to bring window to front
+            window_stack = self.manager.get_window_stack()
+            window_stack.move_window_to_front(self.window)
+        
+        # Start flash animation
+        self.start_flash()
+    
+    def start_flash(self):
+        """Start the flash animation effect."""
+        if self.window is not None and self.window.alive():
+            self.is_flashing = True
+            self.flash_time = 0.0
+            self.flash_state = False
+    
+    def _update_flash_theme(self):
+        """Update the window theme based on flash state."""
+        if self.window is not None and self.window.alive():
+            if self.flash_state:
+                # Switch to flash theme
+                self.window.change_object_id(pygame_gui.core.ObjectID(object_id='#flash_window'))
+            else:
+                # Switch back to normal theme
+                self.window.change_object_id(pygame_gui.core.ObjectID(class_id='window'))
     
     def kill(self):
         """Remove the unit card from the UI."""
@@ -309,6 +330,26 @@ class UnitCard:
         else:
             # When in a panel, leave the bottom label empty
             self.bottom_label.set_text("")
+        
+        # Update flash animation
+        if self.is_flashing:
+            self.flash_time += time_delta
+            
+            # Calculate current alternation
+            current_alternation = int(self.flash_time / self.flash_interval)
+            new_flash_state = (current_alternation % 2) == 1
+            
+            # Update theme if state changed
+            if new_flash_state != self.flash_state:
+                self.flash_state = new_flash_state
+                self._update_flash_theme()
+            
+            # End flash after all alternations
+            if self.flash_time >= self.flash_duration:
+                self.is_flashing = False
+                self.flash_time = 0.0
+                self.flash_state = False
+                self._update_flash_theme()  # Ensure we end on normal theme
         
         # Update animation
         self.animation_time += time_delta

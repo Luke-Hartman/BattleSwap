@@ -165,7 +165,10 @@ class SceneManager:
                 validated_event = PreviousSceneEvent.model_validate(event.dict)
                 if validated_event.current_scene_id != id(self.current_scene):
                     continue
-                previous_state = self.scene_stack.pop()
+                n = validated_event.n
+                while n > 0:
+                    previous_state = self.scene_stack.pop()
+                    n -= 1
                 self.cleanup(add_to_stack=False)
 
                 self.current_scene = previous_state.scene_type(

@@ -3,7 +3,7 @@
 from typing import Optional, Dict
 import pygame
 import pygame_gui
-from pygame_gui.elements import UIPanel, UILabel
+from pygame_gui.elements import UIPanel, UITextBox
 from pygame_gui.core import ObjectID
 
 import battles
@@ -11,6 +11,7 @@ from progress_manager import calculate_points_for_units, progress_manager
 from components.team import TeamType
 from scene_utils import get_unit_placements
 from game_constants import gc
+from ui_components.game_data import GlossaryEntryType
 
 class ProgressPanel(UIPanel):
     """Panel showing progress information including battle points, completion stats, and barracks info."""
@@ -34,10 +35,7 @@ class ProgressPanel(UIPanel):
         self.manager = manager
         
         # Layout constants
-        self.y_offset = 10
-        self.label_height = 20
-        self.label_spacing = 0
-        self.side_margin = 15
+        self.margin = 10
         
         # Create the UI elements
         self.is_setup_mode = is_setup_mode
@@ -45,7 +43,6 @@ class ProgressPanel(UIPanel):
 
     def create_ui_elements(self, current_battle: Optional[battles.Battle]) -> None:
         """Create all UI elements with the current battle information."""
-        y_offset = self.y_offset
         
         # Battle points information
         if current_battle:
@@ -64,42 +61,12 @@ class ProgressPanel(UIPanel):
         else:
             player_points = "-"
             enemy_points = "-"
-            
-        # Battle points row
-        self.battle_points_label = UILabel(
-            relative_rect=pygame.Rect((self.side_margin, y_offset), (self.rect.width - 2*self.side_margin, self.label_height)),
-            text=f"{player_points} pts vs {enemy_points} pts",
-            manager=self.manager,
-            container=self,
-            object_id=ObjectID(class_id="@left_aligned_text")
-        )
-        y_offset += self.label_height + self.label_spacing
 
         # Barracks info
         barracks_units = []
         for unit_type, count in progress_manager.available_units(current_battle=current_battle).items():
             barracks_units.extend([(unit_type, (0, 0))] * count)
         barracks_points = calculate_points_for_units(barracks_units)
-        
-        self.barracks_label = UILabel(
-            relative_rect=pygame.Rect((self.side_margin, y_offset), (self.rect.width - 2*self.side_margin, self.label_height)),
-            text=f"{barracks_points} pts unused",
-            manager=self.manager,
-            container=self,
-            object_id=ObjectID(class_id="@left_aligned_text")
-        )
-        y_offset += self.label_height + self.label_spacing
-
-        # Corruption info
-        corruption_threshold = gc.CORRUPTION_TRIGGER_POINTS
-        self.corruption_label = UILabel(
-            relative_rect=pygame.Rect((self.side_margin, y_offset), (self.rect.width - 2*self.side_margin, self.label_height)),
-            text=f"({corruption_threshold} pts unused corrupts)",
-            manager=self.manager,
-            container=self,
-            object_id=ObjectID(class_id="@left_aligned_text")
-        )
-        y_offset += self.label_height + self.label_spacing
 
         # Campaign completion stats
         denominator = 2 * len([b for b in battles.get_battles() if not b.is_test])
@@ -111,22 +78,41 @@ class ProgressPanel(UIPanel):
                 numerator += 1
         percentage = int(numerator / denominator * 100)
         
-        # Total battles
-        self.progress_label = UILabel(
-            relative_rect=pygame.Rect((self.side_margin, y_offset), (self.rect.width - 2*self.side_margin, self.label_height)),
-            text=f"{percentage}% completion",
+        # Corruption info
+        corruption_threshold = gc.CORRUPTION_TRIGGER_POINTS
+        
+        # Create HTML content with clickable links
+        points_link = f"<a href='{GlossaryEntryType.POINTS.value}'>pts</a>"
+        corruption_link = f"<a href='{GlossaryEntryType.CORRUPTION.value}'>corrupts</a>"
+        
+        # Format player_points and enemy_points, handling the "-" case
+        if player_points == "-":
+            player_points_text = f"- pts"
+        else:
+            player_points_text = f"{player_points} pts"
+            
+        if enemy_points == "-":
+            enemy_points_text = f"- pts"
+        else:
+            enemy_points_text = f"{enemy_points} pts"
+        
+        html_content = f"""{player_points_text} vs {enemy_points_text}
+{barracks_points} pts unused
+({corruption_threshold} {points_link} unused {corruption_link})
+{percentage}% completion"""
+        
+        # Create single text box with all content
+        self.info_text = UITextBox(
+            relative_rect=pygame.Rect((self.margin, 5), (self.rect.width - 2*self.margin, self.rect.height - 20)),
+            html_text=html_content,
             manager=self.manager,
             container=self,
-            object_id=ObjectID(class_id="@left_aligned_text")
+            wrap_to_height=True,
         )
-        y_offset += self.label_height + self.label_spacing
 
     def kill_ui_elements(self) -> None:
         """Kill all UI elements."""
-        self.battle_points_label.kill()
-        self.progress_label.kill()
-        self.barracks_label.kill()
-        self.corruption_label.kill()
+        self.info_text.kill()
 
     def update_battle(self, new_battle: Optional[battles.Battle]) -> None:
         """Update the displayed battle information."""
@@ -134,4 +120,4 @@ class ProgressPanel(UIPanel):
         self.kill_ui_elements()
         
         # Recreate UI elements with new battle
-        self.create_ui_elements(new_battle) 
+        self.create_ui_elements(new_battle)

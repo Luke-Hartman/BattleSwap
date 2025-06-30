@@ -69,38 +69,34 @@ class SelectedUnitManager:
         
         return new_entry
 
-    def create_glossary_entry_from_link(self, entry_type_str: str, position_hint: Optional[tuple[int, int]] = None) -> bool:
+    def create_glossary_entry_from_link(self, entry_type_str: str) -> bool:
         """Create a glossary entry from a link click with proper positioning."""
-        return self._create_or_focus_glossary_entry(entry_type_str, position_hint)
+        return self._create_or_focus_glossary_entry(entry_type_str)
 
-    def create_unit_card_from_link(self, unit_type_str: str, unit_tier: UnitTier, position_hint: Optional[tuple[int, int]] = None) -> bool:
+    def create_unit_card_from_link(self, unit_type_str: str, unit_tier: UnitTier) -> bool:
         """Create a unit card from a link click with proper positioning."""
-        return self._create_or_focus_unit_card(unit_type_str, unit_tier, position_hint)
+        return self._create_or_focus_unit_card(unit_type_str, unit_tier)
 
     def get_next_card_position(self) -> tuple[int, int]:
         """Get the next available position for a new card, avoiding overlaps and mouse."""
         card_index = self._get_card_index_for_new_card()
         return self._calculate_position_from_index(card_index)
 
-    def get_card_position_near_mouse(self, mouse_pos: tuple[int, int]) -> tuple[int, int]:
-        """Get a card position near the mouse but ensuring it stays on screen."""
-        if self.screen is None:
-            return mouse_pos
-            
-        x = max(0, min(mouse_pos[0], self.screen.get_width() - self.CARD_WIDTH))
-        y = max(0, min(mouse_pos[1], self.screen.get_height() - self.CARD_HEIGHT))
-        return (x, y)
-
     def update(self, time_delta: float) -> None:
-        """Update the unit card animations."""
+        """Update the unit card animations and flash effects."""
         if info_mode_manager.info_mode:
             for card in self.unit_cards:
                 card.update(time_delta)
+            for entry in self.glossary_entries:
+                entry.update(time_delta)
         else:
             if self.unit_card is not None:
                 # Set time_delta to a fixed value to prevent animation issues
                 fixed_time_delta = 1/60  # 60 FPS equivalent
                 self.unit_card.update(fixed_time_delta)
+            # Also update glossary entries in normal mode (for tips)
+            for entry in self.glossary_entries:
+                entry.update(time_delta)
 
     def process_events(self, event: pygame.event.Event) -> bool:
         """Process UI events for unit cards (Tips button, link clicks, etc.)."""
@@ -123,7 +119,6 @@ class SelectedUnitManager:
             return False
             
         link_target = event.link_target
-        mouse_pos = pygame.mouse.get_pos()
         
         if self._is_unit_type(link_target):
             # For link clicks, use the tier from progress manager
@@ -135,9 +130,9 @@ class SelectedUnitManager:
             if target_unit_type is None:
                 return False
             unit_tier = progress_manager.get_unit_tier(target_unit_type)
-            return self._create_or_focus_unit_card(link_target, unit_tier, mouse_pos)
+            return self._create_or_focus_unit_card(link_target, unit_tier)
         else:
-            return self._create_or_focus_glossary_entry(link_target, mouse_pos)
+            return self._create_or_focus_glossary_entry(link_target)
 
     def _is_unit_type(self, type_str: str) -> bool:
         """Check if a string represents a valid unit type."""
@@ -146,7 +141,7 @@ class SelectedUnitManager:
                 return True
         return False
 
-    def _create_or_focus_unit_card(self, unit_type_str: str, unit_tier: UnitTier, position_hint: Optional[tuple[int, int]] = None) -> bool:
+    def _create_or_focus_unit_card(self, unit_type_str: str, unit_tier: UnitTier) -> bool:
         """Create a new unit card or bring existing one to front."""
         target_unit_type = None
         for unit_type in UnitType:
@@ -164,28 +159,23 @@ class SelectedUnitManager:
             self.bring_card_to_front(existing_card)
             return True
         
-        if position_hint and not info_mode_manager.info_mode:
-            position = self.get_card_position_near_mouse(position_hint)
-            card_index = None
-        else:
-            card_index = self._get_card_index_for_new_card()
-            position = self._calculate_position_from_index(card_index)
+        card_index = self._get_card_index_for_new_card()
+        position = self._calculate_position_from_index(card_index)
         
         new_card = self._create_unit_card(target_unit_type, position, unit_tier)
         
         if info_mode_manager.info_mode:
-            new_card.creation_index = card_index if card_index is not None else self._get_next_card_index()
+            new_card.creation_index = card_index
             self.unit_cards.append(new_card)
         else:
             if self.unit_card is not None:
                 self.unit_card.kill()
             self.unit_card = new_card
-            if card_index is not None:
-                new_card.creation_index = card_index
+            new_card.creation_index = card_index
             
         return True
 
-    def _create_or_focus_glossary_entry(self, entry_type_str: str, position_hint: Optional[tuple[int, int]] = None) -> bool:
+    def _create_or_focus_glossary_entry(self, entry_type_str: str) -> bool:
         """Create a new glossary entry or bring existing one to front."""
         # Import here to avoid circular imports
         from ui_components.game_data import GlossaryEntryType
@@ -209,12 +199,8 @@ class SelectedUnitManager:
             self.bring_card_to_front(existing_entry)
             return True
         
-        if position_hint and not info_mode_manager.info_mode:
-            position = self.get_card_position_near_mouse(position_hint)
-            card_index = None
-        else:
-            card_index = self._get_card_index_for_new_card()
-            position = self._calculate_position_from_index(card_index)
+        card_index = self._get_card_index_for_new_card()
+        position = self._calculate_position_from_index(card_index)
         
         entry_data = GLOSSARY_ENTRIES[entry_type]
         new_entry = GlossaryEntry(
@@ -223,25 +209,15 @@ class SelectedUnitManager:
             title=entry_type.value,
             content=entry_data
         )
-        
-        if info_mode_manager.info_mode:
-            new_entry.creation_index = card_index if card_index is not None else self._get_next_card_index()
-            self.glossary_entries.append(new_entry)
-        else:
-            # In normal mode, just create the entry at the calculated position
-            if card_index is not None:
-                new_entry.creation_index = card_index
+        new_entry.creation_index = card_index
+        self.glossary_entries.append(new_entry)
             
         return True
 
     def _get_card_index_for_new_card(self) -> int:
         """Get the index where a new card should be placed, considering mouse collision."""
-        if info_mode_manager.info_mode:
-            self._cleanup_dead_cards()
-            intended_index = self._get_next_card_index()
-        else:
-            intended_index = 0
-        
+        self._cleanup_dead_cards()
+        intended_index = self._get_next_card_index()
         return self._adjust_index_for_mouse_collision(intended_index)
 
     def _adjust_index_for_mouse_collision(self, intended_index: int) -> int:
@@ -337,10 +313,6 @@ class SelectedUnitManager:
             if entry.title == entry_title:
                 return entry
         return None
-
-    def _create_glossary_entry_from_link(self, entry_type_str: str, click_position: tuple[int, int]) -> bool:
-        """Create a glossary entry from a link click."""
-        return self._create_or_focus_glossary_entry(entry_type_str, click_position)
 
     @property
     def selected_unit_type(self) -> Optional[UnitType]:

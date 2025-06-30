@@ -11,8 +11,9 @@ from components.hitbox import Hitbox
 from components.position import Position
 from components.team import Team, TeamType
 from components.unit_type import UnitTypeComponent
+from components.unit_tier import UnitTier
 from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event, PLAY_SOUND, PlaySoundEvent
-from progress_manager import progress_manager
+from progress_manager import progress_manager, HexLifecycleState
 from scenes.events import PreviousSceneEvent, SetupBattleSceneEvent
 from scenes.scene import Scene
 from selected_unit_manager import selected_unit_manager
@@ -55,6 +56,14 @@ class CampaignScene(Scene):
         # Store context buttons
         self.context_buttons: dict[str, pygame_gui.elements.UIButton] = {}
 
+        # Flash animation state for upgrade button
+        self.upgrade_button_flash_time = 0.0
+        self.upgrade_button_flash_duration = 1.0  # Total flash duration in seconds
+        self.upgrade_button_flash_alternations = 6  # Number of border switches (3 full cycles)
+        self.upgrade_button_flash_interval = self.upgrade_button_flash_duration / self.upgrade_button_flash_alternations
+        self.upgrade_button_is_flashing = False
+        self.upgrade_button_flash_state = False  # False = normal, True = flash theme
+
         if progress_manager.solutions:
             self.barracks = BarracksUI(
                 self.manager,
@@ -67,8 +76,8 @@ class CampaignScene(Scene):
             barracks_bottom = self.barracks.rect.bottom
             self.progress_panel = ProgressPanel(
                 relative_rect=pygame.Rect(
-                    (pygame.display.Info().current_w - 295, barracks_bottom - 100),
-                    (215, 100)
+                    (pygame.display.Info().current_w - 295, barracks_bottom - 108),
+                    (235, 115)
                 ),
                 manager=self.manager,
                 current_battle=None
@@ -84,6 +93,57 @@ class CampaignScene(Scene):
         self.check_panels()
         self.create_ui()
         
+    def _has_claimed_upgrade_hexes(self) -> bool:
+        """Check if the player has any claimed upgrade hexes."""
+        for coords, state in progress_manager.hex_states.items():
+            if (upgrade_hexes.is_upgrade_hex(coords) and 
+                state in [HexLifecycleState.CLAIMED, HexLifecycleState.CORRUPTED,HexLifecycleState.RECLAIMED]):
+                return True
+        return False
+    
+    def _all_units_are_basic(self) -> bool:
+        """Check if all units are still at basic tier."""
+        if not progress_manager.unit_tiers:
+            return True
+        return all(tier == UnitTier.BASIC for tier in progress_manager.unit_tiers.values())
+    
+    def _should_upgrade_button_flash(self) -> bool:
+        """Check if the upgrade button should flash (has claimed upgrade hexes but all units are basic)."""
+        return (self._has_claimed_upgrade_hexes() and 
+                self._all_units_are_basic() and 
+                self.upgrade_window is None)
+    
+    def _update_upgrade_button_flash_theme(self):
+        """Update the upgrade button theme based on flash state."""
+        if self.upgrade_button.alive():
+            if self.upgrade_button_flash_state:
+                # Switch to flash theme
+                self.upgrade_button.change_object_id(pygame_gui.core.ObjectID(object_id='#flash_button'))
+            else:
+                # Switch back to normal theme
+                self.upgrade_button.change_object_id(pygame_gui.core.ObjectID(class_id='button'))
+    
+    def _update_upgrade_button_state(self):
+        """Update the upgrade button enabled/disabled state and flashing."""
+        has_claimed_hexes = self._has_claimed_upgrade_hexes()
+        should_flash = self._should_upgrade_button_flash()
+        
+        # Enable/disable button
+        if has_claimed_hexes:
+            self.upgrade_button.enable()
+        else:
+            self.upgrade_button.disable()
+        
+        # Start/stop flashing
+        if should_flash and not self.upgrade_button_is_flashing:
+            self.upgrade_button_is_flashing = True
+            self.upgrade_button_flash_time = 0.0
+            self.upgrade_button_flash_state = False
+        elif not should_flash and self.upgrade_button_is_flashing:
+            self.upgrade_button_is_flashing = False
+            self.upgrade_button_flash_time = 0.0
+            self.upgrade_button_flash_state = False
+            self._update_upgrade_button_flash_theme()  # Ensure we end on normal theme
     
     def check_panels(self) -> None:
         # Check if we should show congratulations
@@ -131,6 +191,9 @@ class CampaignScene(Scene):
             text="Upgrade Units",
             manager=self.manager
         )
+        
+        # Set initial button state
+        self._update_upgrade_button_state()
 
     def create_context_buttons(self) -> None:
         """Create context-sensitive buttons based on selected hex."""
@@ -176,7 +239,6 @@ class CampaignScene(Scene):
 
         if is_upgrade_hex:
             # Show claim button for upgrade hexes
-            from progress_manager import HexLifecycleState
             is_claimable = progress_manager.is_upgrade_hex_claimable(self.selected_hex)
             hex_state = progress_manager.get_effective_hex_state(self.selected_hex)
             
@@ -289,6 +351,8 @@ class CampaignScene(Scene):
                         if self.upgrade_window is not None:
                             self.upgrade_window.kill()
                         self.upgrade_window = UpgradeWindow(self.manager)
+                        # Update button state in case units were upgraded
+                        self._update_upgrade_button_state()
                     elif event.ui_element in (
                         self.context_buttons.get("battle"),
                         self.context_buttons.get("improve")
@@ -309,6 +373,7 @@ class CampaignScene(Scene):
                             if progress_manager.claim_upgrade_hex(self.selected_hex):
                                 # Successfully claimed, update the button
                                 self.create_context_buttons()
+                                self._update_upgrade_button_state()  # Update upgrade button state
                                 emit_event(PLAY_SOUND, event=PlaySoundEvent(filename="unit_picked_up.wav", volume=1.0))
 
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_LEFT:
@@ -319,7 +384,6 @@ class CampaignScene(Scene):
                     is_upgrade_hex = upgrade_hexes.is_upgrade_hex(clicked_hex)
 
                     # Select if clicking an available battle hex or accessible upgrade hex
-                    from progress_manager import HexLifecycleState
                     can_select = (
                         (battle is not None and clicked_hex in progress_manager.available_battles()) or
                         (is_upgrade_hex and progress_manager.get_effective_hex_state(clicked_hex) != HexLifecycleState.FOGGED)
@@ -369,7 +433,6 @@ class CampaignScene(Scene):
                     self.hovered_hex = None
                     
                     # Hover available battle hexes or accessible upgrade hexes that aren't selected
-                    from progress_manager import HexLifecycleState
                     battle = self.world_map_view.get_battle_from_hex(hovered_hex)
                     is_upgrade_hex = upgrade_hexes.is_upgrade_hex(hovered_hex)
                     
@@ -423,7 +486,6 @@ class CampaignScene(Scene):
                     states[battle.hex_coords].fill = FillState.FOGGED
 
         # Update upgrade hex states based on their lifecycle
-        from progress_manager import HexLifecycleState
         all_upgrade_hexes = upgrade_hexes.get_upgrade_hexes()
         for coords in all_upgrade_hexes:
             hex_state = progress_manager.get_effective_hex_state(coords)
@@ -477,5 +539,28 @@ class CampaignScene(Scene):
         # Update upgrade window if it exists
         if self.upgrade_window is not None:
             self.upgrade_window.update(time_delta)
+
+        # Update upgrade button state (check for changes in upgrade hexes or unit tiers)
+        self._update_upgrade_button_state()
+        
+        # Update upgrade button flash animation
+        if self.upgrade_button_is_flashing:
+            self.upgrade_button_flash_time += time_delta
+            
+            # Calculate current alternation
+            current_alternation = int(self.upgrade_button_flash_time / self.upgrade_button_flash_interval)
+            new_flash_state = (current_alternation % 2) == 1
+            
+            # Update theme if state changed
+            if new_flash_state != self.upgrade_button_flash_state:
+                self.upgrade_button_flash_state = new_flash_state
+                self._update_upgrade_button_flash_theme()
+            
+            # End flash after all alternations
+            if self.upgrade_button_flash_time >= self.upgrade_button_flash_duration:
+                self.upgrade_button_is_flashing = False
+                self.upgrade_button_flash_time = 0.0
+                self.upgrade_button_flash_state = False
+                self._update_upgrade_button_flash_theme()  # Ensure we end on normal theme
 
         return super().update(time_delta, events)

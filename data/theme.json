@@ -26,6 +26,15 @@
             "shape_corner_radius": "10"
         }
     },
+    "#flash_window": {
+        "colours": {
+            "normal_border": "#FFFFFF"
+        },
+        "misc": {
+            "shape": "rounded_rectangle",
+            "shape_corner_radius": "10"
+        }
+    },
     "#upgrade_card_panel": {
         "colours": {},
         "misc": {
@@ -54,6 +63,20 @@
             "shape": "rounded_rectangle",
             "shape_corner_radius": "10",
             "border_width": "0"
+        }
+    },
+    "#flash_button": {
+        "colours": {
+            "normal_border": "#FFFFFF",
+            "hovered_border": "#FFFFFF",
+            "disabled_border": "#FFFFFF",
+            "selected_border": "#FFFFFF",
+            "active_border": "#FFFFFF"
+        },
+        "misc": {
+            "shape": "rounded_rectangle",
+            "shape_corner_radius": "10",
+            "border_width": "2"
         }
     },
     "@title_label": {

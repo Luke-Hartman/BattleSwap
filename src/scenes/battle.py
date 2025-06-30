@@ -14,6 +14,7 @@ from ui_components.time_controls import TimeControls
 from time_manager import time_manager
 from battles import Battle, update_battle
 from selected_unit_manager import selected_unit_manager
+import upgrade_hexes
 
 class BattleScene(Scene):
     """The scene for the battle."""
@@ -63,6 +64,9 @@ class BattleScene(Scene):
             b.hex_coords: HexState(fill=FillState.FOGGED) if b.hex_coords != self.battle.hex_coords else HexState(fill=FillState.NORMAL)
             for b in self.world_map_view.battles.values()
         }
+        # Also fog all upgrade hexes during battle
+        for upgrade_hex_coords in upgrade_hexes.get_upgrade_hexes():
+            fogged_states[upgrade_hex_coords] = HexState(fill=FillState.FOGGED)
         self.world_map_view.reset_hex_states()
         self.world_map_view.update_hex_state(fogged_states)
 
@@ -81,6 +85,9 @@ class BattleScene(Scene):
             b.hex_coords: HexState(fill=FillState.FOGGED) if b.hex_coords != self.battle.hex_coords else HexState(fill=FillState.NORMAL)
             for b in self.world_map_view.battles.values()
         }
+        # Also fog all upgrade hexes during battle
+        for upgrade_hex_coords in upgrade_hexes.get_upgrade_hexes():
+            fogged_states[upgrade_hex_coords] = HexState(fill=FillState.FOGGED)
         self.world_map_view.reset_hex_states()
         self.world_map_view.update_hex_state(fogged_states)
         pygame.event.post(PreviousSceneEvent(current_scene_id=id(self), n=n).to_event())

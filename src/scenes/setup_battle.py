@@ -27,6 +27,7 @@ from scenes.events import BattleSceneEvent, PreviousSceneEvent
 from ui_components.save_battle_dialog import SaveBattleDialog
 from auto_battle import BattleOutcome, simulate_battle
 from ui_components.tip_box import TipBox
+import upgrade_hexes
 from voice import play_intro
 from world_map_view import FillState, HexState, WorldMapView
 from scene_utils import draw_grid, get_center_line, get_placement_pos, get_hovered_unit, get_unit_placements, get_legal_placement_area, clip_to_polygon, has_unsaved_changes, mouse_over_ui
@@ -127,6 +128,11 @@ class SetupBattleScene(Scene):
                     unfocused_states[other_battle.hex_coords] = HexState(fill=FillState.NORMAL)
                 else:
                     unfocused_states[other_battle.hex_coords] = HexState(fill=FillState.FOGGED)
+        
+        # Also fog all upgrade hexes during setup battle
+        for upgrade_hex_coords in upgrade_hexes.get_upgrade_hexes():
+            unfocused_states[upgrade_hex_coords] = HexState(fill=FillState.FOGGED)
+        
         self.world_map_view.reset_hex_states()
         self.world_map_view.update_hex_state(unfocused_states)
 
@@ -171,8 +177,8 @@ class SetupBattleScene(Scene):
         barracks_bottom = self.barracks.rect.bottom
         self.progress_panel = ProgressPanel(
             relative_rect=pygame.Rect(
-                (pygame.display.Info().current_w - 295, barracks_bottom - 100),
-                (215, 100)
+                (pygame.display.Info().current_w - 295, barracks_bottom - 108),
+                (235, 115)
             ),
             manager=self.manager,
             current_battle=battle,
