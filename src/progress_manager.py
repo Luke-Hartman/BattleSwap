@@ -20,7 +20,7 @@ import random
 
 # Current version of the progress manager
 # Increment this when making breaking changes to save file format
-CURRENT_VERSION = 1
+CURRENT_VERSION = 2
 
 class HexLifecycleState(Enum):
     """Enum representing the lifecycle state of a hex (battle or upgrade)."""

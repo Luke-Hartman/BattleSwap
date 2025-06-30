@@ -478,8 +478,8 @@
       "Take the cavalry out before reinforcements arrive!"
     ],
     "hex_coords": [
-      1,
-      1
+      2,
+      2
     ],
     "is_test": false,
     "tip_voice_filename": null,
@@ -662,7 +662,7 @@
       "When using duelists, try to keep them behind other units."
     ],
     "hex_coords": [
-      3,
+      4,
       1
     ],
     "is_test": false,
@@ -814,7 +814,7 @@
       "This is great to try whenever you're stuck on a level!"
     ],
     "hex_coords": [
-      5,
+      6,
       0
     ],
     "is_test": false,
@@ -983,8 +983,8 @@
       "Rangers are slow but deal high damage."
     ],
     "hex_coords": [
-      6,
-      0
+      7,
+      1
     ],
     "is_test": false,
     "tip_voice_filename": null,
@@ -1100,7 +1100,7 @@
       "Healers will restore the health of their damaged allies."
     ],
     "hex_coords": [
-      6,
+      7,
       -1
     ],
     "is_test": false,
@@ -1180,7 +1180,7 @@
       "but they have low damage and are overwhelmed by groups."
     ],
     "hex_coords": [
-      7,
+      8,
       -1
     ],
     "is_test": false,
@@ -1287,8 +1287,8 @@
       "Commanders are weak on their own, but they increase the damage of their allies."
     ],
     "hex_coords": [
-      8,
-      0
+      9,
+      1
     ],
     "is_test": false,
     "tip_voice_filename": null,
@@ -1368,7 +1368,7 @@
       "Hint: Try taking them out one at a time."
     ],
     "hex_coords": [
-      8,
+      9,
       -1
     ],
     "is_test": false,
@@ -1496,7 +1496,7 @@
       "Defenders and pikemen are a powerful pairing."
     ],
     "hex_coords": [
-      7,
+      8,
       0
     ],
     "is_test": false,
@@ -1627,7 +1627,7 @@
       "This makes them excellent against groups of melee units, but vulnerable to ranged or strong opponents."
     ],
     "hex_coords": [
-      5,
+      6,
       1
     ],
     "is_test": false,
@@ -1716,7 +1716,7 @@
     ],
     "hex_coords": [
       6,
-      1
+      2
     ],
     "is_test": false,
     "tip_voice_filename": null,
@@ -1858,7 +1858,7 @@
       "It would be great to have a duelist or two to overwhelm the enemy's healing."
     ],
     "hex_coords": [
-      9,
+      10,
       0
     ],
     "is_test": false,
@@ -2017,7 +2017,7 @@
       "Note that the commander aura does not stack."
     ],
     "hex_coords": [
-      8,
+      10,
       1
     ],
     "is_test": false,
@@ -2112,7 +2112,7 @@
       "Remember that gold knights deal damage to all enemy units around them and heal a little with every hit."
     ],
     "hex_coords": [
-      7,
+      8,
       1
     ],
     "is_test": false,
@@ -2210,7 +2210,7 @@
       "The Black Knight scares away his foes with his cruel attacks."
     ],
     "hex_coords": [
-      9,
+      10,
       -1
     ],
     "is_test": false,
@@ -2721,7 +2721,7 @@
       "Wizards are unreliable allies."
     ],
     "hex_coords": [
-      4,
+      5,
       -1
     ],
     "is_test": false,
@@ -2823,7 +2823,7 @@
       "Zombies coming soon!"
     ],
     "hex_coords": [
-      10,
+      12,
       0
     ],
     "is_test": false,
@@ -2919,7 +2919,7 @@
     ],
     "hex_coords": [
       4,
-      -2
+      -1
     ],
     "is_test": false,
     "tip_voice_filename": null,
@@ -3025,7 +3025,7 @@
       "Longbowmen work great with units to protect them from fast units"
     ],
     "hex_coords": [
-      5,
+      4,
       -2
     ],
     "is_test": false,
@@ -3206,7 +3206,7 @@
       "Soliders are well rounded units with ranged attacks, melee attacks, and armor."
     ],
     "hex_coords": [
-      9,
+      10,
       -2
     ],
     "is_test": false,
@@ -3362,8 +3362,8 @@
       "Black knights thrive on chaos."
     ],
     "hex_coords": [
-      10,
-      -2
+      12,
+      -3
     ],
     "is_test": false,
     "tip_voice_filename": null,
@@ -3602,7 +3602,7 @@
       "Catapults hurl projectiles that deal extremely high damage to all units in an area."
     ],
     "hex_coords": [
-      7,
+      8,
       2
     ],
     "is_test": false,
@@ -3758,8 +3758,8 @@
       "Catapults are immobile, and can't hit targets which are too close."
     ],
     "hex_coords": [
-      8,
-      2
+      9,
+      3
     ],
     "is_test": false,
     "tip_voice_filename": null,
@@ -3979,7 +3979,7 @@
       "Unlike most ranged units, soldiers are resistant to flanking."
     ],
     "hex_coords": [
-      10,
+      11,
       -1
     ],
     "is_test": false,
