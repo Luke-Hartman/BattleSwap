@@ -26,12 +26,12 @@ def defense_stat(defense: float, armored: bool = False, self_heal_dps: float = 0
 def speed_stat(movement_speed: float) -> float:
     """Maps movement speed to a stat value between 1 and 10."""
     nine_speed = gc.CORE_CAVALRY_MOVEMENT_SPEED
-    stat = (movement_speed / nine_speed) * 9
+    stat = (movement_speed / nine_speed) * 18
     return taper(stat)
 
 def range_stat(range: float) -> float:
     """Maps range to a stat value between 1 and 10."""
-    stat = (range / gc.CRUSADER_CATAPULT_MAXIMUM_RANGE) * 16
+    stat = (range / gc.CRUSADER_CATAPULT_MAXIMUM_RANGE) * 24
     return taper(stat)
 
 class GlossaryEntryType(enum.Enum):
@@ -205,7 +205,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         cavalry_damage = gc.CORE_CAVALRY_ATTACK_DAMAGE
         
         # Basic tier (and Advanced): 50% more health
-        if unit_tier == UnitTier.BASIC or unit_tier == UnitTier.ADVANCED:
+        if unit_tier == UnitTier.ADVANCED:
             cavalry_health = cavalry_health * 1.5
         
         # Elite tier: 75% more health and 50% damage

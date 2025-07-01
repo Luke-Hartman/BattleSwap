@@ -328,6 +328,8 @@ class ProgressManager(BaseModel):
     def claim_hex(self, hex_coords: Tuple[int, int]) -> None:
         """Claim a hex."""
         current_state = self.get_hex_state(hex_coords)
+        if current_state in [HexLifecycleState.CLAIMED, HexLifecycleState.RECLAIMED]:
+            return
         assert current_state in [HexLifecycleState.UNCLAIMED, HexLifecycleState.CORRUPTED]
         
         for neighbor_coords in hex_neighbors(hex_coords):

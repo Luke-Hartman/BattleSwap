@@ -246,11 +246,11 @@ class CampaignScene(Scene):
             if hex_state == HexLifecycleState.FOGGED:
                 button_text = "Explore more"
             elif hex_state == HexLifecycleState.UNCLAIMED:
-                button_text = "Claim (Advanced)"
+                button_text = "Claim"
             elif hex_state == HexLifecycleState.CLAIMED:
                 button_text = "Claimed"
             elif hex_state == HexLifecycleState.CORRUPTED:
-                button_text = "Claim (Elite)"
+                button_text = "Reclaim"
             elif hex_state == HexLifecycleState.RECLAIMED:
                 button_text = "Reclaimed"
             else:
