@@ -9,7 +9,7 @@ from scenes.scene import Scene
 from scenes.events import PreviousSceneEvent
 from world_map_view import WorldMapView, HexState, FillState
 from ui_components.return_button import ReturnButton
-from progress_manager import progress_manager, Solution, calculate_points_for_units
+from progress_manager import HexLifecycleState, progress_manager, Solution, calculate_points_for_units
 from ui_components.time_controls import TimeControls
 from time_manager import time_manager
 from battles import Battle, update_battle
@@ -315,7 +315,7 @@ class BattleScene(Scene):
                             current_points = calculate_points_for_units(self.battle.allies)
                             
                             # Check if the battle is corrupted
-                            is_corrupted = progress_manager.is_battle_corrupted(self.battle.hex_coords)
+                            is_corrupted = progress_manager.get_hex_state(self.battle.hex_coords) in [HexLifecycleState.CORRUPTED, HexLifecycleState.RECLAIMED]
                             
                             # If this is a corrupted battle
                             if is_corrupted:
@@ -360,7 +360,7 @@ class BattleScene(Scene):
                             Solution(
                                 hex_coords=self.battle.hex_coords,
                                 unit_placements=self.battle.allies,
-                                solved_corrupted=progress_manager.is_battle_corrupted(self.battle.hex_coords)
+                                solved_corrupted=progress_manager.get_hex_state(self.battle.hex_coords) in [HexLifecycleState.CORRUPTED, HexLifecycleState.RECLAIMED]
                             )
                         )
                         # Recreate the victory panel to update the save button state

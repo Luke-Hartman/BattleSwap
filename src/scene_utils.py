@@ -17,7 +17,7 @@ from game_constants import gc
 from hex_grid import get_hex_vertices, axial_to_world
 from components.team import Team, TeamType
 from shapely.ops import nearest_points
-from progress_manager import progress_manager
+from progress_manager import HexLifecycleState, progress_manager
 
 LARGE_NUMBER = 10000
 
@@ -361,7 +361,7 @@ def has_unsaved_changes(battle: Battle) -> bool:
             return len(current_set) > 0
         
         # Check if the battle is corrupted and if the saved solution was for the corrupted version
-        is_corrupted = progress_manager.is_battle_corrupted(battle.hex_coords)
+        is_corrupted = progress_manager.get_hex_state(battle.hex_coords) in [HexLifecycleState.CORRUPTED, HexLifecycleState.RECLAIMED]
         is_saved_corrupted = saved_solution.solved_corrupted
         
         # If the battle state (corrupted/uncorrupted) doesn't match the saved solution state,

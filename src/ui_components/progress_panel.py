@@ -7,7 +7,7 @@ from pygame_gui.elements import UIPanel, UITextBox
 from pygame_gui.core import ObjectID
 
 import battles
-from progress_manager import calculate_points_for_units, progress_manager
+from progress_manager import HexLifecycleState, calculate_points_for_units, progress_manager
 from components.team import TeamType
 from scene_utils import get_unit_placements
 from game_constants import gc
@@ -46,6 +46,7 @@ class ProgressPanel(UIPanel):
         
         # Battle points information
         if current_battle:
+            hex_state = progress_manager.get_hex_state(current_battle.hex_coords)
             if self.is_setup_mode:
                 # In setup mode, use currently deployed units
                 current_units = get_unit_placements(TeamType.TEAM1, current_battle)
@@ -55,7 +56,7 @@ class ProgressPanel(UIPanel):
                 # In normal mode, use saved solution
                 player_points = calculate_points_for_units(current_battle.allies or [])
                 enemy_points = calculate_points_for_units(current_battle.enemies or [])
-            elif current_battle.hex_coords in progress_manager.available_battles():
+            elif hex_state != HexLifecycleState.FOGGED:
                 player_points = "-"
                 enemy_points = calculate_points_for_units(current_battle.enemies or [])
         else:

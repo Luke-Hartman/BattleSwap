@@ -16,13 +16,13 @@ from selected_unit_manager import selected_unit_manager
 from time_manager import time_manager
 from visuals import load_visual_sheets
 from info_mode_manager import info_mode_manager
-import steam
+#import steam
 
 # Initialize Pygame
 pygame.init()
 
 # Initialize Steamworks
-steam.init_steam()
+#steam.init_steam()
 
 # Set up the display
 # Use the full screen

@@ -36,7 +36,7 @@ from events import PLAY_SOUND, PlaySoundEvent, emit_event
 from time_manager import time_manager
 from components.focus import Focus
 from selected_unit_manager import selected_unit_manager
-from progress_manager import progress_manager
+from progress_manager import progress_manager, HexLifecycleState
 import upgrade_hexes
 
 
@@ -213,10 +213,11 @@ class WorldMapView:
             team: Team the unit belongs to
         """
         esper.switch_world(battle_id)
-        world_x, world_y = axial_to_world(*self.battles[battle_id].hex_coords)
+        hex_coords = self.battles[battle_id].hex_coords
+        world_x, world_y = axial_to_world(*hex_coords)
         
         # Determine if the battle is corrupted
-        is_corrupted = progress_manager and progress_manager.is_battle_corrupted(self.battles[battle_id].hex_coords)
+        is_corrupted = progress_manager.get_hex_state(hex_coords) in [HexLifecycleState.CORRUPTED, HexLifecycleState.RECLAIMED]
         
         # Only apply corruption powers if the battle is corrupted
         corruption_powers = self.battles[battle_id].corruption_powers if is_corrupted else None

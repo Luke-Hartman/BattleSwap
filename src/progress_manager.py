@@ -194,32 +194,6 @@ class ProgressManager(BaseModel):
             assert count >= 0, str(units)
         return units
 
-    def available_battles(self) -> List[Tuple[int, int]]:
-        """Get the available battles for the player."""
-        available_battles = [(0, 0)]  # 0, 0 is always available
-        
-        # Add all battles that have been solved already
-        available_battles.extend([coords for coords in self.solutions if coords != (0, 0)])
-        
-        # If there are uncompleted corrupted battles, don't allow new battles to be unlocked
-        if self.has_uncompleted_corrupted_battles():
-            return available_battles
-        
-        # Otherwise, unlock adjacent battles normally
-        progress = True
-        while progress:
-            progress = False
-            for battle in battles.get_battles():
-                coords = battle.hex_coords
-                if (
-                    coords not in available_battles
-                    and not battle.is_test
-                    and any(neighbor in self.solutions for neighbor in hex_neighbors(coords))
-                ):
-                    available_battles.append(coords)
-                    progress = True
-        return available_battles
-
     def get_battles_including_solutions(self) -> List[battles.Battle]:
         """Get all battles, and include ally positions for solved battles."""
         all_battles = battles.get_battles()
@@ -231,6 +205,7 @@ class ProgressManager(BaseModel):
     def save_solution(self, solution: Solution) -> None:
         """Save a solution."""
         self.solutions[solution.hex_coords] = solution
+        self.claim_hex(solution.hex_coords)
         save_progress()
 
     def should_show_congratulations(self) -> bool:
@@ -257,25 +232,25 @@ class ProgressManager(BaseModel):
         """Check if corruption should be triggered based on available unit points."""
         available_points = calculate_total_available_points()
         enough_points = available_points >= gc.CORRUPTION_TRIGGER_POINTS
-        not_already_corrupted = not self.has_uncompleted_corrupted_battles()
-        enough_uncorrupted_solved_battles = sum(
-            1 for hex_coords in self.solutions.keys()
-            if hex_coords not in self.corrupted_hexes
+        not_already_corrupted = any(
+            state in [HexLifecycleState.CORRUPTED]
+            for state in self.hex_states.values()
+        )
+        enough_claimed_hexes = sum(
+            1 for hex_coords in self.hex_states if self.hex_states[hex_coords] == HexLifecycleState.CLAIMED
         ) >= gc.CORRUPTION_BATTLE_COUNT
         final_corruption = all(
-            battle.hex_coords in self.solutions
-            for battle in battles.get_battles()
-            if not battle.is_test
+            state in [HexLifecycleState.CLAIMED, HexLifecycleState.CORRUPTED, HexLifecycleState.RECLAIMED]
+            for state in self.hex_states.values()
         )
         all_levels_already_corrupted = all(
-            battle.hex_coords in self.solutions and battle.hex_coords in self.corrupted_hexes
-            for battle in battles.get_battles()
-            if not battle.is_test
+            state in [HexLifecycleState.CORRUPTED, HexLifecycleState.RECLAIMED]
+            for state in self.hex_states.values()
         )
         return (
             enough_points and
             not_already_corrupted and
-            (enough_uncorrupted_solved_battles or final_corruption)
+            (enough_claimed_hexes or final_corruption)
         ) and not all_levels_already_corrupted
 
     def corrupt_battles(self) -> List[Tuple[int, int]]:
@@ -283,14 +258,7 @@ class ProgressManager(BaseModel):
         import upgrade_hexes
         
         # Include completed battles that aren't corrupted yet
-        completed_battles = [coord for coord in self.solutions 
-                            if coord not in self.corrupted_hexes]
-        
-        # Include upgrade hexes that are in CLAIMED state (can be corrupted)
-        corruptible_upgrade_hexes = [coord for coord, state in self.hex_states.items()
-                                   if upgrade_hexes.is_upgrade_hex(coord) and state == HexLifecycleState.CLAIMED]
-        
-        corruption_pool = completed_battles + corruptible_upgrade_hexes
+        corruption_pool = [coord for coord in self.hex_states if self.hex_states[coord] == HexLifecycleState.CLAIMED]
         
         if not corruption_pool:
             return []
@@ -299,41 +267,14 @@ class ProgressManager(BaseModel):
         
         # Update states and corrupted_hexes list
         for coords in hexes_to_corrupt:
-            if upgrade_hexes.is_upgrade_hex(coords):
-                # Change upgrade hex from CLAIMED to CORRUPTED
-                self.set_hex_state(coords, HexLifecycleState.CORRUPTED)
-            else:
-                # Add battle to corrupted_hexes list (keeping old system for battles)
-                self.corrupted_hexes.append(coords)
+            self.set_hex_state(coords, HexLifecycleState.CORRUPTED)
         
         save_progress()
         return hexes_to_corrupt
         
-    def is_battle_corrupted(self, hex_coords: Tuple[int, int]) -> bool:
-        """Check if a battle is corrupted."""
-        return hex_coords in self.corrupted_hexes
-        
     def has_uncompleted_corrupted_battles(self) -> bool:
         """Check if there are any corrupted battles or upgrade hexes that need to be cleared."""
-        import upgrade_hexes
-        
-        # Check for corrupted battles (using old system)
-        for coords in self.corrupted_hexes:
-            if not self.has_solved_corrupted_battle(coords):
-                return True
-        
-        # Check for corrupted upgrade hexes (using new lifecycle system)
-        for coords, state in self.hex_states.items():
-            if upgrade_hexes.is_upgrade_hex(coords) and state == HexLifecycleState.CORRUPTED:
-                return True
-        
-        return False
-
-    def has_solved_corrupted_battle(self, hex_coords: Tuple[int, int]) -> bool:
-        """Check if a battle has been solved in its corrupted state."""
-        return (hex_coords in self.solutions and 
-                hex_coords in self.corrupted_hexes and 
-                self.solutions[hex_coords].solved_corrupted)
+        return any(state == HexLifecycleState.CORRUPTED for state in self.hex_states.values())
 
     def get_unit_tier(self, unit_type: UnitType) -> UnitTier:
         """Get the current tier of a unit type."""
@@ -366,9 +307,9 @@ class ProgressManager(BaseModel):
         
         return False
 
-    def get_hex_state(self, hex_coords: Tuple[int, int]) -> HexLifecycleState:
+    def get_hex_state(self, hex_coords: Tuple[int, int]) -> Optional[HexLifecycleState]:
         """Get the current lifecycle state of a hex."""
-        return self.hex_states.get(hex_coords, HexLifecycleState.FOGGED)
+        return self.hex_states.get(hex_coords, None)
 
     def set_hex_state(self, hex_coords: Tuple[int, int], state: HexLifecycleState) -> None:
         """Set the lifecycle state of a hex."""
@@ -379,63 +320,26 @@ class ProgressManager(BaseModel):
             self.hex_states[hex_coords] = state
         save_progress()
 
-    def is_upgrade_hex_accessible(self, hex_coords: Tuple[int, int]) -> bool:
-        """Check if an upgrade hex is accessible (adjacent to a claimed hex)."""
-        import upgrade_hexes
-        
-        if not upgrade_hexes.is_upgrade_hex(hex_coords):
-            return False
-            
-        # Check if adjacent to any claimed upgrade hex or solved battle
-        for neighbor_coords in hex_neighbors(hex_coords):
-            # Check if neighbor is a solved battle
-            if neighbor_coords in self.solutions:
-                return True
-            # Check if neighbor is a claimed upgrade hex (any state except FOGGED)
-            neighbor_state = self.get_hex_state(neighbor_coords)
-            if upgrade_hexes.is_upgrade_hex(neighbor_coords) and neighbor_state != HexLifecycleState.FOGGED:
-                return True
-        
-        return False
-
-    def get_effective_hex_state(self, hex_coords: Tuple[int, int]) -> HexLifecycleState:
-        """Get the effective state of a hex, considering accessibility for upgrade hexes."""
-        import upgrade_hexes
-        
-        stored_state = self.get_hex_state(hex_coords)
-        
-        # For upgrade hexes, check if they should be accessible
-        if upgrade_hexes.is_upgrade_hex(hex_coords):
-            if stored_state == HexLifecycleState.FOGGED:
-                # If fogged, check if it should become accessible
-                if self.is_upgrade_hex_accessible(hex_coords):
-                    return HexLifecycleState.UNCLAIMED
-                else:
-                    return HexLifecycleState.FOGGED
-        
-        return stored_state
-
-
-
-    def is_upgrade_hex_claimable(self, hex_coords: Tuple[int, int]) -> bool:
-        """Check if an upgrade hex can be claimed."""
-        state = self.get_effective_hex_state(hex_coords)
+    def is_hex_claimable(self, hex_coords: Tuple[int, int]) -> bool:
+        """Check if a hex can be claimed."""
+        state = self.get_hex_state(hex_coords)
         return state == HexLifecycleState.UNCLAIMED or state == HexLifecycleState.CORRUPTED
 
-    def claim_upgrade_hex(self, hex_coords: Tuple[int, int]) -> bool:
-        """Claim an upgrade hex. Returns True if successful."""
-        current_state = self.get_effective_hex_state(hex_coords)
+    def claim_hex(self, hex_coords: Tuple[int, int]) -> None:
+        """Claim a hex."""
+        current_state = self.get_hex_state(hex_coords)
+        assert current_state in [HexLifecycleState.UNCLAIMED, HexLifecycleState.CORRUPTED]
         
+        for neighbor_coords in hex_neighbors(hex_coords):
+            if self.get_hex_state(neighbor_coords) == HexLifecycleState.FOGGED:
+                self.set_hex_state(neighbor_coords, HexLifecycleState.UNCLAIMED)
+
         if current_state == HexLifecycleState.UNCLAIMED:
             # First claim - goes to CLAIMED state
             self.set_hex_state(hex_coords, HexLifecycleState.CLAIMED)
-            return True
         elif current_state == HexLifecycleState.CORRUPTED:
             # Second claim (after corruption) - goes to RECLAIMED state
             self.set_hex_state(hex_coords, HexLifecycleState.RECLAIMED)
-            return True
-        
-        return False  # Already claimed or reclaimed
 
     def calculate_available_credits(self) -> Tuple[int, int]:
         """Calculate available advanced and elite credits based on hex lifecycle states minus upgraded units."""
@@ -528,11 +432,15 @@ def load_progress() -> None:
 
 def reset_progress() -> None:
     """Reset the progress."""
+    import upgrade_hexes
     global progress_manager
     progress_manager.solutions = {}
     progress_manager.corrupted_hexes = []
     progress_manager.unit_tiers = {}
-    progress_manager.hex_states = {}
+    progress_manager.hex_states = {
+        hex_coords: HexLifecycleState.FOGGED for hex_coords in upgrade_hexes.get_upgrade_hexes() + [battle.hex_coords for battle in battles.get_battles() if not battle.is_test]
+    }
+    progress_manager.hex_states[(0, 0)] = HexLifecycleState.UNCLAIMED
     save_progress()
 
 def has_incompatible_save() -> bool:

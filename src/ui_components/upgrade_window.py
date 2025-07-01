@@ -199,10 +199,7 @@ class UpgradeWindow:
         # Get available units from progress manager
         available_units = progress_manager.available_units(None)
         
-        # Filter to only show units that the player has
-        player_units = {unit_type: count for unit_type, count in available_units.items() if count > 0}
-        
-        if not player_units:
+        if not available_units:
             # Show message if no units available
             no_units_label = pygame_gui.elements.UILabel(
                 relative_rect=pygame.Rect(10, 50, container_width - 20, 30),
@@ -226,7 +223,7 @@ class UpgradeWindow:
         col = 0
         y_offset = 10  # Start with small padding from top
         
-        for unit_type, count in sorted(player_units.items(), key=lambda x: x[0].value):
+        for unit_type, count in sorted(available_units.items(), key=lambda x: x[0].value):
             x_pos = col * (icon_size + padding) + padding
             y_pos = row * (icon_size + padding) + y_offset
             
