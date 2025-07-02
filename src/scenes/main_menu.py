@@ -177,6 +177,7 @@ class MainMenuScene(Scene):
                             battle_id=None,
                             sandbox_mode=True,
                             developer_mode=False,
+                            is_corrupted=False,
                         ).to_event())
                     
                     elif event.ui_element == self.settings_button:

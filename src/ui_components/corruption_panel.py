@@ -58,7 +58,7 @@ class CorruptionPanel(UIPanel):
         # Corrupted battles count
         UILabel(
             relative_rect=pygame.Rect((20, 140), (panel_width - 40, -1)),
-            text=f"{len(corrupted_battles)} of your completed battles have been corrupted!",
+            text=f"{len(corrupted_battles)} of your claimed hexes have been corrupted!",
             manager=manager,
             container=self
         )
@@ -66,7 +66,7 @@ class CorruptionPanel(UIPanel):
         # Instructions
         UILabel(
             relative_rect=pygame.Rect((20, 170), (panel_width - 40, -1)),
-            text="You must defeat these corrupted battles (marked in red) before continuing to new areas.",
+            text="You must reclaim these corrupted hexes (marked in red) before continuing to new areas.",
             manager=manager,
             container=self
         )

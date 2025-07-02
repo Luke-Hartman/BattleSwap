@@ -528,9 +528,9 @@ def create_core_cavalry(
     if tier == UnitTier.BASIC or tier == UnitTier.ADVANCED:
         cavalry_health = cavalry_health * 1.5
     
-    # Elite tier: 75% more health and 50% damage
+    # Elite tier: 50% more health and 50% damage
     elif tier == UnitTier.ELITE:
-        cavalry_health = cavalry_health * 1.75  # Total 1.75x = 75% increase
+        cavalry_health = cavalry_health * 1.50  # Total 1.5x = 50% increase
         cavalry_damage = cavalry_damage * 1.5
     
     entity = unit_base_entity(

@@ -138,6 +138,7 @@ class SceneManager:
                         "battle_id": self.current_scene.battle_id,
                         "sandbox_mode": self.current_scene.sandbox_mode,
                         "developer_mode": self.current_scene.developer_mode,
+                        "is_corrupted": self.current_scene.is_corrupted,
                     },
                 ))
             elif isinstance(self.current_scene, DeveloperToolsScene):
@@ -210,6 +211,7 @@ class SceneManager:
                     battle_id=validated_event.battle_id,
                     sandbox_mode=validated_event.sandbox_mode,
                     developer_mode=validated_event.developer_mode,
+                    is_corrupted=validated_event.is_corrupted,
                 )
             elif event.type == TEST_EDITOR_SCENE_EVENT:
                 validated_event = TestEditorSceneEvent.model_validate(event.dict)
@@ -233,7 +235,6 @@ class SceneManager:
                         manager=self.manager,
                         battles=progress_manager.get_battles_including_solutions(),
                         camera=Camera(zoom=1/4),
-                        corrupted_hexes=progress_manager.corrupted_hexes
                     )
                 )
             elif event.type == CAMPAIGN_SCENE_EVENT:
@@ -247,7 +248,6 @@ class SceneManager:
                     manager=self.manager,
                     battles=progress_manager.get_battles_including_solutions(),
                     camera=camera,
-                    corrupted_hexes=progress_manager.corrupted_hexes
                 )
                 self.current_scene = CampaignScene(
                     screen=self.screen,

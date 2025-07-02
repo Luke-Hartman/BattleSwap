@@ -122,7 +122,6 @@ class DeveloperToolsScene(Scene):
                             manager=self.manager,
                             battles=[battle],
                             camera=camera,
-                            corrupted_hexes=[],
                         )
                         pygame.event.post(SetupBattleSceneEvent(
                             current_scene_id=id(self),
@@ -130,6 +129,7 @@ class DeveloperToolsScene(Scene):
                             battle_id=battle.id,
                             sandbox_mode=True,
                             developer_mode=True,
+                            is_corrupted=False,
                         ).to_event())
                     
                     elif event.ui_element == self.return_button:

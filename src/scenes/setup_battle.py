@@ -51,6 +51,7 @@ class SetupBattleScene(Scene):
         manager: pygame_gui.UIManager,
         world_map_view: Optional[WorldMapView],
         battle_id: Optional[str],
+        is_corrupted: bool = False,
         sandbox_mode: bool = False,
         developer_mode: bool = False,
     ):
@@ -61,6 +62,7 @@ class SetupBattleScene(Scene):
             manager: The pygame_gui manager for the scene.
             world_map_view: The world map view for the scene.
             battle_id: Which battle is focused.
+            is_corrupted: Whether the battle is corrupted.
             sandbox_mode: In sandbox mode, there are no restrictions on unit placement.
             developer_mode: In developer mode, there are additional buttons such as saving
                 and simulating the battle.
@@ -86,7 +88,6 @@ class SetupBattleScene(Scene):
                 manager=self.manager,
                 battles=[battle],
                 camera=Camera(),
-                corrupted_hexes=[],
             )
             if battle_id is not None:
                 raise ValueError("Battle ID must be None if world_map_view is None")
@@ -99,6 +100,7 @@ class SetupBattleScene(Scene):
         self.camera = world_map_view.camera
         self.battle_id = battle_id
         self.battle = battle
+        self.is_corrupted = is_corrupted
         self.sandbox_mode = sandbox_mode
         self.developer_mode = developer_mode
         
@@ -141,7 +143,7 @@ class SetupBattleScene(Scene):
         self.feedback_button = FeedbackButton(self.manager)
         self.tip_box = TipBox(self.manager, battle)
         
-        if battle.hex_coords in self.world_map_view.corrupted_hexes:
+        if is_corrupted:
             icon_size = (48, 48)
             icon_position = (pygame.display.Info().current_w - icon_size[0] - 15, 50)
             self.corruption_icon = CorruptionIcon(
@@ -874,7 +876,7 @@ class SetupBattleScene(Scene):
             self.corruption_icon.kill()
             self.corruption_icon = None
 
-        if self.battle.hex_coords in self.world_map_view.corrupted_hexes:
+        if self.is_corrupted:
             icon_size = (48, 48)
             icon_position = (pygame.display.Info().current_w - icon_size[0] - 15, 50)
             self.corruption_icon = CorruptionIcon(
@@ -892,9 +894,9 @@ class SetupBattleScene(Scene):
             return
             
         # Toggle the corruption state
-        if self.battle.hex_coords in self.world_map_view.corrupted_hexes:
+        if self.is_corrupted:
             # Remove from corrupted hexes
-            self.world_map_view.corrupted_hexes.remove(self.battle.hex_coords)
+            self.is_corrupted = False
             
             # Remove corruption icon if it exists
             if self.corruption_icon is not None:
@@ -902,7 +904,7 @@ class SetupBattleScene(Scene):
                 self.corruption_icon = None
         else:
             # Add to corrupted hexes
-            self.world_map_view.corrupted_hexes.append(self.battle.hex_coords)
+            self.is_corrupted = True
             
             # Create corruption icon
             icon_size = (48, 48)

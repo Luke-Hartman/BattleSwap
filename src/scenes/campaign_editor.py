@@ -1,6 +1,6 @@
 from collections import defaultdict
 from game_constants import gc
-from typing import Tuple, Optional
+from typing import List, Tuple, Optional
 
 import pygame
 import pygame_gui
@@ -8,6 +8,7 @@ import pygame_gui
 from battles import get_battles, update_battle, Battle
 import battles
 from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event
+from progress_manager import HexLifecycleState, progress_manager
 from scene_utils import mouse_over_ui
 from scenes.events import PreviousSceneEvent, SetupBattleSceneEvent
 from scenes.scene import Scene
@@ -39,7 +40,8 @@ class CampaignEditorScene(Scene):
         self.hovered_hex: Optional[Tuple[int, int]] = None
         self.selected_hex: Optional[Tuple[int, int]] = None
         self.move_target_hex: Optional[Tuple[int, int]] = None
-        
+        self.corrupted_hexes: List[Tuple[int, int]] = list(hex_coords for hex_coords, state in progress_manager.hex_states.items() if state in [HexLifecycleState.CORRUPTED, HexLifecycleState.RECLAIMED])
+
         # Store context buttons
         self.context_buttons: dict[str, pygame_gui.elements.UIButton] = {}
         # Store UI elements for battle info
@@ -146,7 +148,7 @@ class CampaignEditorScene(Scene):
             self.tip_box = TipBox(self.manager, battle)
             
             # Show corruption icon if battle is corrupted
-            if battle.hex_coords in self.world_map_view.corrupted_hexes:
+            if battle.hex_coords in self.corrupted_hexes:
                 icon_size = (48, 48)
                 icon_position = (pygame.display.Info().current_w - icon_size[0] - 15, 50)
                 self.corruption_icon = CorruptionIcon(
@@ -282,6 +284,7 @@ class CampaignEditorScene(Scene):
                                     battle_id=battle.id,
                                     sandbox_mode=True,
                                     developer_mode=True,
+                                    is_corrupted=battle.hex_coords in self.corrupted_hexes,
                                 ).to_event()
                             )
                     elif event.ui_element == self.context_buttons.get("create"):
@@ -328,12 +331,12 @@ class CampaignEditorScene(Scene):
                         # Toggle corruption for the selected battle
                         battle = self.world_map_view.get_battle_from_hex(self.selected_hex)
                         if battle:
-                            if battle.hex_coords in self.world_map_view.corrupted_hexes:
+                            if battle.hex_coords in self.corrupted_hexes:
                                 # Remove corruption
-                                self.world_map_view.corrupted_hexes.remove(battle.hex_coords)
+                                self.corrupted_hexes.remove(battle.hex_coords)
                             else:
                                 # Add corruption
-                                self.world_map_view.corrupted_hexes.append(battle.hex_coords)
+                                self.corrupted_hexes.append(battle.hex_coords)
                             self.create_context_buttons()
                             self.world_map_view.rebuild(get_battles())
                     elif event.ui_element == self.context_buttons.get("delete_upgrade"):
@@ -419,7 +422,7 @@ class CampaignEditorScene(Scene):
             self.manager.process_events(event)
 
         states = defaultdict(HexState)
-        for hex_coords in self.world_map_view.corrupted_hexes:
+        for hex_coords in self.corrupted_hexes:
             states[hex_coords].border = BorderState.RED_BORDER
         if self.selected_hex is not None:
             states[self.selected_hex].border = BorderState.YELLOW_BORDER

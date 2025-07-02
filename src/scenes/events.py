@@ -54,6 +54,7 @@ class SetupBattleSceneEvent(PyGameEvent):
     battle_id: Optional[str]
     sandbox_mode: bool
     developer_mode: bool
+    is_corrupted: bool
 
     @property
     def _type(self) -> int:

@@ -314,6 +314,7 @@ class TestEditorScene(Scene):
                                 battle_id=None,
                                 sandbox_mode=True,
                                 developer_mode=True,
+                                is_corrupted=False,
                             ).to_event()
                         )
                     elif event.ui_element in self.edit_buttons.values():
@@ -339,7 +340,6 @@ class TestEditorScene(Scene):
                             manager=self.manager,
                             battles=[battle],
                             camera=Camera(),
-                            corrupted_hexes=[],
                         )
                         pygame.event.post(
                             SetupBattleSceneEvent(
@@ -348,6 +348,7 @@ class TestEditorScene(Scene):
                                 battle_id=battle_id,
                                 sandbox_mode=True,
                                 developer_mode=True,
+                                is_corrupted=False,
                             ).to_event()
                         )
                     elif event.ui_element in self.delete_buttons.values():

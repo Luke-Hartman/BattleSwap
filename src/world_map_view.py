@@ -6,7 +6,6 @@ import pygame
 import pygame_gui
 from shapely import Polygon
 
-from corrupted_hexes import CorruptedHexes
 from game_constants import gc, reload_game_constants
 from auto_battle import AutoBattle
 from battles import Battle
@@ -75,7 +74,6 @@ class WorldMapView:
         manager: pygame_gui.UIManager,
         battles: List[Battle],
         camera: Camera,
-        corrupted_hexes: CorruptedHexes
     ) -> None:
         """
         Initialize the world map view."""
@@ -83,7 +81,6 @@ class WorldMapView:
         self.manager = manager
         self.camera = camera
         self.default_world = "__default__"
-        self.corrupted_hexes = corrupted_hexes
         self.hex_states: Dict[Tuple[int, int], HexState] = {}
         self.rebuild(battles, cleanup=False)
     
@@ -100,7 +97,7 @@ class WorldMapView:
             esper.add_processor(RotationProcessor())
             esper.add_processor(TargettingProcessor())
 
-            is_corrupted = battle.hex_coords in self.corrupted_hexes
+            is_corrupted = progress_manager.get_hex_state(battle.hex_coords) in [HexLifecycleState.CORRUPTED, HexLifecycleState.RECLAIMED]
             corruption_powers = battle.corruption_powers if is_corrupted else None
 
             world_x, world_y = axial_to_world(*battle.hex_coords)
@@ -118,13 +115,19 @@ class WorldMapView:
                     corruption_powers=corruption_powers,
                     tier=tier
                 )
+            # Get the appropriate tier for enemy units
+            if is_corrupted:
+                tier = UnitTier.ELITE
+            else:
+                tier = UnitTier.BASIC
             for unit_type, position in battle.enemies:
                 create_unit(
                     position[0] + world_x,
                     position[1] + world_y,
                     unit_type,
                     TeamType.TEAM2,
-                    corruption_powers=corruption_powers
+                    corruption_powers=corruption_powers,
+                    tier=tier
                 )
 
     def get_battle_from_hex(self, hex_coords: Tuple[int, int]) -> Optional[Battle]:

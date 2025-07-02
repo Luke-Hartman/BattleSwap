@@ -217,7 +217,7 @@ class CampaignScene(Scene):
             return
 
         # Show corruption icon for corrupted battles
-        if battle is not None and battle.hex_coords in self.world_map_view.corrupted_hexes:
+        if battle is not None and progress_manager.get_hex_state(battle.hex_coords) in [HexLifecycleState.CORRUPTED, HexLifecycleState.RECLAIMED]:
             icon_size = (48, 48)
             icon_position = (pygame.display.Info().current_w - icon_size[0] - 15, 50)
             self.corruption_icon = CorruptionIcon(
@@ -365,6 +365,7 @@ class CampaignScene(Scene):
                                 battle_id=battle.id,
                                 sandbox_mode=False,
                                 developer_mode=False,
+                                is_corrupted=progress_manager.get_hex_state(battle.hex_coords) in [HexLifecycleState.CORRUPTED, HexLifecycleState.RECLAIMED],
                             ).to_event()
                         )
                     elif event.ui_element == self.context_buttons.get("claim"):

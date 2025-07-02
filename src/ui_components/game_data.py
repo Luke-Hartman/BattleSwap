@@ -208,9 +208,9 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         if unit_tier == UnitTier.ADVANCED:
             cavalry_health = cavalry_health * 1.5
         
-        # Elite tier: 75% more health and 50% damage
+        # Elite tier: 50% more health and 50% damage
         elif unit_tier == UnitTier.ELITE:
-            cavalry_health = cavalry_health * 1.75  # Total 1.75x = 75% increase
+            cavalry_health = cavalry_health * 1.50  # Total 1.5x = 50% increase
             cavalry_damage = cavalry_damage * 1.5
         
         return UnitData(
