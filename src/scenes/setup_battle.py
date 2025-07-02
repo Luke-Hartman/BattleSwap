@@ -29,7 +29,7 @@ from auto_battle import BattleOutcome, simulate_battle
 from ui_components.tip_box import TipBox
 from voice import play_intro
 from world_map_view import FillState, HexState, WorldMapView
-from scene_utils import draw_grid, get_center_line, get_placement_pos, get_hovered_unit, get_unit_placements, get_legal_placement_area, clip_to_polygon, has_unsaved_changes, mouse_over_ui
+from scene_utils import draw_grid, get_center_line, get_placement_pos, get_hovered_unit, get_unit_placements, get_legal_placement_area, clip_to_polygon, has_unsaved_changes, mouse_over_ui, snap_position_to_grid
 from ui_components.progress_panel import ProgressPanel
 from ui_components.corruption_power_editor import CorruptionPowerEditorDialog
 from corruption_powers import CorruptionPower
@@ -69,34 +69,10 @@ class SetupBattleScene(Scene):
         emit_event(UNMUTE_DRUMS, event=UnmuteDrumsEvent())
         self.screen = screen
         self.manager = manager
-        self._selected_unit_type: Optional[UnitType] = None
-        if world_map_view is None:
-            battle = battles.Battle(
-                id="sandbox",
-                tip=["A customizable battle for experimenting"],
-                hex_coords=(0, 0),
-                allies=[],
-                enemies=[],
-                is_test=True,
-            )
-            world_map_view = WorldMapView(
-                screen=self.screen,
-                manager=self.manager,
-                battles=[battle],
-                camera=Camera(),
-                corrupted_hexes=[],
-            )
-            if battle_id is not None:
-                raise ValueError("Battle ID must be None if world_map_view is None")
-            battle_id = "sandbox"
-        else:
-            if battle_id is None:
-                raise ValueError("Battle ID must be provided if world_map_view is not None")
-            battle = world_map_view.battles[battle_id]
         self.world_map_view = world_map_view
         self.camera = world_map_view.camera
         self.battle_id = battle_id
-        self.battle = battle
+        self.battle = world_map_view.battles[battle_id]
         self.sandbox_mode = sandbox_mode
         self.developer_mode = developer_mode
         
@@ -114,7 +90,7 @@ class SetupBattleScene(Scene):
         if self.sandbox_mode:
             # Set unfocused states for all battles except the focused one
             unfocused_states = {
-                other_battle.hex_coords: HexState(fill=FillState.UNFOCUSED) if other_battle.hex_coords != battle.hex_coords else HexState(fill=FillState.NORMAL)
+                other_battle.hex_coords: HexState(fill=FillState.UNFOCUSED) if other_battle.hex_coords != self.battle.hex_coords else HexState(fill=FillState.NORMAL)
                 for other_battle in self.world_map_view.battles.values()
             }
         else:
@@ -122,7 +98,7 @@ class SetupBattleScene(Scene):
             # Set fogged for all unsolved battles
             unfocused_states = {}
             for other_battle in self.world_map_view.battles.values():
-                if other_battle.hex_coords == battle.hex_coords:
+                if other_battle.hex_coords == self.battle.hex_coords:
                     unfocused_states[other_battle.hex_coords] = HexState(fill=FillState.NORMAL)
                 else:
                     unfocused_states[other_battle.hex_coords] = HexState(fill=FillState.FOGGED)
@@ -132,27 +108,27 @@ class SetupBattleScene(Scene):
         self.return_button = ReturnButton(self.manager)
         self.start_button = StartButton(self.manager)
         self.feedback_button = FeedbackButton(self.manager)
-        self.tip_box = TipBox(self.manager, battle)
+        self.tip_box = TipBox(self.manager, self.battle)
         
-        if battle.hex_coords in self.world_map_view.corrupted_hexes:
+        if self.battle.hex_coords in self.world_map_view.corrupted_hexes:
             icon_size = (48, 48)
             icon_position = (pygame.display.Info().current_w - icon_size[0] - 15, 50)
             self.corruption_icon = CorruptionIcon(
                 manager=self.manager,
                 position=icon_position,
                 size=icon_size,
-                battle_hex_coords=battle.hex_coords,
-                corruption_powers=battle.corruption_powers
+                battle_hex_coords=self.battle.hex_coords,
+                corruption_powers=self.battle.corruption_powers
             )
         else:
             self.corruption_icon = None
 
         self.barracks = BarracksUI(
             self.manager,
-            starting_units={} if self.sandbox_mode else progress_manager.available_units(battle),
+            starting_units={} if self.sandbox_mode else progress_manager.available_units(self.battle),
             interactive=True,
             sandbox_mode=self.sandbox_mode,
-            current_battle=battle,
+            current_battle=self.battle,
         )
 
         # Add clear button above the barracks
@@ -174,11 +150,9 @@ class SetupBattleScene(Scene):
                 (215, 100)
             ),
             manager=self.manager,
-            current_battle=battle,
+            current_battle=self.battle,
             is_setup_mode=not self.battle.is_test,  # Only use setup mode for non-test battles
         ) if not self.sandbox_mode else None
-
-        self.selected_partial_unit: Optional[int] = None
 
         self.save_dialog: Optional[SaveBattleDialog] = None
         if self.developer_mode:
@@ -233,77 +207,129 @@ class SetupBattleScene(Scene):
         
         self.confirmation_dialog: Optional[pygame_gui.windows.UIConfirmationDialog] = None
     
-    @property
-    def selected_unit_type(self) -> Optional[UnitType]:
-        """Get the currently selected unit type."""
-        return self._selected_unit_type
-
-    def set_selected_unit_type(
+    def calculate_group_positions(
         self,
-        value: Optional[UnitType],
-        placement_team: TeamType,
-    ) -> None:
-        """Set the currently selected unit type."""
-        self._selected_unit_type = value
-        self.barracks.select_unit_type(value)
-        if self.selected_partial_unit is not None:
-            esper.delete_entity(self.selected_partial_unit)
-        if value is None:
-            self.selected_partial_unit = None
-            return
-        self.selected_partial_unit = create_unit(
-            x=0,
-            y=0,
-            unit_type=value,
-            team=placement_team,
-            corruption_powers=self.battle.corruption_powers
-        )
-        esper.add_component(self.selected_partial_unit, Placing())
-        # This shouldn't be needed anymore, but it used to be here, and so bugs
-        # might be related to it not being disabled.
-        # esper.remove_component(self.selected_partial_unit, UnitTypeComponent)
-        esper.add_component(self.selected_partial_unit, Transparency(alpha=128))
-    
-    def create_unit_of_selected_type(self, placement_pos: Tuple[int, int], team: TeamType) -> None:
-        """Create a unit of the selected type."""
-        assert self.sandbox_mode or team == TeamType.TEAM1
-        self.world_map_view.add_unit(
-            self.battle_id,
-            self.selected_unit_type,
-            placement_pos,
-            team,
-        )
-        self.barracks.remove_unit(self.selected_unit_type)
-        if self.barracks.units[self.selected_unit_type] == 0:
-            self.set_selected_unit_type(None, TeamType.TEAM1)
-        if self.progress_panel is not None:
-            self.progress_panel.update_battle(self.battle)
-    
-    def remove_unit(self, unit_id: int) -> None:
-        """Delete a unit of the selected type."""
-        assert self.sandbox_mode or esper.component_for_entity(unit_id, Team).type == TeamType.TEAM1
-        self.world_map_view.remove_unit(
-            self.battle_id,
-            unit_id,
-        )
-        unit_type = esper.component_for_entity(unit_id, UnitTypeComponent).type
-        self.barracks.add_unit(unit_type)
-        if self.progress_panel is not None:
-            self.progress_panel.update_battle(self.battle)
-
-    def clear_allied_units(self) -> None:
-        """Remove all allied units from the battlefield."""
-        # Get all allied units in the current world
-        esper.switch_world(self.battle_id)
-        allied_units = []
-        for ent, (team, _) in esper.get_components(Team, UnitTypeComponent):
-            if team.type == TeamType.TEAM1 and not esper.has_component(ent, Placing):
-                allied_units.append(ent)
+        mouse_world_pos: Tuple[float, float],
+        unit_offsets: List[Tuple[float, float]], 
+        battle_hex_coords: Tuple[int, int],
+        snap_to_grid: bool,
+        required_team: Optional[TeamType],
+        current_unit_positions: Optional[List[Tuple[float, float]]] = None,
+    ) -> List[Tuple[float, float]]:
+        """Calculate final positions for a group of units, handling grid snapping and collision avoidance.
         
-        # Remove each allied unit
-        for unit_id in allied_units:
-            if esper.entity_exists(unit_id):  # Check if entity still exists before removing
-                self.remove_unit(unit_id)
+        This is the unified logic for both preview and actual placement.
+        
+        Args:
+            mouse_world_pos: Mouse position in world coordinates
+            unit_offsets: List of (x, y) offsets from mouse for each unit
+            battle_hex_coords: Hex coordinates of the battle
+            snap_to_grid: Whether to snap positions to grid
+            required_team: Required team for placement (None in sandbox mode)
+            current_unit_positions: Existing unit positions to avoid (for preview calculation)
+            
+        Returns:
+            List of calculated (x, y) positions for each unit
+        """
+        calculated_positions = []
+        occupied_grid_cells = set()  # Track occupied grid cells when snapping
+        
+        # Include current unit positions if provided
+        if current_unit_positions:
+            for pos in current_unit_positions:
+                if snap_to_grid:
+                    # Track the grid cell as occupied
+                    snapped = snap_position_to_grid(pos[0], pos[1], battle_hex_coords)
+                    occupied_grid_cells.add(snapped)
+        
+        for i, (offset_x, offset_y) in enumerate(unit_offsets):
+            ideal_x = mouse_world_pos[0] + offset_x
+            ideal_y = mouse_world_pos[1] + offset_y
+            
+            # Get legal area considering existing units + previously calculated positions in this group
+            legal_area = get_legal_placement_area(
+                self.battle_id,
+                battle_hex_coords,
+                required_team=required_team,
+                additional_unit_positions=calculated_positions,
+            )
+            
+            # Clip to legal placement area first
+            clipped_x, clipped_y = clip_to_polygon(legal_area, ideal_x, ideal_y)
+            
+            if snap_to_grid:
+                # Snap to grid
+                snapped_x, snapped_y = snap_position_to_grid(clipped_x, clipped_y, battle_hex_coords)
+                
+                # Check if this grid cell is already occupied
+                if (snapped_x, snapped_y) in occupied_grid_cells:
+                    # Find the nearest unoccupied grid cell
+                    best_pos = self._find_nearest_free_grid_cell(
+                        clipped_x, clipped_y,
+                        battle_hex_coords,
+                        occupied_grid_cells,
+                        legal_area,
+                        required_team
+                    )
+                    if best_pos:
+                        snapped_x, snapped_y = best_pos
+                    # If no free grid cell found, keep the original snapped position
+                    # (this shouldn't happen in practice with proper spacing)
+                
+                occupied_grid_cells.add((snapped_x, snapped_y))
+                final_pos = (snapped_x, snapped_y)
+            else:
+                final_pos = (clipped_x, clipped_y)
+            
+            calculated_positions.append(final_pos)
+        
+        return calculated_positions
+    
+    def _find_nearest_free_grid_cell(
+        self,
+        x: float, 
+        y: float,
+        battle_hex_coords: Tuple[int, int],
+        occupied_cells: set[Tuple[float, float]],
+        legal_area: shapely.Polygon,
+        required_team: Optional[TeamType]
+    ) -> Optional[Tuple[float, float]]:
+        """Find the nearest unoccupied grid cell to the given position.
+        
+        Args:
+            x, y: Starting position
+            battle_hex_coords: Hex coordinates for grid alignment
+            occupied_cells: Set of already occupied grid positions
+            legal_area: Legal placement area polygon
+            required_team: Required team for placement
+            
+        Returns:
+            Tuple of (x, y) for nearest free grid cell, or None if none found
+        """
+        # Search in expanding rings
+        max_search_distance = 10  # Maximum grid cells to search
+        
+        for distance in range(1, max_search_distance + 1):
+            # Check all grid positions at this distance
+            for dx in range(-distance, distance + 1):
+                for dy in range(-distance, distance + 1):
+                    # Only check positions at exactly this distance (ring pattern)
+                    if max(abs(dx), abs(dy)) != distance:
+                        continue
+                    
+                    test_x = x + dx * gc.GRID_SIZE
+                    test_y = y + dy * gc.GRID_SIZE
+                    
+                    # Snap to grid
+                    snapped_x, snapped_y = snap_position_to_grid(test_x, test_y, battle_hex_coords)
+                    
+                    # Check if this grid cell is free and in legal area
+                    if (snapped_x, snapped_y) not in occupied_cells:
+                        # Verify it's in the legal area
+                        if legal_area.contains(shapely.Point(snapped_x, snapped_y)):
+                            return (snapped_x, snapped_y)
+        
+        return None
 
     def show_exit_confirmation(self) -> None:
         """Show confirmation dialog for exiting with unsaved changes."""
@@ -338,13 +364,7 @@ class SetupBattleScene(Scene):
             
         esper.switch_world(self.battle_id)
         
-        # Clear any existing single unit pickup
-        if self.selected_partial_unit is not None:
-            esper.delete_entity(self.selected_partial_unit)
-            self.selected_partial_unit = None
-        self.set_selected_unit_type(None, placement_team)
-        
-        # Clear existing group pickup
+        # Clear any existing group pickup
         self.clear_group_pickup()
         
         # Calculate center of selected units for centering on mouse
@@ -397,33 +417,30 @@ class SetupBattleScene(Scene):
         self.group_unit_types.clear()
         self.group_placement_team = None
 
-    def place_group_units(self, mouse_world_pos: Tuple[float, float]) -> None:
+    def place_group_units(self, mouse_world_pos: Tuple[float, float], snap_to_grid: bool = False) -> None:
         """Place all units from the group pickup."""
         if not self.selected_group_partial_units or self.group_placement_team is None:
             return
             
         esper.switch_world(self.battle_id)
         
-        # Place each unit at its offset position
-        for i, unit_type in enumerate(self.group_unit_types):
-            offset_x, offset_y = self.group_unit_offsets[i]
-            placement_pos = (mouse_world_pos[0] + offset_x, mouse_world_pos[1] + offset_y)
-            
-            # Clip to legal placement area
-            battle_coords = self.battle.hex_coords
-            legal_area = get_legal_placement_area(
-                self.battle_id,
-                battle_coords,
-                required_team=None if self.sandbox_mode else TeamType.TEAM1,
-                include_units=True,
-            )
-            clipped_pos = clip_to_polygon(legal_area, placement_pos[0], placement_pos[1])
-            
+        # Calculate positions using the shared logic
+        calculated_positions = self.calculate_group_positions(
+            mouse_world_pos=mouse_world_pos,
+            unit_offsets=self.group_unit_offsets,
+            battle_hex_coords=self.battle.hex_coords,
+            snap_to_grid=snap_to_grid,
+            required_team=None if self.sandbox_mode else TeamType.TEAM1,
+            current_unit_positions=None,  # Don't need to consider existing units for placement
+        )
+        
+        # Place each unit at calculated position
+        for i, (unit_type, position) in enumerate(zip(self.group_unit_types, calculated_positions)):
             # Create the unit
             self.world_map_view.add_unit(
                 self.battle_id,
                 unit_type,
-                clipped_pos,
+                position,
                 self.group_placement_team,
             )
         
@@ -444,6 +461,24 @@ class SetupBattleScene(Scene):
         
         # Clear the group pickup
         self.clear_group_pickup()
+        
+        if self.progress_panel is not None:
+            self.progress_panel.update_battle(self.battle)
+
+    def clear_allied_units(self) -> None:
+        """Remove all allied units from the battlefield."""
+        # Get all allied units in the current world
+        esper.switch_world(self.battle_id)
+        allied_units = []
+        for ent, (team, unit_type) in esper.get_components(Team, UnitTypeComponent):
+            if team.type == TeamType.TEAM1 and not esper.has_component(ent, Placing):
+                allied_units.append((ent, unit_type.type))
+        
+        # Remove each allied unit and return to barracks
+        for unit_id, unit_type in allied_units:
+            if esper.entity_exists(unit_id):  # Check if entity still exists before removing
+                self.world_map_view.remove_unit(self.battle_id, unit_id)
+                self.barracks.add_unit(unit_type)
         
         if self.progress_panel is not None:
             self.progress_panel.update_battle(self.battle)
@@ -532,48 +567,42 @@ class SetupBattleScene(Scene):
             mouse_world_pos = self.camera.screen_to_world(*mouse_pos)
             self.pickup_group_of_units(selected_units, mouse_world_pos, placement_team)
 
-    def update_group_partial_units_position(self, mouse_world_pos: Tuple[float, float]) -> None:
+    def update_group_partial_units_position(self, mouse_world_pos: Tuple[float, float], snap_to_grid: bool = False) -> None:
         """Update positions of group partial units to show actual clipped placement positions.
         
-        This calculates positions sequentially, where each unit considers the positions of
-        previously calculated units, matching the actual placement behavior.
+        Uses the same calculation logic as actual placement to ensure preview matches reality.
         """
         if not self.selected_group_partial_units:
             return
             
         esper.switch_world(self.battle_id)
         
-        # Get battle coordinates for legal placement checking
-        battle_coords = self.battle.hex_coords
+        # Get existing unit positions to consider for grid snapping
+        existing_positions = []
+        if snap_to_grid:
+            for ent, (pos, _) in esper.get_components(Position, UnitTypeComponent):
+                if esper.has_component(ent, Placing):
+                    continue
+                existing_positions.append((pos.x, pos.y))
         
-        # Calculate positions sequentially, same order as actual placement
-        calculated_positions = []
+        # Calculate positions using the shared logic
+        calculated_positions = self.calculate_group_positions(
+            mouse_world_pos=mouse_world_pos,
+            unit_offsets=self.group_unit_offsets,
+            battle_hex_coords=self.battle.hex_coords,
+            snap_to_grid=snap_to_grid,
+            required_team=None if self.sandbox_mode else TeamType.TEAM1,
+            current_unit_positions=existing_positions,
+        )
         
-        for i, partial_unit in enumerate(self.selected_group_partial_units):
+        # Update partial unit positions
+        for i, (partial_unit, new_pos) in enumerate(zip(self.selected_group_partial_units, calculated_positions)):
             if not esper.entity_exists(partial_unit):
                 continue
-                
-            offset_x, offset_y = self.group_unit_offsets[i]
-            ideal_x = mouse_world_pos[0] + offset_x
-            ideal_y = mouse_world_pos[1] + offset_y
-            
-            # Get legal area considering existing units + previously calculated positions
-            legal_area = get_legal_placement_area(
-                self.battle_id,
-                battle_coords,
-                required_team=None if self.sandbox_mode else TeamType.TEAM1,
-                additional_unit_positions=calculated_positions,  # Consider previous units in this group
-            )
-            
-            # Clip to legal placement area
-            clipped_pos = clip_to_polygon(legal_area, ideal_x, ideal_y)
-            
-            # Store this position for subsequent units to consider
-            calculated_positions.append(clipped_pos)
             
             # Update partial unit position to show actual placement position
             pos = esper.component_for_entity(partial_unit, Position)
-            pos.x, pos.y = clipped_pos
+            pos.x, pos.y = new_pos
             esper.add_component(partial_unit, Focus())
 
     def draw_selection_rectangle(self) -> None:
@@ -642,7 +671,31 @@ class SetupBattleScene(Scene):
                     for unit_count in self.barracks.unit_list_items:
                         if event.ui_element == unit_count.button:
                             play_intro(unit_count.unit_type)
-                            self.set_selected_unit_type(unit_count.unit_type, placement_team)
+                            # Create a single-unit group for placement
+                            self.clear_group_pickup()  # Clear any existing group
+                            self.group_unit_offsets = [(0, 0)]  # Single unit at mouse position
+                            self.group_unit_types = [unit_count.unit_type]
+                            self.group_placement_team = placement_team
+                            
+                            # Create transparent partial unit
+                            mouse_pos = pygame.mouse.get_pos()
+                            mouse_world_pos = self.camera.screen_to_world(*mouse_pos)
+                            partial_unit = create_unit(
+                                x=mouse_world_pos[0],
+                                y=mouse_world_pos[1],
+                                unit_type=unit_count.unit_type,
+                                team=placement_team,
+                                corruption_powers=self.battle.corruption_powers
+                            )
+                            esper.add_component(partial_unit, Placing())
+                            esper.add_component(partial_unit, Transparency(alpha=128))
+                            self.selected_group_partial_units = [partial_unit]
+                            
+                            # Remove from barracks since we're carrying it
+                            self.barracks.remove_unit(unit_count.unit_type)
+                            
+                            # Select the unit type in barracks UI
+                            self.barracks.select_unit_type(unit_count.unit_type)
                             break
                     assert event.ui_element is not None
                     if event.ui_element == self.save_button:
@@ -718,19 +771,7 @@ class SetupBattleScene(Scene):
                     # If we have a group picked up, place them
                     if self.selected_group_partial_units:
                         mouse_world_pos = self.camera.screen_to_world(*event.pos)
-                        self.place_group_units(mouse_world_pos)
-                    # If we have a single unit selected, place it
-                    elif self.selected_unit_type is not None:
-                        click_placement_pos = get_placement_pos(
-                            mouse_pos=event.pos,
-                            battle_id=self.battle_id,
-                            hex_coords=battle_coords,
-                            camera=self.camera,
-                            snap_to_grid=show_grid,
-                            required_team=None if self.sandbox_mode else TeamType.TEAM1,
-                        )
-                        placement_team = TeamType.TEAM1 if click_placement_pos[0] < world_x else TeamType.TEAM2
-                        self.create_unit_of_selected_type(click_placement_pos, placement_team)
+                        self.place_group_units(mouse_world_pos, snap_to_grid=show_grid)
                     else:
                         self.is_drag_selecting = True
                         self.drag_start_pos = event.pos
@@ -740,16 +781,14 @@ class SetupBattleScene(Scene):
                     # If we have a group picked up, cancel the pickup
                     if self.selected_group_partial_units:
                         self.cancel_group_pickup()
-                    # If we have a single unit selected, cancel it
-                    elif self.selected_unit_type is not None:
-                        self.set_selected_unit_type(None, placement_team)
-                        emit_event(PLAY_SOUND, event=PlaySoundEvent(
-                            filename="unit_picked_up.wav",
-                            volume=0.5,
-                        ))
                     # If right clicking on a unit, remove it
                     elif hovered_unit is not None and (self.sandbox_mode or hovered_team == TeamType.TEAM1):
-                        self.remove_unit(hovered_unit)
+                        # Remove the unit and add back to barracks
+                        unit_type = esper.component_for_entity(hovered_unit, UnitTypeComponent).type
+                        self.world_map_view.remove_unit(self.battle_id, hovered_unit)
+                        self.barracks.add_unit(unit_type)
+                        if self.progress_panel is not None:
+                            self.progress_panel.update_battle(self.battle)
 
             elif event.type == pygame.MOUSEBUTTONUP:
                 if event.button == pygame.BUTTON_LEFT and self.is_drag_selecting:
@@ -765,11 +804,6 @@ class SetupBattleScene(Scene):
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 if self.selected_group_partial_units:
                     self.cancel_group_pickup()
-                elif self.selected_unit_type is not None:
-                    self.set_selected_unit_type(None, placement_team)
-                else:
-                    # Default escape handling
-                    pass
 
             self.camera.process_event(event)
             self.manager.process_events(event)
@@ -785,20 +819,10 @@ class SetupBattleScene(Scene):
                         if event.ui_element == self.corruption_editor.save_button:
                             delattr(self, 'corruption_editor')
 
-        # Update preview for single selected unit
-        if self.selected_partial_unit is not None:
-            team = esper.component_for_entity(self.selected_partial_unit, Team)
-            if team.type != placement_team:
-                # If the partial unit is no longer on the side it was created on, recreate it
-                self.set_selected_unit_type(self.selected_unit_type, placement_team)
-            position = esper.component_for_entity(self.selected_partial_unit, Position)
-            position.x, position.y = placement_pos
-            esper.add_component(self.selected_partial_unit, Focus())
-
         # Update preview for group partial units
         if self.selected_group_partial_units:
             mouse_world_pos = self.camera.screen_to_world(*pygame.mouse.get_pos())
-            self.update_group_partial_units_position(mouse_world_pos)
+            self.update_group_partial_units_position(mouse_world_pos, snap_to_grid=show_grid)
 
         # Only update camera if no dialog is focused
         if self.save_dialog is None or not self.save_dialog.dialog.alive():
@@ -812,7 +836,7 @@ class SetupBattleScene(Scene):
             draw_grid(self.screen, self.camera, battle_coords)
 
         # Draw the legal placement area
-        if self.selected_unit_type is not None or self.selected_group_partial_units:
+        if self.selected_group_partial_units:
             legal_area = get_legal_placement_area(
                 self.battle_id,
                 battle_coords,
@@ -834,7 +858,11 @@ class SetupBattleScene(Scene):
         )
 
         self.world_map_view.update_battles(time_delta)
-        self.barracks.select_unit_type(self.selected_unit_type)
+        # Update barracks selection - if we have a single unit group picked up, show that unit as selected
+        if self.selected_group_partial_units and len(self.group_unit_types) == 1:
+            self.barracks.select_unit_type(self.group_unit_types[0])
+        else:
+            self.barracks.select_unit_type(None)
         
         # Update selected unit manager for card animations
         selected_unit_manager.update(time_delta)
