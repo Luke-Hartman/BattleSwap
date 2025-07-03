@@ -158,7 +158,11 @@ class WorldMapView:
         """Move the camera above the specified battle."""
         battle = self.battles[battle_id]
         assert battle.hex_coords is not None
-        x, y = axial_to_world(*battle.hex_coords)
+        self.move_camera_above_hex(battle.hex_coords)
+
+    def move_camera_above_hex(self, hex_coords: Tuple[int, int]) -> None:
+        """Move the camera above the specified hex coordinates."""
+        x, y = axial_to_world(*hex_coords)
         self.camera.move(x, y, zoom=1/2)
 
     def draw_map(self) -> None:

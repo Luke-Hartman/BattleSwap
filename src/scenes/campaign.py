@@ -306,10 +306,9 @@ class CampaignScene(Scene):
             if self.corruption_dialog is not None and self.corruption_dialog.handle_event(event):
                 self.corruption_dialog = None
                 
-                # If we have corrupted battles, hover over the first one
+                # If we have corrupted hexes, move camera over the first one
                 if self.corrupted_battles and len(self.corrupted_battles) > 0:
-                    battle = self.world_map_view.get_battle_from_hex(self.corrupted_battles[0])
-                    self.world_map_view.move_camera_above_battle(battle.id)
+                    self.world_map_view.move_camera_above_hex(self.corrupted_battles[0])
                 continue
 
             # Handle congratulations panel events first if it exists
