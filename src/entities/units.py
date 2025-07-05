@@ -89,6 +89,28 @@ unit_theme_ids: Dict[UnitType, str] = {
 
 unit_icon_surfaces: Dict[UnitType, pygame.Surface] = {}
 
+def get_unit_icon_theme_class(unit_tier: 'UnitTier') -> str:
+    """Get the appropriate theme class for unit icons based on tier."""
+    from components.unit_tier import UnitTier
+    
+    if unit_tier == UnitTier.ADVANCED:
+        return "@unit_count_advanced"
+    elif unit_tier == UnitTier.ELITE:
+        return "@unit_count_elite"
+    else:  # UnitTier.BASIC
+        return "@unit_count"
+
+def get_tier_label_theme_class(unit_tier: 'UnitTier') -> str:
+    """Get the appropriate theme class for tier labels based on tier."""
+    from components.unit_tier import UnitTier
+    
+    if unit_tier == UnitTier.ADVANCED:
+        return "@tier_label_advanced"
+    elif unit_tier == UnitTier.ELITE:
+        return "@tier_label_elite"
+    else:  # UnitTier.BASIC
+        return "@tier_label_basic"
+
 sprite_sheets: Dict[UnitType, pygame.Surface] = {}
 
 class Faction(Enum):

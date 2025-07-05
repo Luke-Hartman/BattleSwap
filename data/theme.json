@@ -142,10 +142,73 @@
             "shape": "rectangle"
         }
     },
+    "@unit_count_advanced": {
+        "colours": {
+            "normal_bg": "#8C9FA1",
+            "hovered_bg": "#A0B4B6",
+            "disabled_bg": "#677476",
+            "selected_bg": "#5C7A7C",
+            "active_bg": "#4E5D63",
+            "normal_border": "#ADD8E6",
+            "hovered_border": "#ADD8E6",
+            "disabled_border": "#ADD8E6",
+            "selected_border": "#ADD8E6",
+            "active_border": "#ADD8E6"
+        },
+        "misc": {
+            "border_width": "3",
+            "shape": "rectangle"
+        }
+    },
+    "@unit_count_elite": {
+        "colours": {
+            "normal_bg": "#8C9FA1",
+            "hovered_bg": "#A0B4B6",
+            "disabled_bg": "#677476",
+            "selected_bg": "#5C7A7C",
+            "active_bg": "#4E5D63",
+            "normal_border": "#DDA0DD",
+            "hovered_border": "#DDA0DD",
+            "disabled_border": "#DDA0DD",
+            "selected_border": "#DDA0DD",
+            "active_border": "#DDA0DD"
+        },
+        "misc": {
+            "border_width": "3",
+            "shape": "rectangle"
+        }
+    },
     "@unit_count_text": {
         "misc": {
             "text_horiz_alignment": "right",
             "text_horiz_alignment_padding": "3"
+        }
+    },
+    "@tier_label_basic": {
+        "colours": {
+            "normal_text": "#FFFFFF"
+        },
+        "misc": {
+            "text_horiz_alignment": "left",
+            "text_horiz_alignment_padding": "0"
+        }
+    },
+    "@tier_label_advanced": {
+        "colours": {
+            "normal_text": "#ADD8E6"
+        },
+        "misc": {
+            "text_horiz_alignment": "left",
+            "text_horiz_alignment_padding": "0"
+        }
+    },
+    "@tier_label_elite": {
+        "colours": {
+            "normal_text": "#DDA0DD"
+        },
+        "misc": {
+            "text_horiz_alignment": "left",
+            "text_horiz_alignment_padding": "0"
         }
     },
     "tab_container.faction_tab": {

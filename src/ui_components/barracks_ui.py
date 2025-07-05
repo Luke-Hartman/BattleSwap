@@ -40,12 +40,18 @@ class UnitCount(UIPanel):
             container=container,
             margins={'left': 0, 'right': 0, 'top': 0, 'bottom': 0}
         )
+        # Get tier-specific theme class for the unit icon
+        from progress_manager import progress_manager
+        from entities.units import get_unit_icon_theme_class
+        unit_tier = progress_manager.get_unit_tier(unit_type)
+        tier_theme_class = get_unit_icon_theme_class(unit_tier)
+        
         self.button = UIButton(
             relative_rect=pygame.Rect((0, 0), (self.size, self.size)),
             manager=manager,
             text="",
             container=self,
-            object_id=ObjectID(class_id="@unit_count", object_id=unit_theme_ids[unit_type]),
+            object_id=ObjectID(class_id=tier_theme_class, object_id=unit_theme_ids[unit_type]),
         )
         self.button.can_hover = lambda: True
         self.count_label = UILabel(
@@ -84,6 +90,18 @@ class UnitCount(UIPanel):
             self.button.enable()
         else:
             self.button.disable()
+
+    def refresh_tier_styling(self) -> None:
+        """Update the tier-specific styling for this unit icon."""
+        from progress_manager import progress_manager
+        from entities.units import get_unit_icon_theme_class
+        unit_tier = progress_manager.get_unit_tier(self.unit_type)
+        tier_theme_class = get_unit_icon_theme_class(unit_tier)
+        
+        # Update the button's object ID with the new tier theme class
+        from pygame_gui.core import ObjectID
+        new_object_id = ObjectID(class_id=tier_theme_class, object_id=unit_theme_ids[self.unit_type])
+        self.button.change_object_id(new_object_id)
 
     def handle_event(self, event: pygame.event.Event) -> bool:
         if event.type == pygame_gui.UI_BUTTON_ON_HOVERED and event.ui_element == self.button:
@@ -303,6 +321,11 @@ class BarracksUI(UITabContainer):
     @property
     def unit_list_items(self) -> List[UnitCount]:
         return [item for items in self.unit_list_items_by_faction.values() for item in items]
+
+    def refresh_all_tier_styling(self) -> None:
+        """Refresh tier-specific styling for all unit icons."""
+        for item in self.unit_list_items:
+            item.refresh_tier_styling()
 
     def handle_event(self, event: pygame.event.Event) -> bool:
         if super().process_event(event):

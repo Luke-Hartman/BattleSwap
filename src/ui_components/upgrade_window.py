@@ -26,14 +26,32 @@ class UnitIconButton(pygame_gui.elements.UIButton):
         container: Optional[pygame_gui.core.UIContainer] = None,
     ):
         self.unit_type = unit_type
+        
+        # Get tier-specific theme class for the unit icon
+        from progress_manager import progress_manager
+        from entities.units import get_unit_icon_theme_class
+        unit_tier = progress_manager.get_unit_tier(unit_type)
+        tier_theme_class = get_unit_icon_theme_class(unit_tier)
+        
         super().__init__(
             relative_rect=pygame.Rect((x_pos, y_pos), (self.size, self.size)),
             text="",
             manager=manager,
             container=container,
-            object_id=ObjectID(class_id="@unit_count", object_id=unit_theme_ids[unit_type]),
+            object_id=ObjectID(class_id=tier_theme_class, object_id=unit_theme_ids[unit_type]),
         )
         self.can_hover = lambda: True
+
+    def refresh_tier_styling(self) -> None:
+        """Update the tier-specific styling for this unit icon."""
+        from progress_manager import progress_manager
+        from entities.units import get_unit_icon_theme_class
+        unit_tier = progress_manager.get_unit_tier(self.unit_type)
+        tier_theme_class = get_unit_icon_theme_class(unit_tier)
+        
+        # Update the button's object ID with the new tier theme class
+        new_object_id = ObjectID(class_id=tier_theme_class, object_id=unit_theme_ids[self.unit_type])
+        self.change_object_id(new_object_id)
 
 
 class UpgradeWindow:
@@ -273,18 +291,6 @@ class UpgradeWindow:
         # Create unit cards for each tier
         self._create_unit_cards()
     
-    def _clear_unit_cards(self) -> None:
-        """Clear all unit cards."""
-        if self.basic_card is not None:
-            self.basic_card.kill()
-            self.basic_card = None
-        if self.advanced_card is not None:
-            self.advanced_card.kill()
-            self.advanced_card = None
-        if self.elite_card is not None:
-            self.elite_card.kill()
-            self.elite_card = None
-    
     def _create_unit_cards(self) -> None:
         """Create unit cards for all three tiers."""
         if self.selected_unit_type is None:
@@ -414,6 +420,8 @@ class UpgradeWindow:
                                 self._update_upgrade_details()
                                 self._update_upgrade_button_state()
                                 self._update_credit_display()
+                                # Refresh unit icon styling for tier changes
+                                self.refresh_all_unit_icon_styling()
                                 return True
                         elif event.ui_element == dialog.cancel_button:
                             # Close the dialog without upgrading
@@ -587,3 +595,20 @@ class UpgradeWindow:
             container=bottom_section,
             object_id=elite_theme_id
         ) 
+
+    def refresh_all_unit_icon_styling(self) -> None:
+        """Refresh tier-specific styling for all unit icon buttons."""
+        for unit_button in self.unit_buttons:
+            unit_button.refresh_tier_styling()
+    
+    def _clear_unit_cards(self) -> None:
+        """Clear all unit cards."""
+        if self.basic_card is not None:
+            self.basic_card.kill()
+            self.basic_card = None
+        if self.advanced_card is not None:
+            self.advanced_card.kill()
+            self.advanced_card = None
+        if self.elite_card is not None:
+            self.elite_card.kill()
+            self.elite_card = None 

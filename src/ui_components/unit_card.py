@@ -123,13 +123,15 @@ class UnitCard:
             object_id=ObjectID(class_id='@left_aligned_text')
         )
         
-        # Add tier label below faction label
+        # Add tier label below faction label with tier-specific color
+        from entities.units import get_tier_label_theme_class
+        tier_theme_class = get_tier_label_theme_class(unit_tier)
         self.tier_label = UILabel(
             relative_rect=pygame.Rect((self.padding + 10, self.padding + 25), (150, 20)),
             text=f"Tier: {unit_tier.value}",
             manager=manager,
             container=self.card_container,
-            object_id=ObjectID(class_id='@left_aligned_text')
+            object_id=ObjectID(class_id=tier_theme_class)
         )
         
         # Add description
