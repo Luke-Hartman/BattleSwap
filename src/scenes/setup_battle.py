@@ -394,6 +394,46 @@ class SetupBattleScene(Scene):
         
         self.group_placement_team = placement_team
 
+    def _recreate_group_partial_units(self, new_team: TeamType) -> None:
+        """Recreate all group partial units with a new team."""
+        if not self.selected_group_partial_units:
+            return
+            
+        esper.switch_world(self.battle_id)
+        
+        # Get current mouse position to place recreated units
+        mouse_pos = pygame.mouse.get_pos()
+        mouse_world_pos = self.camera.screen_to_world(*mouse_pos)
+        
+        # Delete existing partial units
+        for partial_unit in self.selected_group_partial_units:
+            if esper.entity_exists(partial_unit):
+                esper.delete_entity(partial_unit)
+        
+        # Clear the list and recreate units
+        self.selected_group_partial_units.clear()
+        
+        # Recreate partial units with new team
+        for i, unit_type in enumerate(self.group_unit_types):
+            if i < len(self.group_unit_offsets):
+                offset_x, offset_y = self.group_unit_offsets[i]
+                
+                # Create transparent partial unit with new team
+                partial_unit = create_unit(
+                    x=mouse_world_pos[0] + offset_x,
+                    y=mouse_world_pos[1] + offset_y,
+                    unit_type=unit_type,
+                    team=new_team,
+                    corruption_powers=self.battle.corruption_powers,
+                    tier=progress_manager.get_unit_tier(unit_type)
+                )
+                esper.add_component(partial_unit, Placing())
+                esper.add_component(partial_unit, Transparency(alpha=128))
+                self.selected_group_partial_units.append(partial_unit)
+        
+        # Update the group placement team
+        self.group_placement_team = new_team
+
     def clear_group_pickup(self) -> None:
         """Clear the group pickup state and delete partial units."""
         esper.switch_world(self.battle_id)
@@ -416,13 +456,16 @@ class SetupBattleScene(Scene):
             
         esper.switch_world(self.battle_id)
         
-        # Determine final placement team (for sandbox mode, base on mouse position)
+        # Determine placement team
         battle_coords = self.battle.hex_coords
+        world_x, _ = axial_to_world(*battle_coords)
+        
         if self.sandbox_mode:
-            world_x, _ = axial_to_world(*battle_coords)
-            final_placement_team = TeamType.TEAM1 if mouse_world_pos[0] < world_x else TeamType.TEAM2
+            # In sandbox mode, all units go to the side determined by mouse position
+            placement_team = TeamType.TEAM1 if mouse_world_pos[0] < world_x else TeamType.TEAM2
         else:
-            final_placement_team = self.group_placement_team
+            # In non-sandbox mode, always place on team 1 side
+            placement_team = TeamType.TEAM1
         
         # Use unified placement logic
         placement_positions = calculate_group_placement_positions(
@@ -430,7 +473,7 @@ class SetupBattleScene(Scene):
             unit_offsets=self.group_unit_offsets,
             battle_id=self.battle_id,
             hex_coords=battle_coords,
-            required_team=None if self.sandbox_mode else TeamType.TEAM1,
+            required_team=placement_team,
             snap_to_grid=snap_to_grid,
             sandbox_mode=self.sandbox_mode,
         )
@@ -442,7 +485,7 @@ class SetupBattleScene(Scene):
                     self.battle_id,
                     unit_type,
                     placement_positions[i],
-                    final_placement_team,
+                    placement_team,
                 )
         
         # Clear the group pickup
@@ -561,18 +604,24 @@ class SetupBattleScene(Scene):
             
         esper.switch_world(self.battle_id)
         
-        # Determine preview team (for sandbox mode, base on mouse position)
+        # Determine preview team
         battle_coords = self.battle.hex_coords
+        world_x, _ = axial_to_world(*battle_coords)
+        
         if self.sandbox_mode:
-            world_x, _ = axial_to_world(*battle_coords)
+            # In sandbox mode, all units follow the mouse to either side
             preview_team = TeamType.TEAM1 if mouse_world_pos[0] < world_x else TeamType.TEAM2
             
-            # Update partial unit teams if needed
-            for partial_unit in self.selected_group_partial_units:
-                if esper.entity_exists(partial_unit):
-                    current_team = esper.component_for_entity(partial_unit, Team)
-                    if current_team.type != preview_team:
-                        current_team.type = preview_team
+            # Check if team changed and recreate partial units if needed
+            if (self.selected_group_partial_units and 
+                esper.entity_exists(self.selected_group_partial_units[0])):
+                current_team = esper.component_for_entity(self.selected_group_partial_units[0], Team)
+                if current_team.type != preview_team:
+                    # Team changed, recreate all partial units with new team
+                    self._recreate_group_partial_units(preview_team)
+        else:
+            # In non-sandbox mode, always use team 1
+            preview_team = TeamType.TEAM1
         
         # Use unified placement logic to calculate positions
         placement_positions = calculate_group_placement_positions(
@@ -580,7 +629,7 @@ class SetupBattleScene(Scene):
             unit_offsets=self.group_unit_offsets,
             battle_id=self.battle_id,
             hex_coords=battle_coords,
-            required_team=None if self.sandbox_mode else TeamType.TEAM1,
+            required_team=preview_team,
             snap_to_grid=snap_to_grid,
             sandbox_mode=self.sandbox_mode,
         )
