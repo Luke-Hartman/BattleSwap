@@ -16,11 +16,14 @@ def damage_stat(dps: float, multiplier: float = 1) -> float:
     stat = (dps * multiplier) / (gc.CRUSADER_PIKEMAN_ATTACK_DAMAGE / gc.CRUSADER_PIKEMAN_ANIMATION_ATTACK_DURATION) * 5
     return taper(stat)
 
-def defense_stat(defense: float, armored: bool = False, self_heal_dps: float = 0) -> float:
+def defense_stat(defense: float, armored: bool = False, heavily_armored: bool = False, self_heal_dps: float = 0) -> float:
     """Maps defense to a stat value between 1 and 10."""
     stat = defense / gc.ZOMBIE_TANK_HP * 16 + self_heal_dps / (gc.CORE_SWORDSMAN_ATTACK_DAMAGE / gc.CORE_SWORDSMAN_ANIMATION_ATTACK_DURATION) * 5
     if armored:
         stat *= 1.25
+    if heavily_armored:
+        stat *= 1.5
+    assert not (armored and heavily_armored), "Cannot be both armored and heavily armored"
     return taper(stat)
 
 def speed_stat(movement_speed: float) -> float:
@@ -44,6 +47,7 @@ class GlossaryEntryType(enum.Enum):
     FACTION = "Faction"
     FLEE = "Flee"   
     FOLLOWER = "Follower"
+    HEAVILY_ARMORED = "Heavily Armored"
     HUNTER = "Hunter"
     POISON = "Poison"
     INFECTION = "Infection"
@@ -83,13 +87,14 @@ class UnitData:
 # Glossary entry content
 GLOSSARY_ENTRIES = {
     GlossaryEntryType.AREA_OF_EFFECT: "Area of Effect: Applies one or more effects to all units within an area. Some units may not be affected, such as units on the same team.",
-    GlossaryEntryType.ARMORED: f"Armored units take {gc.ARMOR_FLAT_DAMAGE_REDUCTION} flat reduced damage, and have {gc.ARMOR_PERCENT_DAMAGE_REDUCTION}% damage reduction (after flat reduction). Maximum damage reduction is capped at {gc.MAX_ARMOR_DAMAGE_REDUCTION}%.",
+    GlossaryEntryType.ARMORED: f"Armored units take {gc.ARMOR_FLAT_DAMAGE_REDUCTION} flat reduced damage, and have {gc.ARMOR_PERCENT_DAMAGE_REDUCTION}% damage reduction (after flat reduction). Maximum damage reduction is capped at {gc.MAX_ARMOR_DAMAGE_REDUCTION}%. Also see <a href='{GlossaryEntryType.HEAVILY_ARMORED.value}'>Heavily Armored</a>.",
     GlossaryEntryType.AURA: "Auras apply effects to nearby units. Some units may not be affected, such as units on the same team.",
     GlossaryEntryType.BARRACKS: "The Barracks contains your available army. It can be accessed at the bottom of the screen.",
     GlossaryEntryType.CORRUPTION: f"Corruption reopens up to {gc.CORRUPTION_BATTLE_COUNT} battle or upgrade hexes you've already claimed, with modifiers to increase their difficulty including <a href='{GlossaryEntryType.UPGRADE.value}'>upgrading</a> all enemy units to Elite. To continue, you must reclaim these hexes. Corruption can activate when you exceed {gc.CORRUPTION_TRIGGER_POINTS} <a href='{GlossaryEntryType.POINTS.value}'>Points</a> in your <a href='{GlossaryEntryType.BARRACKS.value}'>Barracks</a>. Corruption is required to <a href='{GlossaryEntryType.UPGRADE.value}'>upgrade</a> your units to Elite. Efficient players can corrupt and reconquer every battle.",
     GlossaryEntryType.FACTION: "Factions are groups of units that share a common theme. Enemy armies are made up of units from a specific faction plus the core units, while players are free to mix and match units from different factions.",
     GlossaryEntryType.FLEE: "Fleeing units move away from the source of the effect at a reduced speed for 2 seconds.",
     GlossaryEntryType.FOLLOWER: "Follower units follow a nearby friendly non-follower unit until it is killed.",
+    GlossaryEntryType.HEAVILY_ARMORED: f"Heavily Armored units take {gc.HEAVILY_ARMOR_FLAT_DAMAGE_REDUCTION} flat reduced damage, and have {gc.HEAVILY_ARMOR_PERCENT_DAMAGE_REDUCTION}% damage reduction (after flat reduction). Maximum damage reduction is capped at {gc.MAX_HEAVILY_ARMOR_DAMAGE_REDUCTION}%. Also see <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a>.",
     GlossaryEntryType.HUNTER: "While most units target the nearest enemy unit, Hunters prioritize units with low current health.",
     GlossaryEntryType.POISON: "Poison damage is dealt over 2 seconds, and is not blocked by armor. Projectiles that poison pass through units that are already poisoned.",
     GlossaryEntryType.INFECTION: f"Infected units turn into <a href='{UnitType.ZOMBIE_BASIC_ZOMBIE.value}'>Zombies</a> when they die. Infection lasts for 2 seconds.",
@@ -287,14 +292,14 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
     if unit_type == UnitType.CORE_LONGBOWMAN:
         longbowman_damage = gc.CORE_LONGBOWMAN_ATTACK_DAMAGE
         
-        # Advanced tier (and Elite): 33.33% more attack speed
+        # Elite: 33.33% more attack speed
         attack_animation_duration = gc.CORE_LONGBOWMAN_ANIMATION_ATTACK_DURATION
-        if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE:
+        if unit_tier == UnitTier.ELITE:
             attack_animation_duration = attack_animation_duration * 0.75  # 33.33% faster = 0.75x duration
         
-        # Elite tier: becomes hunters
-        if unit_tier == UnitTier.ELITE:
-            description = f"Elite Longbowmen are ranged <a href='{GlossaryEntryType.HUNTER.value}'>Hunters</a> that shoot powerful arrows over very long range."
+        # Advanced and Elite: Arrows pierce one target
+        if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE:
+            description = f"Longbowmen are ranged units that shoot powerful piercing arrows over very long range."
         else:
             description = "Longbowmen are ranged units that shoot powerful arrows over very long range."
         
@@ -304,24 +309,24 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             tier=unit_tier,
             stats={
                 StatType.DEFENSE: defense_stat(gc.CORE_LONGBOWMAN_HP),
-                StatType.DAMAGE: damage_stat(longbowman_damage / attack_animation_duration),
+                StatType.DAMAGE: damage_stat(longbowman_damage / attack_animation_duration * 1.5 if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE else 1),
                 StatType.RANGE: range_stat(gc.CORE_LONGBOWMAN_ATTACK_RANGE),
                 StatType.SPEED: speed_stat(gc.CORE_LONGBOWMAN_MOVEMENT_SPEED),
                 StatType.UTILITY: None
             },
             tooltips={
                 StatType.DEFENSE: f"{gc.CORE_LONGBOWMAN_HP} maximum health",
-                StatType.DAMAGE: f"{longbowman_damage} per hit ({longbowman_damage / attack_animation_duration:.1f} per second)",
+                StatType.DAMAGE: f"{longbowman_damage} per hit ({longbowman_damage / attack_animation_duration:.1f} per second)" + (". Arrows pierce one target." if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE else ""),
                 StatType.RANGE: f"{gc.CORE_LONGBOWMAN_ATTACK_RANGE} units",
                 StatType.SPEED: f"{gc.CORE_LONGBOWMAN_MOVEMENT_SPEED} units per second",
                 StatType.UTILITY: None
             },
             tips={
-                "Strong when": ["Against other ranged units", "Against slow melee units", "Against healing units"],
+                "Strong when": ["Against other ranged units", "Against slow melee units", "Against healing units", "When hitting multiple targets with one arrow"],
                 "Weak when": ["Against fast melee units"],
             },
             modification_levels={
-                StatType.DAMAGE: 1 if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE else 0,
+                StatType.DAMAGE: 2 if unit_tier == UnitTier.ELITE else 1 if unit_tier == UnitTier.ADVANCED else 0,
                 StatType.RANGE: 0,
                 StatType.DEFENSE: 0,
                 StatType.SPEED: 0,
@@ -684,32 +689,34 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
     if unit_type == UnitType.CRUSADER_DEFENDER:
         # Calculate tier-specific values
         defender_health = gc.CRUSADER_DEFENDER_HP
-        defender_damage = gc.CRUSADER_DEFENDER_ATTACK_DAMAGE
-        defender_attack_speed = gc.CRUSADER_DEFENDER_ANIMATION_ATTACK_DURATION
-        
-        # Advanced tier (and Elite): 35% increased damage and ability speed
-        if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE:
-            defender_damage = defender_damage * 1.35
-            defender_attack_speed = defender_attack_speed / 1.35  # 35% faster
-        
-        # Elite tier: 50% increased health
+        defender_armored = True
+        defender_heavily_armored = False
+        description = f"Defenders are <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a> units with high health and low damage."
+        defense_tooltip = f"{defender_health} maximum health, armored"
+
         if unit_tier == UnitTier.ELITE:
             defender_health = defender_health * 1.5
         
+        if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE:
+            defender_heavily_armored = True
+            defender_armored = False
+            description = f"Defenders are <a href='{GlossaryEntryType.HEAVILY_ARMORED.value}'>Heavily Armored</a> units with high health and low damage."
+            defense_tooltip = f"{defender_health} maximum health, heavily armored"
+        
         return UnitData(
             name="Defender",
-            description=f"Defenders are <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a> units with high health and low damage.",
+            description=description,
             tier=unit_tier,
             stats={
-                StatType.DEFENSE: defense_stat(defender_health, armored=True),
-                StatType.DAMAGE: damage_stat(defender_damage / defender_attack_speed),
+                StatType.DEFENSE: defense_stat(defender_health, armored=defender_armored, heavily_armored=defender_heavily_armored),
+                StatType.DAMAGE: damage_stat(gc.CRUSADER_DEFENDER_ATTACK_DAMAGE / gc.CRUSADER_DEFENDER_ANIMATION_ATTACK_DURATION),
                 StatType.RANGE: range_stat(gc.CRUSADER_DEFENDER_ATTACK_RANGE),
                 StatType.SPEED: speed_stat(gc.CRUSADER_DEFENDER_MOVEMENT_SPEED),
                 StatType.UTILITY: None
             },
             tooltips={
-                StatType.DEFENSE: f"{defender_health} maximum health, armored",
-                StatType.DAMAGE: f"{defender_damage} per hit ({defender_damage / defender_attack_speed:.1f} per second)",
+                StatType.DEFENSE: defense_tooltip,
+                StatType.DAMAGE: f"{gc.CRUSADER_DEFENDER_ATTACK_DAMAGE} per hit ({gc.CRUSADER_DEFENDER_ATTACK_DAMAGE / gc.CRUSADER_DEFENDER_ANIMATION_ATTACK_DURATION:.1f} per second)",
                 StatType.RANGE: f"{gc.CRUSADER_DEFENDER_ATTACK_RANGE} units",
                 StatType.SPEED: f"{gc.CRUSADER_DEFENDER_MOVEMENT_SPEED} units per second",
                 StatType.UTILITY: None
@@ -719,9 +726,9 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
                 "Weak when": ["Against more powerful melee units", "Against ranged units"],
             },
             modification_levels={
-                StatType.DEFENSE: 2 if unit_tier == UnitTier.ELITE else 0,
-                StatType.DAMAGE: 1 if unit_tier == UnitTier.ADVANCED else 2 if unit_tier == UnitTier.ELITE else 0,
-                StatType.SPEED: 1 if unit_tier == UnitTier.ADVANCED else 2 if unit_tier == UnitTier.ELITE else 0,
+                StatType.DEFENSE: 1 if unit_tier == UnitTier.ADVANCED else 2 if unit_tier == UnitTier.ELITE else 0,
+                StatType.DAMAGE: 0,
+                StatType.SPEED: 0,
                 StatType.RANGE: 0,
                 StatType.UTILITY: 0
             }

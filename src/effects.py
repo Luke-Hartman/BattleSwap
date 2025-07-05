@@ -286,6 +286,9 @@ class CreatesProjectile(Effect):
     max_distance: Optional[float] = None
     """The maximum distance the projectile can travel before being automatically deleted."""
 
+    pierce: int = 0
+    """How many targets the projectile can pierce through. Decreases by 1 on each hit."""
+
     on_create: Optional[Callable[[int], None]] = None
     """Function to call when the projectile is created."""
 
@@ -318,7 +321,7 @@ class CreatesProjectile(Effect):
         esper.add_component(entity, Angle(angle=angle))
         esper.add_component(entity, Orientation(facing=parent_orientation.facing))
         esper.add_component(entity, Team(type=parent_team.type))
-        esper.add_component(entity, Projectile(effects=self.effects, owner=owner, unit_condition=self.unit_condition))
+        esper.add_component(entity, Projectile(effects=self.effects, owner=owner, unit_condition=self.unit_condition, pierce=self.pierce))
         esper.add_component(entity, create_visual_spritesheet(self.visual, layer=1))
         esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
         if self.max_distance is not None:

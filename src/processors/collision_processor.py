@@ -156,9 +156,19 @@ class CollisionProcessor(esper.Processor):
             if not projectile.unit_condition.check(u_ent):
                 continue
 
+            # Check if the unit has already been hit by this projectile
+            if projectile.hit_entities is not None and u_ent in projectile.hit_entities:
+                continue
+
             emit_event(PROJECTILE_HIT, event=ProjectileHitEvent(entity=p_ent, target=u_ent))
             collided_projectiles.add(p_sprite)
-            esper.delete_entity(p_ent)
+            
+            if projectile.hit_entities is None:
+                projectile.hit_entities = []
+            projectile.hit_entities.append(u_ent)
+            if projectile.pierce < len(projectile.hit_entities):
+                projectile.hit_entities = None
+                esper.delete_entity(p_ent)
 
     def process_visual_aoe_unit_collisions(
         self,

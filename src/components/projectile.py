@@ -23,3 +23,10 @@ class Projectile:
     """Owner is used to apply buffs/debuffs to Projectile effects."""
     unit_condition: "UnitCondition"
     """Condition that determines which units can be hit by the projectile."""
+    pierce: int = 0
+    """How many targets the projectile can pierce through."""
+    hit_entities: Optional[List[int]] = None
+    """Entities that have been hit by the projectile.
+    
+    Used to prevent piercing through the same target multiple times.
+    """

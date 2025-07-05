@@ -750,6 +750,11 @@ def create_core_longbowman(
         tier: UnitTier,
     ) -> int:
     """Create a longbowman entity with all necessary components."""
+    if tier == UnitTier.ADVANCED or tier == UnitTier.ELITE:
+        pierce = 1
+    else:
+        pierce = 0
+    
     entity = unit_base_entity(
         x=x,
         y=y,
@@ -764,27 +769,12 @@ def create_core_longbowman(
         corruption_powers=corruption_powers,
         tier=tier
     )
-    # Elite tier becomes hunters (prioritize low health targets)
-    if tier == UnitTier.ELITE:
-        targetting_strategy = TargetStrategy(
-            rankings=[
-                WeightedRanking(
-                    rankings={
-                        ByDistance(entity=entity, y_bias=2, ascending=True): 1,
-                        ByCurrentHealth(ascending=False): -0.6,
-                    },
-                ),
-            ],
-            unit_condition=All([OnTeam(team=team.other()), Alive()])
-        )
-    else:
-        targetting_strategy = TargetStrategy(
-            rankings=[
-                ByDistance(entity=entity, y_bias=2, ascending=True),
-            ],
-            unit_condition=All([OnTeam(team=team.other()), Alive()])
-        )
-
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=2, ascending=True),
+        ],
+        unit_condition=All([OnTeam(team=team.other()), Alive()])
+    )
     esper.add_component(
         entity,
         Destination(target_strategy=targetting_strategy, x_offset=0)
@@ -839,6 +829,7 @@ def create_core_longbowman(
                                 projectile_offset_x=5*gc.MINIFOLKS_SCALE,
                                 projectile_offset_y=0,
                                 unit_condition=All([OnTeam(team=team.other()), Alive(), Grounded()]),
+                                pierce=pierce,
                             ),
                             PlaySound(SoundEffect(filename="arrow_fired_from_longbow.wav", volume=0.50)),
                         ]
@@ -1945,15 +1936,15 @@ def create_crusader_defender(
     """Create a defender entity with all necessary components."""
     # Calculate tier-specific values
     defender_health = gc.CRUSADER_DEFENDER_HP
-    defender_damage = gc.CRUSADER_DEFENDER_ATTACK_DAMAGE
-    
-    # Advanced tier (and Elite): 35% increased damage
-    if tier == UnitTier.ADVANCED or tier == UnitTier.ELITE:
-        defender_damage = defender_damage * 1.35
     
     # Elite tier: 50% increased health
     if tier == UnitTier.ELITE:
         defender_health = defender_health * 1.5
+    
+    if tier == UnitTier.ADVANCED or tier == UnitTier.ELITE:
+        armor_component = Armor(flat_reduction=gc.HEAVILY_ARMOR_FLAT_DAMAGE_REDUCTION, percent_reduction=gc.HEAVILY_ARMOR_PERCENT_DAMAGE_REDUCTION)
+    else:
+        armor_component = Armor(flat_reduction=gc.ARMOR_FLAT_DAMAGE_REDUCTION, percent_reduction=gc.ARMOR_PERCENT_DAMAGE_REDUCTION)
     
     entity = unit_base_entity(
         x=x,
@@ -1979,7 +1970,7 @@ def create_crusader_defender(
         entity,
         Destination(target_strategy=targetting_strategy, x_offset=gc.CRUSADER_DEFENDER_ATTACK_RANGE*2/3)
     )
-    esper.add_component(entity, Armor(flat_reduction=gc.ARMOR_FLAT_DAMAGE_REDUCTION, percent_reduction=gc.ARMOR_PERCENT_DAMAGE_REDUCTION))
+    esper.add_component(entity, armor_component)
     esper.add_component(
         entity,
         Abilities(
@@ -2011,7 +2002,7 @@ def create_crusader_defender(
                         )
                     ],
                     effects={4: [
-                        Damages(damage=defender_damage, recipient=Recipient.TARGET),
+                        Damages(damage=gc.CRUSADER_DEFENDER_ATTACK_DAMAGE, recipient=Recipient.TARGET),
                         PlaySound([
                             (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
                         ]),
@@ -3886,11 +3877,11 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
         }
     )
     if unit_type == UnitType.CORE_LONGBOWMAN:
-        # Advanced tier (and Elite): 33.33% more attack speed
+        # Elite: 33.33% more attack speed
         attack_animation_duration = gc.CORE_LONGBOWMAN_ANIMATION_ATTACK_DURATION
-        if tier == UnitTier.ADVANCED or tier == UnitTier.ELITE:
+        if tier == UnitTier.ELITE:
             attack_animation_duration = attack_animation_duration * 0.75  # 33.33% faster = 0.75x duration
-        
+
         return SpriteSheet(
             surface=sprite_sheets[UnitType.CORE_LONGBOWMAN],
             frame_width=100,
