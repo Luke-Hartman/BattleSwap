@@ -123,7 +123,7 @@ class AnimationProcessor(esper.Processor):
             frame_count = sprite_sheet.frames[anim_state.type]
             frame_duration = total_duration / frame_count
 
-            new_frame = int(anim_state.time_elapsed // frame_duration)
+            new_frame = min(frame_count, int(anim_state.time_elapsed // frame_duration))
             if new_frame != anim_state.current_frame or anim_state.time_elapsed == 0:
                 if anim_state.type == AnimationType.DYING and anim_state.current_frame == frame_count - 1:
                     # Stop the animation at the last frame for death animation
