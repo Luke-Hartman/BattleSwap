@@ -501,6 +501,8 @@ class CampaignScene(Scene):
 
         # Update upgrade button state (check for changes in upgrade hexes or unit tiers)
         self._update_upgrade_button_state()
+
+        self.barracks.refresh_all_tier_styling()
         
         # Update upgrade button flash animation
         if self.upgrade_button_is_flashing:

@@ -97,7 +97,8 @@ class UnitCount(UIPanel):
         from entities.units import get_unit_icon_theme_class
         unit_tier = progress_manager.get_unit_tier(self.unit_type)
         tier_theme_class = get_unit_icon_theme_class(unit_tier)
-        
+        if tier_theme_class in self.button.class_ids:
+            return
         # Update the button's object ID with the new tier theme class
         from pygame_gui.core import ObjectID
         new_object_id = ObjectID(class_id=tier_theme_class, object_id=unit_theme_ids[self.unit_type])

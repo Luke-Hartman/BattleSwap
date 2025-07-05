@@ -16,9 +16,13 @@ def damage_stat(dps: float, multiplier: float = 1) -> float:
     stat = (dps * multiplier) / (gc.CRUSADER_PIKEMAN_ATTACK_DAMAGE / gc.CRUSADER_PIKEMAN_ANIMATION_ATTACK_DURATION) * 5
     return taper(stat)
 
+def healing_stat(healing_dps: float) -> float:
+    """Maps healing to a stat value between 1 and 10."""
+    return damage_stat(healing_dps, 2)
+
 def defense_stat(defense: float, armored: bool = False, heavily_armored: bool = False, self_heal_dps: float = 0) -> float:
     """Maps defense to a stat value between 1 and 10."""
-    stat = defense / gc.ZOMBIE_TANK_HP * 16 + self_heal_dps / (gc.CORE_SWORDSMAN_ATTACK_DAMAGE / gc.CORE_SWORDSMAN_ANIMATION_ATTACK_DURATION) * 5
+    stat = defense / gc.ZOMBIE_TANK_HP * 16 + self_heal_dps * 2 / (gc.CORE_SWORDSMAN_ATTACK_DAMAGE / gc.CORE_SWORDSMAN_ANIMATION_ATTACK_DURATION) * 5
     if armored:
         stat *= 1.25
     if heavily_armored:
@@ -594,7 +598,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             stats={
                 StatType.DEFENSE: defense_stat(gc.CRUSADER_CLERIC_HP),
                 StatType.SPEED: speed_stat(gc.CRUSADER_CLERIC_MOVEMENT_SPEED),
-                StatType.UTILITY: damage_stat(gc.CRUSADER_CLERIC_HEALING / cleric_animation_duration),
+                StatType.UTILITY: healing_stat(gc.CRUSADER_CLERIC_HEALING / cleric_animation_duration),
                 StatType.RANGE: range_stat(cleric_range),
                 StatType.DAMAGE: None
             },
@@ -802,7 +806,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             stats={
                 StatType.DEFENSE: defense_stat(gc.CRUSADER_GUARDIAN_ANGEL_HP),
                 StatType.SPEED: speed_stat(gc.CRUSADER_GUARDIAN_ANGEL_MOVEMENT_SPEED),
-                StatType.UTILITY: damage_stat(guardian_angel_healing / gc.CRUSADER_GUARDIAN_ANGEL_HEAL_COOLDOWN),
+                StatType.UTILITY: healing_stat(guardian_angel_healing / gc.CRUSADER_GUARDIAN_ANGEL_HEAL_COOLDOWN),
                 StatType.RANGE: range_stat(gc.CRUSADER_GUARDIAN_ANGEL_ATTACHMENT_RANGE),
                 StatType.DAMAGE: None
             },
