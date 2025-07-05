@@ -1209,15 +1209,8 @@
     ]
   },
   {
-    "id": "Defeat the Commander",
+    "id": "Defeat the Banner Bearer",
     "enemies": [
-      [
-        "CRUSADER_DEFENDER",
-        [
-          350.0,
-          -25.0
-        ]
-      ],
       [
         "CRUSADER_DEFENDER",
         [
@@ -1226,23 +1219,30 @@
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
-        [
-          350.0,
-          25.0
-        ]
-      ],
-      [
-        "CRUSADER_COMMANDER",
+        "CRUSADER_BANNER_BEARER",
         [
           375.0,
           0.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          322.4138624765328,
+          -33.0
+        ]
+      ],
+      [
+        "CRUSADER_DEFENDER",
+        [
+          324.4138624765328,
+          34.0
         ]
       ]
     ],
     "allies": null,
     "tip": [
-      "Commanders are weak on their own, but they increase the damage of their allies."
+      "Banner Bearers are defenseless on their own, but they improve their allies."
     ],
     "hex_coords": [
       9,
@@ -1250,12 +1250,7 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": {
-      "a_cutoff": 300,
-      "b_cutoff": 350,
-      "c_cutoff": 400,
-      "d_cutoff": 500
-    },
+    "grades": null,
     "best_solution": [
       [
         "CRUSADER_CATAPULT",
@@ -1899,14 +1894,14 @@
     "id": "Strong Leadership",
     "enemies": [
       [
-        "CRUSADER_COMMANDER",
+        "CRUSADER_BANNER_BEARER",
         [
           325.0,
           -50.0
         ]
       ],
       [
-        "CRUSADER_COMMANDER",
+        "CRUSADER_BANNER_BEARER",
         [
           325.0,
           50.0
@@ -1958,7 +1953,7 @@
     "allies": null,
     "tip": [
       "Stronger united!",
-      "Note that the commander aura does not stack."
+      "Note that the banner bearer aura does not stack."
     ],
     "hex_coords": [
       10,
@@ -4022,115 +4017,80 @@
         ]
       ],
       [
-        "CORE_SWORDSMAN",
+        "CRUSADER_BANNER_BEARER",
         [
-          -198.22678357856967,
-          530.0
-        ]
-      ],
-      [
-        "CORE_SWORDSMAN",
-        [
-          -192.1614289291665,
-          554.2220293045835
-        ]
-      ],
-      [
-        "CORE_SWORDSMAN",
-        [
-          -168.47557297802632,
-          546.3007182924447
-        ]
-      ],
-      [
-        "CORE_SWORDSMAN",
-        [
-          -164.85246061680118,
-          571.0063852418465
-        ]
-      ],
-      [
-        "CORE_SWORDSMAN",
-        [
-          -144.72000697126532,
-          585.7778445057558
-        ]
-      ],
-      [
-        "CRUSADER_PALADIN",
-        [
-          -190.22678357856967,
-          596.0
-        ]
-      ],
-      [
-        "CRUSADER_DEFENDER",
-        [
-          -215.62978590256898,
-          432.67756637396076
-        ]
-      ],
-      [
-        "CRUSADER_DEFENDER",
-        [
-          -89.5940023154235,
-          472.02630761605826
-        ]
-      ],
-      [
-        "CORE_CAVALRY",
-        [
-          -207.16803010616968,
-          680.3914820507183
-        ]
-      ],
-      [
-        "CORE_CAVALRY",
-        [
-          -183.20340868071798,
-          694.2274626817306
-        ]
-      ],
-      [
-        "CORE_CAVALRY",
-        [
-          -155.22678357856967,
-          705.0
-        ]
-      ],
-      [
-        "CRUSADER_COMMANDER",
-        [
-          -176.22678357856967,
-          501.0
-        ]
-      ],
-      [
-        "CRUSADER_PALADIN",
-        [
-          -214.22678357856967,
-          581.0
-        ]
-      ],
-      [
-        "CRUSADER_CLERIC",
-        [
-          -163.22678357856967,
-          424.33333333333337
-        ]
-      ],
-      [
-        "CRUSADER_CLERIC",
-        [
-          -49.560116911903606,
-          449.33333333333337
+          -162.22678357856967,
+          515.0
         ]
       ],
       [
         "ZOMBIE_TANK",
         [
-          -104.22678357856967,
-          345.0
+          -113.22678357856967,
+          422.0
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -144.27097687540663,
+          427.89957522300654
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -192.33263874737167,
+          419.88444874000174
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -93.22678357856967,
+          448.0
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -71.77123968629348,
+          460.7734244560643
+        ]
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          -50.75200079715796,
+          474.2747798327598
+        ]
+      ],
+      [
+        "CRUSADER_PALADIN",
+        [
+          -74.22678357856967,
+          498.0
+        ]
+      ],
+      [
+        "CRUSADER_PALADIN",
+        [
+          -217.22388847089678,
+          422.09811147201845
+        ]
+      ],
+      [
+        "CRUSADER_CLERIC",
+        [
+          -118.22678357856967,
+          493.0
+        ]
+      ],
+      [
+        "CRUSADER_CLERIC",
+        [
+          -103.22678357856967,
+          518.0
         ]
       ]
     ],
