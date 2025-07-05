@@ -173,6 +173,9 @@ class CampaignScene(Scene):
                     world_map_view=self.world_map_view
                 )
                 self.corrupted_battles = corrupted_battles
+                # Rebuild corrupted battles
+                self.world_map_view.rebuild(self.world_map_view.battles.values())
+
 
     def create_ui(self) -> None:
         """Create the UI elements for the world map scene."""
