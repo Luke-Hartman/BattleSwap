@@ -1,0 +1,1269 @@
+{
+    "CORE_ARCHER": {
+        "name": "Archer Upgrades",
+        "upgrades": [
+            {
+                "id": "archer_damage_1",
+                "name": "Improved Arrows",
+                "description": "Increases damage by 25.00%",
+                "effect": {
+                    "damage_multiplier": 1.25
+                },
+                "cost": 50,
+                "prerequisites": []
+            },
+            {
+                "id": "archer_range_1",
+                "name": "Extended Bow",
+                "description": "Increases range by 20.00%",
+                "effect": {
+                    "range_multiplier": 1.20
+                },
+                "cost": 75,
+                "prerequisites": []
+            },
+            {
+                "id": "archer_speed_1",
+                "name": "Swift Archer",
+                "description": "Increases movement speed by 15.00%",
+                "effect": {
+                    "speed_multiplier": 1.15
+                },
+                "cost": 40,
+                "prerequisites": []
+            },
+            {
+                "id": "archer_damage_2",
+                "name": "Masterwork Arrows",
+                "description": "Increases damage by 50.00% (total 87.50% increase)",
+                "effect": {
+                    "damage_multiplier": 1.50
+                },
+                "cost": 100,
+                "prerequisites": ["archer_damage_1"]
+            }
+        ]
+    },
+    "CORE_BARBARIAN": {
+        "name": "Barbarian Upgrades",
+        "upgrades": [
+            {
+                "id": "barbarian_damage_1",
+                "name": "Rage",
+                "description": "Increases damage by 33.33%",
+                "effect": {
+                    "damage_multiplier": 1.3333
+                },
+                "cost": 75,
+                "prerequisites": []
+            },
+            {
+                "id": "barbarian_health_1",
+                "name": "Berserker Training",
+                "description": "Increases health by 40.00%",
+                "effect": {
+                    "health_multiplier": 1.40
+                },
+                "cost": 60,
+                "prerequisites": []
+            },
+            {
+                "id": "barbarian_area_1",
+                "name": "Whirlwind Attack",
+                "description": "Increases area of effect by 25.00%",
+                "effect": {
+                    "aoe_multiplier": 1.25
+                },
+                "cost": 80,
+                "prerequisites": []
+            },
+            {
+                "id": "barbarian_damage_2",
+                "name": "Bloodthirst",
+                "description": "Increases damage by 66.67% (total 122.22% increase)",
+                "effect": {
+                    "damage_multiplier": 1.6667
+                },
+                "cost": 125,
+                "prerequisites": ["barbarian_damage_1"]
+            }
+        ]
+    },
+    "CORE_CAVALRY": {
+        "name": "Cavalry Upgrades",
+        "upgrades": [
+            {
+                "id": "cavalry_speed_1",
+                "name": "War Horses",
+                "description": "Increases movement speed by 30.00%",
+                "effect": {
+                    "speed_multiplier": 1.30
+                },
+                "cost": 70,
+                "prerequisites": []
+            },
+            {
+                "id": "cavalry_health_1",
+                "name": "Armor Barding",
+                "description": "Increases health by 35.00%",
+                "effect": {
+                    "health_multiplier": 1.35
+                },
+                "cost": 65,
+                "prerequisites": []
+            },
+            {
+                "id": "cavalry_damage_1",
+                "name": "Lance Training",
+                "description": "Increases damage by 20.00%",
+                "effect": {
+                    "damage_multiplier": 1.20
+                },
+                "cost": 55,
+                "prerequisites": []
+            },
+            {
+                "id": "cavalry_charge_1",
+                "name": "Devastating Charge",
+                "description": "Gain 50.00% damage bonus when moving at full speed",
+                "effect": {
+                    "charge_damage_multiplier": 1.50
+                },
+                "cost": 90,
+                "prerequisites": ["cavalry_speed_1", "cavalry_damage_1"]
+            }
+        ]
+    },
+    "CORE_DUELIST": {
+        "name": "Duelist Upgrades",
+        "upgrades": [
+            {
+                "id": "duelist_speed_1",
+                "name": "Agility Training",
+                "description": "Increases attack speed by 25.00%",
+                "effect": {
+                    "attack_speed_multiplier": 1.25
+                },
+                "cost": 60,
+                "prerequisites": []
+            },
+            {
+                "id": "duelist_damage_1",
+                "name": "Blade Mastery",
+                "description": "Increases damage by 30.00%",
+                "effect": {
+                    "damage_multiplier": 1.30
+                },
+                "cost": 70,
+                "prerequisites": []
+            },
+            {
+                "id": "duelist_crit_1",
+                "name": "Precise Strikes",
+                "description": "Adds 15.00% chance to deal 200% damage",
+                "effect": {
+                    "crit_chance": 0.15,
+                    "crit_multiplier": 2.00
+                },
+                "cost": 80,
+                "prerequisites": []
+            },
+            {
+                "id": "duelist_combo_1",
+                "name": "Flurry",
+                "description": "Each kill increases attack speed by 10.00% for 5 seconds (stacks up to 5 times)",
+                "effect": {
+                    "kill_speed_bonus": 0.10,
+                    "kill_speed_duration": 5,
+                    "kill_speed_max_stacks": 5
+                },
+                "cost": 100,
+                "prerequisites": ["duelist_speed_1", "duelist_damage_1"]
+            }
+        ]
+    },
+    "CORE_LONGBOWMAN": {
+        "name": "Longbowman Upgrades",
+        "upgrades": [
+            {
+                "id": "longbowman_range_1",
+                "name": "Master Archer",
+                "description": "Increases range by 40.00%",
+                "effect": {
+                    "range_multiplier": 1.40
+                },
+                "cost": 85,
+                "prerequisites": []
+            },
+            {
+                "id": "longbowman_damage_1",
+                "name": "Bodkin Arrows",
+                "description": "Increases damage by 35.00%",
+                "effect": {
+                    "damage_multiplier": 1.35
+                },
+                "cost": 75,
+                "prerequisites": []
+            },
+            {
+                "id": "longbowman_piercing_1",
+                "name": "Piercing Shot",
+                "description": "Arrows pierce through enemies, dealing 75.00% damage to each additional target",
+                "effect": {
+                    "piercing_damage": 0.75,
+                    "max_piercing_targets": 3
+                },
+                "cost": 95,
+                "prerequisites": []
+            },
+            {
+                "id": "longbowman_multishot_1",
+                "name": "Volley",
+                "description": "Shoots 3 arrows in a spread pattern, each dealing 80.00% damage",
+                "effect": {
+                    "multishot_count": 3,
+                    "multishot_damage": 0.80
+                },
+                "cost": 120,
+                "prerequisites": ["longbowman_damage_1", "longbowman_range_1"]
+            }
+        ]
+    },
+    "CORE_SWORDSMAN": {
+        "name": "Swordsman Upgrades",
+        "upgrades": [
+            {
+                "id": "swordsman_damage_1",
+                "name": "Weapon Training",
+                "description": "Increases damage by 25.00%",
+                "effect": {
+                    "damage_multiplier": 1.25
+                },
+                "cost": 50,
+                "prerequisites": []
+            },
+            {
+                "id": "swordsman_health_1",
+                "name": "Combat Veteran",
+                "description": "Increases health by 30.00%",
+                "effect": {
+                    "health_multiplier": 1.30
+                },
+                "cost": 45,
+                "prerequisites": []
+            },
+            {
+                "id": "swordsman_armor_1",
+                "name": "Mail Armor",
+                "description": "Reduces incoming damage by 20.00%",
+                "effect": {
+                    "damage_reduction": 0.20
+                },
+                "cost": 65,
+                "prerequisites": []
+            },
+            {
+                "id": "swordsman_elite_1",
+                "name": "Elite Warrior",
+                "description": "Increases damage by 50.00% and health by 25.00%",
+                "effect": {
+                    "damage_multiplier": 1.50,
+                    "health_multiplier": 1.25
+                },
+                "cost": 110,
+                "prerequisites": ["swordsman_damage_1", "swordsman_health_1"]
+            }
+        ]
+    },
+    "CORE_WIZARD": {
+        "name": "Wizard Upgrades",
+        "upgrades": [
+            {
+                "id": "wizard_damage_1",
+                "name": "Arcane Power",
+                "description": "Increases spell damage by 40.00%",
+                "effect": {
+                    "damage_multiplier": 1.40
+                },
+                "cost": 90,
+                "prerequisites": []
+            },
+            {
+                "id": "wizard_range_1",
+                "name": "Extended Casting",
+                "description": "Increases spell range by 25.00%",
+                "effect": {
+                    "range_multiplier": 1.25
+                },
+                "cost": 70,
+                "prerequisites": []
+            },
+            {
+                "id": "wizard_area_1",
+                "name": "Explosive Magic",
+                "description": "Increases area of effect by 50.00%",
+                "effect": {
+                    "aoe_multiplier": 1.50
+                },
+                "cost": 100,
+                "prerequisites": []
+            },
+            {
+                "id": "wizard_cooldown_1",
+                "name": "Rapid Casting",
+                "description": "Reduces casting time by 30.00%",
+                "effect": {
+                    "cooldown_reduction": 0.30
+                },
+                "cost": 80,
+                "prerequisites": []
+            },
+            {
+                "id": "wizard_master_1",
+                "name": "Archmage",
+                "description": "Increases damage by 25.00%, range by 20.00%, and area by 30.00%",
+                "effect": {
+                    "damage_multiplier": 1.25,
+                    "range_multiplier": 1.20,
+                    "aoe_multiplier": 1.30
+                },
+                "cost": 150,
+                "prerequisites": ["wizard_damage_1", "wizard_range_1", "wizard_area_1"]
+            }
+        ]
+    },
+    "CRUSADER_BANNER_BEARER": {
+        "name": "Banner Bearer Upgrades",
+        "upgrades": [
+            {
+                "id": "banner_aura_1",
+                "name": "Inspiring Presence",
+                "description": "Increases aura damage bonus from 25.00% to 40.00%",
+                "effect": {
+                    "aura_damage_bonus": 0.40
+                },
+                "cost": 75,
+                "prerequisites": []
+            },
+            {
+                "id": "banner_range_1",
+                "name": "War Banner",
+                "description": "Increases aura range by 50.00%",
+                "effect": {
+                    "aura_range_multiplier": 1.50
+                },
+                "cost": 60,
+                "prerequisites": []
+            },
+            {
+                "id": "banner_health_1",
+                "name": "Standard Bearer",
+                "description": "Increases health by 60.00%",
+                "effect": {
+                    "health_multiplier": 1.60
+                },
+                "cost": 50,
+                "prerequisites": []
+            },
+            {
+                "id": "banner_speed_aura_1",
+                "name": "Swift March",
+                "description": "Aura also grants 25.00% movement speed bonus",
+                "effect": {
+                    "aura_speed_bonus": 0.25
+                },
+                "cost": 85,
+                "prerequisites": ["banner_aura_1"]
+            }
+        ]
+    },
+    "CRUSADER_BLACK_KNIGHT": {
+        "name": "Black Knight Upgrades",
+        "upgrades": [
+            {
+                "id": "black_knight_fear_1",
+                "name": "Terrifying Presence",
+                "description": "Fear effect radius increased by 75.00%",
+                "effect": {
+                    "fear_radius_multiplier": 1.75
+                },
+                "cost": 90,
+                "prerequisites": []
+            },
+            {
+                "id": "black_knight_damage_1",
+                "name": "Cursed Blade",
+                "description": "Increases damage by 35.00%",
+                "effect": {
+                    "damage_multiplier": 1.35
+                },
+                "cost": 80,
+                "prerequisites": []
+            },
+            {
+                "id": "black_knight_speed_1",
+                "name": "Shadow Step",
+                "description": "Increases movement speed by 40.00%",
+                "effect": {
+                    "speed_multiplier": 1.40
+                },
+                "cost": 70,
+                "prerequisites": []
+            },
+            {
+                "id": "black_knight_execute_1",
+                "name": "Death's Embrace",
+                "description": "Instantly kills enemies below 25.00% health",
+                "effect": {
+                    "execute_threshold": 0.25
+                },
+                "cost": 120,
+                "prerequisites": ["black_knight_damage_1", "black_knight_fear_1"]
+            }
+        ]
+    },
+    "CRUSADER_CATAPULT": {
+        "name": "Catapult Upgrades",
+        "upgrades": [
+            {
+                "id": "catapult_damage_1",
+                "name": "Heavy Stones",
+                "description": "Increases damage by 50.00%",
+                "effect": {
+                    "damage_multiplier": 1.50
+                },
+                "cost": 100,
+                "prerequisites": []
+            },
+            {
+                "id": "catapult_range_1",
+                "name": "Improved Mechanism",
+                "description": "Increases maximum range by 30.00%",
+                "effect": {
+                    "range_multiplier": 1.30
+                },
+                "cost": 85,
+                "prerequisites": []
+            },
+            {
+                "id": "catapult_area_1",
+                "name": "Explosive Projectiles",
+                "description": "Increases area of effect by 60.00%",
+                "effect": {
+                    "aoe_multiplier": 1.60
+                },
+                "cost": 95,
+                "prerequisites": []
+            },
+            {
+                "id": "catapult_rate_1",
+                "name": "Skilled Crew",
+                "description": "Reduces reload time by 25.00%",
+                "effect": {
+                    "cooldown_reduction": 0.25
+                },
+                "cost": 75,
+                "prerequisites": []
+            },
+            {
+                "id": "catapult_master_1",
+                "name": "Siege Engine",
+                "description": "Increases damage by 25.00%, area by 40.00%, and reduces reload time by 20.00%",
+                "effect": {
+                    "damage_multiplier": 1.25,
+                    "aoe_multiplier": 1.40,
+                    "cooldown_reduction": 0.20
+                },
+                "cost": 150,
+                "prerequisites": ["catapult_damage_1", "catapult_area_1", "catapult_rate_1"]
+            }
+        ]
+    },
+    "CRUSADER_CLERIC": {
+        "name": "Cleric Upgrades",
+        "upgrades": [
+            {
+                "id": "cleric_healing_1",
+                "name": "Divine Blessing",
+                "description": "Increases healing by 40.00%",
+                "effect": {
+                    "healing_multiplier": 1.40
+                },
+                "cost": 80,
+                "prerequisites": []
+            },
+            {
+                "id": "cleric_range_1",
+                "name": "Extended Reach",
+                "description": "Increases healing range by 50.00%",
+                "effect": {
+                    "range_multiplier": 1.50
+                },
+                "cost": 70,
+                "prerequisites": []
+            },
+            {
+                "id": "cleric_speed_1",
+                "name": "Swift Healer",
+                "description": "Reduces healing cooldown by 30.00%",
+                "effect": {
+                    "cooldown_reduction": 0.30
+                },
+                "cost": 75,
+                "prerequisites": []
+            },
+            {
+                "id": "cleric_group_heal_1",
+                "name": "Group Healing",
+                "description": "Heals all allies within 25.00% of normal range for 70.00% healing",
+                "effect": {
+                    "group_heal_range": 0.25,
+                    "group_heal_multiplier": 0.70
+                },
+                "cost": 120,
+                "prerequisites": ["cleric_healing_1", "cleric_range_1"]
+            }
+        ]
+    },
+    "CRUSADER_COMMANDER": {
+        "name": "Commander Upgrades",
+        "upgrades": [
+            {
+                "id": "commander_aura_1",
+                "name": "Battlefield Tactics",
+                "description": "Increases aura damage bonus from 25.00% to 50.00%",
+                "effect": {
+                    "aura_damage_bonus": 0.50
+                },
+                "cost": 85,
+                "prerequisites": []
+            },
+            {
+                "id": "commander_range_1",
+                "name": "Commanding Presence",
+                "description": "Increases aura range by 75.00%",
+                "effect": {
+                    "aura_range_multiplier": 1.75
+                },
+                "cost": 80,
+                "prerequisites": []
+            },
+            {
+                "id": "commander_damage_1",
+                "name": "Lead by Example",
+                "description": "Increases personal damage by 60.00%",
+                "effect": {
+                    "damage_multiplier": 1.60
+                },
+                "cost": 70,
+                "prerequisites": []
+            },
+            {
+                "id": "commander_defense_aura_1",
+                "name": "Defensive Formation",
+                "description": "Aura also grants 30.00% damage reduction to allies",
+                "effect": {
+                    "aura_defense_bonus": 0.30
+                },
+                "cost": 100,
+                "prerequisites": ["commander_aura_1"]
+            }
+        ]
+    },
+    "CRUSADER_CROSSBOWMAN": {
+        "name": "Crossbowman Upgrades",
+        "upgrades": [
+            {
+                "id": "crossbow_damage_1",
+                "name": "Steel Bolts",
+                "description": "Increases damage by 35.00%",
+                "effect": {
+                    "damage_multiplier": 1.35
+                },
+                "cost": 70,
+                "prerequisites": []
+            },
+            {
+                "id": "crossbow_reload_1",
+                "name": "Quick Reload",
+                "description": "Reduces reload time by 40.00%",
+                "effect": {
+                    "reload_speed_multiplier": 0.60
+                },
+                "cost": 85,
+                "prerequisites": []
+            },
+            {
+                "id": "crossbow_ammo_1",
+                "name": "Extended Quiver",
+                "description": "Increases maximum ammo by 50.00%",
+                "effect": {
+                    "ammo_multiplier": 1.50
+                },
+                "cost": 60,
+                "prerequisites": []
+            },
+            {
+                "id": "crossbow_piercing_1",
+                "name": "Armor Piercing",
+                "description": "Bolts ignore 50.00% of armor",
+                "effect": {
+                    "armor_penetration": 0.50
+                },
+                "cost": 90,
+                "prerequisites": ["crossbow_damage_1"]
+            }
+        ]
+    },
+    "CRUSADER_DEFENDER": {
+        "name": "Defender Upgrades",
+        "upgrades": [
+            {
+                "id": "defender_health_1",
+                "name": "Fortress Training",
+                "description": "Increases health by 50.00%",
+                "effect": {
+                    "health_multiplier": 1.50
+                },
+                "cost": 60,
+                "prerequisites": []
+            },
+            {
+                "id": "defender_armor_1",
+                "name": "Tower Shield",
+                "description": "Reduces incoming damage by 25.00%",
+                "effect": {
+                    "damage_reduction": 0.25
+                },
+                "cost": 75,
+                "prerequisites": []
+            },
+            {
+                "id": "defender_thorns_1",
+                "name": "Spiked Armor",
+                "description": "Reflects 40.00% of melee damage back to attackers",
+                "effect": {
+                    "thorns_damage": 0.40
+                },
+                "cost": 85,
+                "prerequisites": []
+            },
+            {
+                "id": "defender_guardian_1",
+                "name": "Guardian's Resolve",
+                "description": "Gains 20.00% damage reduction for each nearby ally (max 60.00%)",
+                "effect": {
+                    "ally_defense_bonus": 0.20,
+                    "ally_defense_max": 0.60
+                },
+                "cost": 100,
+                "prerequisites": ["defender_health_1", "defender_armor_1"]
+            }
+        ]
+    },
+    "CRUSADER_GOLD_KNIGHT": {
+        "name": "Gold Knight Upgrades",
+        "upgrades": [
+            {
+                "id": "gold_knight_damage_1",
+                "name": "Golden Blade",
+                "description": "Increases damage by 40.00%",
+                "effect": {
+                    "damage_multiplier": 1.40
+                },
+                "cost": 90,
+                "prerequisites": []
+            },
+            {
+                "id": "gold_knight_speed_1",
+                "name": "Divine Swiftness",
+                "description": "Increases movement speed by 35.00%",
+                "effect": {
+                    "speed_multiplier": 1.35
+                },
+                "cost": 80,
+                "prerequisites": []
+            },
+            {
+                "id": "gold_knight_health_1",
+                "name": "Divine Protection",
+                "description": "Increases health by 45.00%",
+                "effect": {
+                    "health_multiplier": 1.45
+                },
+                "cost": 85,
+                "prerequisites": []
+            },
+            {
+                "id": "gold_knight_aura_1",
+                "name": "Radiant Aura",
+                "description": "Nearby allies gain 25.00% attack speed and 15.00% damage",
+                "effect": {
+                    "aura_attack_speed": 0.25,
+                    "aura_damage_bonus": 0.15,
+                    "aura_radius": 100
+                },
+                "cost": 120,
+                "prerequisites": ["gold_knight_damage_1", "gold_knight_speed_1"]
+            }
+        ]
+    },
+    "CRUSADER_GUARDIAN_ANGEL": {
+        "name": "Guardian Angel Upgrades",
+        "upgrades": [
+            {
+                "id": "angel_healing_1",
+                "name": "Divine Grace",
+                "description": "Increases healing by 60.00%",
+                "effect": {
+                    "healing_multiplier": 1.60
+                },
+                "cost": 70,
+                "prerequisites": []
+            },
+            {
+                "id": "angel_speed_1",
+                "name": "Celestial Wings",
+                "description": "Increases movement speed by 40.00%",
+                "effect": {
+                    "speed_multiplier": 1.40
+                },
+                "cost": 60,
+                "prerequisites": []
+            },
+            {
+                "id": "angel_protection_1",
+                "name": "Shield of Faith",
+                "description": "Protected unit takes 20.00% less damage",
+                "effect": {
+                    "protection_damage_reduction": 0.20
+                },
+                "cost": 80,
+                "prerequisites": []
+            },
+            {
+                "id": "angel_resurrection_1",
+                "name": "Resurrection",
+                "description": "Can revive fallen ally once per battle with 50.00% health",
+                "effect": {
+                    "resurrection_health": 0.50,
+                    "resurrection_uses": 1
+                },
+                "cost": 150,
+                "prerequisites": ["angel_healing_1", "angel_protection_1"]
+            }
+        ]
+    },
+    "CRUSADER_PALADIN": {
+        "name": "Paladin Upgrades",
+        "upgrades": [
+            {
+                "id": "paladin_healing_1",
+                "name": "Greater Heal",
+                "description": "Increases self-healing by 50.00%",
+                "effect": {
+                    "healing_multiplier": 1.50
+                },
+                "cost": 80,
+                "prerequisites": []
+            },
+            {
+                "id": "paladin_damage_1",
+                "name": "Holy Weapon",
+                "description": "Increases damage by 30.00%",
+                "effect": {
+                    "damage_multiplier": 1.30
+                },
+                "cost": 75,
+                "prerequisites": []
+            },
+            {
+                "id": "paladin_armor_1",
+                "name": "Blessed Armor",
+                "description": "Reduces incoming damage by 25.00%",
+                "effect": {
+                    "damage_reduction": 0.25
+                },
+                "cost": 85,
+                "prerequisites": []
+            },
+            {
+                "id": "paladin_consecration_1",
+                "name": "Consecration",
+                "description": "Heals nearby allies for 30.00% of self-healing amount",
+                "effect": {
+                    "consecration_healing": 0.30,
+                    "consecration_radius": 80
+                },
+                "cost": 120,
+                "prerequisites": ["paladin_healing_1", "paladin_damage_1"]
+            }
+        ]
+    },
+    "CRUSADER_PIKEMAN": {
+        "name": "Pikeman Upgrades",
+        "upgrades": [
+            {
+                "id": "pikeman_damage_1",
+                "name": "Sharpened Pike",
+                "description": "Increases damage by 35.00%",
+                "effect": {
+                    "damage_multiplier": 1.35
+                },
+                "cost": 65,
+                "prerequisites": []
+            },
+            {
+                "id": "pikeman_range_1",
+                "name": "Extended Reach",
+                "description": "Increases attack range by 30.00%",
+                "effect": {
+                    "range_multiplier": 1.30
+                },
+                "cost": 70,
+                "prerequisites": []
+            },
+            {
+                "id": "pikeman_formation_1",
+                "name": "Phalanx Formation",
+                "description": "Deals 15.00% more damage for each nearby pikeman (max 60.00%)",
+                "effect": {
+                    "formation_damage_bonus": 0.15,
+                    "formation_damage_max": 0.60
+                },
+                "cost": 80,
+                "prerequisites": []
+            },
+            {
+                "id": "pikeman_charge_1",
+                "name": "Pike Charge",
+                "description": "First attack deals 200.00% damage and knocks back enemies",
+                "effect": {
+                    "charge_damage_multiplier": 2.00,
+                    "charge_knockback": 50
+                },
+                "cost": 100,
+                "prerequisites": ["pikeman_damage_1", "pikeman_range_1"]
+            }
+        ]
+    },
+    "CRUSADER_RED_KNIGHT": {
+        "name": "Red Knight Upgrades",
+        "upgrades": [
+            {
+                "id": "red_knight_damage_1",
+                "name": "Crimson Blade",
+                "description": "Increases damage by 40.00%",
+                "effect": {
+                    "damage_multiplier": 1.40
+                },
+                "cost": 85,
+                "prerequisites": []
+            },
+            {
+                "id": "red_knight_speed_1",
+                "name": "Battle Fury",
+                "description": "Increases movement and attack speed by 30.00%",
+                "effect": {
+                    "speed_multiplier": 1.30,
+                    "attack_speed_multiplier": 1.30
+                },
+                "cost": 80,
+                "prerequisites": []
+            },
+            {
+                "id": "red_knight_berserker_1",
+                "name": "Berserker Rage",
+                "description": "Gains 10.00% damage and speed for each 25.00% health lost",
+                "effect": {
+                    "berserker_damage_per_health_lost": 0.10,
+                    "berserker_speed_per_health_lost": 0.10,
+                    "berserker_health_threshold": 0.25
+                },
+                "cost": 90,
+                "prerequisites": []
+            },
+            {
+                "id": "red_knight_execute_1",
+                "name": "Execution",
+                "description": "Instantly kills enemies below 20.00% health",
+                "effect": {
+                    "execute_threshold": 0.20
+                },
+                "cost": 110,
+                "prerequisites": ["red_knight_damage_1", "red_knight_berserker_1"]
+            }
+        ]
+    },
+    "CRUSADER_SOLDIER": {
+        "name": "Soldier Upgrades",
+        "upgrades": [
+            {
+                "id": "soldier_melee_1",
+                "name": "Sword Training",
+                "description": "Increases melee damage by 30.00%",
+                "effect": {
+                    "melee_damage_multiplier": 1.30
+                },
+                "cost": 60,
+                "prerequisites": []
+            },
+            {
+                "id": "soldier_ranged_1",
+                "name": "Marksmanship",
+                "description": "Increases ranged damage by 25.00%",
+                "effect": {
+                    "ranged_damage_multiplier": 1.25
+                },
+                "cost": 65,
+                "prerequisites": []
+            },
+            {
+                "id": "soldier_armor_1",
+                "name": "Heavy Armor",
+                "description": "Reduces incoming damage by 20.00%",
+                "effect": {
+                    "damage_reduction": 0.20
+                },
+                "cost": 70,
+                "prerequisites": []
+            },
+            {
+                "id": "soldier_versatile_1",
+                "name": "Combat Versatility",
+                "description": "Can switch between melee and ranged 50.00% faster",
+                "effect": {
+                    "switch_speed_multiplier": 1.50
+                },
+                "cost": 85,
+                "prerequisites": ["soldier_melee_1", "soldier_ranged_1"]
+            }
+        ]
+    },
+    "WEREBEAR": {
+        "name": "Werebear Upgrades",
+        "upgrades": [
+            {
+                "id": "werebear_damage_1",
+                "name": "Primal Rage",
+                "description": "Increases damage by 45.00%",
+                "effect": {
+                    "damage_multiplier": 1.45
+                },
+                "cost": 75,
+                "prerequisites": []
+            },
+            {
+                "id": "werebear_health_1",
+                "name": "Thick Hide",
+                "description": "Increases health by 60.00%",
+                "effect": {
+                    "health_multiplier": 1.60
+                },
+                "cost": 70,
+                "prerequisites": []
+            },
+            {
+                "id": "werebear_regeneration_1",
+                "name": "Natural Healing",
+                "description": "Regenerates 2.00% of max health per second",
+                "effect": {
+                    "regeneration_rate": 0.02
+                },
+                "cost": 85,
+                "prerequisites": []
+            },
+            {
+                "id": "werebear_rampage_1",
+                "name": "Unstoppable Rampage",
+                "description": "Each kill increases damage by 25.00% for 8 seconds (stacks up to 4 times)",
+                "effect": {
+                    "rampage_damage_bonus": 0.25,
+                    "rampage_duration": 8,
+                    "rampage_max_stacks": 4
+                },
+                "cost": 120,
+                "prerequisites": ["werebear_damage_1", "werebear_health_1"]
+            }
+        ]
+    },
+    "ZOMBIE_BASIC_ZOMBIE": {
+        "name": "Zombie Upgrades",
+        "upgrades": [
+            {
+                "id": "zombie_infection_1",
+                "name": "Virulent Strain",
+                "description": "Infection lasts 50.00% longer",
+                "effect": {
+                    "infection_duration_multiplier": 1.50
+                },
+                "cost": 40,
+                "prerequisites": []
+            },
+            {
+                "id": "zombie_speed_1",
+                "name": "Shuffling Swarm",
+                "description": "Increases movement speed by 25.00%",
+                "effect": {
+                    "speed_multiplier": 1.25
+                },
+                "cost": 35,
+                "prerequisites": []
+            },
+            {
+                "id": "zombie_health_1",
+                "name": "Undead Resilience",
+                "description": "Increases health by 40.00%",
+                "effect": {
+                    "health_multiplier": 1.40
+                },
+                "cost": 30,
+                "prerequisites": []
+            },
+            {
+                "id": "zombie_horde_1",
+                "name": "Horde Mentality",
+                "description": "Gains 5.00% damage and speed for each nearby zombie (max 50.00%)",
+                "effect": {
+                    "horde_damage_bonus": 0.05,
+                    "horde_speed_bonus": 0.05,
+                    "horde_max_bonus": 0.50
+                },
+                "cost": 80,
+                "prerequisites": ["zombie_infection_1", "zombie_speed_1"]
+            }
+        ]
+    },
+    "ZOMBIE_BRUTE": {
+        "name": "Brute Upgrades",
+        "upgrades": [
+            {
+                "id": "brute_damage_1",
+                "name": "Crushing Blows",
+                "description": "Increases damage by 50.00%",
+                "effect": {
+                    "damage_multiplier": 1.50
+                },
+                "cost": 85,
+                "prerequisites": []
+            },
+            {
+                "id": "brute_health_1",
+                "name": "Massive Frame",
+                "description": "Increases health by 75.00%",
+                "effect": {
+                    "health_multiplier": 1.75
+                },
+                "cost": 80,
+                "prerequisites": []
+            },
+            {
+                "id": "brute_zombies_1",
+                "name": "Zombie Carrier",
+                "description": "Carries 2 additional zombies into battle",
+                "effect": {
+                    "zombie_count_bonus": 2
+                },
+                "cost": 90,
+                "prerequisites": []
+            },
+            {
+                "id": "brute_smash_1",
+                "name": "Ground Smash",
+                "description": "Attacks create shockwaves dealing 75.00% damage in a large area",
+                "effect": {
+                    "shockwave_damage": 0.75,
+                    "shockwave_radius": 80
+                },
+                "cost": 120,
+                "prerequisites": ["brute_damage_1", "brute_health_1"]
+            }
+        ]
+    },
+    "ZOMBIE_GRABBER": {
+        "name": "Grabber Upgrades",
+        "upgrades": [
+            {
+                "id": "grabber_range_1",
+                "name": "Extended Reach",
+                "description": "Increases grab range by 40.00%",
+                "effect": {
+                    "range_multiplier": 1.40
+                },
+                "cost": 70,
+                "prerequisites": []
+            },
+            {
+                "id": "grabber_damage_1",
+                "name": "Crushing Grip",
+                "description": "Increases damage by 35.00%",
+                "effect": {
+                    "damage_multiplier": 1.35
+                },
+                "cost": 65,
+                "prerequisites": []
+            },
+            {
+                "id": "grabber_pull_1",
+                "name": "Powerful Pull",
+                "description": "Pulled enemies take 100.00% additional damage for 3 seconds",
+                "effect": {
+                    "pull_damage_bonus": 1.00,
+                    "pull_duration": 3
+                },
+                "cost": 80,
+                "prerequisites": []
+            },
+            {
+                "id": "grabber_multi_1",
+                "name": "Multi-Grab",
+                "description": "Can grab up to 3 enemies at once",
+                "effect": {
+                    "grab_count": 3
+                },
+                "cost": 100,
+                "prerequisites": ["grabber_range_1", "grabber_damage_1"]
+            }
+        ]
+    },
+    "ZOMBIE_JUMPER": {
+        "name": "Jumper Upgrades",
+        "upgrades": [
+            {
+                "id": "jumper_damage_1",
+                "name": "Devastating Leap",
+                "description": "Increases jump damage by 75.00%",
+                "effect": {
+                    "jump_damage_multiplier": 1.75
+                },
+                "cost": 80,
+                "prerequisites": []
+            },
+            {
+                "id": "jumper_cooldown_1",
+                "name": "Rapid Jumps",
+                "description": "Reduces jump cooldown by 40.00%",
+                "effect": {
+                    "cooldown_reduction": 0.40
+                },
+                "cost": 75,
+                "prerequisites": []
+            },
+            {
+                "id": "jumper_range_1",
+                "name": "Mighty Leap",
+                "description": "Increases jump range by 50.00%",
+                "effect": {
+                    "range_multiplier": 1.50
+                },
+                "cost": 70,
+                "prerequisites": []
+            },
+            {
+                "id": "jumper_chain_1",
+                "name": "Chain Jumps",
+                "description": "Can immediately jump again after a kill (once per 5 seconds)",
+                "effect": {
+                    "chain_jump_on_kill": true,
+                    "chain_jump_cooldown": 5
+                },
+                "cost": 110,
+                "prerequisites": ["jumper_damage_1", "jumper_cooldown_1"]
+            }
+        ]
+    },
+    "ZOMBIE_SPITTER": {
+        "name": "Spitter Upgrades",
+        "upgrades": [
+            {
+                "id": "spitter_poison_1",
+                "name": "Toxic Spit",
+                "description": "Increases poison damage by 60.00%",
+                "effect": {
+                    "poison_damage_multiplier": 1.60
+                },
+                "cost": 70,
+                "prerequisites": []
+            },
+            {
+                "id": "spitter_range_1",
+                "name": "Projectile Spit",
+                "description": "Increases attack range by 35.00%",
+                "effect": {
+                    "range_multiplier": 1.35
+                },
+                "cost": 65,
+                "prerequisites": []
+            },
+            {
+                "id": "spitter_area_1",
+                "name": "Acid Pool",
+                "description": "Attacks create poison pools that last 5 seconds",
+                "effect": {
+                    "poison_pool_duration": 5,
+                    "poison_pool_damage": 0.50
+                },
+                "cost": 80,
+                "prerequisites": []
+            },
+            {
+                "id": "spitter_spray_1",
+                "name": "Poison Spray",
+                "description": "Attacks hit up to 5 enemies in a cone",
+                "effect": {
+                    "spray_targets": 5,
+                    "spray_cone_angle": 45
+                },
+                "cost": 95,
+                "prerequisites": ["spitter_poison_1", "spitter_range_1"]
+            }
+        ]
+    },
+    "ZOMBIE_TANK": {
+        "name": "Tank Upgrades",
+        "upgrades": [
+            {
+                "id": "tank_health_1",
+                "name": "Reinforced Body",
+                "description": "Increases health by 80.00%",
+                "effect": {
+                    "health_multiplier": 1.80
+                },
+                "cost": 90,
+                "prerequisites": []
+            },
+            {
+                "id": "tank_armor_1",
+                "name": "Bone Plating",
+                "description": "Reduces incoming damage by 30.00%",
+                "effect": {
+                    "damage_reduction": 0.30
+                },
+                "cost": 85,
+                "prerequisites": []
+            },
+            {
+                "id": "tank_aura_1",
+                "name": "Intimidating Presence",
+                "description": "Nearby enemies deal 25.00% less damage",
+                "effect": {
+                    "fear_aura_damage_reduction": 0.25,
+                    "fear_aura_radius": 100
+                },
+                "cost": 95,
+                "prerequisites": []
+            },
+            {
+                "id": "tank_explosion_1",
+                "name": "Death Explosion",
+                "description": "Explodes on death, dealing 200.00% of max health as damage",
+                "effect": {
+                    "death_explosion_damage": 2.00,
+                    "death_explosion_radius": 120
+                },
+                "cost": 120,
+                "prerequisites": ["tank_health_1", "tank_armor_1"]
+            }
+        ]
+    }
+}
