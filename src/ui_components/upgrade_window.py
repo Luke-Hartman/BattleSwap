@@ -215,7 +215,7 @@ class UpgradeWindow:
     def _create_unit_grid(self, container: pygame_gui.elements.UIPanel, container_width: int, container_height: int) -> None:
         """Create a grid of unit icons in the given container."""
         # Get available units from progress manager
-        available_units = progress_manager.available_units(None)
+        available_units = set(progress_manager.available_units(None))
         
         if not available_units:
             # Show message if no units available
@@ -231,6 +231,20 @@ class UpgradeWindow:
             )
             return
         
+        # Auto-unlock basic zombies for upgrading when any zombie unit is available
+        zombie_units = {
+            UnitType.ZOMBIE_BASIC_ZOMBIE,
+            UnitType.ZOMBIE_BRUTE,
+            UnitType.ZOMBIE_GRABBER,
+            UnitType.ZOMBIE_JUMPER,
+            UnitType.ZOMBIE_SPITTER,
+            UnitType.ZOMBIE_TANK
+        }
+            
+        # Check if any zombie unit is available
+        if available_units & zombie_units:
+            available_units.add(UnitType.ZOMBIE_BASIC_ZOMBIE)
+        
         # Calculate grid layout
         icon_size = UnitIconButton.size
         padding = 5  # Reduced from 10 to 5
@@ -241,7 +255,7 @@ class UpgradeWindow:
         col = 0
         y_offset = 10  # Start with small padding from top
         
-        for unit_type, count in sorted(available_units.items(), key=lambda x: x[0].value):
+        for unit_type in sorted(available_units, key=lambda x: x.value):
             x_pos = col * (icon_size + padding) + padding
             y_pos = row * (icon_size + padding) + y_offset
             
