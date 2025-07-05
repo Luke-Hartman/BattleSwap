@@ -371,3 +371,135 @@ def has_unsaved_changes(battle: Battle) -> bool:
             
         saved_set = set(saved_solution.unit_placements)
         return current_set != saved_set
+
+def calculate_group_placement_positions(
+    mouse_world_pos: Tuple[float, float],
+    unit_offsets: List[Tuple[float, float]],
+    battle_id: str,
+    hex_coords: Tuple[int, int],
+    required_team: Optional[TeamType] = None,
+    snap_to_grid: bool = False,
+    sandbox_mode: bool = False,
+) -> List[Tuple[float, float]]:
+    """Calculate placement positions for a group of units.
+    
+    This function ensures that:
+    1. Each unit ends up on a different grid cell (when grid snapping is enabled)
+    2. All units are on the legal side for the correct team
+    3. No units end up outside the legal zone
+    4. Units don't overlap with existing units
+    
+    Args:
+        mouse_world_pos: World position of the mouse cursor
+        unit_offsets: List of (x, y) offsets from the group center for each unit
+        battle_id: ID of the battle
+        hex_coords: Hex coordinates of the battle
+        required_team: Team restriction (if any)
+        snap_to_grid: Whether to snap to grid
+        sandbox_mode: Whether in sandbox mode
+        
+    Returns:
+        List of (x, y) world positions for each unit
+    """
+    if not unit_offsets:
+        return []
+    
+    # Calculate positions sequentially, each considering previously placed units
+    calculated_positions = []
+    
+    for i, (offset_x, offset_y) in enumerate(unit_offsets):
+        # Calculate ideal position
+        ideal_x = mouse_world_pos[0] + offset_x
+        ideal_y = mouse_world_pos[1] + offset_y
+        
+        # Get legal area considering existing units + previously calculated positions
+        legal_area = get_legal_placement_area(
+            battle_id,
+            hex_coords,
+            required_team=required_team,
+            additional_unit_positions=calculated_positions,
+        )
+        
+        # Clip to legal placement area
+        clipped_pos = clip_to_polygon(legal_area, ideal_x, ideal_y)
+        
+        # Apply grid snapping if enabled
+        if snap_to_grid:
+            clipped_pos = snap_position_to_grid(clipped_pos[0], clipped_pos[1], hex_coords)
+            
+            # If grid snapping results in collision, try nearby grid positions
+            if calculated_positions:
+                # Check if this grid position would collide with any previously placed units
+                min_distance = gc.UNIT_PLACEMENT_MINIMUM_DISTANCE
+                for prev_pos in calculated_positions:
+                    distance = ((clipped_pos[0] - prev_pos[0])**2 + (clipped_pos[1] - prev_pos[1])**2)**0.5
+                    if distance < min_distance:
+                        # Find nearest available grid position
+                        clipped_pos = find_nearest_available_grid_position(
+                            clipped_pos[0], clipped_pos[1], hex_coords, legal_area, calculated_positions
+                        )
+                        break
+        
+        calculated_positions.append(clipped_pos)
+    
+    return calculated_positions
+
+def find_nearest_available_grid_position(
+    x: float, 
+    y: float, 
+    hex_coords: Tuple[int, int], 
+    legal_area: shapely.Polygon, 
+    occupied_positions: List[Tuple[float, float]]
+) -> Tuple[float, float]:
+    """Find the nearest available grid position that doesn't collide with occupied positions.
+    
+    Args:
+        x: Initial x coordinate
+        y: Initial y coordinate
+        hex_coords: Hex coordinates for grid reference
+        legal_area: Legal placement area
+        occupied_positions: List of already occupied positions
+        
+    Returns:
+        Tuple of (x, y) coordinates for the nearest available grid position
+    """
+    # Start from the given position
+    center_x, center_y = axial_to_world(*hex_coords)
+    
+    # Convert to grid coordinates
+    grid_x = round((x - center_x) / gc.GRID_SIZE)
+    grid_y = round((y - center_y) / gc.GRID_SIZE)
+    
+    # Try positions in expanding spiral pattern
+    for radius in range(0, 20):  # Maximum search radius
+        for dx in range(-radius, radius + 1):
+            for dy in range(-radius, radius + 1):
+                if abs(dx) != radius and abs(dy) != radius and radius > 0:
+                    continue  # Only check perimeter of current radius
+                
+                test_grid_x = grid_x + dx
+                test_grid_y = grid_y + dy
+                
+                # Convert back to world coordinates
+                test_x = test_grid_x * gc.GRID_SIZE + center_x
+                test_y = test_grid_y * gc.GRID_SIZE + center_y
+                
+                # Check if position is in legal area
+                test_point = shapely.Point(test_x, test_y)
+                if not legal_area.contains(test_point):
+                    continue
+                
+                # Check if position is far enough from occupied positions
+                min_distance = gc.UNIT_PLACEMENT_MINIMUM_DISTANCE
+                is_valid = True
+                for occupied_pos in occupied_positions:
+                    distance = ((test_x - occupied_pos[0])**2 + (test_y - occupied_pos[1])**2)**0.5
+                    if distance < min_distance:
+                        is_valid = False
+                        break
+                
+                if is_valid:
+                    return (test_x, test_y)
+    
+    # If no grid position found, return the clipped position
+    return clip_to_polygon(legal_area, x, y)

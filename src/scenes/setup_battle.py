@@ -30,7 +30,7 @@ from ui_components.tip_box import TipBox
 import upgrade_hexes
 from voice import play_intro
 from world_map_view import FillState, HexState, WorldMapView
-from scene_utils import draw_grid, get_center_line, get_placement_pos, get_hovered_unit, get_unit_placements, get_legal_placement_area, clip_to_polygon, has_unsaved_changes, mouse_over_ui
+from scene_utils import draw_grid, get_center_line, get_placement_pos, get_hovered_unit, get_unit_placements, get_legal_placement_area, clip_to_polygon, has_unsaved_changes, mouse_over_ui, calculate_group_placement_positions
 from ui_components.progress_panel import ProgressPanel
 from ui_components.corruption_power_editor import CorruptionPowerEditorDialog
 from corruption_powers import CorruptionPower
@@ -275,7 +275,7 @@ class SetupBattleScene(Scene):
         esper.add_component(self.selected_partial_unit, Transparency(alpha=128))
     
     def create_unit_of_selected_type(self, placement_pos: Tuple[int, int], team: TeamType) -> None:
-        """Create a unit of the selected type."""
+        """Create a unit of the selected type (as a group of size 1)."""
         assert self.sandbox_mode or team == TeamType.TEAM1
         self.world_map_view.add_unit(
             self.battle_id,
@@ -284,6 +284,7 @@ class SetupBattleScene(Scene):
             team,
         )
         self.barracks.remove_unit(self.selected_unit_type)
+        # Keep unit selected if there are more copies in the barracks
         if self.barracks.units[self.selected_unit_type] == 0:
             self.set_selected_unit_type(None, TeamType.TEAM1)
         if self.progress_panel is not None:
@@ -408,35 +409,41 @@ class SetupBattleScene(Scene):
         self.group_unit_types.clear()
         self.group_placement_team = None
 
-    def place_group_units(self, mouse_world_pos: Tuple[float, float]) -> None:
+    def place_group_units(self, mouse_world_pos: Tuple[float, float], snap_to_grid: bool = False) -> None:
         """Place all units from the group pickup."""
         if not self.selected_group_partial_units or self.group_placement_team is None:
             return
             
         esper.switch_world(self.battle_id)
         
-        # Place each unit at its offset position
+        # Determine final placement team (for sandbox mode, base on mouse position)
+        battle_coords = self.battle.hex_coords
+        if self.sandbox_mode:
+            world_x, _ = axial_to_world(*battle_coords)
+            final_placement_team = TeamType.TEAM1 if mouse_world_pos[0] < world_x else TeamType.TEAM2
+        else:
+            final_placement_team = self.group_placement_team
+        
+        # Use unified placement logic
+        placement_positions = calculate_group_placement_positions(
+            mouse_world_pos=mouse_world_pos,
+            unit_offsets=self.group_unit_offsets,
+            battle_id=self.battle_id,
+            hex_coords=battle_coords,
+            required_team=None if self.sandbox_mode else TeamType.TEAM1,
+            snap_to_grid=snap_to_grid,
+            sandbox_mode=self.sandbox_mode,
+        )
+        
+        # Place each unit at its calculated position
         for i, unit_type in enumerate(self.group_unit_types):
-            offset_x, offset_y = self.group_unit_offsets[i]
-            placement_pos = (mouse_world_pos[0] + offset_x, mouse_world_pos[1] + offset_y)
-            
-            # Clip to legal placement area
-            battle_coords = self.battle.hex_coords
-            legal_area = get_legal_placement_area(
-                self.battle_id,
-                battle_coords,
-                required_team=None if self.sandbox_mode else TeamType.TEAM1,
-                include_units=True,
-            )
-            clipped_pos = clip_to_polygon(legal_area, placement_pos[0], placement_pos[1])
-            
-            # Create the unit
-            self.world_map_view.add_unit(
-                self.battle_id,
-                unit_type,
-                clipped_pos,
-                self.group_placement_team,
-            )
+            if i < len(placement_positions):
+                self.world_map_view.add_unit(
+                    self.battle_id,
+                    unit_type,
+                    placement_positions[i],
+                    final_placement_team,
+                )
         
         # Clear the group pickup
         self.clear_group_pickup()
@@ -543,48 +550,48 @@ class SetupBattleScene(Scene):
             mouse_world_pos = self.camera.screen_to_world(*mouse_pos)
             self.pickup_group_of_units(selected_units, mouse_world_pos, placement_team)
 
-    def update_group_partial_units_position(self, mouse_world_pos: Tuple[float, float]) -> None:
+    def update_group_partial_units_position(self, mouse_world_pos: Tuple[float, float], snap_to_grid: bool = False) -> None:
         """Update positions of group partial units to show actual clipped placement positions.
         
-        This calculates positions sequentially, where each unit considers the positions of
-        previously calculated units, matching the actual placement behavior.
+        This uses the same unified placement logic as actual placement to ensure 
+        previews match the final placement positions exactly.
         """
         if not self.selected_group_partial_units:
             return
             
         esper.switch_world(self.battle_id)
         
-        # Get battle coordinates for legal placement checking
+        # Determine preview team (for sandbox mode, base on mouse position)
         battle_coords = self.battle.hex_coords
+        if self.sandbox_mode:
+            world_x, _ = axial_to_world(*battle_coords)
+            preview_team = TeamType.TEAM1 if mouse_world_pos[0] < world_x else TeamType.TEAM2
+            
+            # Update partial unit teams if needed
+            for partial_unit in self.selected_group_partial_units:
+                if esper.entity_exists(partial_unit):
+                    current_team = esper.component_for_entity(partial_unit, Team)
+                    if current_team.type != preview_team:
+                        current_team.type = preview_team
         
-        # Calculate positions sequentially, same order as actual placement
-        calculated_positions = []
+        # Use unified placement logic to calculate positions
+        placement_positions = calculate_group_placement_positions(
+            mouse_world_pos=mouse_world_pos,
+            unit_offsets=self.group_unit_offsets,
+            battle_id=self.battle_id,
+            hex_coords=battle_coords,
+            required_team=None if self.sandbox_mode else TeamType.TEAM1,
+            snap_to_grid=snap_to_grid,
+            sandbox_mode=self.sandbox_mode,
+        )
         
+        # Update each partial unit's position to show actual placement position
         for i, partial_unit in enumerate(self.selected_group_partial_units):
-            if not esper.entity_exists(partial_unit):
+            if not esper.entity_exists(partial_unit) or i >= len(placement_positions):
                 continue
                 
-            offset_x, offset_y = self.group_unit_offsets[i]
-            ideal_x = mouse_world_pos[0] + offset_x
-            ideal_y = mouse_world_pos[1] + offset_y
-            
-            # Get legal area considering existing units + previously calculated positions
-            legal_area = get_legal_placement_area(
-                self.battle_id,
-                battle_coords,
-                required_team=None if self.sandbox_mode else TeamType.TEAM1,
-                additional_unit_positions=calculated_positions,  # Consider previous units in this group
-            )
-            
-            # Clip to legal placement area
-            clipped_pos = clip_to_polygon(legal_area, ideal_x, ideal_y)
-            
-            # Store this position for subsequent units to consider
-            calculated_positions.append(clipped_pos)
-            
-            # Update partial unit position to show actual placement position
             pos = esper.component_for_entity(partial_unit, Position)
-            pos.x, pos.y = clipped_pos
+            pos.x, pos.y = placement_positions[i]
             esper.add_component(partial_unit, Focus())
 
     def draw_selection_rectangle(self) -> None:
@@ -730,7 +737,7 @@ class SetupBattleScene(Scene):
                     # If we have a group picked up, place them
                     if self.selected_group_partial_units:
                         mouse_world_pos = self.camera.screen_to_world(*event.pos)
-                        self.place_group_units(mouse_world_pos)
+                        self.place_group_units(mouse_world_pos, snap_to_grid=show_grid)
                     # If we have a single unit selected, place it
                     elif self.selected_unit_type is not None:
                         click_placement_pos = get_placement_pos(
@@ -810,7 +817,7 @@ class SetupBattleScene(Scene):
         # Update preview for group partial units
         if self.selected_group_partial_units:
             mouse_world_pos = self.camera.screen_to_world(*pygame.mouse.get_pos())
-            self.update_group_partial_units_position(mouse_world_pos)
+            self.update_group_partial_units_position(mouse_world_pos, snap_to_grid=show_grid)
 
         # Only update camera if no dialog is focused
         if self.save_dialog is None or not self.save_dialog.dialog.alive():
