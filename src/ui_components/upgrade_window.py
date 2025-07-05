@@ -10,7 +10,7 @@ from components.unit_tier import UnitTier
 from entities.units import unit_theme_ids, Faction
 from progress_manager import progress_manager
 from ui_components.unit_card import UnitCard
-from ui_components.game_data import get_unit_data, StatType
+from ui_components.game_data import get_unit_data, StatType, get_upgrade_description
 
 
 class UnitIconButton(pygame_gui.elements.UIButton):
@@ -151,6 +151,7 @@ class UpgradeWindow:
         total_width = card_width * 3 + panel_spacing * 2
         start_x = (window_width - 6 - total_width) // 2  # Center the cards
         card_margin = 20  # Margin above and below cards
+        description_height = 20  # Height for upgrade descriptions
         
         self.basic_panel = pygame_gui.elements.UIPanel(
             relative_rect=pygame.Rect(start_x, card_margin, card_width, card_height),
@@ -159,11 +160,28 @@ class UpgradeWindow:
             object_id=ObjectID(object_id='#upgrade_card_panel')
         )
         
+        # Create upgrade description labels for Advanced and Elite tiers
+        self.advanced_description_label = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect(start_x + card_width + panel_spacing, card_margin - description_height - 5, card_width, description_height),
+            text="",
+            manager=self.manager,
+            container=bottom_section,
+            object_id=ObjectID(object_id='#upgrade_description_label')
+        )
+        
         self.advanced_panel = pygame_gui.elements.UIPanel(
             relative_rect=pygame.Rect(start_x + card_width + panel_spacing, card_margin, card_width, card_height),
             manager=self.manager,
             container=bottom_section,
             object_id=ObjectID(object_id='#upgrade_card_panel')
+        )
+        
+        self.elite_description_label = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect(start_x + (card_width + panel_spacing) * 2, card_margin - description_height - 5, card_width, description_height),
+            text="",
+            manager=self.manager,
+            container=bottom_section,
+            object_id=ObjectID(object_id='#upgrade_description_label')
         )
         
         self.elite_panel = pygame_gui.elements.UIPanel(
@@ -281,6 +299,11 @@ class UpgradeWindow:
             self._clear_unit_cards()
             # Recreate panels with default theme
             self._recreate_panels_with_theme('#upgrade_card_panel')
+            # Clear description labels
+            if hasattr(self, 'advanced_description_label') and self.advanced_description_label:
+                self.advanced_description_label.set_text("")
+            if hasattr(self, 'elite_description_label') and self.elite_description_label:
+                self.elite_description_label.set_text("")
             return
         
         # Clear existing cards
@@ -301,6 +324,19 @@ class UpgradeWindow:
             self._recreate_panels_with_theme(default_theme, elite_theme=current_theme)
         else:
             self._recreate_panels_with_theme(default_theme)
+        
+        # Update upgrade description labels
+        advanced_description = get_upgrade_description(self.selected_unit_type, UnitTier.ADVANCED)
+        elite_description = get_upgrade_description(self.selected_unit_type, UnitTier.ELITE)
+        
+        # Note: Elite descriptions should indicate they are additions to Advanced upgrades
+        if elite_description and advanced_description:
+            elite_description = f"+ {elite_description}"
+        
+        if hasattr(self, 'advanced_description_label') and self.advanced_description_label:
+            self.advanced_description_label.set_text(advanced_description)
+        if hasattr(self, 'elite_description_label') and self.elite_description_label:
+            self.elite_description_label.set_text(elite_description)
         
         # Create unit cards for each tier
         self._create_unit_cards()
@@ -477,6 +513,12 @@ class UpgradeWindow:
             self.upgrade_button.kill()
         if self.credit_label:
             self.credit_label.kill()
+        
+        # Clean up description labels
+        if hasattr(self, 'advanced_description_label') and self.advanced_description_label:
+            self.advanced_description_label.kill()
+        if hasattr(self, 'elite_description_label') and self.elite_description_label:
+            self.elite_description_label.kill()
     
     def _update_credit_display(self) -> None:
         """Update the credit display based on the selected unit."""

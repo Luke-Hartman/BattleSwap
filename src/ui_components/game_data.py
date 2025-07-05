@@ -108,6 +108,126 @@ GLOSSARY_ENTRIES = {
     GlossaryEntryType.UPGRADE: "Units come in three tiers: Basic, Advanced and Elite. All units start as Basic. You can find special upgrade hexes to promote your units from Basic to Advanced. To promote a unit to Elite, one of your upgrade hexes must be <a href='{GlossaryEntryType.CORRUPTION.value}'>Corrupted</a>. Enemy units start as Basic, but become Elite when they are <a href='{GlossaryEntryType.CORRUPTION.value}'>Corrupted</a>."
 }
 
+# Upgrade descriptions for each unit type
+UPGRADE_DESCRIPTIONS = {
+    UnitType.CORE_ARCHER: {
+        UnitTier.ADVANCED: "50% increased attack speed",
+        UnitTier.ELITE: "50% increased range"
+    },
+    UnitType.CORE_BARBARIAN: {
+        UnitTier.ADVANCED: "25% increased health and damage",
+        UnitTier.ELITE: "25% increased movement speed and attack speed"
+    },
+    UnitType.CORE_CAVALRY: {
+        UnitTier.ADVANCED: "50% increased health",
+        UnitTier.ELITE: "50% increased damage"
+    },
+    UnitType.CORE_DUELIST: {
+        UnitTier.ADVANCED: "1 additional hit per combo",
+        UnitTier.ELITE: "1 additional hit per combo"
+    },
+    UnitType.CORE_LONGBOWMAN: {
+        UnitTier.ADVANCED: "Arrows pierce through one target",
+        UnitTier.ELITE: "33% increased attack speed"
+    },
+    UnitType.CORE_SWORDSMAN: {
+        UnitTier.ADVANCED: "25% increased health and damage",
+        UnitTier.ELITE: "25% increased health and damage"
+    },
+    UnitType.CORE_WIZARD: {
+        UnitTier.ADVANCED: "50% increased damage",
+        UnitTier.ELITE: "50% increased damage"
+    },
+    UnitType.CRUSADER_BANNER_BEARER: {
+        UnitTier.ADVANCED: "50% increased health, aura grants damage bonus",
+        UnitTier.ELITE: "50% increased health, aura grants ability speed bonus"
+    },
+    UnitType.CRUSADER_BLACK_KNIGHT: {
+        UnitTier.ADVANCED: "25% increased health and movement speed",
+        UnitTier.ELITE: "50% increased damage"
+    },
+    UnitType.CRUSADER_CATAPULT: {
+        UnitTier.ADVANCED: "25% increased health and damage",
+        UnitTier.ELITE: "50% reduced minimum range, 25% increased maximum range"
+    },
+    UnitType.CRUSADER_CLERIC: {
+        UnitTier.ADVANCED: "100% increased range",
+        UnitTier.ELITE: "50% increased casting speed"
+    },
+    UnitType.CRUSADER_COMMANDER: {
+        UnitTier.ADVANCED: "50% increased health",
+        UnitTier.ELITE: "50% increased health"
+    },
+    UnitType.CRUSADER_CROSSBOWMAN: {
+        UnitTier.ADVANCED: "50% increased health",
+        UnitTier.ELITE: "50% increased health"
+    },
+    UnitType.CRUSADER_DEFENDER: {
+        UnitTier.ADVANCED: "Upgraded to Heavily Armored",
+        UnitTier.ELITE: "50% increased health"
+    },
+    UnitType.CRUSADER_GOLD_KNIGHT: {
+        UnitTier.ADVANCED: "20% increased health, damage, and healing",
+        UnitTier.ELITE: "20% increased health, damage, and healing"
+    },
+    UnitType.CRUSADER_GUARDIAN_ANGEL: {
+        UnitTier.ADVANCED: "50% increased healing",
+        UnitTier.ELITE: "50% increased healing"
+    },
+    UnitType.CRUSADER_PALADIN: {
+        UnitTier.ADVANCED: "100% increased damage",
+        UnitTier.ELITE: "25% increased movement speed and attack speed"
+    },
+    UnitType.CRUSADER_PIKEMAN: {
+        UnitTier.ADVANCED: "30% increased damage, 15% increased health",
+        UnitTier.ELITE: "30% increased damage, 15% increased health"
+    },
+    UnitType.CRUSADER_RED_KNIGHT: {
+        UnitTier.ADVANCED: "50% increased health",
+        UnitTier.ELITE: "50% increased health"
+    },
+    UnitType.CRUSADER_SOLDIER: {
+        UnitTier.ADVANCED: "20% increased health, damage, and range",
+        UnitTier.ELITE: "20% increased health, damage, and range"
+    },
+    UnitType.ZOMBIE_BASIC_ZOMBIE: {
+        UnitTier.ADVANCED: "50% increased health",
+        UnitTier.ELITE: "50% increased health"
+    },
+    UnitType.ZOMBIE_BRUTE: {
+        UnitTier.ADVANCED: "25% increased health and damage",
+        UnitTier.ELITE: "25% increased health and damage"
+    },
+    UnitType.ZOMBIE_GRABBER: {
+        UnitTier.ADVANCED: "50% increased health and damage",
+        UnitTier.ELITE: "50% increased health and damage"
+    },
+    UnitType.ZOMBIE_JUMPER: {
+        UnitTier.ADVANCED: "30% increased health, 15% increased movement speed and action speed",
+        UnitTier.ELITE: "30% increased health, 15% increased movement speed and action speed"
+    },
+    UnitType.ZOMBIE_SPITTER: {
+        UnitTier.ADVANCED: "50% increased health and damage",
+        UnitTier.ELITE: "50% increased health and damage"
+    },
+    UnitType.ZOMBIE_TANK: {
+        UnitTier.ADVANCED: "50% increased health",
+        UnitTier.ELITE: "50% increased health"
+    },
+    UnitType.WEREBEAR: {
+        UnitTier.ADVANCED: "50% increased health",
+        UnitTier.ELITE: "50% increased health"
+    }
+}
+
+def get_upgrade_description(unit_type: UnitType, unit_tier: UnitTier) -> str:
+    """Get the upgrade description for a specific unit type and tier."""
+    if unit_type not in UPGRADE_DESCRIPTIONS:
+        return ""
+    
+    tier_descriptions = UPGRADE_DESCRIPTIONS[unit_type]
+    return tier_descriptions.get(unit_tier, "")
+
 def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> UnitData:
     """Get unit data for the specified unit type and tier."""
     
