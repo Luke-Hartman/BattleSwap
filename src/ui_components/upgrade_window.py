@@ -76,9 +76,22 @@ class UpgradeWindow:
         screen_width = screen_info.current_w
         screen_height = screen_info.current_h
         
-        # Window size (large but not full screen)
-        window_width = min(1200, screen_width - 100)
-        window_height = min(800, screen_height - 100)
+        # Calculate exact content size needed
+        self.card_width = 300
+        self.card_height = 475
+        self.panel_spacing = 20
+        self.description_height = 30
+        self.description_margin = 5
+        self.card_margin = 10 + self.description_height + self.description_margin
+        top_section_height = 200
+        
+        # Content dimensions
+        content_width = self.card_width * 3 + self.panel_spacing * 2  # 940px
+        content_height = top_section_height + self.card_margin + self.card_height  # 740px
+        
+        # Window size with minimal margin (5px on all sides, plus window frame)
+        window_width = content_width + 16  # 10px margin + 6px for panel borders
+        window_height = content_height + 40  # 10px margin + 30px for title bar
         
         # Center the window
         window_x = (screen_width - window_width) // 2
@@ -109,7 +122,6 @@ class UpgradeWindow:
         )
         
         # Create top section (unit selection)
-        top_section_height = 200
         top_section = pygame_gui.elements.UIPanel(
             relative_rect=pygame.Rect(3, 3, window_width - 6, top_section_height - 3),
             manager=self.manager,
@@ -140,29 +152,25 @@ class UpgradeWindow:
             anchors={'left': 'left',
                     'right': 'right',
                     'top': 'top',
-                    'bottom': 'bottom'}
+                    'bottom': 'bottom'},
+            object_id=ObjectID(object_id='#upgrade_bottom_section')
         )
         self.bottom_section = bottom_section  # Store reference for later use
         
         # Create three panels for unit cards (Basic, Advanced, Elite)
-        card_width = 300
-        card_height = 475
-        panel_spacing = 20
-        total_width = card_width * 3 + panel_spacing * 2
-        start_x = (window_width - 6 - total_width) // 2  # Center the cards
-        card_margin = 20  # Margin above and below cards
-        description_height = 20  # Height for upgrade descriptions
+        total_width = self.card_width * 3 + self.panel_spacing * 2
+        self.start_x = (window_width - 6 - total_width) // 2  # Center the cards
         
         self.basic_panel = pygame_gui.elements.UIPanel(
-            relative_rect=pygame.Rect(start_x, card_margin, card_width, card_height),
+            relative_rect=pygame.Rect(self.start_x, self.card_margin, self.card_width, self.card_height),
             manager=self.manager,
             container=bottom_section,
             object_id=ObjectID(object_id='#upgrade_card_panel')
         )
         
         # Create upgrade description labels for Advanced and Elite tiers
-        self.advanced_description_label = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect(start_x + card_width + panel_spacing, card_margin - description_height - 5, card_width, description_height),
+        self.advanced_description_box = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect(self.start_x + self.card_width + self.panel_spacing, self.card_margin - self.description_height - self.description_margin, self.card_width, self.description_height),
             text="",
             manager=self.manager,
             container=bottom_section,
@@ -170,14 +178,14 @@ class UpgradeWindow:
         )
         
         self.advanced_panel = pygame_gui.elements.UIPanel(
-            relative_rect=pygame.Rect(start_x + card_width + panel_spacing, card_margin, card_width, card_height),
+            relative_rect=pygame.Rect(self.start_x + self.card_width + self.panel_spacing, self.card_margin, self.card_width, self.card_height),
             manager=self.manager,
             container=bottom_section,
             object_id=ObjectID(object_id='#upgrade_card_panel')
         )
         
-        self.elite_description_label = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect(start_x + (card_width + panel_spacing) * 2, card_margin - description_height - 5, card_width, description_height),
+        self.elite_description_box = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect(self.start_x + (self.card_width + self.panel_spacing) * 2, self.card_margin - self.description_height - self.description_margin, self.card_width, self.description_height),
             text="",
             manager=self.manager,
             container=bottom_section,
@@ -185,7 +193,7 @@ class UpgradeWindow:
         )
         
         self.elite_panel = pygame_gui.elements.UIPanel(
-            relative_rect=pygame.Rect(start_x + (card_width + panel_spacing) * 2, card_margin, card_width, card_height),
+            relative_rect=pygame.Rect(self.start_x + (self.card_width + self.panel_spacing) * 2, self.card_margin, self.card_width, self.card_height),
             manager=self.manager,
             container=bottom_section,
             object_id=ObjectID(object_id='#upgrade_card_panel')
@@ -196,24 +204,36 @@ class UpgradeWindow:
         self.advanced_card = None
         self.elite_card = None
         
-        # Add upgrade button at the bottom of the window
-        upgrade_button_y = card_margin + card_height + 10  # Position just below the cards
+        # Add upgrade button and credit display above the basic card (where basic description would go)
+        controls_y = self.card_margin - self.description_height - self.description_margin
+        
+        # Add credit display on the left
+        self.credit_label = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect(self.start_x, controls_y, 200, self.description_height),
+            text="",
+            manager=self.manager,
+            container=bottom_section,
+            anchors={'left': 'left',
+                    'right': 'left',
+                    'top': 'top',
+                    'bottom': 'top'}
+        )
+        
+        # Add upgrade button on the right
+        upgrade_button_width = 100
+        upgrade_button_x = self.start_x + self.card_width - upgrade_button_width
         self.upgrade_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((window_width - 130, upgrade_button_y), (100, 30)),
+            relative_rect=pygame.Rect(upgrade_button_x, controls_y, upgrade_button_width, self.description_height),
             text="Upgrade",
             manager=self.manager,
-            container=bottom_section
+            container=bottom_section,
+            anchors={'left': 'left',
+                    'right': 'left',
+                    'top': 'top',
+                    'bottom': 'top'}
         )
         self.upgrade_button.disable()  # Start disabled until a unit is selected
         self.upgrade_button.set_tooltip("Select a unit to upgrade")
-        
-        # Add credit display
-        self.credit_label = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((10, upgrade_button_y), (250, 30)),
-            text="",
-            manager=self.manager,
-            container=bottom_section
-        )
         self._update_credit_display()
     
     def _select_unit(self, unit_type: UnitType) -> None:
@@ -299,11 +319,11 @@ class UpgradeWindow:
             self._clear_unit_cards()
             # Recreate panels with default theme
             self._recreate_panels_with_theme('#upgrade_card_panel')
-            # Clear description labels
-            if hasattr(self, 'advanced_description_label') and self.advanced_description_label:
-                self.advanced_description_label.set_text("")
-            if hasattr(self, 'elite_description_label') and self.elite_description_label:
-                self.elite_description_label.set_text("")
+            # Clear description boxes
+            if hasattr(self, 'advanced_description_box') and self.advanced_description_box:
+                self.advanced_description_box.set_text("")
+            if hasattr(self, 'elite_description_box') and self.elite_description_box:
+                self.elite_description_box.set_text("")
             return
         
         # Clear existing cards
@@ -329,14 +349,10 @@ class UpgradeWindow:
         advanced_description = get_upgrade_description(self.selected_unit_type, UnitTier.ADVANCED)
         elite_description = get_upgrade_description(self.selected_unit_type, UnitTier.ELITE)
         
-        # Note: Elite descriptions should indicate they are additions to Advanced upgrades
-        if elite_description and advanced_description:
-            elite_description = f"+ {elite_description}"
-        
-        if hasattr(self, 'advanced_description_label') and self.advanced_description_label:
-            self.advanced_description_label.set_text(advanced_description)
-        if hasattr(self, 'elite_description_label') and self.elite_description_label:
-            self.elite_description_label.set_text(elite_description)
+        if hasattr(self, 'advanced_description_box') and self.advanced_description_box:
+            self.advanced_description_box.set_text(advanced_description)
+        if hasattr(self, 'elite_description_box') and self.elite_description_box:
+            self.elite_description_box.set_text(elite_description)
         
         # Create unit cards for each tier
         self._create_unit_cards()
@@ -514,17 +530,17 @@ class UpgradeWindow:
         if self.credit_label:
             self.credit_label.kill()
         
-        # Clean up description labels
-        if hasattr(self, 'advanced_description_label') and self.advanced_description_label:
-            self.advanced_description_label.kill()
-        if hasattr(self, 'elite_description_label') and self.elite_description_label:
-            self.elite_description_label.kill()
+        # Clean up description boxes
+        if hasattr(self, 'advanced_description_box') and self.advanced_description_box:
+            self.advanced_description_box.kill()
+        if hasattr(self, 'elite_description_box') and self.elite_description_box:
+            self.elite_description_box.kill()
     
     def _update_credit_display(self) -> None:
         """Update the credit display based on the selected unit."""
         # Show available credits using the new calculation method
         available_advanced, available_elite = progress_manager.calculate_available_credits()
-        self.credit_label.set_text(f"Credits - Advanced: {available_advanced} | Elite: {available_elite}")
+        self.credit_label.set_text(f"Advanced: {available_advanced} | Elite: {available_elite}")
     
     def _update_upgrade_button_state(self) -> None:
         """Update the upgrade button state based on selected unit and available credits."""
@@ -618,35 +634,28 @@ class UpgradeWindow:
         # Use the stored bottom section reference
         bottom_section = self.bottom_section
         
-        # Recreate panels with the specified themes
-        card_width = 300
-        card_height = 475
-        panel_spacing = 20
-        total_width = card_width * 3 + panel_spacing * 2
-        start_x = (self.window.rect.width - 6 - total_width) // 2
-        card_margin = 20
-        
         # Use the specified themes or default to the main theme
         basic_theme_id = ObjectID(object_id=basic_theme) if basic_theme else ObjectID(object_id=theme)
         advanced_theme_id = ObjectID(object_id=advanced_theme) if advanced_theme else ObjectID(object_id=theme)
         elite_theme_id = ObjectID(object_id=elite_theme) if elite_theme else ObjectID(object_id=theme)
         
+        # Use stored positioning values from _create_window
         self.basic_panel = pygame_gui.elements.UIPanel(
-            relative_rect=pygame.Rect(start_x, card_margin, card_width, card_height),
+            relative_rect=pygame.Rect(self.start_x, self.card_margin, self.card_width, self.card_height),
             manager=self.manager,
             container=bottom_section,
             object_id=basic_theme_id
         )
         
         self.advanced_panel = pygame_gui.elements.UIPanel(
-            relative_rect=pygame.Rect(start_x + card_width + panel_spacing, card_margin, card_width, card_height),
+            relative_rect=pygame.Rect(self.start_x + self.card_width + self.panel_spacing, self.card_margin, self.card_width, self.card_height),
             manager=self.manager,
             container=bottom_section,
             object_id=advanced_theme_id
         )
         
         self.elite_panel = pygame_gui.elements.UIPanel(
-            relative_rect=pygame.Rect(start_x + (card_width + panel_spacing) * 2, card_margin, card_width, card_height),
+            relative_rect=pygame.Rect(self.start_x + (self.card_width + self.panel_spacing) * 2, self.card_margin, self.card_width, self.card_height),
             manager=self.manager,
             container=bottom_section,
             object_id=elite_theme_id

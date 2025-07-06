@@ -56,6 +56,32 @@
             "border_width": "3"
         }
     },
+    "#upgrade_bottom_section": {
+        "colours": {
+            "normal_bg": "#00000000",
+            "hovered_bg": "#00000000",
+            "disabled_bg": "#00000000",
+            "selected_bg": "#00000000",
+            "active_bg": "#00000000"
+        },
+        "misc": {
+            "border_width": "0",
+            "shadow_width": "0"
+        }
+    },
+    "#upgrade_description_box": {
+        "colours": {
+            "normal_bg": "#45494e",
+            "dark_bg": "#36495E"
+        },
+        "misc": {
+            "shape": "rounded_rectangle",
+            "shape_corner_radius": "5",
+            "border_width": "1",
+            "shadow_width": "0",
+            "text_horiz_alignment": "center"
+        }
+    },
     "button": {
         "colours": {
         },
