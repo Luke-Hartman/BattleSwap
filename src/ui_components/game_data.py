@@ -148,7 +148,7 @@ UPGRADE_DESCRIPTIONS = {
     },
     UnitType.CRUSADER_CATAPULT: {
         UnitTier.ADVANCED: "25% increased health and damage",
-        UnitTier.ELITE: "50% reduced minimum range\n25% increased maximum range"
+        UnitTier.ELITE: "25% reduced minimum range\n25% increased maximum range"
     },
     UnitType.CRUSADER_CLERIC: {
         UnitTier.ADVANCED: "100% increased range",
@@ -159,8 +159,8 @@ UPGRADE_DESCRIPTIONS = {
         UnitTier.ELITE: "50% increased health"
     },
     UnitType.CRUSADER_CROSSBOWMAN: {
-        UnitTier.ADVANCED: "50% increased health",
-        UnitTier.ELITE: "50% increased health"
+        UnitTier.ADVANCED: "Gains Heavily Armored",
+        UnitTier.ELITE: "25% increased damage and attack speed"
     },
     UnitType.CRUSADER_DEFENDER: {
         UnitTier.ADVANCED: "Gains Heavily Armored",
@@ -662,9 +662,9 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             catapult_health = catapult_health * 1.25
             catapult_damage = catapult_damage * 1.25
         
-        # Elite tier: half minimum range and 25% more maximum range  
+        # Elite tier: 25% reduced minimum range and 25% more maximum range  
         if unit_tier == UnitTier.ELITE:
-            catapult_min_range = catapult_min_range * 0.5
+            catapult_min_range = catapult_min_range * 0.75
             catapult_max_range = catapult_max_range * 1.25
         
         return UnitData(
@@ -777,26 +777,43 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         )
     
     if unit_type == UnitType.CRUSADER_CROSSBOWMAN:
+        # Calculate tier-specific values
         crossbowman_health = gc.CRUSADER_CROSSBOWMAN_HP
-        if unit_tier == UnitTier.ADVANCED:
-            crossbowman_health = gc.CRUSADER_CROSSBOWMAN_HP * 1.5
-        elif unit_tier == UnitTier.ELITE:
-            crossbowman_health = gc.CRUSADER_CROSSBOWMAN_HP * 2.0
+        crossbowman_damage = gc.CRUSADER_CROSSBOWMAN_ATTACK_DAMAGE
+        crossbowman_attack_duration = gc.CRUSADER_CROSSBOWMAN_ANIMATION_ATTACK_DURATION
+        crossbowman_reload_duration = gc.CRUSADER_CROSSBOWMAN_ANIMATION_RELOAD_DURATION
+        crossbowman_armored = True
+        crossbowman_heavily_armored = False
+        description = f"Crossbowmen are medium-ranged <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a> units that need to reload."
+        defense_tooltip = f"{crossbowman_health} maximum health, armored"
+        
+        # Advanced tier (and Elite): Gains heavy armor
+        if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE:
+            crossbowman_heavily_armored = True
+            crossbowman_armored = False
+            description = f"Crossbowmen are medium-ranged <a href='{GlossaryEntryType.HEAVILY_ARMORED.value}'>Heavily Armored</a> units that need to reload."
+            defense_tooltip = f"{crossbowman_health} maximum health, heavily armored"
+        
+        # Elite tier: 25% increased damage and attack speed, and 25% faster reload
+        if unit_tier == UnitTier.ELITE:
+            crossbowman_damage = crossbowman_damage * 1.25
+            crossbowman_attack_duration = crossbowman_attack_duration * 0.8  # 25% faster = 0.8x duration
+            crossbowman_reload_duration = crossbowman_reload_duration * 0.8  # 25% faster = 0.8x duration
         
         return UnitData(
             name="Crossbowman",
-            description=f"Crossbowmen are medium-ranged <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a> units that need to reload.",
+            description=description,
             tier=unit_tier,
             stats={
-                StatType.DEFENSE: defense_stat(crossbowman_health, armored=True),
-                StatType.DAMAGE: damage_stat(gc.CRUSADER_CROSSBOWMAN_ATTACK_DAMAGE / (gc.CRUSADER_CROSSBOWMAN_ANIMATION_ATTACK_DURATION + gc.CRUSADER_CROSSBOWMAN_ANIMATION_RELOAD_DURATION/2)),
+                StatType.DEFENSE: defense_stat(crossbowman_health, armored=crossbowman_armored, heavily_armored=crossbowman_heavily_armored),
+                StatType.DAMAGE: damage_stat(crossbowman_damage / (crossbowman_attack_duration + crossbowman_reload_duration/2)),
                 StatType.RANGE: range_stat(gc.CRUSADER_CROSSBOWMAN_ATTACK_RANGE),
                 StatType.SPEED: speed_stat(gc.CRUSADER_CROSSBOWMAN_MOVEMENT_SPEED),
                 StatType.UTILITY: None
             },
             tooltips={
-                StatType.DEFENSE: f"{crossbowman_health} maximum health, armored",
-                StatType.DAMAGE: f"{gc.CRUSADER_CROSSBOWMAN_ATTACK_DAMAGE} per hit ({gc.CRUSADER_CROSSBOWMAN_ATTACK_DAMAGE / (gc.CRUSADER_CROSSBOWMAN_ANIMATION_ATTACK_DURATION):.1f} per second while attacking, {gc.CRUSADER_CROSSBOWMAN_ATTACK_DAMAGE / (gc.CRUSADER_CROSSBOWMAN_ANIMATION_ATTACK_DURATION + gc.CRUSADER_CROSSBOWMAN_ANIMATION_RELOAD_DURATION/2):.1f} per second including reloading). Starts with {gc.CRUSADER_CROSSBOWMAN_STARTING_AMMO} ammo, and can reload to regain ammo, up to {gc.CRUSADER_CROSSBOWMAN_MAX_AMMO}.",
+                StatType.DEFENSE: defense_tooltip,
+                StatType.DAMAGE: f"{crossbowman_damage} per hit ({crossbowman_damage / crossbowman_attack_duration:.1f} per second while attacking, {crossbowman_damage / (crossbowman_attack_duration + crossbowman_reload_duration/2):.1f} per second including reloading). Starts with {gc.CRUSADER_CROSSBOWMAN_STARTING_AMMO} ammo, and can reload to regain ammo, up to {gc.CRUSADER_CROSSBOWMAN_MAX_AMMO}.",
                 StatType.RANGE: f"{gc.CRUSADER_CROSSBOWMAN_ATTACK_RANGE} units",
                 StatType.SPEED: f"{gc.CRUSADER_CROSSBOWMAN_MOVEMENT_SPEED} units per second",
                 StatType.UTILITY: None
@@ -806,7 +823,11 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
                 "Weak when": ["Against long-ranged units", "Against fast units", "Reloading"],
             },
             modification_levels={
-                StatType.DEFENSE: 1 if unit_tier == UnitTier.ADVANCED else 2 if unit_tier == UnitTier.ELITE else 0
+                StatType.DEFENSE: 1 if unit_tier == UnitTier.ADVANCED else 2 if unit_tier == UnitTier.ELITE else 0,
+                StatType.DAMAGE: 1 if unit_tier == UnitTier.ELITE else 0,
+                StatType.RANGE: 0,
+                StatType.SPEED: 1 if unit_tier == UnitTier.ELITE else 0,
+                StatType.UTILITY: 0
             }
         )
     

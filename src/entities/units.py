@@ -1377,9 +1377,9 @@ def create_crusader_catapult(
         catapult_health = catapult_health * 1.25
         catapult_damage = catapult_damage * 1.25
     
-    # Elite tier: half minimum range and 25% more maximum range
+    # Elite tier: 25% reduced minimum range and 25% more maximum range
     if tier == UnitTier.ELITE:
-        catapult_min_range = catapult_min_range * 0.5
+        catapult_min_range = catapult_min_range * 0.75
         catapult_max_range = catapult_max_range * 1.25
     
     entity = unit_base_entity(
@@ -1756,6 +1756,17 @@ def create_crusader_crossbowman(
         tier: UnitTier,
     ) -> int:
     """Create a crossbowman entity with all necessary components."""
+    # Calculate tier-specific values
+    crossbowman_damage = gc.CRUSADER_CROSSBOWMAN_ATTACK_DAMAGE
+    crossbowman_attack_duration = gc.CRUSADER_CROSSBOWMAN_ANIMATION_ATTACK_DURATION
+    crossbowman_reload_duration = gc.CRUSADER_CROSSBOWMAN_ANIMATION_RELOAD_DURATION
+    
+    # Elite tier: 25% increased damage and attack speed
+    if tier == UnitTier.ELITE:
+        crossbowman_damage = crossbowman_damage * 1.25
+        crossbowman_attack_duration = crossbowman_attack_duration * 0.8  # 25% faster = 0.8x duration
+        crossbowman_reload_duration = crossbowman_reload_duration * 0.8  # 25% faster = 0.8x duration
+    
     entity = unit_base_entity(
         x=x,
         y=y,
@@ -1788,7 +1799,11 @@ def create_crusader_crossbowman(
             max=gc.CRUSADER_CROSSBOWMAN_MAX_AMMO
         )
     )
-    esper.add_component(entity, Armor(flat_reduction=gc.ARMOR_FLAT_DAMAGE_REDUCTION, percent_reduction=gc.ARMOR_PERCENT_DAMAGE_REDUCTION))
+    # Add armor based on tier
+    if tier == UnitTier.ADVANCED or tier == UnitTier.ELITE:
+        esper.add_component(entity, Armor(flat_reduction=gc.HEAVILY_ARMOR_FLAT_DAMAGE_REDUCTION, percent_reduction=gc.HEAVILY_ARMOR_PERCENT_DAMAGE_REDUCTION))
+    else:
+        esper.add_component(entity, Armor(flat_reduction=gc.ARMOR_FLAT_DAMAGE_REDUCTION, percent_reduction=gc.ARMOR_PERCENT_DAMAGE_REDUCTION))
     esper.add_component(entity, RangeIndicator(ranges=[gc.CRUSADER_CROSSBOWMAN_ATTACK_RANGE]))
     RELOADING = 0
     FIRING = 1
@@ -1831,7 +1846,7 @@ def create_crusader_crossbowman(
                         CreatesProjectile(
                             projectile_speed=gc.CRUSADER_CROSSBOWMAN_PROJECTILE_SPEED,
                             effects=[
-                                Damages(damage=gc.CRUSADER_CROSSBOWMAN_ATTACK_DAMAGE, recipient=Recipient.TARGET),        
+                                Damages(damage=crossbowman_damage, recipient=Recipient.TARGET),        
                             ],
                             visual=Visual.Arrow,
                             projectile_offset_x=5*gc.MINIFOLKS_SCALE,
@@ -4046,6 +4061,16 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
             }
         )
     if unit_type == UnitType.CRUSADER_CROSSBOWMAN:
+        # Elite tier: 25% faster attack, reload, and idle animations
+        attack_animation_duration = gc.CRUSADER_CROSSBOWMAN_ANIMATION_ATTACK_DURATION
+        reload_animation_duration = gc.CRUSADER_CROSSBOWMAN_ANIMATION_RELOAD_DURATION
+        idle_animation_duration = gc.CRUSADER_CROSSBOWMAN_ANIMATION_IDLE_DURATION
+        
+        if tier == UnitTier.ELITE:
+            attack_animation_duration = attack_animation_duration * 0.8  # 25% faster = 0.8x duration
+            reload_animation_duration = reload_animation_duration * 0.8  # 25% faster = 0.8x duration
+            idle_animation_duration = idle_animation_duration * 0.8  # 25% faster = 0.8x duration
+        
         return SpriteSheet(
             surface=sprite_sheets[UnitType.CRUSADER_CROSSBOWMAN],
             frame_width=100,
@@ -4054,10 +4079,10 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
             frames={AnimationType.IDLE: 6, AnimationType.WALKING: 7, AnimationType.ABILITY1: 8, AnimationType.ABILITY2: 4, AnimationType.DYING: 4},
             rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 2, AnimationType.ABILITY2: 4, AnimationType.DYING: 5},
             animation_durations={
-                AnimationType.IDLE: gc.CRUSADER_CROSSBOWMAN_ANIMATION_IDLE_DURATION,
+                AnimationType.IDLE: idle_animation_duration,
                 AnimationType.WALKING: gc.CRUSADER_CROSSBOWMAN_ANIMATION_WALKING_DURATION,
-                AnimationType.ABILITY1: gc.CRUSADER_CROSSBOWMAN_ANIMATION_ATTACK_DURATION,
-                AnimationType.ABILITY2: gc.CRUSADER_CROSSBOWMAN_ANIMATION_RELOAD_DURATION,
+                AnimationType.ABILITY1: attack_animation_duration,
+                AnimationType.ABILITY2: reload_animation_duration,
                 AnimationType.DYING: gc.CRUSADER_CROSSBOWMAN_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(0, 2),
