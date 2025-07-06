@@ -67,6 +67,15 @@ class UpgradeWindow:
         # Initialize upgrade dialogs list
         if not hasattr(self.manager, 'upgrade_dialogs'):
             self.manager.upgrade_dialogs = []
+        
+        # Initialize description box references
+        self.advanced_description_box = None
+        self.advanced_description_box_top = None
+        self.advanced_description_box_bottom = None
+        self.elite_description_box = None
+        self.elite_description_box_top = None
+        self.elite_description_box_bottom = None
+        
         self._create_window()
     
     def _create_window(self) -> None:
@@ -140,6 +149,7 @@ class UpgradeWindow:
             allow_scroll_y=True,
             allow_scroll_x=False
         )
+        self.scroll_container = scroll_container  # Store reference for event handling
         
         # Create unit grid in scrolling container
         self._create_unit_grid(scroll_container, window_width - 12, top_section_height - 12)
@@ -168,28 +178,14 @@ class UpgradeWindow:
             object_id=ObjectID(object_id='#upgrade_card_panel')
         )
         
-        # Create upgrade description labels for Advanced and Elite tiers
-        self.advanced_description_box = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect(self.start_x + self.card_width + self.panel_spacing, self.card_margin - self.description_height - self.description_margin, self.card_width, self.description_height),
-            text="",
-            manager=self.manager,
-            container=bottom_section,
-            object_id=ObjectID(object_id='#upgrade_description_label')
-        )
+        # Create initial single description labels for Advanced and Elite tiers
+        self._create_description_labels()
         
         self.advanced_panel = pygame_gui.elements.UIPanel(
             relative_rect=pygame.Rect(self.start_x + self.card_width + self.panel_spacing, self.card_margin, self.card_width, self.card_height),
             manager=self.manager,
             container=bottom_section,
             object_id=ObjectID(object_id='#upgrade_card_panel')
-        )
-        
-        self.elite_description_box = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect(self.start_x + (self.card_width + self.panel_spacing) * 2, self.card_margin - self.description_height - self.description_margin, self.card_width, self.description_height),
-            text="",
-            manager=self.manager,
-            container=bottom_section,
-            object_id=ObjectID(object_id='#upgrade_description_label')
         )
         
         self.elite_panel = pygame_gui.elements.UIPanel(
@@ -236,6 +232,157 @@ class UpgradeWindow:
         self.upgrade_button.set_tooltip("Select a unit to upgrade")
         self._update_credit_display()
     
+    def _create_description_labels(self) -> None:
+        """Create the initial single description labels for Advanced and Elite tiers."""
+        # Clear existing labels
+        self._clear_description_labels()
+        
+        # Create single description labels (default state)
+        self.advanced_description_box = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect(self.start_x + self.card_width + self.panel_spacing, self.card_margin - self.description_height - self.description_margin, self.card_width, self.description_height),
+            text="",
+            manager=self.manager,
+            container=self.bottom_section,
+            object_id=ObjectID(object_id='#upgrade_description_label')
+        )
+        
+        self.elite_description_box = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect(self.start_x + (self.card_width + self.panel_spacing) * 2, self.card_margin - self.description_height - self.description_margin, self.card_width, self.description_height),
+            text="",
+            manager=self.manager,
+            container=self.bottom_section,
+            object_id=ObjectID(object_id='#upgrade_description_label')
+        )
+    
+    def _clear_description_labels(self) -> None:
+        """Clear all description labels."""
+        # Clear single labels
+        if self.advanced_description_box:
+            self.advanced_description_box.kill()
+            self.advanced_description_box = None
+        if self.elite_description_box:
+            self.elite_description_box.kill()
+            self.elite_description_box = None
+        
+        # Clear dual labels
+        if self.advanced_description_box_top:
+            self.advanced_description_box_top.kill()
+            self.advanced_description_box_top = None
+        if self.advanced_description_box_bottom:
+            self.advanced_description_box_bottom.kill()
+            self.advanced_description_box_bottom = None
+        if self.elite_description_box_top:
+            self.elite_description_box_top.kill()
+            self.elite_description_box_top = None
+        if self.elite_description_box_bottom:
+            self.elite_description_box_bottom.kill()
+            self.elite_description_box_bottom = None
+    
+    def _create_dual_description_labels(self, tier: str, x_pos: int, text_lines: List[str]) -> None:
+        """Create dual description labels for a tier."""
+        label_height = 20  # Each label gets 20px height
+        base_y = self.card_margin - self.description_height - self.description_margin - 8
+        
+        if tier == "advanced":
+            self.advanced_description_box_top = pygame_gui.elements.UILabel(
+                relative_rect=pygame.Rect(x_pos, base_y, self.card_width, label_height),
+                text=text_lines[0],
+                manager=self.manager,
+                container=self.bottom_section,
+                object_id=ObjectID(object_id='#upgrade_description_label')
+            )
+            
+            self.advanced_description_box_bottom = pygame_gui.elements.UILabel(
+                relative_rect=pygame.Rect(x_pos, base_y + label_height, self.card_width, label_height),
+                text=text_lines[1],
+                manager=self.manager,
+                container=self.bottom_section,
+                object_id=ObjectID(object_id='#upgrade_description_label')
+            )
+        elif tier == "elite":
+            self.elite_description_box_top = pygame_gui.elements.UILabel(
+                relative_rect=pygame.Rect(x_pos, base_y, self.card_width, label_height),
+                text=text_lines[0],
+                manager=self.manager,
+                container=self.bottom_section,
+                object_id=ObjectID(object_id='#upgrade_description_label')
+            )
+            
+            self.elite_description_box_bottom = pygame_gui.elements.UILabel(
+                relative_rect=pygame.Rect(x_pos, base_y + label_height, self.card_width, label_height),
+                text=text_lines[1],
+                manager=self.manager,
+                container=self.bottom_section,
+                object_id=ObjectID(object_id='#upgrade_description_label')
+            )
+    
+    def _update_description_labels(self, tier: str, text: str, x_pos: int) -> None:
+        """Update description labels for a tier, handling single or dual line text."""
+        # Check if text contains newlines (indicating two lines)
+        if '\n' in text:
+            lines = text.split('\n', 1)  # Split into max 2 parts
+            if len(lines) == 2:
+                # Clear single label for this tier
+                if tier == "advanced" and self.advanced_description_box:
+                    self.advanced_description_box.kill()
+                    self.advanced_description_box = None
+                elif tier == "elite" and self.elite_description_box:
+                    self.elite_description_box.kill()
+                    self.elite_description_box = None
+                
+                # Create dual labels
+                self._create_dual_description_labels(tier, x_pos, lines)
+            else:
+                # Fallback to single label
+                self._set_single_description_label(tier, text, x_pos)
+        else:
+            # Single line text - ensure we have single label
+            self._set_single_description_label(tier, text, x_pos)
+    
+    def _set_single_description_label(self, tier: str, text: str, x_pos: int) -> None:
+        """Set text for single description label, creating it if needed."""
+        if tier == "advanced":
+            # Clear dual labels if they exist
+            if self.advanced_description_box_top:
+                self.advanced_description_box_top.kill()
+                self.advanced_description_box_top = None
+            if self.advanced_description_box_bottom:
+                self.advanced_description_box_bottom.kill()
+                self.advanced_description_box_bottom = None
+            
+            # Create or update single label
+            if not self.advanced_description_box:
+                self.advanced_description_box = pygame_gui.elements.UILabel(
+                    relative_rect=pygame.Rect(x_pos, self.card_margin - self.description_height - self.description_margin, self.card_width, self.description_height),
+                    text=text,
+                    manager=self.manager,
+                    container=self.bottom_section,
+                    object_id=ObjectID(object_id='#upgrade_description_label')
+                )
+            else:
+                self.advanced_description_box.set_text(text)
+        
+        elif tier == "elite":
+            # Clear dual labels if they exist
+            if self.elite_description_box_top:
+                self.elite_description_box_top.kill()
+                self.elite_description_box_top = None
+            if self.elite_description_box_bottom:
+                self.elite_description_box_bottom.kill()
+                self.elite_description_box_bottom = None
+            
+            # Create or update single label
+            if not self.elite_description_box:
+                self.elite_description_box = pygame_gui.elements.UILabel(
+                    relative_rect=pygame.Rect(x_pos, self.card_margin - self.description_height - self.description_margin, self.card_width, self.description_height),
+                    text=text,
+                    manager=self.manager,
+                    container=self.bottom_section,
+                    object_id=ObjectID(object_id='#upgrade_description_label')
+                )
+            else:
+                self.elite_description_box.set_text(text)
+    
     def _select_unit(self, unit_type: UnitType) -> None:
         """Select a unit and update the UI accordingly."""
         # Unselect all other buttons
@@ -253,21 +400,10 @@ class UpgradeWindow:
     def _create_unit_grid(self, container: pygame_gui.elements.UIPanel, container_width: int, container_height: int) -> None:
         """Create a grid of unit icons in the given container."""
         # Get available units from progress manager
-        available_units = set(progress_manager.available_units(None))
+        #available_units = set(progress_manager.available_units(None))
+        available_units = set(UnitType)
         
-        if not available_units:
-            # Show message if no units available
-            no_units_label = pygame_gui.elements.UILabel(
-                relative_rect=pygame.Rect(10, 50, container_width - 20, 30),
-                text="No units available for upgrade",
-                manager=self.manager,
-                container=container,
-                anchors={'left': 'left',
-                        'right': 'right',
-                        'top': 'top',
-                        'bottom': 'bottom'}
-            )
-            return
+        assert available_units, "No units available for upgrade"
         
         # Auto-unlock basic zombies for upgrading when any zombie unit is available
         zombie_units = {
@@ -319,11 +455,9 @@ class UpgradeWindow:
             self._clear_unit_cards()
             # Recreate panels with default theme
             self._recreate_panels_with_theme('#upgrade_card_panel')
-            # Clear description boxes
-            if hasattr(self, 'advanced_description_box') and self.advanced_description_box:
-                self.advanced_description_box.set_text("")
-            if hasattr(self, 'elite_description_box') and self.elite_description_box:
-                self.elite_description_box.set_text("")
+            # Clear description labels
+            self._clear_description_labels()
+            self._create_description_labels()
             return
         
         # Clear existing cards
@@ -349,10 +483,13 @@ class UpgradeWindow:
         advanced_description = get_upgrade_description(self.selected_unit_type, UnitTier.ADVANCED)
         elite_description = get_upgrade_description(self.selected_unit_type, UnitTier.ELITE)
         
-        if hasattr(self, 'advanced_description_box') and self.advanced_description_box:
-            self.advanced_description_box.set_text(advanced_description)
-        if hasattr(self, 'elite_description_box') and self.elite_description_box:
-            self.elite_description_box.set_text(elite_description)
+        # Update advanced description
+        advanced_x = self.start_x + self.card_width + self.panel_spacing
+        self._update_description_labels("advanced", advanced_description, advanced_x)
+        
+        # Update elite description
+        elite_x = self.start_x + (self.card_width + self.panel_spacing) * 2
+        self._update_description_labels("elite", elite_description, elite_x)
         
         # Create unit cards for each tier
         self._create_unit_cards()
@@ -455,6 +592,15 @@ class UpgradeWindow:
     
     def handle_event(self, event: pygame.event.Event) -> bool:
         """Handle events for the upgrade window. Returns True if event was handled."""
+        # For scroll wheel events, process pygame_gui events first to allow scrolling container to work
+        if event.type == pygame.MOUSEWHEEL:
+            # Check if mouse is over the upgrade window
+            if self.window and self.window.get_abs_rect().collidepoint(pygame.mouse.get_pos()):
+                # Let pygame_gui process the event first to handle scrolling
+                self.manager.process_events(event)
+                # Always consume the event to prevent it from reaching the camera
+                return True
+        
         if event.type == pygame.USEREVENT:
             if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                 if event.ui_element == self.close_button:
@@ -530,11 +676,11 @@ class UpgradeWindow:
         if self.credit_label:
             self.credit_label.kill()
         
-        # Clean up description boxes
-        if hasattr(self, 'advanced_description_box') and self.advanced_description_box:
-            self.advanced_description_box.kill()
-        if hasattr(self, 'elite_description_box') and self.elite_description_box:
-            self.elite_description_box.kill()
+        # Clean up description labels
+        self._clear_description_labels()
+        
+        # Clean up scroll container reference
+        self.scroll_container = None
     
     def _update_credit_display(self) -> None:
         """Update the credit display based on the selected unit."""

@@ -116,7 +116,7 @@ UPGRADE_DESCRIPTIONS = {
     },
     UnitType.CORE_BARBARIAN: {
         UnitTier.ADVANCED: "25% increased health and damage",
-        UnitTier.ELITE: "25% increased movement speed and attack speed"
+        UnitTier.ELITE: "25% increased movement and attack speed"
     },
     UnitType.CORE_CAVALRY: {
         UnitTier.ADVANCED: "50% increased health",
@@ -139,8 +139,8 @@ UPGRADE_DESCRIPTIONS = {
         UnitTier.ELITE: "50% increased damage"
     },
     UnitType.CRUSADER_BANNER_BEARER: {
-        UnitTier.ADVANCED: "50% increased health, <a href='{GlossaryEntryType.AURA.value}'>Aura</a> grants 25% increased damage",
-        UnitTier.ELITE: "50% increased health, <a href='{GlossaryEntryType.AURA.value}'>Aura</a> grants 25% increased attack speed"
+        UnitTier.ADVANCED: "50% increased health\nAura grants 25% increased damage",
+        UnitTier.ELITE: "50% increased health\nAura grants 25% increased attack speed"
     },
     UnitType.CRUSADER_BLACK_KNIGHT: {
         UnitTier.ADVANCED: "25% increased health and movement speed",
@@ -148,7 +148,7 @@ UPGRADE_DESCRIPTIONS = {
     },
     UnitType.CRUSADER_CATAPULT: {
         UnitTier.ADVANCED: "25% increased health and damage",
-        UnitTier.ELITE: "50% reduced minimum range, 25% increased maximum range"
+        UnitTier.ELITE: "50% reduced minimum range\n25% increased maximum range"
     },
     UnitType.CRUSADER_CLERIC: {
         UnitTier.ADVANCED: "100% increased range",
@@ -163,7 +163,7 @@ UPGRADE_DESCRIPTIONS = {
         UnitTier.ELITE: "50% increased health"
     },
     UnitType.CRUSADER_DEFENDER: {
-        UnitTier.ADVANCED: "Gains <a href='{GlossaryEntryType.HEAVILY_ARMORED.value}'>Heavily Armored</a>",
+        UnitTier.ADVANCED: "Gains Heavily Armored",
         UnitTier.ELITE: "50% increased health"
     },
     UnitType.CRUSADER_GOLD_KNIGHT: {
@@ -176,11 +176,11 @@ UPGRADE_DESCRIPTIONS = {
     },
     UnitType.CRUSADER_PALADIN: {
         UnitTier.ADVANCED: "100% increased damage",
-        UnitTier.ELITE: "25% increased movement speed and attack speed"
+        UnitTier.ELITE: "25% increased movement and attack speed"
     },
     UnitType.CRUSADER_PIKEMAN: {
-        UnitTier.ADVANCED: "30% increased damage, 15% increased health",
-        UnitTier.ELITE: "30% increased damage, 15% increased health"
+        UnitTier.ADVANCED: "30% increased damage\n15% increased health",
+        UnitTier.ELITE: "30% increased damage\n15% increased health"
     },
     UnitType.CRUSADER_RED_KNIGHT: {
         UnitTier.ADVANCED: "50% increased health",
@@ -203,8 +203,8 @@ UPGRADE_DESCRIPTIONS = {
         UnitTier.ELITE: "50% increased health and damage"
     },
     UnitType.ZOMBIE_JUMPER: {
-        UnitTier.ADVANCED: "30% increased health, 15% increased movement speed and attack speed",
-        UnitTier.ELITE: "30% increased health, 15% increased movement speed and attack speed"
+        UnitTier.ADVANCED: "30% increased health\n15% increased movement and attack speed",
+        UnitTier.ELITE: "30% increased health\n15% increased movement and attack speed"
     },
     UnitType.ZOMBIE_SPITTER: {
         UnitTier.ADVANCED: "50% increased damage",
