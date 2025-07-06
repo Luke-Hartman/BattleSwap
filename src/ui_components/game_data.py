@@ -123,8 +123,8 @@ UPGRADE_DESCRIPTIONS = {
         UnitTier.ELITE: "50% increased damage"
     },
     UnitType.CORE_DUELIST: {
-        UnitTier.ADVANCED: "1 additional hit per combo",
-        UnitTier.ELITE: "1 additional hit per combo"
+        UnitTier.ADVANCED: "50% increased hits per combo",
+        UnitTier.ELITE: "50% increased hits per combo"
     },
     UnitType.CORE_LONGBOWMAN: {
         UnitTier.ADVANCED: "Arrows pierce through one target",
@@ -139,8 +139,8 @@ UPGRADE_DESCRIPTIONS = {
         UnitTier.ELITE: "50% increased damage"
     },
     UnitType.CRUSADER_BANNER_BEARER: {
-        UnitTier.ADVANCED: "50% increased health, aura grants damage bonus",
-        UnitTier.ELITE: "50% increased health, aura grants ability speed bonus"
+        UnitTier.ADVANCED: "50% increased health, <a href='{GlossaryEntryType.AURA.value}'>Aura</a> grants 25% increased damage",
+        UnitTier.ELITE: "50% increased health, <a href='{GlossaryEntryType.AURA.value}'>Aura</a> grants 25% increased attack speed"
     },
     UnitType.CRUSADER_BLACK_KNIGHT: {
         UnitTier.ADVANCED: "25% increased health and movement speed",
@@ -152,7 +152,7 @@ UPGRADE_DESCRIPTIONS = {
     },
     UnitType.CRUSADER_CLERIC: {
         UnitTier.ADVANCED: "100% increased range",
-        UnitTier.ELITE: "50% increased casting speed"
+        UnitTier.ELITE: "50% increased attack speed"
     },
     UnitType.CRUSADER_COMMANDER: {
         UnitTier.ADVANCED: "50% increased health",
@@ -163,7 +163,7 @@ UPGRADE_DESCRIPTIONS = {
         UnitTier.ELITE: "50% increased health"
     },
     UnitType.CRUSADER_DEFENDER: {
-        UnitTier.ADVANCED: "Upgraded to Heavily Armored",
+        UnitTier.ADVANCED: "Gains <a href='{GlossaryEntryType.HEAVILY_ARMORED.value}'>Heavily Armored</a>",
         UnitTier.ELITE: "50% increased health"
     },
     UnitType.CRUSADER_GOLD_KNIGHT: {
@@ -203,12 +203,12 @@ UPGRADE_DESCRIPTIONS = {
         UnitTier.ELITE: "50% increased health and damage"
     },
     UnitType.ZOMBIE_JUMPER: {
-        UnitTier.ADVANCED: "30% increased health, 15% increased movement speed and action speed",
-        UnitTier.ELITE: "30% increased health, 15% increased movement speed and action speed"
+        UnitTier.ADVANCED: "30% increased health, 15% increased movement speed and attack speed",
+        UnitTier.ELITE: "30% increased health, 15% increased movement speed and attack speed"
     },
     UnitType.ZOMBIE_SPITTER: {
-        UnitTier.ADVANCED: "50% increased health and damage",
-        UnitTier.ELITE: "50% increased health and damage"
+        UnitTier.ADVANCED: "50% increased damage",
+        UnitTier.ELITE: "50% increased damage"
     },
     UnitType.ZOMBIE_TANK: {
         UnitTier.ADVANCED: "50% increased health",
@@ -561,7 +561,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             utility_description += f" and grants +{int(gc.CRUSADER_BANNER_BEARER_AURA_DAMAGE_PERCENTAGE * 100)}% damage"
         
         if unit_tier == UnitTier.ELITE:
-            utility_description += " and +25% ability speed"
+            utility_description += " and +25% attack speed"
         
         utility_description += f" in a radius of {gc.CRUSADER_BANNER_BEARER_AURA_RADIUS}"
         
@@ -571,7 +571,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         elif unit_tier == UnitTier.ADVANCED:
             description = f"Banner Bearers are hardy <a href='{GlossaryEntryType.FOLLOWER.value}'>Followers</a> with an <a href='{GlossaryEntryType.AURA.value}'>Aura</a> that boosts ally movement speed and damage."
         else:  # Elite
-            description = f"Banner Bearers are elite <a href='{GlossaryEntryType.FOLLOWER.value}'>Followers</a> with a powerful <a href='{GlossaryEntryType.AURA.value}'>Aura</a> that boosts ally movement speed, damage, and ability speed."
+            description = f"Banner Bearers are elite <a href='{GlossaryEntryType.FOLLOWER.value}'>Followers</a> with a powerful <a href='{GlossaryEntryType.AURA.value}'>Aura</a> that boosts ally movement speed, damage, and attack speed."
         
         return UnitData(
             name="Banner Bearer",
@@ -1306,19 +1306,16 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
     
     if unit_type == UnitType.ZOMBIE_SPITTER:
         # Calculate tier-specific values
-        zombie_spitter_health = gc.ZOMBIE_SPITTER_HP
         spitter_damage = gc.ZOMBIE_SPITTER_ATTACK_DAMAGE
         melee_damage = gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_DAMAGE
         
         # Advanced tier: 50% increased damage
         if unit_tier == UnitTier.ADVANCED:
-            zombie_spitter_health = gc.ZOMBIE_SPITTER_HP * 1.5
             spitter_damage = spitter_damage * 1.5
             melee_damage = melee_damage * 1.5
         
         # Elite tier: 100% increased damage total
         elif unit_tier == UnitTier.ELITE:
-            zombie_spitter_health = gc.ZOMBIE_SPITTER_HP * 2.0
             spitter_damage = spitter_damage * 2.0
             melee_damage = melee_damage * 2.0
         
@@ -1327,14 +1324,14 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             description=f"Spitters are slow, short-ranged <a href='{GlossaryEntryType.SPREADER.value}'>Spreaders</a> that <a href='{GlossaryEntryType.POISON.value}'>Poison</a> and <a href='{GlossaryEntryType.INFECTION.value}'>Infect</a> on hit.",
             tier=unit_tier,
             stats={
-                StatType.DEFENSE: defense_stat(zombie_spitter_health),
+                StatType.DEFENSE: defense_stat(gc.ZOMBIE_SPITTER_HP),
                 StatType.SPEED: speed_stat(gc.ZOMBIE_SPITTER_MOVEMENT_SPEED),
                 StatType.DAMAGE: damage_stat(spitter_damage / gc.ZOMBIE_SPITTER_ANIMATION_ATTACK_DURATION, 2/3),
                 StatType.RANGE: range_stat(gc.ZOMBIE_SPITTER_ATTACK_RANGE),
                 StatType.UTILITY: 2.5
             },
             tooltips={
-                StatType.DEFENSE: f"{zombie_spitter_health:.0f} maximum health",
+                StatType.DEFENSE: f"{gc.ZOMBIE_SPITTER_HP:.0f} maximum health",
                 StatType.SPEED: f"{gc.ZOMBIE_SPITTER_MOVEMENT_SPEED} units per second",
                 StatType.DAMAGE: f"{spitter_damage:.0f} poison damage ({spitter_damage/gc.ZOMBIE_INFECTION_DURATION:.1f} damage per second per poison) ({spitter_damage / gc.ZOMBIE_SPITTER_ANIMATION_ATTACK_DURATION:.1f} per second if poisoning multiple enemies). Melee: {melee_damage:.0f} per hit",
                 StatType.RANGE: f"{gc.ZOMBIE_SPITTER_ATTACK_RANGE} units",
@@ -1345,7 +1342,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
                 "Weak when": ["Against melee units", "Against long ranged units", "Against a small number of units", f"Against <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a>"],
             },
             modification_levels={
-                StatType.DEFENSE: 1 if unit_tier == UnitTier.ADVANCED else 2 if unit_tier == UnitTier.ELITE else 0,
+                StatType.DEFENSE: 0,
                 StatType.DAMAGE: 1 if unit_tier == UnitTier.ADVANCED else 2 if unit_tier == UnitTier.ELITE else 0,
                 StatType.SPEED: 0,
                 StatType.RANGE: 0,
