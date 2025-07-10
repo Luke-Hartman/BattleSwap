@@ -5,7 +5,7 @@ from typing import Dict
 
 from battles import get_battle_id, get_battles
 from battle_solver import (
-    ALLOWED_UNIT_TYPES, EvolutionStrategy, AddRandomUnit, GradeDistributionPlotter, MoveNextToAlly, PlotGroup, Plotter, Population, RemoveRandomUnit, 
+    ALLOWED_UNIT_TYPES, EvolutionStrategy, AddRandomUnit, MoveNextToAlly, PlotGroup, Plotter, Population, RemoveRandomUnit, 
     PerturbPosition, RandomizeUnitPosition, RandomizeUnitType, ReplaceSubarmy, TournamentSelection, UniformSelection, UnitCountsPlotter, UnitValuesPlotter, random_population
 )
 from unit_values import unit_values
@@ -92,14 +92,8 @@ def run_balance_overview():
     # Initialize populations for all battles
     battle_populations: Dict[str, Population] = {}
     for battle in battles:
-        # Set the target cost based on the battle's grades
-        target_cost = 900  # Default target cost
-        if battle.grades is not None:
-            # Use the D cutoff as the target cost
-            target_cost = battle.grades.d_cutoff
-        
         # Create initial population
-        population = random_population(battle_id=battle.id, size=PARENTS_PER_GENERATION, target_cost=target_cost)
+        population = random_population(battle_id=battle.id, size=PARENTS_PER_GENERATION)
         
         # Evaluate the initial population
         population.evaluate()
@@ -114,14 +108,12 @@ def run_balance_overview():
             plotters=[
                 UnitCountsPlotter(),
                 UnitValuesPlotter(),
-                GradeDistributionPlotter(),
             ],
         ),
         battle_plotters={
             battle.id: PlotGroup(
                 plotters=[
                     UnitCountsPlotter(),
-                    GradeDistributionPlotter(),
                 ],
             )
             for battle in battles
@@ -138,8 +130,7 @@ def run_balance_overview():
         best_solution_unit_counts = Counter()
         all_battles_unit_counts = Counter()
         
-        # Track grades for best solutions
-        grade_distribution = Counter()
+
         
         # Process each battle
         for battle_id, population in battle_populations.items():
@@ -155,14 +146,11 @@ def run_balance_overview():
                 for unit_type, _ in best_individual.unit_placements:
                     best_solution_unit_counts[unit_type] += 1
                 
-                # Grade the solution
+                # Get solution points
                 points_used = best_individual.points
-                grade = best_individual.fitness.grade
-                grade_distribution[grade] += 1
                 
                 print(f"  Best solution: {best_individual}")
-                if battle.grades is not None:
-                    print(f"  Points: {points_used}, Grade: {grade}")
+                print(f"  Points: {points_used}")
             else:
                 print("  No solution found")
 
@@ -180,15 +168,7 @@ def run_balance_overview():
             all_count = all_battles_unit_counts.get(unit_type, 0)
             print(f"{unit_type.name:<20} {best_solution_unit_counts.get(unit_type, 0):<15} {all_count:<15}")
         
-        # Report grade distribution
-        print("\n----- GRADE DISTRIBUTION -----")
-        print(f"S (better than A): {grade_distribution.get('S', 0)}")
-        print(f"A: {grade_distribution.get('A', 0)}")
-        print(f"B: {grade_distribution.get('B', 0)}")
-        print(f"C: {grade_distribution.get('C', 0)}")
-        print(f"D: {grade_distribution.get('D', 0)}")
-        print(f"F: {grade_distribution.get('F', 0)}")
-        print(f"N/A: {grade_distribution.get('N/A', 0)}")
+
 
         # Evolve each population for the next generation
         print(f"\nEvolving populations for generation {generation + 1}...")

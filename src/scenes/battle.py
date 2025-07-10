@@ -308,7 +308,6 @@ class BattleScene(Scene):
                         # Check if the current solution could be a best solution
                         if (self.developer_mode and 
                             self.battle.allies is not None and 
-                            self.battle.grades is not None and 
                             len(self.battle.allies) > 0):
                             
                             # Get the current points used
@@ -330,7 +329,6 @@ class BattleScene(Scene):
                                         hex_coords=self.battle.hex_coords,
                                         is_test=self.battle.is_test,
                                         tip_voice_filename=self.battle.tip_voice_filename,
-                                        grades=self.battle.grades,
                                         best_solution=self.battle.best_solution,
                                         best_corrupted_solution=self.battle.allies,
                                         corruption_powers=self.battle.corruption_powers
@@ -348,7 +346,6 @@ class BattleScene(Scene):
                                         hex_coords=self.battle.hex_coords,
                                         is_test=self.battle.is_test,
                                         tip_voice_filename=self.battle.tip_voice_filename,
-                                        grades=self.battle.grades,
                                         best_solution=self.battle.allies,
                                         best_corrupted_solution=self.battle.best_corrupted_solution,
                                         corruption_powers=self.battle.corruption_powers

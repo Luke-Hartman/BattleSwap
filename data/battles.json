@@ -23,12 +23,6 @@
     ],
     "is_test": false,
     "tip_voice_filename": "defeat_the_swordsman.wav",
-    "grades": {
-      "a_cutoff": 100,
-      "b_cutoff": 150,
-      "c_cutoff": 200,
-      "d_cutoff": 300
-    },
     "best_solution": [
       [
         "CORE_ARCHER",
@@ -83,12 +77,6 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": {
-      "a_cutoff": 100,
-      "b_cutoff": 125,
-      "c_cutoff": 150,
-      "d_cutoff": 200
-    },
     "best_solution": [
       [
         "CORE_SWORDSMAN",
@@ -155,12 +143,6 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": {
-      "a_cutoff": 100,
-      "b_cutoff": 125,
-      "c_cutoff": 150,
-      "d_cutoff": 200
-    },
     "best_solution": [
       [
         "CORE_CAVALRY",
@@ -213,12 +195,6 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": {
-      "a_cutoff": 100,
-      "b_cutoff": 150,
-      "c_cutoff": 200,
-      "d_cutoff": 300
-    },
     "best_solution": [
       [
         "CORE_ARCHER",
@@ -306,12 +282,6 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": {
-      "a_cutoff": 300,
-      "b_cutoff": 400,
-      "c_cutoff": 500,
-      "d_cutoff": 600
-    },
     "best_solution": [
       [
         "CORE_WIZARD",
@@ -381,12 +351,6 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": {
-      "a_cutoff": 200,
-      "b_cutoff": 225,
-      "c_cutoff": 250,
-      "d_cutoff": 300
-    },
     "best_solution": [
       [
         "CORE_ARCHER",
@@ -469,12 +433,6 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": {
-      "a_cutoff": 300,
-      "b_cutoff": 325,
-      "c_cutoff": 350,
-      "d_cutoff": 400
-    },
     "best_solution": [
       [
         "CORE_SWORDSMAN",
@@ -571,12 +529,6 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": {
-      "a_cutoff": 400,
-      "b_cutoff": 450,
-      "c_cutoff": 500,
-      "d_cutoff": 600
-    },
     "best_solution": [
       [
         "CORE_CAVALRY",
@@ -660,12 +612,6 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": {
-      "a_cutoff": 300,
-      "b_cutoff": 350,
-      "c_cutoff": 400,
-      "d_cutoff": 500
-    },
     "best_solution": [
       [
         "CORE_CAVALRY",
@@ -791,12 +737,6 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": {
-      "a_cutoff": 600,
-      "b_cutoff": 700,
-      "c_cutoff": 800,
-      "d_cutoff": 900
-    },
     "best_solution": [
       [
         "CORE_ARCHER",
@@ -953,12 +893,6 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": {
-      "a_cutoff": 400,
-      "b_cutoff": 500,
-      "c_cutoff": 600,
-      "d_cutoff": 700
-    },
     "best_solution": [
       [
         "CORE_CAVALRY",
@@ -1070,12 +1004,6 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": {
-      "a_cutoff": 200,
-      "b_cutoff": 300,
-      "c_cutoff": 500,
-      "d_cutoff": 700
-    },
     "best_solution": [
       [
         "CORE_LONGBOWMAN",
@@ -1150,12 +1078,6 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": {
-      "a_cutoff": 300,
-      "b_cutoff": 350,
-      "c_cutoff": 400,
-      "d_cutoff": 500
-    },
     "best_solution": [
       [
         "CRUSADER_PALADIN",
@@ -1250,7 +1172,6 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": null,
     "best_solution": [
       [
         "CRUSADER_CATAPULT",
@@ -1326,12 +1247,6 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": {
-      "a_cutoff": 400,
-      "b_cutoff": 500,
-      "c_cutoff": 700,
-      "d_cutoff": 900
-    },
     "best_solution": [
       [
         "CORE_SWORDSMAN",
@@ -1454,12 +1369,6 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": {
-      "a_cutoff": 600,
-      "b_cutoff": 700,
-      "c_cutoff": 800,
-      "d_cutoff": 900
-    },
     "best_solution": [
       [
         "CORE_CAVALRY",
@@ -1571,12 +1480,6 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": {
-      "a_cutoff": 300,
-      "b_cutoff": 400,
-      "c_cutoff": 500,
-      "d_cutoff": 600
-    },
     "best_solution": [
       [
         "CRUSADER_BLACK_KNIGHT",
@@ -1659,12 +1562,6 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": {
-      "a_cutoff": 300,
-      "b_cutoff": 400,
-      "c_cutoff": 525,
-      "d_cutoff": 700
-    },
     "best_solution": [
       [
         "CRUSADER_GUARDIAN_ANGEL",
@@ -1802,12 +1699,6 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": {
-      "a_cutoff": 600,
-      "b_cutoff": 1000,
-      "c_cutoff": 1400,
-      "d_cutoff": 1900
-    },
     "best_solution": [
       [
         "CORE_SWORDSMAN",
@@ -1961,12 +1852,6 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": {
-      "a_cutoff": 600,
-      "b_cutoff": 800,
-      "c_cutoff": 900,
-      "d_cutoff": 1100
-    },
     "best_solution": [
       [
         "ZOMBIE_TANK",
@@ -2056,12 +1941,6 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": {
-      "a_cutoff": 300,
-      "b_cutoff": 450,
-      "c_cutoff": 600,
-      "d_cutoff": 900
-    },
     "best_solution": [
       [
         "CRUSADER_DEFENDER",
@@ -2154,12 +2033,6 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": {
-      "a_cutoff": 200,
-      "b_cutoff": 250,
-      "c_cutoff": 300,
-      "d_cutoff": 300
-    },
     "best_solution": [
       [
         "CORE_SWORDSMAN",
@@ -2233,7 +2106,6 @@
     "hex_coords": null,
     "is_test": true,
     "tip_voice_filename": null,
-    "grades": null,
     "best_solution": null,
     "best_corrupted_solution": null,
     "corruption_powers": []
@@ -2278,7 +2150,6 @@
     "hex_coords": null,
     "is_test": true,
     "tip_voice_filename": null,
-    "grades": null,
     "best_solution": null,
     "best_corrupted_solution": null,
     "corruption_powers": []
@@ -2323,7 +2194,6 @@
     "hex_coords": null,
     "is_test": true,
     "tip_voice_filename": null,
-    "grades": null,
     "best_solution": null,
     "best_corrupted_solution": null,
     "corruption_powers": []
@@ -2361,7 +2231,6 @@
     "hex_coords": null,
     "is_test": true,
     "tip_voice_filename": null,
-    "grades": null,
     "best_solution": null,
     "best_corrupted_solution": null,
     "corruption_powers": []
@@ -2392,7 +2261,6 @@
     "hex_coords": null,
     "is_test": true,
     "tip_voice_filename": null,
-    "grades": null,
     "best_solution": null,
     "best_corrupted_solution": null,
     "corruption_powers": []
@@ -2423,7 +2291,6 @@
     "hex_coords": null,
     "is_test": true,
     "tip_voice_filename": null,
-    "grades": null,
     "best_solution": null,
     "best_corrupted_solution": null,
     "corruption_powers": []
@@ -2489,7 +2356,6 @@
     "hex_coords": null,
     "is_test": true,
     "tip_voice_filename": null,
-    "grades": null,
     "best_solution": null,
     "best_corrupted_solution": null,
     "corruption_powers": []
@@ -2604,7 +2470,6 @@
     "hex_coords": null,
     "is_test": true,
     "tip_voice_filename": null,
-    "grades": null,
     "best_solution": null,
     "best_corrupted_solution": null,
     "corruption_powers": []
@@ -2665,12 +2530,6 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": {
-      "a_cutoff": 300,
-      "b_cutoff": 600,
-      "c_cutoff": 900,
-      "d_cutoff": 1200
-    },
     "best_solution": [
       [
         "CORE_CAVALRY",
@@ -2767,12 +2626,6 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": {
-      "a_cutoff": 400,
-      "b_cutoff": 600,
-      "c_cutoff": 900,
-      "d_cutoff": 1200
-    },
     "best_solution": [
       [
         "CORE_DUELIST",
@@ -2855,12 +2708,6 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": {
-      "a_cutoff": 300,
-      "b_cutoff": 400,
-      "c_cutoff": 500,
-      "d_cutoff": 600
-    },
     "best_solution": [
       [
         "CORE_CAVALRY",
@@ -2962,12 +2809,6 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": {
-      "a_cutoff": 400,
-      "b_cutoff": 500,
-      "c_cutoff": 600,
-      "d_cutoff": 700
-    },
     "best_solution": [
       [
         "CRUSADER_CLERIC",
@@ -3050,12 +2891,6 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": {
-      "a_cutoff": 200,
-      "b_cutoff": 250,
-      "c_cutoff": 300,
-      "d_cutoff": 400
-    },
     "best_solution": [
       [
         "CRUSADER_PIKEMAN",
@@ -3143,12 +2978,6 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": {
-      "a_cutoff": 400,
-      "b_cutoff": 450,
-      "c_cutoff": 500,
-      "d_cutoff": 600
-    },
     "best_solution": [
       [
         "CORE_LONGBOWMAN",
@@ -3299,12 +3128,6 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": {
-      "a_cutoff": 1850,
-      "b_cutoff": 2000,
-      "c_cutoff": 2200,
-      "d_cutoff": 2400
-    },
     "best_solution": [
       [
         "CRUSADER_COMMANDER",
@@ -3539,12 +3362,6 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": {
-      "a_cutoff": 500,
-      "b_cutoff": 700,
-      "c_cutoff": 9000,
-      "d_cutoff": 1100
-    },
     "best_solution": [
       [
         "CORE_SWORDSMAN",
@@ -3688,12 +3505,6 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": {
-      "a_cutoff": 700,
-      "b_cutoff": 1000,
-      "c_cutoff": 1300,
-      "d_cutoff": 1600
-    },
     "best_solution": [
       [
         "CORE_SWORDSMAN",
@@ -3909,12 +3720,6 @@
     ],
     "is_test": false,
     "tip_voice_filename": null,
-    "grades": {
-      "a_cutoff": 1700,
-      "b_cutoff": 1850,
-      "c_cutoff": 2000,
-      "d_cutoff": 2300
-    },
     "best_solution": [
       [
         "CORE_WIZARD",

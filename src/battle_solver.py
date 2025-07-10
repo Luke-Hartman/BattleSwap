@@ -7,7 +7,7 @@ from functools import total_ordering
 import esper
 import shapely
 from auto_battle import BattleOutcome, simulate_battle_with_dependencies
-from battles import BattleGrades, get_battle_id
+from battles import get_battle_id
 from components.health import Health
 from components.team import Team, TeamType
 from components.unit_state import State, UnitState
@@ -46,8 +46,8 @@ ALLOWED_UNIT_TYPES = [
     UnitType.CORE_LONGBOWMAN,
     UnitType.CORE_SWORDSMAN,
     UnitType.CORE_WIZARD,
-    # UnitType.CRUSADER_BANNER_BEARER,
-    UnitType.CRUSADER_COMMANDER,
+    UnitType.CRUSADER_BANNER_BEARER,
+    # UnitType.CRUSADER_COMMANDER,
     UnitType.CRUSADER_BLACK_KNIGHT,
     UnitType.CRUSADER_CATAPULT,
     UnitType.CRUSADER_CLERIC,
@@ -66,36 +66,19 @@ ALLOWED_UNIT_TYPES = [
     UnitType.ZOMBIE_TANK,
 ]
 
-def grade_solution(outcome: BattleOutcome, points_used: int, battle_grades: BattleGrades) -> str:
-    """Grade a solution based on points used."""
-    if outcome != BattleOutcome.TEAM1_VICTORY:
-        return "Failed"
 
-    if points_used < battle_grades.a_cutoff:
-        return "S"  # Better than A
-    elif points_used <= battle_grades.a_cutoff:
-        return "A"
-    elif points_used <= battle_grades.b_cutoff:
-        return "B"
-    elif points_used <= battle_grades.c_cutoff:
-        return "C"
-    elif points_used <= battle_grades.d_cutoff:
-        return "D"
-    else:
-        return "F"
 
 @total_ordering
 class Fitness:
 
-    def __init__(self, outcome: BattleOutcome, points: float, team1_health: float, team2_health: float, grade: str):
+    def __init__(self, outcome: BattleOutcome, points: float, team1_health: float, team2_health: float):
         self.outcome = outcome
         self.points = points
         self.team1_health = team1_health
         self.team2_health = team2_health
-        self.grade = grade
 
     def __str__(self) -> str:
-        return f"Outcome: {self.outcome}, Points: {self.points} ({self.grade}), Team 1 Health: {self.team1_health}, Team 2 Health: {self.team2_health}"
+        return f"Outcome: {self.outcome}, Points: {self.points}, Team 1 Health: {self.team1_health}, Team 2 Health: {self.team2_health}"
 
     def _as_tuple(self) -> Tuple[bool, float, float]:
         # Maximizing fitness
@@ -146,7 +129,6 @@ class Individual:
     ) -> Fitness:
         battle = get_battle_id(self.battle_id)
         enemy_placements = battle.enemies
-        grades = battle.grades
         def _get_team_health(team_type: TeamType) -> float:
             total_health = 0
             for ent, (health, team, unit_state) in esper.get_components(Health, Team, UnitState):
@@ -164,7 +146,6 @@ class Individual:
                 points=self.points,
                 team1_health=_get_team_health(TeamType.TEAM1),
                 team2_health=_get_team_health(TeamType.TEAM2),
-                grade=grade_solution(outcome, self.points, grades),
             )
         )
         self._fitness = fitness_result
@@ -746,86 +727,7 @@ class UnitValuesPlotter(Plotter):
         return fig.to_html()
 
 
-class GradeDistributionPlotter(Plotter):
 
-    GRADE_ORDER = ["S", "A", "B", "C", "D", "F", "Failed"]
-    GRADE_COLORS = {
-        "S": "#4CAF50",  # Green
-        "A": "#8BC34A",  # Light Green
-        "B": "#CDDC39",  # Lime
-        "C": "#FFEB3B",  # Yellow
-        "D": "#FFC107",  # Amber
-        "F": "#F44336",  # Red
-        "Failed": "#9E9E9E"  # Gray
-    }
-    def __init__(self):
-        self.grade_history = defaultdict(list)
-        self.best_points_history = []
-
-    def update(self, population: Population):
-        grade_distribution = Counter()
-        for ind in population.individuals:
-            grade_distribution[ind.fitness.grade] += 1
-        for grade in self.GRADE_ORDER:
-            self.grade_history[grade].append(grade_distribution[grade])
-        self.best_points_history.append(population.best_individuals[0].points)
-
-    def create_plot(self) -> str:
-        """Create and save the grade distribution plot."""
-        fig = go.Figure()
-        
-        # Define grade order and colors
-        # For each grade, create a trace showing count over generations
-        for grade in self.GRADE_ORDER:
-            y_values = self.grade_history[grade]
-            generations = list(range(len(self.grade_history[grade])))
-
-            # Only add the trace if this grade appears at least once
-            if sum(y_values) > 0:
-                fig.add_trace(go.Scatter(
-                    x=generations,
-                    y=y_values,
-                    name=grade,
-                    mode='lines+markers',
-                    line=dict(width=3, color=self.GRADE_COLORS.get(grade)),
-                    marker=dict(size=8),
-                    hovertemplate=f'Grade: {grade}<br>Generation: %{{x}}<br>Count: %{{y}}<extra></extra>',
-                ))
-        
-        # Add best solution points as a secondary y-axis
-        if any(p is not None for p in self.best_points_history):
-            fig.add_trace(go.Scatter(
-                x=list(range(len(self.best_points_history))),
-                y=self.best_points_history,
-                name="Best Solution Points",
-                mode='lines+markers',
-                line=dict(width=3, color='#000000', dash='dash'),  # Black dashed line
-                marker=dict(size=8, symbol='diamond'),
-                hovertemplate='Generation: %{x}<br>Best Solution Points: %{y}<extra></extra>',
-                yaxis="y2"
-            ))
-            
-        # Update layout
-        fig.update_layout(
-            title="Grade Distribution Over Generations",
-            xaxis_title="Generation",
-            yaxis_title="Number of Individuals",
-            yaxis2=dict(
-                title="Points",
-                overlaying="y",
-                side="right",
-                showgrid=False
-            ),
-            legend=dict(
-                yanchor="top",
-                y=0.99,
-                xanchor="left",
-                x=1.05
-            ),
-            margin=dict(r=150)  # Add right margin for legend
-        )
-        
-        return fig.to_html()
 
 class PlotGroup(Plotter):
 
@@ -848,10 +750,11 @@ class PlotGroup(Plotter):
 def random_population(
     battle_id: str,
     size: int,
-    target_cost: int,
 ) -> Population:
+    min_target_cost = 300
+    max_target_cost = 3000
     return Population([
-        Individual(battle_id, generate_random_army(target_cost))
+        Individual(battle_id, generate_random_army(random.randint(min_target_cost, max_target_cost)))
         for _ in range(size)
     ])
 
@@ -864,7 +767,7 @@ def main():
     TOURNAMENT_SIZE = None
     USE_POWERS = False
 
-    population = random_population(battle_id=BATTLE_ID, size=PARENTS_PER_GENERATION, target_cost=get_battle_id(BATTLE_ID).grades.d_cutoff)
+    population = random_population(battle_id=BATTLE_ID, size=PARENTS_PER_GENERATION)
     population.evaluate()
     evolution = EvolutionStrategy(
         mutations=[
@@ -890,7 +793,6 @@ def main():
         plotters=[
             UnitCountsPlotter(),
             UnitValuesPlotter(),
-            GradeDistributionPlotter(),
         ],
     )
     

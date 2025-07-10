@@ -354,10 +354,12 @@ def create_core_archer(
         entity,
         Destination(target_strategy=targetting_strategy, x_offset=0)
     )
-    # Determine range based on tier - Elite gets 50% more range
+    # Determine range and projectile speed based on tier - Elite gets 50% more range and 50% more projectile speed
     attack_range = gc.CORE_ARCHER_ATTACK_RANGE
+    projectile_speed = gc.CORE_ARCHER_PROJECTILE_SPEED
     if tier == UnitTier.ELITE:
         attack_range = attack_range * 1.5
+        projectile_speed = projectile_speed * 1.5
     
     esper.add_component(entity, RangeIndicator(ranges=[attack_range]))
     arrow_damage = gc.CORE_ARCHER_ATTACK_DAMAGE
@@ -403,7 +405,7 @@ def create_core_archer(
                         ],
                         7: [
                             CreatesProjectile(
-                                projectile_speed=gc.CORE_ARCHER_PROJECTILE_SPEED,
+                                projectile_speed=projectile_speed,
                                 effects=[
                                     Damages(damage=arrow_damage, recipient=Recipient.TARGET),
                                 ],
@@ -546,14 +548,14 @@ def create_core_cavalry(
     cavalry_health = gc.CORE_CAVALRY_HP
     cavalry_damage = gc.CORE_CAVALRY_ATTACK_DAMAGE
     
-    # Basic tier (and Advanced): 50% more health
-    if tier == UnitTier.BASIC or tier == UnitTier.ADVANCED:
-        cavalry_health = cavalry_health * 1.5
+    # Basic tier (and Advanced): 60% more health
+    if tier == UnitTier.ADVANCED:
+        cavalry_health = cavalry_health * 1.6
     
-    # Elite tier: 50% more health and 50% damage
+    # Elite tier: 60% more health and 60% damage
     elif tier == UnitTier.ELITE:
-        cavalry_health = cavalry_health * 1.50  # Total 1.5x = 50% increase
-        cavalry_damage = cavalry_damage * 1.5
+        cavalry_health = cavalry_health * 1.6
+        cavalry_damage = cavalry_damage * 1.6
     
     entity = unit_base_entity(
         x=x,
@@ -750,10 +752,20 @@ def create_core_longbowman(
         tier: UnitTier,
     ) -> int:
     """Create a longbowman entity with all necessary components."""
+    # Calculate tier-specific values
+    longbowman_damage = gc.CORE_LONGBOWMAN_ATTACK_DAMAGE
+    
     if tier == UnitTier.ADVANCED or tier == UnitTier.ELITE:
         pierce = 1
     else:
         pierce = 0
+    
+    # Advanced tier: 33.33% damage cut
+    if tier == UnitTier.ADVANCED:
+        longbowman_damage = longbowman_damage * (2/3)  # 33.33% damage cut
+    
+    # Elite tier: damage back to normal (no damage cut)
+    # No additional changes needed since longbowman_damage starts at base value
     
     entity = unit_base_entity(
         x=x,
@@ -823,7 +835,7 @@ def create_core_longbowman(
                             CreatesProjectile(
                                 projectile_speed=gc.CORE_LONGBOWMAN_PROJECTILE_SPEED,
                                 effects=[
-                                    Damages(damage=gc.CORE_LONGBOWMAN_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                                    Damages(damage=longbowman_damage, recipient=Recipient.TARGET),
                                 ],
                                 visual=Visual.Arrow,
                                 projectile_offset_x=5*gc.MINIFOLKS_SCALE,
@@ -864,15 +876,15 @@ def create_core_swordsman(
     swordsman_health = gc.CORE_SWORDSMAN_HP
     swordsman_damage = gc.CORE_SWORDSMAN_ATTACK_DAMAGE
     
-    # Advanced tier: 25% more health and damage
+    # Advanced tier: 30% more health and damage
     if tier == UnitTier.ADVANCED:
-        swordsman_health = swordsman_health * 1.25
-        swordsman_damage = swordsman_damage * 1.25
+        swordsman_health = swordsman_health * 1.3
+        swordsman_damage = swordsman_damage * 1.3
     
-    # Elite tier: 50% more health and damage (total)
+    # Elite tier: 60% more health and damage (total)
     elif tier == UnitTier.ELITE:
-        swordsman_health = swordsman_health * 1.5
-        swordsman_damage = swordsman_damage * 1.5
+        swordsman_health = swordsman_health * 1.6
+        swordsman_damage = swordsman_damage * 1.6
     
     entity = unit_base_entity(
         x=x,
@@ -1236,14 +1248,14 @@ def create_crusader_black_knight(
     black_knight_movement_speed = gc.CRUSADER_BLACK_KNIGHT_MOVEMENT_SPEED
     black_knight_damage = gc.CRUSADER_BLACK_KNIGHT_ATTACK_DAMAGE
     
-    # Advanced tier (and Elite): 25% more health and speed
+    # Advanced tier (and Elite): 30% more health and speed
     if tier == UnitTier.ADVANCED or tier == UnitTier.ELITE:
-        black_knight_health = black_knight_health * 1.25
-        black_knight_movement_speed = black_knight_movement_speed * 1.25
+        black_knight_health = black_knight_health * 1.3
+        black_knight_movement_speed = black_knight_movement_speed * 1.3
     
-    # Elite tier: 50% more damage
+    # Elite tier: 60% more damage
     if tier == UnitTier.ELITE:
-        black_knight_damage = black_knight_damage * 1.5
+        black_knight_damage = black_knight_damage * 1.6
     
     entity = unit_base_entity(
         x=x,
@@ -1377,10 +1389,9 @@ def create_crusader_catapult(
         catapult_health = catapult_health * 1.25
         catapult_damage = catapult_damage * 1.25
     
-    # Elite tier: 25% reduced minimum range and 25% more maximum range
+    # Elite tier: 25% reduced minimum range
     if tier == UnitTier.ELITE:
         catapult_min_range = catapult_min_range * 0.75
-        catapult_max_range = catapult_max_range * 1.25
     
     entity = unit_base_entity(
         x=x,
@@ -1952,9 +1963,13 @@ def create_crusader_defender(
     # Calculate tier-specific values
     defender_health = gc.CRUSADER_DEFENDER_HP
     
-    # Elite tier: 50% increased health
-    if tier == UnitTier.ELITE:
-        defender_health = defender_health * 1.5
+    # Advanced tier: 25% more health
+    if tier == UnitTier.ADVANCED:
+        defender_health = defender_health * 1.25
+    
+    # Elite tier: 75% more health total
+    elif tier == UnitTier.ELITE:
+        defender_health = defender_health * 1.75
     
     if tier == UnitTier.ADVANCED or tier == UnitTier.ELITE:
         armor_component = Armor(flat_reduction=gc.HEAVILY_ARMOR_FLAT_DAMAGE_REDUCTION, percent_reduction=gc.HEAVILY_ARMOR_PERCENT_DAMAGE_REDUCTION)
@@ -3892,11 +3907,6 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
         }
     )
     if unit_type == UnitType.CORE_LONGBOWMAN:
-        # Elite: 33.33% more attack speed
-        attack_animation_duration = gc.CORE_LONGBOWMAN_ANIMATION_ATTACK_DURATION
-        if tier == UnitTier.ELITE:
-            attack_animation_duration = attack_animation_duration * 0.75  # 33.33% faster = 0.75x duration
-
         return SpriteSheet(
             surface=sprite_sheets[UnitType.CORE_LONGBOWMAN],
             frame_width=100,
@@ -3907,7 +3917,7 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
             animation_durations={
                 AnimationType.IDLE: gc.CORE_LONGBOWMAN_ANIMATION_IDLE_DURATION,
                 AnimationType.WALKING: gc.CORE_LONGBOWMAN_ANIMATION_WALKING_DURATION,
-                AnimationType.ABILITY1: attack_animation_duration,
+                AnimationType.ABILITY1: gc.CORE_LONGBOWMAN_ANIMATION_ATTACK_DURATION,
                 AnimationType.DYING: gc.CORE_LONGBOWMAN_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(0, 2),

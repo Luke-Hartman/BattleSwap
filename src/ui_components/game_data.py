@@ -112,27 +112,27 @@ GLOSSARY_ENTRIES = {
 UPGRADE_DESCRIPTIONS = {
     UnitType.CORE_ARCHER: {
         UnitTier.ADVANCED: "50% increased attack speed",
-        UnitTier.ELITE: "50% increased range"
+        UnitTier.ELITE: "50% increased range\n50% increased projectile speed"
     },
     UnitType.CORE_BARBARIAN: {
         UnitTier.ADVANCED: "25% increased health and damage",
         UnitTier.ELITE: "25% increased movement and attack speed"
     },
     UnitType.CORE_CAVALRY: {
-        UnitTier.ADVANCED: "50% increased health",
-        UnitTier.ELITE: "50% increased damage"
+        UnitTier.ADVANCED: "60% increased health",
+        UnitTier.ELITE: "60% increased damage"
     },
     UnitType.CORE_DUELIST: {
         UnitTier.ADVANCED: "50% increased hits per combo",
         UnitTier.ELITE: "50% increased hits per combo"
     },
     UnitType.CORE_LONGBOWMAN: {
-        UnitTier.ADVANCED: "Arrows pierce through one target",
-        UnitTier.ELITE: "33% increased attack speed"
+        UnitTier.ADVANCED: "Arrows pierce through one target\n33% reduced damage",
+        UnitTier.ELITE: "Damage restored to 100%"
     },
     UnitType.CORE_SWORDSMAN: {
-        UnitTier.ADVANCED: "25% increased health and damage",
-        UnitTier.ELITE: "25% increased health and damage"
+        UnitTier.ADVANCED: "30% increased health and damage",
+        UnitTier.ELITE: "30% increased health and damage"
     },
     UnitType.CORE_WIZARD: {
         UnitTier.ADVANCED: "50% increased damage",
@@ -143,12 +143,12 @@ UPGRADE_DESCRIPTIONS = {
         UnitTier.ELITE: "50% increased health\nAura grants 25% increased attack speed"
     },
     UnitType.CRUSADER_BLACK_KNIGHT: {
-        UnitTier.ADVANCED: "25% increased health and movement speed",
-        UnitTier.ELITE: "50% increased damage"
+        UnitTier.ADVANCED: "30% increased health and movement speed",
+        UnitTier.ELITE: "60% increased damage"
     },
     UnitType.CRUSADER_CATAPULT: {
         UnitTier.ADVANCED: "25% increased health and damage",
-        UnitTier.ELITE: "25% reduced minimum range\n25% increased maximum range"
+        UnitTier.ELITE: "25% reduced minimum range"
     },
     UnitType.CRUSADER_CLERIC: {
         UnitTier.ADVANCED: "100% increased range",
@@ -163,7 +163,7 @@ UPGRADE_DESCRIPTIONS = {
         UnitTier.ELITE: "25% increased damage and attack speed"
     },
     UnitType.CRUSADER_DEFENDER: {
-        UnitTier.ADVANCED: "Gains Heavily Armored",
+        UnitTier.ADVANCED: "Gains Heavily Armored\n25% increased health",
         UnitTier.ELITE: "50% increased health"
     },
     UnitType.CRUSADER_GOLD_KNIGHT: {
@@ -239,15 +239,17 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         archer_damage = gc.CORE_ARCHER_ATTACK_DAMAGE
         attack_range = gc.CORE_ARCHER_ATTACK_RANGE
         attack_animation_duration = gc.CORE_ARCHER_ANIMATION_ATTACK_DURATION
+        projectile_speed = gc.CORE_ARCHER_PROJECTILE_SPEED
         
         # Advanced tier: 50% faster rate of fire
         if unit_tier == UnitTier.ADVANCED:
             attack_animation_duration = attack_animation_duration * 2/3  # 50% faster = 2/3 duration
         
-        # Elite tier: 50% more range AND keeps the faster rate of fire from Advanced
+        # Elite tier: 50% more range, 50% more projectile speed, AND keeps the faster rate of fire from Advanced
         elif unit_tier == UnitTier.ELITE:
             attack_animation_duration = attack_animation_duration * 2/3  # Keep Advanced upgrade
-            attack_range = attack_range * 1.5  # Add Elite upgrade
+            attack_range = attack_range * 1.5  # Add Elite range upgrade
+            projectile_speed = projectile_speed * 1.5  # Add Elite projectile speed upgrade
             
         return UnitData(
             name="Archer",
@@ -263,7 +265,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             tooltips={
                 StatType.DEFENSE: f"{gc.CORE_ARCHER_HP} maximum health",
                 StatType.SPEED: f"{gc.CORE_ARCHER_MOVEMENT_SPEED:.1f} units per second",
-                StatType.DAMAGE: f"{archer_damage:.0f} per hit ({archer_damage / attack_animation_duration:.1f} per second)",
+                StatType.DAMAGE: f"{archer_damage:.0f} per hit ({archer_damage / attack_animation_duration:.1f} per second)" + (f". Projectile speed: {projectile_speed:.0f}" if unit_tier == UnitTier.ELITE else ""),
                 StatType.RANGE: f"{attack_range:.0f} units",
                 StatType.UTILITY: None
             },
@@ -333,14 +335,14 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         cavalry_health = gc.CORE_CAVALRY_HP
         cavalry_damage = gc.CORE_CAVALRY_ATTACK_DAMAGE
         
-        # Basic tier (and Advanced): 50% more health
+        # Advanced tier: 60% more health
         if unit_tier == UnitTier.ADVANCED:
-            cavalry_health = cavalry_health * 1.5
+            cavalry_health = cavalry_health * 1.6
         
-        # Elite tier: 50% more health and 50% damage
+        # Elite tier: 60% more health and 60% damage
         elif unit_tier == UnitTier.ELITE:
-            cavalry_health = cavalry_health * 1.50  # Total 1.5x = 50% increase
-            cavalry_damage = cavalry_damage * 1.5
+            cavalry_health = cavalry_health * 1.6
+            cavalry_damage = cavalry_damage * 1.6
         
         return UnitData(
             name="Cavalry",
@@ -415,11 +417,14 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
     
     if unit_type == UnitType.CORE_LONGBOWMAN:
         longbowman_damage = gc.CORE_LONGBOWMAN_ATTACK_DAMAGE
-        
-        # Elite: 33.33% more attack speed
         attack_animation_duration = gc.CORE_LONGBOWMAN_ANIMATION_ATTACK_DURATION
-        if unit_tier == UnitTier.ELITE:
-            attack_animation_duration = attack_animation_duration * 0.75  # 33.33% faster = 0.75x duration
+        
+        # Advanced tier: 33.33% damage cut
+        if unit_tier == UnitTier.ADVANCED:
+            longbowman_damage = longbowman_damage * (2/3)  # 33.33% damage cut
+        
+        # Elite tier: damage back to normal (no damage cut, no attack speed bonus)
+        # No additional changes needed since longbowman_damage starts at base value
         
         # Advanced and Elite: Arrows pierce one target
         if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE:
@@ -433,14 +438,14 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             tier=unit_tier,
             stats={
                 StatType.DEFENSE: defense_stat(gc.CORE_LONGBOWMAN_HP),
-                StatType.DAMAGE: damage_stat(longbowman_damage / attack_animation_duration * 1.5 if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE else 1),
+                StatType.DAMAGE: damage_stat(longbowman_damage / attack_animation_duration, 1.5 if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE else 1),
                 StatType.RANGE: range_stat(gc.CORE_LONGBOWMAN_ATTACK_RANGE),
                 StatType.SPEED: speed_stat(gc.CORE_LONGBOWMAN_MOVEMENT_SPEED),
                 StatType.UTILITY: None
             },
             tooltips={
                 StatType.DEFENSE: f"{gc.CORE_LONGBOWMAN_HP} maximum health",
-                StatType.DAMAGE: f"{longbowman_damage} per hit ({longbowman_damage / attack_animation_duration:.1f} per second)" + (". Arrows pierce one target." if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE else ""),
+                StatType.DAMAGE: f"{longbowman_damage:.0f} per hit ({longbowman_damage / attack_animation_duration:.1f} per second)" + (". Arrows pierce one target." if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE else ""),
                 StatType.RANGE: f"{gc.CORE_LONGBOWMAN_ATTACK_RANGE} units",
                 StatType.SPEED: f"{gc.CORE_LONGBOWMAN_MOVEMENT_SPEED} units per second",
                 StatType.UTILITY: None
@@ -463,15 +468,15 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         swordsman_damage = gc.CORE_SWORDSMAN_ATTACK_DAMAGE
         swordsman_health = gc.CORE_SWORDSMAN_HP
         
-        # Advanced tier: 25% more health and damage
+        # Advanced tier: 30% more health and damage
         if unit_tier == UnitTier.ADVANCED:
-            swordsman_damage = swordsman_damage * 1.25
-            swordsman_health = swordsman_health * 1.25
+            swordsman_damage = swordsman_damage * 1.3
+            swordsman_health = swordsman_health * 1.3
         
-        # Elite tier: 50% more health and damage (total)
+        # Elite tier: 60% more health and damage (total)
         elif unit_tier == UnitTier.ELITE:
-            swordsman_damage = swordsman_damage * 1.5
-            swordsman_health = swordsman_health * 1.5
+            swordsman_damage = swordsman_damage * 1.6
+            swordsman_health = swordsman_health * 1.6
         
         return UnitData(
             name="Swordsman",
@@ -610,14 +615,14 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         black_knight_movement_speed = gc.CRUSADER_BLACK_KNIGHT_MOVEMENT_SPEED
         black_knight_damage = gc.CRUSADER_BLACK_KNIGHT_ATTACK_DAMAGE
         
-        # Advanced tier (and Elite): 25% more health and speed
+        # Advanced tier (and Elite): 30% more health and speed
         if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE:
-            black_knight_health = black_knight_health * 1.25
-            black_knight_movement_speed = black_knight_movement_speed * 1.25
+            black_knight_health = black_knight_health * 1.3
+            black_knight_movement_speed = black_knight_movement_speed * 1.3
         
-        # Elite tier: 50% more damage
+        # Elite tier: 60% more damage
         if unit_tier == UnitTier.ELITE:
-            black_knight_damage = black_knight_damage * 1.5
+            black_knight_damage = black_knight_damage * 1.6
         
         return UnitData(
             name="Black Knight",
@@ -644,7 +649,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             modification_levels={
                 StatType.DEFENSE: 1 if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE else 0,
                 StatType.SPEED: 1 if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE else 0,
-                StatType.DAMAGE: 0 if unit_tier != UnitTier.ELITE else 1,
+                StatType.DAMAGE: 1 if unit_tier == UnitTier.ELITE else 0,
                 StatType.RANGE: 0,
                 StatType.UTILITY: 0
             }
@@ -662,10 +667,9 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             catapult_health = catapult_health * 1.25
             catapult_damage = catapult_damage * 1.25
         
-        # Elite tier: 25% reduced minimum range and 25% more maximum range  
+        # Elite tier: 25% reduced minimum range only
         if unit_tier == UnitTier.ELITE:
             catapult_min_range = catapult_min_range * 0.75
-            catapult_max_range = catapult_max_range * 1.25
         
         return UnitData(
             name="Catapult",
@@ -839,14 +843,19 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         description = f"Defenders are <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a> units with high health and low damage."
         defense_tooltip = f"{defender_health} maximum health, armored"
 
-        if unit_tier == UnitTier.ELITE:
-            defender_health = defender_health * 1.5
+        # Advanced tier: 25% more health
+        if unit_tier == UnitTier.ADVANCED:
+            defender_health = defender_health * 1.25
+            
+        # Elite tier: 75% more health total
+        elif unit_tier == UnitTier.ELITE:
+            defender_health = defender_health * 1.75
         
         if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE:
             defender_heavily_armored = True
             defender_armored = False
             description = f"Defenders are <a href='{GlossaryEntryType.HEAVILY_ARMORED.value}'>Heavily Armored</a> units with high health and low damage."
-            defense_tooltip = f"{defender_health} maximum health, heavily armored"
+            defense_tooltip = f"{int(defender_health)} maximum health, heavily armored"
         
         return UnitData(
             name="Defender",

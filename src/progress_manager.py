@@ -117,56 +117,7 @@ class ProgressManager(BaseModel):
             return result
         return value
 
-    def calculate_battle_grade(self, battle: battles.Battle) -> Optional[str]:
-        """Calculate grade for a specific battle based on units used."""
-        if not battle.grades or battle.hex_coords not in self.solutions:
-            return None
-        solution = self.solutions[battle.hex_coords]
-        points_used = calculate_points_for_units(solution.unit_placements)
-        return battle.grades.get_grade(points_used)
-    
-    def calculate_overall_grade(self) -> str:
-        """Calculate overall grade based on total points used across all completed battles."""
-        points_used = 0
-        total_a_cutoff = 0
-        total_b_cutoff = 0
-        total_c_cutoff = 0
-        total_d_cutoff = 0
-        
-        for battle in battles.get_battles():
-            if not battle.grades or battle.hex_coords not in self.solutions:
-                continue
-            solution = self.solutions[battle.hex_coords]
-            points_used += calculate_points_for_units(solution.unit_placements)
-            total_a_cutoff += battle.grades.a_cutoff
-            total_b_cutoff += battle.grades.b_cutoff
-            total_c_cutoff += battle.grades.c_cutoff
-            total_d_cutoff += battle.grades.d_cutoff
-            
-        # If no battles completed yet, return "-"
-        if total_d_cutoff == 0:
-            return "-"
-            
-        if points_used <= total_a_cutoff:
-            return 'A'
-        elif points_used <= total_b_cutoff:
-            return 'B'
-        elif points_used <= total_c_cutoff:
-            return 'C'
-        elif points_used <= total_d_cutoff:
-            return 'D'
-        return 'F'
 
-    def get_overall_grade_cutoffs(self) -> Dict[str, int]:
-        """Get the total grade cutoffs across all completed battles."""
-        total_cutoffs = defaultdict(int)
-        for battle in battles.get_battles():
-            if battle.grades and battle.hex_coords in self.solutions:
-                total_cutoffs['a'] += battle.grades.a_cutoff
-                total_cutoffs['b'] += battle.grades.b_cutoff
-                total_cutoffs['c'] += battle.grades.c_cutoff
-                total_cutoffs['d'] += battle.grades.d_cutoff
-        return dict(total_cutoffs)
 
     def available_units(self, current_battle: Optional[battles.Battle]) -> Dict[UnitType, int]:
         """Get the available units for the player."""
