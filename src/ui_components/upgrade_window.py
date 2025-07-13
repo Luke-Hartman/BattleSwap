@@ -400,8 +400,7 @@ class UpgradeWindow:
     def _create_unit_grid(self, container: pygame_gui.elements.UIPanel, container_width: int, container_height: int) -> None:
         """Create a grid of unit icons in the given container."""
         # Get available units from progress manager
-        #available_units = set(progress_manager.available_units(None))
-        available_units = set(UnitType)
+        available_units = set(progress_manager.available_units(None))
         
         assert available_units, "No units available for upgrade"
         
