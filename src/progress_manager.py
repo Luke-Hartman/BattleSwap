@@ -78,6 +78,7 @@ class ProgressManager(BaseModel):
     game_completed_corruption: bool = False
     unit_tiers: Dict[UnitType, UnitTier] = {}
     hex_states: Dict[Tuple[int, int], HexLifecycleState] = {}
+    upgrade_tutorial_shown: bool = False
 
     @field_serializer('solutions')
     def serialize_solutions(self, solutions: Dict[Tuple[int, int], Solution]) -> Dict[str, Any]:
@@ -336,6 +337,23 @@ class ProgressManager(BaseModel):
         
         return available_advanced, available_elite
 
+    def should_show_upgrade_tutorial(self) -> bool:
+        """Check if the upgrade tutorial should be shown."""
+        return not self.upgrade_tutorial_shown and self._has_claimed_upgrade_hexes()
+
+    def mark_upgrade_tutorial_shown(self) -> None:
+        """Mark the upgrade tutorial as shown."""
+        self.upgrade_tutorial_shown = True
+        save_progress()
+
+    def _has_claimed_upgrade_hexes(self) -> bool:
+        """Check if any upgrade hexes have been claimed."""
+        import upgrade_hexes
+        for coords, state in self.hex_states.items():
+            if upgrade_hexes.is_upgrade_hex(coords) and state in [HexLifecycleState.CLAIMED, HexLifecycleState.CORRUPTED, HexLifecycleState.RECLAIMED]:
+                return True
+        return False
+
 def get_progress_path() -> Path:
     """Get the path to the progress file."""
     progress_dir = Path(user_config_dir("battleswap"))
@@ -410,6 +428,7 @@ def reset_progress() -> None:
         hex_coords: HexLifecycleState.FOGGED for hex_coords in upgrade_hexes.get_upgrade_hexes() + [battle.hex_coords for battle in battles.get_battles() if not battle.is_test]
     }
     progress_manager.hex_states[(0, 0)] = HexLifecycleState.UNCLAIMED
+    progress_manager.upgrade_tutorial_shown = False
     save_progress()
 
 def has_incompatible_save() -> bool:

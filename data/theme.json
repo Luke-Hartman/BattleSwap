@@ -110,6 +110,11 @@
             "size": "48"
         }
     },
+    "#upgrade_tutorial_text": {
+        "font": {
+            "size": "24"
+        }
+    },
     "@left_aligned_text": {
         "misc": {
             "text_horiz_alignment": "left",

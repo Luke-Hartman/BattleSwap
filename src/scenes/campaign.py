@@ -27,6 +27,7 @@ from world_map_view import BorderState, FillState, WorldMapView, HexState
 from scene_utils import use_world
 from ui_components.progress_panel import ProgressPanel
 from ui_components.congratulations_panel import CongratulationsPanel
+from ui_components.upgrade_tutorial_panel import UpgradeTutorialPanel
 from ui_components.corruption_icon import CorruptionIcon
 import upgrade_hexes
 
@@ -48,6 +49,7 @@ class CampaignScene(Scene):
         self.corruption_dialog = None
         self.corrupted_battles = None
         self.corruption_icon = None
+        self.upgrade_tutorial = None
 
         # Create camera with desired initial settings
         self.hovered_hex: Optional[Tuple[int, int]] = None
@@ -144,6 +146,11 @@ class CampaignScene(Scene):
             self.upgrade_button_flash_time = 0.0
             self.upgrade_button_flash_state = False
             self._update_upgrade_button_flash_theme()  # Ensure we end on normal theme
+        
+        # Show upgrade tutorial if this is the first time upgrades are available
+        if progress_manager.should_show_upgrade_tutorial() and self.upgrade_tutorial is None:
+            self.upgrade_tutorial = UpgradeTutorialPanel(self.manager)
+            progress_manager.mark_upgrade_tutorial_shown()
     
     def check_panels(self) -> None:
         # Check if we should show congratulations
@@ -377,6 +384,11 @@ class CampaignScene(Scene):
                             self.create_context_buttons()
                             self._update_upgrade_button_state()  # Update upgrade button state
                             emit_event(PLAY_SOUND, event=PlaySoundEvent(filename="unit_picked_up.wav", volume=1.0))
+                
+                # Handle upgrade tutorial panel events
+                if self.upgrade_tutorial is not None:
+                    if self.upgrade_tutorial.handle_event(event):
+                        self.upgrade_tutorial = None  # Clear reference when panel is closed
 
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_LEFT:
                 # Only process clicks if not over UI elements
