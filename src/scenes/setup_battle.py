@@ -704,6 +704,18 @@ class SetupBattleScene(Scene):
                 continue
 
             self.handle_escape(event)
+            
+            # Handle Enter key to start battle
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+                pygame.event.post(
+                    BattleSceneEvent(
+                        current_scene_id=id(self),
+                        world_map_view=self.world_map_view,
+                        battle_id=self.battle_id,
+                        sandbox_mode=self.sandbox_mode,
+                    ).to_event()
+                )
+                return super().update(time_delta, events)
 
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:

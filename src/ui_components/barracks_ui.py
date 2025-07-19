@@ -328,7 +328,31 @@ class BarracksUI(UITabContainer):
         for item in self.unit_list_items:
             item.refresh_tier_styling()
 
+    def cycle_to_next_faction(self) -> None:
+        """Cycle to the next faction tab."""
+        if not self.available_factions:
+            return
+        
+        # Since tabs are added in sorted order, indices are sequential (0, 1, 2, ...)
+        next_tab_index = (self.current_container_index + 1) % len(self.available_factions)
+        
+        # Switch the container
+        self.switch_current_container(next_tab_index)
+        
+        # Update button selection states (like pygame_gui does in process_event)
+        for i, tab in enumerate(self.tabs):
+            tab_button = tab["button"]
+            if i == next_tab_index:
+                tab_button.select()
+            elif tab_button.is_selected:
+                tab_button.unselect()
+
     def handle_event(self, event: pygame.event.Event) -> bool:
+        # Handle Tab key to cycle through faction tabs
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_TAB:
+            self.cycle_to_next_faction()
+            return True
+
         if super().process_event(event):
             return True
 
