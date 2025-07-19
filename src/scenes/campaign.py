@@ -416,18 +416,30 @@ class CampaignScene(Scene):
                                     pygame.USEREVENT,
                                     {'user_type': pygame_gui.UI_BUTTON_PRESSED, 'ui_element': button}
                                 ))
+                                emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                                    filename="ui_click.wav",
+                                    volume=0.5
+                                ))
                         else:
                             self.selected_hex = clicked_hex
                             self.create_context_buttons()
                             # Update grades panel with selected battle (if it's a battle)
                             if self.progress_panel is not None:
                                 self.progress_panel.update_battle(battle)
+                            emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                                filename="ui_click.wav",
+                                volume=0.5
+                            ))
                     else:
                         self.selected_hex = None
                         self.create_context_buttons()
                         # Update grades panel with no battle
                         if self.progress_panel is not None:
                             self.progress_panel.update_battle(None)
+                        emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                            filename="unit_picked_up.wav",
+                            volume=0.5
+                        ))
 
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_RIGHT:
                 self.selected_hex = None
@@ -435,6 +447,10 @@ class CampaignScene(Scene):
                 # Update grades panel with no battle
                 if self.progress_panel is not None:
                     self.progress_panel.update_battle(None)
+                emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                    filename="unit_picked_up.wav",
+                    volume=0.5
+                ))
 
             if event.type == pygame.MOUSEMOTION or (event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_RIGHT):
                 # Don't process hex hovering if we're over a UI element
