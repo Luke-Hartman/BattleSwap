@@ -720,6 +720,33 @@ class SetupBattleScene(Scene):
                     ).to_event()
                 )
                 return super().update(time_delta, events)
+            
+            # Handle number keys for unit selection from barracks
+            if event.type == pygame.KEYDOWN and ((event.key >= pygame.K_1 and event.key <= pygame.K_9) or event.key == pygame.K_0):
+                if event.key == pygame.K_0:
+                    unit_index = 9  # 0 key corresponds to 10th position (index 9)
+                else:
+                    unit_index = event.key - pygame.K_1  # Convert to 0-based index
+                
+                # Get current faction from current tab
+                current_faction = None
+                for faction, tab_index in self.barracks.faction_to_tab_index.items():
+                    if tab_index == self.barracks.current_container_index:
+                        current_faction = faction
+                        break
+                
+                if current_faction is not None:
+                    faction_units = self.barracks.unit_list_items_by_faction[current_faction]
+                    if unit_index < len(faction_units):
+                        unit_count = faction_units[unit_index]
+                        # Only select if the unit is interactive (has units available)
+                        if unit_count.interactive:
+                            play_intro(unit_count.unit_type)
+                            self.set_selected_unit_type(unit_count.unit_type, placement_team)
+                            emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                                filename="ui_click.wav",
+                                volume=0.5
+                            ))
 
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
