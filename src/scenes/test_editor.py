@@ -397,6 +397,19 @@ class TestEditorScene(Scene):
         self.manager.draw_ui(self.screen)
         return super().update(time_delta, events)
 
+    def _close_scene_windows(self) -> bool:
+        """Close any open windows specific to the test editor scene."""
+        windows_closed = False
+        
+        # Check for save dialog
+        if hasattr(self, 'save_dialog') and self.save_dialog is not None:
+            self.save_dialog.kill()
+            self.save_dialog = None
+            windows_closed = True
+            
+        # Fall back to base class behavior and combine results
+        return super()._close_scene_windows() or windows_closed
+
     def _get_scroll_percentage(self) -> float:
         """Get the current scroll position as a percentage."""
         for element in self.manager.get_sprite_group():

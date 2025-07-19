@@ -541,3 +541,36 @@ class CampaignScene(Scene):
                 self._update_upgrade_button_flash_theme()  # Ensure we end on normal theme
 
         return super().update(time_delta, events)
+
+    def _close_scene_windows(self) -> bool:
+        """Close any open windows specific to the campaign scene."""
+        windows_closed = False
+        
+        # Check for upgrade window
+        if hasattr(self, 'upgrade_window') and self.upgrade_window is not None:
+            self.upgrade_window.kill()
+            self.upgrade_window = None
+            windows_closed = True
+            
+        # Check for congratulations panels
+        if hasattr(self, 'congratulations_panel') and self.congratulations_panel is not None:
+            if hasattr(self.congratulations_panel, 'kill'):
+                self.congratulations_panel.kill()
+            self.congratulations_panel = None
+            windows_closed = True
+            
+        if hasattr(self, 'corruption_congratulations_panel') and self.corruption_congratulations_panel is not None:
+            if hasattr(self.corruption_congratulations_panel, 'kill'):
+                self.corruption_congratulations_panel.kill()
+            self.corruption_congratulations_panel = None
+            windows_closed = True
+            
+        # Check for corruption dialog
+        if hasattr(self, 'corruption_dialog') and self.corruption_dialog is not None:
+            if hasattr(self.corruption_dialog, 'kill'):
+                self.corruption_dialog.kill()
+            self.corruption_dialog = None
+            windows_closed = True
+            
+        # Fall back to base class behavior and combine results
+        return super()._close_scene_windows() or windows_closed

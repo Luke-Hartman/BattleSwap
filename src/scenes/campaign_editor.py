@@ -445,3 +445,16 @@ class CampaignEditorScene(Scene):
         self.manager.update(time_delta)
         self.manager.draw_ui(self.screen)
         return super().update(time_delta, events)
+
+    def _close_scene_windows(self) -> bool:
+        """Close any open windows specific to the campaign editor scene."""
+        windows_closed = False
+        
+        # Check for save battle dialog
+        if hasattr(self, 'save_battle_dialog'):
+            self.save_battle_dialog.kill()
+            delattr(self, 'save_battle_dialog')
+            windows_closed = True
+            
+        # Fall back to base class behavior and combine results
+        return super()._close_scene_windows() or windows_closed

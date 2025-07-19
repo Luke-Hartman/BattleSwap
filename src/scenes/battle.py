@@ -424,3 +424,21 @@ class BattleScene(Scene):
         self.render_paused_text()
         
         return super().update(time_delta, events)
+
+    def _close_scene_windows(self) -> bool:
+        """Close any open windows specific to the battle scene."""
+        windows_closed = False
+        
+        # Check for victory/defeat panels
+        if hasattr(self, 'victory_panel') and self.victory_panel is not None:
+            self.victory_panel.kill()
+            self.victory_panel = None
+            windows_closed = True
+            
+        if hasattr(self, 'defeat_panel') and self.defeat_panel is not None:
+            self.defeat_panel.kill()
+            self.defeat_panel = None
+            windows_closed = True
+            
+        # Fall back to base class behavior and combine results
+        return super()._close_scene_windows() or windows_closed

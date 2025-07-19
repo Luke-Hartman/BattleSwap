@@ -830,15 +830,7 @@ class SetupBattleScene(Scene):
                     # Update drag selection rectangle
                     self.drag_end_pos = event.pos
 
-            # Handle escape key to cancel any active selection/pickup
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                if self.selected_group_partial_units:
-                    self.cancel_group_pickup()
-                elif self.selected_unit_type is not None:
-                    self.set_selected_unit_type(None, placement_team)
-                else:
-                    # Default escape handling
-                    pass
+
 
             self.camera.process_event(event)
             self.manager.process_events(event)
@@ -976,6 +968,41 @@ class SetupBattleScene(Scene):
         
         # Rebuild the world to apply changes
         self.world_map_view.rebuild(battles=self.world_map_view.battles.values())
+
+    def _close_scene_windows(self) -> bool:
+        """Close any open windows specific to the setup battle scene."""
+        windows_closed = False
+        
+        # Handle special escape logic for unit selections first
+        if self.selected_group_partial_units:
+            self.cancel_group_pickup()
+            windows_closed = True
+        if self.selected_unit_type is not None:
+            # Get placement team - this mirrors the logic from the update method
+            placement_team = TeamType.TEAM1 if not self.sandbox_mode else TeamType.TEAM2
+            self.set_selected_unit_type(None, placement_team)
+            windows_closed = True
+            
+        # Check for save dialog
+        if hasattr(self, 'save_dialog') and self.save_dialog is not None and self.save_dialog.dialog.alive():
+            self.save_dialog.dialog.kill()
+            self.save_dialog = None
+            windows_closed = True
+            
+        # Check for corruption editor dialog
+        if hasattr(self, 'corruption_editor') and self.corruption_editor is not None:
+            self.corruption_editor.kill()
+            delattr(self, 'corruption_editor')
+            windows_closed = True
+            
+        # Check for corruption power editor dialog
+        if hasattr(self, 'corruption_power_editor') and self.corruption_power_editor is not None:
+            self.corruption_power_editor.kill()
+            self.corruption_power_editor = None
+            windows_closed = True
+            
+        # Fall back to base class behavior and combine results
+        return super()._close_scene_windows() or windows_closed
 
 
 
