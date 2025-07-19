@@ -257,6 +257,7 @@ class SetupBattleScene(Scene):
         self.barracks.select_unit_type(value)
         if self.selected_partial_unit is not None:
             esper.delete_entity(self.selected_partial_unit)
+        self.cancel_group_pickup()
         if value is None:
             self.selected_partial_unit = None
             return
