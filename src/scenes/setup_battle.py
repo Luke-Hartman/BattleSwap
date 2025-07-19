@@ -707,6 +707,10 @@ class SetupBattleScene(Scene):
             
             # Handle Enter key to start battle
             if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+                emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                    filename="ui_click.wav",
+                    volume=0.5
+                ))
                 pygame.event.post(
                     BattleSceneEvent(
                         current_scene_id=id(self),

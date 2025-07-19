@@ -3,7 +3,7 @@ import pygame
 import pygame_gui
 from camera import Camera
 from scenes.scene import Scene
-from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event
+from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event, PLAY_SOUND, PlaySoundEvent
 from scenes.events import SettingsSceneEvent, SetupBattleSceneEvent, CampaignSceneEvent, DeveloperToolsSceneEvent
 from world_map_view import WorldMapView
 from progress_manager import progress_manager, reset_progress, has_incompatible_save
@@ -148,6 +148,10 @@ class MainMenuScene(Scene):
         """Handle quit request from escape key or exit button."""
         if self.confirmation_dialog is None:
             self.show_quit_confirmation()
+            emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                filename="ui_click.wav",
+                volume=0.5
+            ))
             return True
         return False
 

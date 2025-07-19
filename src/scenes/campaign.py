@@ -350,6 +350,11 @@ class CampaignScene(Scene):
                         pygame.USEREVENT,
                         {'user_type': pygame_gui.UI_BUTTON_PRESSED, 'ui_element': button}
                     ))
+                    # Note: The button press event will also trigger a sound, but this provides immediate feedback
+                    emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                        filename="ui_click.wav",
+                        volume=0.5
+                    ))
 
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:

@@ -12,6 +12,7 @@ from entities.units import unit_theme_ids, Faction
 from selected_unit_manager import selected_unit_manager
 from progress_manager import progress_manager
 from unit_values import unit_values
+from events import PLAY_SOUND, PlaySoundEvent, emit_event
 
 
 class UnitCount(UIPanel):
@@ -351,6 +352,10 @@ class BarracksUI(UITabContainer):
         # Handle Tab key to cycle through faction tabs
         if event.type == pygame.KEYDOWN and event.key == pygame.K_TAB:
             self.cycle_to_next_faction()
+            emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                filename="ui_click.wav",
+                volume=0.5
+            ))
             return True
 
         if super().process_event(event):

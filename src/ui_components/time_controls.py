@@ -3,6 +3,7 @@
 import pygame
 import pygame_gui
 from time_manager import time_manager
+from events import PLAY_SOUND, PlaySoundEvent, emit_event
 
 class TimeControls:
     """UI component for controlling game time speed."""
@@ -80,16 +81,28 @@ class TimeControls:
                 time_manager.toggle_pause()
                 self._update_pause_button_image()
                 self.pause_button.select()
+                emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                    filename="ui_click.wav",
+                    volume=0.5
+                ))
                 return True
             elif event.key == pygame.K_PLUS or event.key == pygame.K_KP_PLUS or event.key == pygame.K_EQUALS:
                 time_manager.increase_game_speed()
                 self._update_speed_label()
                 self.increase_speed_button.select()
+                emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                    filename="ui_click.wav",
+                    volume=0.5
+                ))
                 return True
             elif event.key == pygame.K_MINUS or event.key == pygame.K_KP_MINUS:
                 time_manager.decrease_game_speed()
                 self._update_speed_label()
                 self.decrease_speed_button.select()
+                emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                    filename="ui_click.wav",
+                    volume=0.5
+                ))
                 return True
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_SPACE:

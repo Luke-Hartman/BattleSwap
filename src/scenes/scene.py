@@ -15,6 +15,10 @@ class Scene(ABC):
     def handle_escape(self, event: pygame.event.Event) -> None:
         """Handle escape key press by closing windows first, then triggering return button."""
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                filename="ui_click.wav",
+                volume=0.5
+            ))
             # First, try to close any scene-specific windows
             if self._close_scene_windows():
                 return
@@ -79,11 +83,19 @@ class Scene(ABC):
                     'user_type': pygame_gui.UI_CONFIRMATION_DIALOG_CONFIRMED,
                     'ui_element': self.confirmation_dialog,
                 }))
+                emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                    filename="ui_click.wav",
+                    volume=0.5
+                ))
                 return True
             elif event.key == pygame.K_ESCAPE:
                 # Simulate clicking the cancel button
                 self.confirmation_dialog.kill()
                 self.confirmation_dialog = None
+                emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                    filename="ui_click.wav",
+                    volume=0.5
+                ))
                 return True
         return False
 
