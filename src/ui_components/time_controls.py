@@ -4,6 +4,7 @@ import pygame
 import pygame_gui
 from time_manager import time_manager
 from events import PLAY_SOUND, PlaySoundEvent, emit_event
+from keyboard_shortcuts import format_button_text, KeyboardShortcuts
 
 class TimeControls:
     """UI component for controlling game time speed."""
@@ -31,6 +32,8 @@ class TimeControls:
             manager=manager,
             object_id=pygame_gui.core.ObjectID(object_id="#pause_button")
         )
+        self.pause_button.tool_tip_text = format_button_text("Pause/Play", KeyboardShortcuts.SPACE)
+        self.pause_button.tool_tip_delay = 0
         self._update_pause_button_image()
 
         self.decrease_speed_button = pygame_gui.elements.UIButton(
@@ -38,6 +41,8 @@ class TimeControls:
             text="-",
             manager=manager,
         )
+        self.decrease_speed_button.tool_tip_text = format_button_text("Decrease Speed", KeyboardShortcuts.MINUS)
+        self.decrease_speed_button.tool_tip_delay = 0
 
         self.speed_label = pygame_gui.elements.UILabel(
             relative_rect=pygame.Rect(x + button_width * 2, y, label_width, height),
@@ -51,6 +56,8 @@ class TimeControls:
             text="+",
             manager=manager,
         )
+        self.increase_speed_button.tool_tip_text = format_button_text("Increase Speed", KeyboardShortcuts.PLUS)
+        self.increase_speed_button.tool_tip_delay = 0
         time_manager.enter_battle()
 
     def handle_event(self, event: pygame.event.Event) -> bool:
@@ -129,6 +136,7 @@ class TimeControls:
             self.pause_button.change_object_id(pygame_gui.core.ObjectID(object_id="#play_button"))
         else:
             self.pause_button.change_object_id(pygame_gui.core.ObjectID(object_id="#pause_button"))
+        self.pause_button.tool_tip_delay = 0
 
 
     def __del__(self):

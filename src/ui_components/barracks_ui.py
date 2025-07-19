@@ -13,6 +13,7 @@ from selected_unit_manager import selected_unit_manager
 from progress_manager import progress_manager
 from unit_values import unit_values
 from events import PLAY_SOUND, PlaySoundEvent, emit_event
+from keyboard_shortcuts import format_button_text
 
 
 class UnitCount(UIPanel):
@@ -220,7 +221,7 @@ class BarracksUI(UITabContainer):
                 key=lambda x: x[0].value
             )
             
-            for unit_type, count in faction_units:
+            for unit_index, (unit_type, count) in enumerate(faction_units):
                 item = UnitCount(
                     x_pos=x_position,
                     y_pos=y_offset,
@@ -231,6 +232,15 @@ class BarracksUI(UITabContainer):
                     container=container,
                     infinite=self.sandbox_mode
                 )
+                
+                # Add keyboard shortcut tooltip for units 0-9 (keys 1-9,0)
+                if unit_index < 10:
+                    shortcut_key = str(unit_index + 1 % 10)
+                    unit_name = unit_type.value.replace('_', ' ').title()
+                    tooltip_text = format_button_text(unit_name, shortcut_key)
+                    item.button.tool_tip_text = tooltip_text
+                    item.button.tool_tip_delay = 0
+                
                 self.unit_list_items_by_faction[faction].append(item)
                 x_position += item.size + padding // 2
 

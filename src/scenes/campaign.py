@@ -30,6 +30,7 @@ from ui_components.congratulations_panel import CongratulationsPanel
 from ui_components.upgrade_tutorial_panel import UpgradeTutorialPanel
 from ui_components.corruption_icon import CorruptionIcon
 import upgrade_hexes
+from keyboard_shortcuts import format_button_text, KeyboardShortcuts
 
 class CampaignScene(Scene):
     """A 2D hex grid world map for progressing through the campaign."""
@@ -190,7 +191,7 @@ class CampaignScene(Scene):
         self.feedback_button = FeedbackButton(self.manager)
         
         # Create upgrade button in top right
-        button_width = 120
+        button_width = 140
         button_height = 40
         screen_rect = self.screen.get_rect()
         upgrade_button_x = screen_rect.width - button_width - 20
@@ -198,7 +199,7 @@ class CampaignScene(Scene):
         
         self.upgrade_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(upgrade_button_x, upgrade_button_y, button_width, button_height),
-            text="Upgrade Units",
+            text=format_button_text("Upgrade Units", KeyboardShortcuts.U),
             manager=self.manager
         )
         
@@ -256,15 +257,15 @@ class CampaignScene(Scene):
             if hex_state == HexLifecycleState.FOGGED:
                 button_text = "Explore more"
             elif hex_state == HexLifecycleState.UNCLAIMED:
-                button_text = "Claim"
+                button_text = format_button_text("Claim", KeyboardShortcuts.ENTER)
             elif hex_state == HexLifecycleState.CLAIMED:
                 button_text = "Claimed"
             elif hex_state == HexLifecycleState.CORRUPTED:
-                button_text = "Reclaim"
+                button_text = format_button_text("Reclaim", KeyboardShortcuts.ENTER)
             elif hex_state == HexLifecycleState.RECLAIMED:
                 button_text = "Reclaimed"
             else:
-                button_text = "Claim"
+                button_text = format_button_text("Claim", KeyboardShortcuts.ENTER)
             
             self.context_buttons["claim"] = pygame_gui.elements.UIButton(
                 relative_rect=pygame.Rect(
@@ -293,7 +294,7 @@ class CampaignScene(Scene):
                         (start_x, y),
                         (button_width, button_height)
                     ),
-                    text="Improve",
+                    text=format_button_text("Improve", KeyboardShortcuts.ENTER),
                     manager=self.manager
                 )
             else:
@@ -302,7 +303,7 @@ class CampaignScene(Scene):
                         (start_x, y),
                         (button_width, button_height)
                     ),
-                    text="Battle",
+                    text=format_button_text("Battle", KeyboardShortcuts.ENTER),
                     manager=self.manager
                 )
 
@@ -355,6 +356,20 @@ class CampaignScene(Scene):
                         filename="ui_click.wav",
                         volume=0.5
                     ))
+            
+            # Add U key handling for upgrade button
+            if (event.type == pygame.KEYDOWN and 
+                event.key == pygame.K_u and 
+                self.upgrade_button.is_enabled):
+                # Simulate clicking the upgrade button
+                pygame.event.post(pygame.event.Event(
+                    pygame.USEREVENT,
+                    {'user_type': pygame_gui.UI_BUTTON_PRESSED, 'ui_element': self.upgrade_button}
+                ))
+                emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                    filename="ui_click.wav",
+                    volume=0.5
+                ))
 
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
@@ -471,6 +486,13 @@ class CampaignScene(Scene):
                     
                     if can_hover:
                         self.hovered_hex = hovered_hex
+                        
+                    # Play hover sound when starting to hover over a new hex
+                    if old_hovered_hex != self.hovered_hex and self.hovered_hex is not None:
+                        emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                            filename="ui_hover.wav",
+                            volume=0.5
+                        ))
                         
                     # Update grades panel if hover state changed and no hex is selected
                     if (self.progress_panel is not None and 

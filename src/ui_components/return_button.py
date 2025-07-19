@@ -3,6 +3,7 @@
 import pygame
 import pygame_gui
 from pygame_gui.elements import UIButton
+from keyboard_shortcuts import format_button_text, KeyboardShortcuts
 
 
 class ReturnButton(UIButton):
@@ -19,7 +20,7 @@ class ReturnButton(UIButton):
         """
         super().__init__(
             relative_rect=pygame.Rect((10, 10), (100, 30)),
-            text="Return",
+            text=format_button_text("Return", KeyboardShortcuts.ESCAPE),
             manager=manager
         ) 
         self._clicked_and_disabled = False

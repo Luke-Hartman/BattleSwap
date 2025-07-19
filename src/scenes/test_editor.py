@@ -13,6 +13,7 @@ from auto_battle import simulate_battle, BattleOutcome
 from ui_components.save_battle_dialog import SaveBattleDialog
 from world_map_view import WorldMapView
 from game_constants import gc
+from keyboard_shortcuts import format_button_text, KeyboardShortcuts
 
 class TestStatus(Enum):
     """Status of a test run."""
@@ -83,7 +84,7 @@ class TestEditorScene(Scene):
         # Top row buttons
         self.return_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((padding, padding), (100, button_height)),
-            text="Return",
+            text=format_button_text("Return", KeyboardShortcuts.ESCAPE),
             manager=self.manager,
             container=content_panel
         )

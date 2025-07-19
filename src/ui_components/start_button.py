@@ -3,6 +3,7 @@
 import pygame
 import pygame_gui
 from pygame_gui.elements import UIButton
+from keyboard_shortcuts import format_button_text, KeyboardShortcuts
 
 
 class StartButton(UIButton):
@@ -27,6 +28,6 @@ class StartButton(UIButton):
         
         super().__init__(
             relative_rect=button_rect,
-            text="Start",
+            text=format_button_text("Start", KeyboardShortcuts.ENTER),
             manager=manager
         )

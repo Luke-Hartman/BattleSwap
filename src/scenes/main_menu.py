@@ -2,6 +2,7 @@ from typing import List, Optional
 import pygame
 import pygame_gui
 from camera import Camera
+from keyboard_shortcuts import KeyboardShortcuts, format_button_text
 from scenes.scene import Scene
 from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event, PLAY_SOUND, PlaySoundEvent
 from scenes.events import SettingsSceneEvent, SetupBattleSceneEvent, CampaignSceneEvent, DeveloperToolsSceneEvent
@@ -86,7 +87,7 @@ class MainMenuScene(Scene):
                 (button_x, y),
                 (button_width, button_height)
             ),
-            text="Play Campaign",
+            text=format_button_text("Play Campaign", KeyboardShortcuts.ENTER),
             manager=self.manager
         )
         y += button_height + button_spacing
@@ -128,7 +129,7 @@ class MainMenuScene(Scene):
                 (button_x, y),
                 (button_width, button_height)
             ),
-            text="Exit",
+            text=format_button_text("Exit", KeyboardShortcuts.ESCAPE),
             manager=self.manager
         )
         y += button_height + button_spacing
@@ -140,7 +141,7 @@ class MainMenuScene(Scene):
             manager=self.manager,
             window_title="Quit Game",
             action_long_desc="Are you sure you want to quit the game?",
-            action_short_name="Quit",
+            action_short_name=format_button_text("Quit", KeyboardShortcuts.ENTER),
             blocking=True
         )
 
@@ -166,6 +167,15 @@ class MainMenuScene(Scene):
 
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 return self.handle_quit()
+
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+                emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                    filename="ui_click.wav",
+                    volume=0.5
+                ))
+                pygame.event.post(CampaignSceneEvent(
+                    current_scene_id=id(self),
+                ).to_event())
                 
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:

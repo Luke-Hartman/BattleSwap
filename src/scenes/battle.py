@@ -3,7 +3,7 @@ from game_constants import gc
 import pygame
 import pygame_gui
 from auto_battle import AutoBattle, BattleOutcome
-from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event, UNMUTE_DRUMS, UnmuteDrumsEvent
+from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event, UNMUTE_DRUMS, UnmuteDrumsEvent, PLAY_SOUND, PlaySoundEvent
 from scene_utils import use_world, has_unsaved_changes
 from scenes.scene import Scene
 from scenes.events import PreviousSceneEvent
@@ -15,6 +15,7 @@ from time_manager import time_manager
 from battles import Battle, update_battle
 from selected_unit_manager import selected_unit_manager
 import upgrade_hexes
+from keyboard_shortcuts import format_button_text, KeyboardShortcuts
 
 class BattleScene(Scene):
     """The scene for the battle."""
@@ -94,7 +95,7 @@ class BattleScene(Scene):
 
     def create_victory_panel(self) -> None:
         """Create the victory panel with large text and buttons."""
-        panel_width = 230
+        panel_width = 300
         panel_height = 200
         screen_width = pygame.display.Info().current_w
         screen_height = pygame.display.Info().current_h
@@ -122,7 +123,7 @@ class BattleScene(Scene):
             )
         )
 
-        button_width = 100
+        button_width = 140
         button_height = 40
         button_spacing = 10
         start_y = 100
@@ -134,6 +135,10 @@ class BattleScene(Scene):
         # Save button (top, wider)
         has_changes = has_unsaved_changes(self.battle)
         save_text = "Save" if has_changes else "No changes"
+        
+        # Add Enter shortcut to save button if it's enabled
+        if has_changes:
+            save_text = format_button_text(save_text, KeyboardShortcuts.ENTER)
         
         # Prepare tooltip with score information
         current_points = calculate_points_for_units(self.battle.allies or [])
@@ -170,18 +175,23 @@ class BattleScene(Scene):
                 (left_button_x, start_y),
                 (button_width, button_height)
             ),
-            text="Improve",
+            text=format_button_text("Improve", KeyboardShortcuts.ESCAPE),
             manager=self.manager,
             container=self.victory_panel
         )
 
         # Continue button (bottom right)
+        # Only show Enter shortcut if save button is disabled
+        continue_text = "Continue"
+        if not has_changes:
+            continue_text = format_button_text("Continue", KeyboardShortcuts.ENTER)
+            
         self.continue_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(
                 (left_button_x + button_width + button_spacing, start_y),
                 (button_width, button_height)
             ),
-            text="Continue",
+            text=continue_text,
             manager=self.manager,
             container=self.victory_panel
         )
@@ -190,7 +200,7 @@ class BattleScene(Scene):
 
     def create_defeat_panel(self) -> None:
         """Create the defeat panel with large text and buttons."""
-        panel_width = 250
+        panel_width = 320
         panel_height = 150
         screen_width = pygame.display.Info().current_w
         screen_height = pygame.display.Info().current_h
@@ -218,7 +228,7 @@ class BattleScene(Scene):
             )
         )
 
-        button_width = 100
+        button_width = 140
         button_height = 40
         button_spacing = 20
         start_y = 100
@@ -227,24 +237,24 @@ class BattleScene(Scene):
         total_width = 2 * button_width + button_spacing
         left_button_x = (panel_width - total_width) // 2
 
-        # Try Again button (left)
-        self.try_again_button = pygame_gui.elements.UIButton(
+        # Leave button (left)
+        self.leave_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(
                 (left_button_x, start_y),
                 (button_width, button_height)
             ),
-            text="Try Again",
+            text=format_button_text("Leave", KeyboardShortcuts.ESCAPE),
             manager=self.manager,
             container=self.defeat_panel
         )
 
-        # Leave button (right)
-        self.leave_button = pygame_gui.elements.UIButton(
+        # Try Again button (right)
+        self.try_again_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(
                 (left_button_x + button_width + button_spacing, start_y),
                 (button_width, button_height)
             ),
-            text="Leave",
+            text=format_button_text("Try Again", KeyboardShortcuts.ENTER),
             manager=self.manager,
             container=self.defeat_panel
         )
@@ -292,8 +302,74 @@ class BattleScene(Scene):
             
             if self.handle_confirmation_dialog_keys(event):
                 continue
-
-            self.handle_escape(event)
+            
+            # Handle keyboard shortcuts for victory/defeat panels
+            if event.type == pygame.KEYDOWN:
+                # Handle Enter key
+                if event.key == pygame.K_RETURN:
+                    # In victory panel
+                    if hasattr(self, 'victory_panel') and self.victory_panel is not None:
+                        has_changes = has_unsaved_changes(self.battle)
+                        if has_changes and hasattr(self, 'save_button') and self.save_button.is_enabled:
+                            # Save button is enabled, trigger save
+                            pygame.event.post(pygame.event.Event(
+                                pygame.USEREVENT,
+                                {'user_type': pygame_gui.UI_BUTTON_PRESSED, 'ui_element': self.save_button}
+                            ))
+                            emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                                filename="ui_click.wav",
+                                volume=0.5
+                            ))
+                        elif not has_changes and hasattr(self, 'continue_button'):
+                            # Save button is disabled, trigger continue
+                            pygame.event.post(pygame.event.Event(
+                                pygame.USEREVENT,
+                                {'user_type': pygame_gui.UI_BUTTON_PRESSED, 'ui_element': self.continue_button}
+                            ))
+                            emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                                filename="ui_click.wav",
+                                volume=0.5
+                            ))
+                    # In defeat panel
+                    elif hasattr(self, 'defeat_panel') and self.defeat_panel is not None:
+                        if hasattr(self, 'try_again_button'):
+                            pygame.event.post(pygame.event.Event(
+                                pygame.USEREVENT,
+                                {'user_type': pygame_gui.UI_BUTTON_PRESSED, 'ui_element': self.try_again_button}
+                            ))
+                            emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                                filename="ui_click.wav",
+                                volume=0.5
+                            ))
+                
+                # Handle Escape key
+                elif event.key == pygame.K_ESCAPE:
+                    if hasattr(self, 'victory_panel') and self.victory_panel is not None:
+                        # In victory panel, trigger improve button
+                        if hasattr(self, 'improve_button'):
+                            pygame.event.post(pygame.event.Event(
+                                pygame.USEREVENT,
+                                {'user_type': pygame_gui.UI_BUTTON_PRESSED, 'ui_element': self.improve_button}
+                            ))
+                            emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                                filename="ui_click.wav",
+                                volume=0.5
+                            ))
+                            return super().update(time_delta, events)
+                    elif hasattr(self, 'defeat_panel') and self.defeat_panel is not None:
+                        # In defeat panel, trigger leave button
+                        if hasattr(self, 'leave_button'):
+                            pygame.event.post(pygame.event.Event(
+                                pygame.USEREVENT,
+                                {'user_type': pygame_gui.UI_BUTTON_PRESSED, 'ui_element': self.leave_button}
+                            ))
+                            emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                                filename="ui_click.wav",
+                                volume=0.5
+                            ))
+                    else:
+                        # Not in victory or defeat panel, use default escape behavior (return button)
+                        self.handle_escape(event)
                 
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
