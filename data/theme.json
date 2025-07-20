@@ -180,11 +180,11 @@
             "disabled_bg": "#677476",
             "selected_bg": "#5C7A7C",
             "active_bg": "#4E5D63",
-            "normal_border": "#ADD8E6",
-            "hovered_border": "#ADD8E6",
-            "disabled_border": "#ADD8E6",
-            "selected_border": "#ADD8E6",
-            "active_border": "#ADD8E6"
+            "normal_border": "#1E90FF",
+            "hovered_border": "#1E90FF",
+            "disabled_border": "#1E90FF",
+            "selected_border": "#1E90FF",
+            "active_border": "#1E90FF"
         },
         "misc": {
             "border_width": "3",
@@ -198,11 +198,11 @@
             "disabled_bg": "#677476",
             "selected_bg": "#5C7A7C",
             "active_bg": "#4E5D63",
-            "normal_border": "#DDA0DD",
-            "hovered_border": "#DDA0DD",
-            "disabled_border": "#DDA0DD",
-            "selected_border": "#DDA0DD",
-            "active_border": "#DDA0DD"
+            "normal_border": "#9632C8",
+            "hovered_border": "#9632C8",
+            "disabled_border": "#9632C8",
+            "selected_border": "#9632C8",
+            "active_border": "#9632C8"
         },
         "misc": {
             "border_width": "3",
@@ -226,7 +226,7 @@
     },
     "@tier_label_advanced": {
         "colours": {
-            "normal_text": "#ADD8E6"
+            "normal_text": "#1E90FF"
         },
         "misc": {
             "text_horiz_alignment": "left",
@@ -235,7 +235,7 @@
     },
     "@tier_label_elite": {
         "colours": {
-            "normal_text": "#DDA0DD"
+            "normal_text": "#9632C8"
         },
         "misc": {
             "text_horiz_alignment": "left",
