@@ -467,7 +467,7 @@ class WorldMapView:
             color = (255, 0, 0)
             width = 2
         elif BorderState.DARK_RED_BORDER in border_states:
-            color = (150, 0, 0)
+            color = (100, 0, 0)
             width = 2
         elif BorderState.GREEN_BORDER in border_states:
             color = (0, 255, 0)
