@@ -6,6 +6,7 @@ and runs the main game loop.
 """
 
 import argparse
+import sys
 import pygame
 from entities.units import load_sprite_sheets
 from handlers.combat_handler import CombatHandler
@@ -64,10 +65,19 @@ while running:
     dt = clock.tick(time_manager.max_fps) / 1000
     events = pygame.event.get()
 
-    # Process command key events for info mode before scene processing
+    # Process modifier key events for info mode before scene processing
     for event in events:
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_LMETA or event.key == pygame.K_RMETA:  # Command key
+            # Check for the appropriate modifier key based on platform
+            modifier_pressed = False
+            if sys.platform == 'darwin':
+                # macOS: Use Command key
+                modifier_pressed = event.key == pygame.K_LMETA or event.key == pygame.K_RMETA
+            else:
+                # Windows/Linux: Use Alt key
+                modifier_pressed = event.key == pygame.K_LALT or event.key == pygame.K_RALT
+                
+            if modifier_pressed:
                 old_info_mode = info_mode_manager.info_mode
                 info_mode_manager.info_mode = not info_mode_manager.info_mode
                 
