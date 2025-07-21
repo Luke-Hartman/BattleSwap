@@ -487,6 +487,7 @@ class BattleScene(Scene):
             if self.outcome_time >= self.panel_delay:
                 if battle_outcome == BattleOutcome.TEAM1_VICTORY and self.victory_panel is None:
                     self.return_button.hide()
+                    emit_event(PLAY_SOUND, event=PlaySoundEvent(filename="victory.wav", volume=0.5))
                     self.create_victory_panel()
                 elif battle_outcome == BattleOutcome.TEAM2_VICTORY and self.defeat_panel is None:
                     self.return_button.hide()

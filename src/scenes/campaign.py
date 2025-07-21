@@ -403,7 +403,6 @@ class CampaignScene(Scene):
                             progress_manager.claim_hex(self.selected_hex)
                             self.create_context_buttons()
                             self._update_upgrade_button_state()  # Update upgrade button state
-                            emit_event(PLAY_SOUND, event=PlaySoundEvent(filename="unit_picked_up.wav", volume=1.0))
                 
                 # Handle upgrade tutorial panel events
                 if self.upgrade_tutorial is not None:

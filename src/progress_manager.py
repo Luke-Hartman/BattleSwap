@@ -9,6 +9,7 @@ from enum import Enum
 from pydantic import BaseModel, ValidationError, field_serializer, field_validator
 from platformdirs import user_config_dir
 
+from events import PLAY_SOUND, PlaySoundEvent, emit_event
 import battles
 from components.unit_type import UnitType
 from components.unit_tier import UnitTier
@@ -404,12 +405,17 @@ class ProgressManager(BaseModel):
                 if self.get_hex_state(neighbor_coords) == HexLifecycleState.FOGGED:
                     self.set_hex_state(neighbor_coords, HexLifecycleState.UNCLAIMED)
 
+        from upgrade_hexes import is_upgrade_hex
         if current_state == HexLifecycleState.UNCLAIMED:
             # First claim - goes to CLAIMED state
             self.set_hex_state(hex_coords, HexLifecycleState.CLAIMED)
+            if is_upgrade_hex(hex_coords):
+                emit_event(PLAY_SOUND, event=PlaySoundEvent(filename="claim_upgrade.wav", volume=0.5))
         elif current_state == HexLifecycleState.CORRUPTED:
             # Second claim (after corruption) - goes to RECLAIMED state
             self.set_hex_state(hex_coords, HexLifecycleState.RECLAIMED)
+            if is_upgrade_hex(hex_coords):
+                emit_event(PLAY_SOUND, event=PlaySoundEvent(filename="reclaim_upgrade.wav", volume=0.5))
             
             # Check if this was the last corrupted hex - if so, restore fogged hexes
             if not self.has_uncompleted_corrupted_battles():
