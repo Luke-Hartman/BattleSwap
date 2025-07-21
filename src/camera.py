@@ -26,7 +26,7 @@ class Camera:
         self._base_width = screen_width
         self._base_height = screen_height
         self.speed = 10
-        self._zoom_levels = [1/24, 1/16, 1/12, 1/8, 1/6, 1/4, 1/3, 1/2, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0]
+        self._zoom_levels = [1/24, 1/20, 1/16, 1/14, 1/12, 1/10, 1/8, 1/6, 1/5, 1/4, 1/3, 1/2, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0]
         self._zoom = 1.0
         self._set_zoom(zoom)
 
@@ -453,13 +453,12 @@ class Camera:
         Args:
             centerx: Target x position in world coordinates (center of view)
             centery: Target y position in world coordinates (center of view)
-            zoom: Target zoom level (must be one of the allowed zoom levels)
-        
-        Raises:
-            KeyError: If the zoom value is not in the predefined zoom levels
+            zoom: Target zoom level. Rounds to the largest allowed zoom level that is less than or equal to the target zoom level.
         """
-        if zoom not in self._zoom_levels:
-            raise KeyError(f"Zoom value {zoom} not in allowed zoom levels: {self._zoom_levels}")
+        zoom_index = 0
+        while zoom_index < len(self._zoom_levels) - 2 and self._zoom_levels[zoom_index + 1] <= zoom:
+            zoom_index += 1
+        zoom = self._zoom_levels[zoom_index]
         
         # Calculate distance
         dx = centerx - self.centerx

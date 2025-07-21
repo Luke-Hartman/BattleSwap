@@ -160,6 +160,26 @@ class WorldMapView:
         assert battle.hex_coords is not None
         self.move_camera_above_hex(battle.hex_coords)
 
+    def move_camera_to_fit(self) -> None:
+        """Move the camera to the center of the world."""
+        unfogged_positions = [axial_to_world(*hex_coords) for hex_coords in self.hex_states.keys() if progress_manager.get_hex_state(hex_coords) != HexLifecycleState.FOGGED]
+        min_x = min(position[0] for position in unfogged_positions)
+        min_y = min(position[1] for position in unfogged_positions)
+        max_x = max(position[0] for position in unfogged_positions)
+        max_y = max(position[1] for position in unfogged_positions)
+        average_x = (min_x + max_x) / 2
+        average_y = (min_y + max_y) / 2
+        x_width = 1000 + max_x - min_x
+        y_height = 1000 + max_y - min_y
+        screen_width = self.screen.get_width()
+        screen_height = self.screen.get_height()
+        zoom = min(screen_width / x_width, screen_height / y_height)
+        self.camera.move(
+            centerx=average_x,
+            centery=average_y,
+            zoom=zoom
+        )
+
     def move_camera_above_hex(self, hex_coords: Tuple[int, int]) -> None:
         """Move the camera above the specified hex coordinates."""
         x, y = axial_to_world(*hex_coords)

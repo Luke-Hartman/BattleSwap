@@ -95,6 +95,7 @@ class CampaignScene(Scene):
         self.upgrade_window = None
         self.check_panels()
         self.create_ui()
+        self.world_map_view.move_camera_to_fit()
         
     def _has_claimed_upgrade_hexes(self) -> bool:
         """Check if the player has any claimed upgrade hexes."""
@@ -316,11 +317,7 @@ class CampaignScene(Scene):
             # Handle corruption dialog if it exists
             if self.corruption_dialog is not None and self.corruption_dialog.handle_event(event):
                 self.corruption_dialog = None
-                
-                # If we have corrupted hexes, move camera over the first one
-                if self.corrupted_battles and len(self.corrupted_battles) > 0:
-                    self.world_map_view.move_camera_above_hex(self.corrupted_battles[0])
-                continue
+                self.world_map_view.move_camera_to_fit()
 
             # Handle congratulations panel events first if it exists
             if self.congratulations_panel is not None and self.congratulations_panel.handle_event(event):
