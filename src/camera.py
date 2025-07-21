@@ -26,7 +26,7 @@ class Camera:
         self._base_width = screen_width
         self._base_height = screen_height
         self.speed = 10
-        self._zoom_levels = [1/6, 1/5, 1/4, 1/3, 1/2, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0]
+        self._zoom_levels = [1/24, 1/16, 1/12, 1/8, 1/6, 1/4, 1/3, 1/2, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0]
         self._zoom = 1.0
         self._set_zoom(zoom)
 
