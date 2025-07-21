@@ -2,7 +2,7 @@
 
 import pygame
 import pygame_gui
-from pygame_gui.elements import UIPanel, UILabel, UIButton
+from pygame_gui.elements import UIPanel, UILabel, UIButton, UITextBox
 
 
 class CorruptionPanel(UIPanel):
@@ -46,13 +46,18 @@ class CorruptionPanel(UIPanel):
             )
         )
         
-        # Message text
-        message_rect = pygame.Rect((20, 110), (panel_width - 40, -1))
-        UILabel(
+        # Message text with clickable link to corruption glossary entry
+        from ui_components.game_data import GlossaryEntryType
+        corruption_link = f"<a href='{GlossaryEntryType.CORRUPTION.value}'>corruption</a>"
+        message_html = f"The {corruption_link} spreads in reaction to your success..."
+        
+        message_rect = pygame.Rect((20, 110), (panel_width - 40, 30))
+        UITextBox(
             relative_rect=message_rect,
-            text="The corruption spreads in reaction to your success...",
+            html_text=message_html,
             manager=manager,
-            container=self
+            container=self,
+            object_id="@centered_text"
         )
 
         # Corrupted battles count
