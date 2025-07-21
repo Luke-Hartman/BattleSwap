@@ -204,7 +204,7 @@ class ProgressManager(BaseModel):
         ) and not all_levels_already_corrupted
 
     def corrupt_battles(self) -> List[Tuple[int, int]]:
-        """Corrupt a number of completed battles and claimed upgrade hexes based on the game constants."""
+        """Corrupt a number of completed battles and claimed upgrade hexes with weighted selection for balance."""
         import upgrade_hexes
         
         # Include completed battles that aren't corrupted yet
@@ -212,8 +212,44 @@ class ProgressManager(BaseModel):
         
         if not corruption_pool:
             return []
+        
+        # Separate battles and upgrade hexes
+        battle_hexes = [coord for coord in corruption_pool if not upgrade_hexes.is_upgrade_hex(coord)]
+        upgrade_hexes_pool = [coord for coord in corruption_pool if upgrade_hexes.is_upgrade_hex(coord)]
+        
+        # Check if this is the first corruption
+        # Count reclaimed hexes (these were corrupted and then solved again)
+        corruption_history_battles = 0
+        corruption_history_upgrades = 0
+        for coords, state in self.hex_states.items():
+            if state == HexLifecycleState.RECLAIMED:
+                if upgrade_hexes.is_upgrade_hex(coords):
+                    corruption_history_upgrades += 1
+                else:
+                    corruption_history_battles += 1
+        
+        is_first_corruption = corruption_history_battles == 0 and corruption_history_upgrades == 0
+        
         num_corruptions = min(gc.CORRUPTION_BATTLE_COUNT, len(corruption_pool))
-        hexes_to_corrupt = random.sample(corruption_pool, num_corruptions)
+        hexes_to_corrupt = []
+        
+        if is_first_corruption:
+            # First corruption: always corrupt 1 upgrade hex + fill remaining with battle hexes
+            if upgrade_hexes_pool:
+                # Start with 1 upgrade hex
+                hexes_to_corrupt.append(random.choice(upgrade_hexes_pool))
+                
+                # Fill remaining slots with battle hexes if available and needed
+                remaining_needed = num_corruptions - 1
+                if remaining_needed > 0 and battle_hexes:
+                    available_battles = min(remaining_needed, len(battle_hexes))
+                    hexes_to_corrupt.extend(random.sample(battle_hexes, available_battles))
+            else:
+                # No upgrade hexes available, use weighted selection as fallback
+                hexes_to_corrupt = self._weighted_corruption_selection(corruption_pool, num_corruptions)
+        else:
+            # Use weighted selection for non-first corruptions
+            hexes_to_corrupt = self._weighted_corruption_selection(corruption_pool, num_corruptions)
         
         # Update states - corrupt claimed hexes and fog unclaimed hexes
         for coords in hexes_to_corrupt:
@@ -226,6 +262,85 @@ class ProgressManager(BaseModel):
         
         save_progress()
         return hexes_to_corrupt
+
+    
+    def _weighted_corruption_selection(self, corruption_pool: List[Tuple[int, int]], num_to_select: int) -> List[Tuple[int, int]]:
+        """Select hexes for corruption using weighted selection to balance battle vs upgrade hex corruption based on claimed hexes."""
+        import upgrade_hexes
+        
+        if num_to_select >= len(corruption_pool):
+            return corruption_pool
+        
+        # Calculate expected vs actual corrupted upgrade hexes
+        # Count reclaimed hexes (these were corrupted and then solved again)
+        corruption_history_battles = 0
+        corruption_history_upgrades = 0
+        for coords, state in self.hex_states.items():
+            if state == HexLifecycleState.RECLAIMED:
+                if upgrade_hexes.is_upgrade_hex(coords):
+                    corruption_history_upgrades += 1
+                else:
+                    corruption_history_battles += 1
+        
+        total_corruptions = corruption_history_battles + corruption_history_upgrades
+        
+        # Count only claimed upgrade hexes and battle hexes (CLAIMED, CORRUPTED, or RECLAIMED)
+        claimed_upgrade_hexes = 0
+        claimed_battle_hexes = 0
+        for coords, state in self.hex_states.items():
+            if state in [HexLifecycleState.CLAIMED, HexLifecycleState.CORRUPTED, HexLifecycleState.RECLAIMED]:
+                if upgrade_hexes.is_upgrade_hex(coords):
+                    claimed_upgrade_hexes += 1
+                else:
+                    claimed_battle_hexes += 1
+        
+        total_claimed_hexes = claimed_upgrade_hexes + claimed_battle_hexes
+        
+        if total_corruptions == 0 or total_claimed_hexes == 0:
+            # No history yet, use equal weights for all hexes
+            weights = [1.0] * len(corruption_pool)
+        else:
+            # Calculate expected number of corrupted upgrade hexes based on proportion of claimed hexes
+            expected_upgrade_corruptions = (claimed_upgrade_hexes / total_claimed_hexes) * total_corruptions
+            actual_upgrade_corruptions = corruption_history_upgrades
+            
+            # Determine weights based on difference between expected and actual
+            difference = actual_upgrade_corruptions - expected_upgrade_corruptions
+            
+            if difference <= -2:
+                # 2+ fewer than expected: upgrade hexes 3x more likely
+                upgrade_weight = 3.0
+                battle_weight = 1.0
+            elif difference >= 2:
+                # 2+ more than expected: upgrade hexes half as likely
+                upgrade_weight = 0.5
+                battle_weight = 1.0
+            else:
+                # Within expected range: equal weights
+                upgrade_weight = 1.0
+                battle_weight = 1.0
+            
+            # Assign weights to each hex based on its type
+            weights = []
+            for coord in corruption_pool:
+                if upgrade_hexes.is_upgrade_hex(coord):
+                    weights.append(upgrade_weight)
+                else:
+                    weights.append(battle_weight)
+        
+        # Use numpy for weighted sampling without replacement
+        import numpy as np
+        
+        # Normalize weights to probabilities
+        weights_array = np.array(weights)
+        probabilities = weights_array / weights_array.sum()
+        
+        # Sample without replacement
+        num_to_select = min(num_to_select, len(corruption_pool))
+        indices = np.random.choice(len(corruption_pool), size=num_to_select, replace=False, p=probabilities)
+        selected = [corruption_pool[i] for i in indices]
+        
+        return selected
         
     def has_uncompleted_corrupted_battles(self) -> bool:
         """Check if there are any corrupted battles or upgrade hexes that need to be cleared."""
