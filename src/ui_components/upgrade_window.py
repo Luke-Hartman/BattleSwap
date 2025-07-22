@@ -327,13 +327,27 @@ class UpgradeWindow:
         if '\n' in text:
             lines = text.split('\n', 1)  # Split into max 2 parts
             if len(lines) == 2:
-                # Clear single label for this tier
-                if tier == "advanced" and self.advanced_description_box:
-                    self.advanced_description_box.kill()
-                    self.advanced_description_box = None
-                elif tier == "elite" and self.elite_description_box:
-                    self.elite_description_box.kill()
-                    self.elite_description_box = None
+                # Clear ALL existing labels for this tier (both single and dual)
+                if tier == "advanced":
+                    if self.advanced_description_box:
+                        self.advanced_description_box.kill()
+                        self.advanced_description_box = None
+                    if self.advanced_description_box_top:
+                        self.advanced_description_box_top.kill()
+                        self.advanced_description_box_top = None
+                    if self.advanced_description_box_bottom:
+                        self.advanced_description_box_bottom.kill()
+                        self.advanced_description_box_bottom = None
+                elif tier == "elite":
+                    if self.elite_description_box:
+                        self.elite_description_box.kill()
+                        self.elite_description_box = None
+                    if self.elite_description_box_top:
+                        self.elite_description_box_top.kill()
+                        self.elite_description_box_top = None
+                    if self.elite_description_box_bottom:
+                        self.elite_description_box_bottom.kill()
+                        self.elite_description_box_bottom = None
                 
                 # Create dual labels
                 self._create_dual_description_labels(tier, x_pos, lines)
