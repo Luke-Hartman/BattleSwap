@@ -11,6 +11,8 @@ from entities.units import unit_theme_ids, Faction
 from progress_manager import progress_manager
 from ui_components.unit_card import UnitCard
 from ui_components.game_data import get_unit_data, StatType, get_upgrade_description
+from events import PLAY_SOUND, PlaySoundEvent, emit_event
+from keyboard_shortcuts import format_button_text, KeyboardShortcuts
 
 
 class UnitIconButton(pygame_gui.elements.UIButton):
@@ -203,24 +205,27 @@ class UpgradeWindow:
         # Add upgrade button and credit display above the basic card (where basic description would go)
         controls_y = self.card_margin - self.description_height - self.description_margin
         
-        # Add credit display on the left
-        self.credit_label = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect(self.start_x, controls_y, 200, self.description_height),
+        # Add credit display on the left (two separate labels)
+        self.advanced_credit_label = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect(self.start_x, controls_y - 12, 150, self.description_height),
             text="",
             manager=self.manager,
-            container=bottom_section,
-            anchors={'left': 'left',
-                    'right': 'left',
-                    'top': 'top',
-                    'bottom': 'top'}
+            container=bottom_section
+        )
+        
+        self.elite_credit_label = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect(self.start_x, controls_y + 8, 150, self.description_height),
+            text="",
+            manager=self.manager,
+            container=bottom_section
         )
         
         # Add upgrade button on the right
-        upgrade_button_width = 100
+        upgrade_button_width = 140
         upgrade_button_x = self.start_x + self.card_width - upgrade_button_width
         self.upgrade_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(upgrade_button_x, controls_y, upgrade_button_width, self.description_height),
-            text="Upgrade",
+            text=format_button_text("Upgrade", KeyboardShortcuts.ENTER),
             manager=self.manager,
             container=bottom_section,
             anchors={'left': 'left',
@@ -600,6 +605,52 @@ class UpgradeWindow:
                 # Always consume the event to prevent it from reaching the camera
                 return True
         
+        # Handle keyboard events
+        if event.type == pygame.KEYDOWN:
+            # Handle Enter key
+            if event.key == pygame.K_RETURN:
+                # Check if we have an active upgrade dialog
+                if hasattr(self.manager, 'upgrade_dialogs') and self.manager.upgrade_dialogs:
+                    # Simulate clicking the confirm button on the first dialog
+                    dialog = self.manager.upgrade_dialogs[0]
+                    pygame.event.post(pygame.event.Event(
+                        pygame.USEREVENT,
+                        {'user_type': pygame_gui.UI_BUTTON_PRESSED, 'ui_element': dialog.confirm_button}
+                    ))
+                    emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                        filename="ui_click.wav",
+                        volume=0.5
+                    ))
+                    return True
+                # If no dialog is open, check if we can trigger the upgrade button
+                elif self.upgrade_button and self.upgrade_button.is_enabled:
+                    pygame.event.post(pygame.event.Event(
+                        pygame.USEREVENT,
+                        {'user_type': pygame_gui.UI_BUTTON_PRESSED, 'ui_element': self.upgrade_button}
+                    ))
+                    emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                        filename="ui_click.wav",
+                        volume=0.5
+                    ))
+                    return True
+                    
+            # Handle Escape key for confirmation dialogs only
+            elif event.key == pygame.K_ESCAPE:
+                # Check if we have an active upgrade dialog
+                if hasattr(self.manager, 'upgrade_dialogs') and self.manager.upgrade_dialogs:
+                    # Simulate clicking the cancel button on the first dialog
+                    dialog = self.manager.upgrade_dialogs[0]
+                    pygame.event.post(pygame.event.Event(
+                        pygame.USEREVENT,
+                        {'user_type': pygame_gui.UI_BUTTON_PRESSED, 'ui_element': dialog.cancel_button}
+                    ))
+                    emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                        filename="ui_click.wav",
+                        volume=0.5
+                    ))
+                    return True
+                # If no dialog is open, don't consume the escape key (let it bubble up to close the window)
+                
         if event.type == pygame.USEREVENT:
             if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                 if event.ui_element == self.close_button:
@@ -669,11 +720,13 @@ class UpgradeWindow:
             button.kill()
         self.unit_buttons.clear()
         
-        # Clean up upgrade button and credit label
+        # Clean up upgrade button and credit labels
         if self.upgrade_button:
             self.upgrade_button.kill()
-        if self.credit_label:
-            self.credit_label.kill()
+        if self.advanced_credit_label:
+            self.advanced_credit_label.kill()
+        if self.elite_credit_label:
+            self.elite_credit_label.kill()
         
         # Clean up description labels
         self._clear_description_labels()
@@ -685,7 +738,8 @@ class UpgradeWindow:
         """Update the credit display based on the selected unit."""
         # Show available credits using the new calculation method
         available_advanced, available_elite = progress_manager.calculate_available_credits()
-        self.credit_label.set_text(f"Advanced: {available_advanced} | Elite: {available_elite}")
+        self.advanced_credit_label.set_text(f"Advanced: {available_advanced}")
+        self.elite_credit_label.set_text(f"Elite: {available_elite}")
     
     def _update_upgrade_button_state(self) -> None:
         """Update the upgrade button state based on selected unit and available credits."""
@@ -741,15 +795,15 @@ class UpgradeWindow:
         
         # Add confirm and cancel buttons - positioned higher up
         confirm_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(20, 80, 70, 30),
-            text="Yes",
+            relative_rect=pygame.Rect(10, 80, 85, 30),
+            text=format_button_text("Yes", KeyboardShortcuts.ENTER),
             manager=self.manager,
             container=dialog
         )
         
         cancel_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(110, 80, 70, 30),
-            text="No",
+            relative_rect=pygame.Rect(105, 80, 85, 30),
+            text=format_button_text("No", KeyboardShortcuts.ESCAPE),
             manager=self.manager,
             container=dialog
         )
