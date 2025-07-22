@@ -122,17 +122,11 @@ class CampaignScene(Scene):
                 return True
         return False
     
-    def _all_units_are_basic(self) -> bool:
-        """Check if all units are still at basic tier."""
-        if not progress_manager.unit_tiers:
-            return True
-        return all(tier == UnitTier.BASIC for tier in progress_manager.unit_tiers.values())
-    
     def _should_upgrade_button_flash(self) -> bool:
-        """Check if the upgrade button should flash (has claimed upgrade hexes but all units are basic)."""
-        return (self._has_claimed_upgrade_hexes() and 
-                self._all_units_are_basic() and 
-                self.upgrade_window is None)
+        """Check if the upgrade button should flash (has unspent upgrade credits and upgrade window isn't open)."""
+        available_advanced, available_elite = progress_manager.calculate_available_credits()
+        has_unspent_credits = available_advanced > 0 or available_elite > 0
+        return has_unspent_credits and self.upgrade_window is None
     
     def _update_upgrade_button_flash_theme(self):
         """Update the upgrade button theme based on flash state."""
