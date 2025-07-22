@@ -72,7 +72,7 @@ class Scene(ABC):
         
         Returns:
             bool: True if the event was handled, False otherwise.
-        """
+        """        
         if (event.type == pygame.KEYDOWN and 
             hasattr(self, 'confirmation_dialog') and 
             self.confirmation_dialog is not None):
@@ -96,6 +96,24 @@ class Scene(ABC):
                     filename="ui_click.wav",
                     volume=0.5
                 ))
+                return True
+        return False
+
+    def handle_confirmation_dialog_events(self, event: pygame.event.Event) -> bool:
+        """Handle confirmation dialog cancel button clicks.
+        
+        Returns:
+            bool: True if the event was handled, False otherwise.
+        """
+        if (event.type == pygame.USEREVENT and 
+            event.user_type == pygame_gui.UI_BUTTON_PRESSED and
+            hasattr(self, 'confirmation_dialog') and 
+            self.confirmation_dialog is not None):
+            
+            # Check if the clicked button is the cancel button of our confirmation dialog
+            if (hasattr(self.confirmation_dialog, 'cancel_button') and 
+                event.ui_element == self.confirmation_dialog.cancel_button):
+                self.confirmation_dialog = None
                 return True
         return False
 

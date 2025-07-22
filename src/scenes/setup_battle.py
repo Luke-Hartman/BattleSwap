@@ -702,6 +702,9 @@ class SetupBattleScene(Scene):
 
             if self.handle_confirmation_dialog_keys(event):
                 continue
+            
+            if self.handle_confirmation_dialog_events(event):
+                continue
 
             self.handle_escape(event)
             
@@ -820,6 +823,7 @@ class SetupBattleScene(Scene):
                         self.clear_allied_units()
                 elif event.user_type == pygame_gui.UI_CONFIRMATION_DIALOG_CONFIRMED:
                     if self.confirmation_dialog is not None and event.ui_element == self.confirmation_dialog:
+                        self.confirmation_dialog = None
                         self.world_map_view.move_camera_above_battle(self.battle_id)
                         self.world_map_view.rebuild(battles=progress_manager.get_battles_including_solutions())
                         pygame.event.post(PreviousSceneEvent(current_scene_id=id(self)).to_event())

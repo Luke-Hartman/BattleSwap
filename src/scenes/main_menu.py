@@ -164,6 +164,9 @@ class MainMenuScene(Scene):
             
             if self.handle_confirmation_dialog_keys(event):
                 continue
+            
+            if self.handle_confirmation_dialog_events(event):
+                continue
 
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 return self.handle_quit()

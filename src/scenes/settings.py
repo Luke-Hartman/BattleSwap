@@ -195,6 +195,9 @@ class SettingsScene(Scene):
             
             if self.handle_confirmation_dialog_keys(event):
                 continue
+            
+            if self.handle_confirmation_dialog_events(event):
+                continue
 
             self.handle_escape(event)
 
@@ -233,6 +236,7 @@ class SettingsScene(Scene):
                             pygame.event.post(PreviousSceneEvent(current_scene_id=id(self)).to_event())
                 elif event.user_type == pygame_gui.UI_CONFIRMATION_DIALOG_CONFIRMED:
                     if event.ui_element == self.confirmation_dialog:
+                        self.confirmation_dialog = None
                         # Revert to initial values before leaving
                         for setting_name, value in self.initial_values.items():
                             setattr(settings, setting_name, value)

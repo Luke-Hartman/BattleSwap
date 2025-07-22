@@ -303,6 +303,9 @@ class BattleScene(Scene):
             if self.handle_confirmation_dialog_keys(event):
                 continue
             
+            if self.handle_confirmation_dialog_events(event):
+                continue
+            
             # Handle keyboard shortcuts for victory/defeat panels
             if event.type == pygame.KEYDOWN:
                 # Handle Enter key
@@ -458,6 +461,7 @@ class BattleScene(Scene):
 
                 elif event.user_type == pygame_gui.UI_CONFIRMATION_DIALOG_CONFIRMED:
                     if self.confirmation_dialog is not None and event.ui_element == self.confirmation_dialog:
+                        self.confirmation_dialog = None
                         self.world_map_view.rebuild(progress_manager.get_battles_including_solutions())
                         self.handle_return(n=2)
                         return super().update(time_delta, events)
