@@ -354,23 +354,15 @@ def has_unsaved_changes(battle: Battle) -> bool:
     Returns:
         True if there are unsaved changes, False otherwise
     """
-    with use_world(battle.id):
-        saved_solution = progress_manager.solutions.get(battle.hex_coords)
-        current_set = set(battle.allies) if battle.allies is not None else set()
-        if saved_solution is None:
-            return len(current_set) > 0
+    saved_solution = progress_manager.solutions.get(battle.hex_coords)
+    current_placements = get_unit_placements(TeamType.TEAM1, battle)
+    current_set = set(current_placements)
+    
+    if saved_solution is None:
+        return len(current_set) > 0
         
-        # Check if the battle is corrupted and if the saved solution was for the corrupted version
-        is_corrupted = progress_manager.get_hex_state(battle.hex_coords) in [HexLifecycleState.CORRUPTED, HexLifecycleState.RECLAIMED]
-        is_saved_corrupted = saved_solution.solved_corrupted
-        
-        # If the battle state (corrupted/uncorrupted) doesn't match the saved solution state,
-        # treat it as having unsaved changes
-        if is_corrupted != is_saved_corrupted:
-            return True
-            
-        saved_set = set(saved_solution.unit_placements)
-        return current_set != saved_set
+    saved_set = set(saved_solution.unit_placements)
+    return current_set != saved_set
 
 def calculate_group_placement_positions(
     mouse_world_pos: Tuple[float, float],
