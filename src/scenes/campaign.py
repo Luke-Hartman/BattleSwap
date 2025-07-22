@@ -40,6 +40,7 @@ class CampaignScene(Scene):
         screen: pygame.Surface,
         manager: pygame_gui.UIManager,
         world_map_view: WorldMapView,
+        last_played_battle_id: Optional[str] = None,
     ) -> None:
         emit_event(CHANGE_MUSIC, event=ChangeMusicEvent(
             filename="Main Theme.wav",
@@ -55,6 +56,13 @@ class CampaignScene(Scene):
         # Create camera with desired initial settings
         self.hovered_hex: Optional[Tuple[int, int]] = None
         self.selected_hex: Optional[Tuple[int, int]] = None
+        
+        # Auto-select the last played battle if there is one
+        if last_played_battle_id is not None:
+            for battle in self.world_map_view.battles.values():
+                if battle.id == last_played_battle_id:
+                    self.selected_hex = battle.hex_coords
+                    break
         
         # Store context buttons
         self.context_buttons: dict[str, pygame_gui.elements.UIButton] = {}
@@ -95,6 +103,15 @@ class CampaignScene(Scene):
         self.upgrade_window = None
         self.check_panels()
         self.create_ui()
+        
+        # Create context buttons for initially selected hex
+        if self.selected_hex is not None:
+            self.create_context_buttons()
+            # Update progress panel with selected battle if it exists
+            if self.progress_panel is not None:
+                battle = self.world_map_view.get_battle_from_hex(self.selected_hex)
+                self.progress_panel.update_battle(battle)
+        
         self.world_map_view.move_camera_to_fit()
         
     def _has_claimed_upgrade_hexes(self) -> bool:

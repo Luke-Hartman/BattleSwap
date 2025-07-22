@@ -82,6 +82,7 @@ class SceneManager:
         self.developer_mode = False
         self.current_scene: Optional[Any] = None
         self.scene_stack: List[SceneState] = []
+        self.last_played_battle_id: Optional[str] = None
 
     def initialize(self, screen: pygame.Surface, developer_mode: bool = False) -> None:
         """Initialize with screen and UI dependencies."""
@@ -127,7 +128,8 @@ class SceneManager:
                     scene_type=CampaignScene,
                     params={"screen": self.screen, "manager": self.manager,
                         "world_map_view": self.current_scene.world_map_view,
-                    }))
+                    }
+                ))
             elif isinstance(self.current_scene, SetupBattleScene):
                 self.scene_stack.append(SceneState(
                     scene_type=SetupBattleScene,
@@ -172,9 +174,14 @@ class SceneManager:
                     n -= 1
                 self.cleanup(add_to_stack=False)
 
-                self.current_scene = previous_state.scene_type(
-                    **previous_state.params
-                )
+                # Handle special case for CampaignScene to pass last_played_battle_id
+                if previous_state.scene_type == CampaignScene:
+                    params_with_battle_id = previous_state.params.copy()
+                    params_with_battle_id["last_played_battle_id"] = self.last_played_battle_id
+                    self.current_scene = previous_state.scene_type(**params_with_battle_id)
+                else:
+                    self.current_scene = previous_state.scene_type(**previous_state.params)
+                    
                 if previous_state.camera_state:
                     previous_state.camera_state.restore_position()
             elif event.type == BATTLE_SCENE_EVENT:
@@ -194,6 +201,9 @@ class SceneManager:
                 validated_event = SetupBattleSceneEvent.model_validate(event.dict)
                 if validated_event.current_scene_id != id(self.current_scene):
                     continue
+                # Track this battle if coming from campaign scene
+                if isinstance(self.current_scene, CampaignScene):
+                    self.last_played_battle_id = validated_event.battle_id
                 self.cleanup()
                 if validated_event.world_map_view is not None:
                     camera = validated_event.world_map_view.camera
@@ -241,6 +251,9 @@ class SceneManager:
                 validated_event = CampaignSceneEvent.model_validate(event.dict)
                 if validated_event.current_scene_id != id(self.current_scene):
                     continue
+                # Clear last battle tracking if coming from main menu
+                if isinstance(self.current_scene, MainMenuScene):
+                    self.last_played_battle_id = None
                 self.cleanup()
                 camera = Camera(zoom=1/2)
                 world_map_view = WorldMapView(
@@ -253,6 +266,7 @@ class SceneManager:
                     screen=self.screen,
                     manager=self.manager,
                     world_map_view=world_map_view,
+                    last_played_battle_id=self.last_played_battle_id,
                 )
             elif event.type == DEVELOPER_TOOLS_SCENE_EVENT:
                 validated_event = DeveloperToolsSceneEvent.model_validate(event.dict)
