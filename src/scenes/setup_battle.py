@@ -251,6 +251,9 @@ class SetupBattleScene(Scene):
             self.toggle_corruption_button = None
         
         self.confirmation_dialog: Optional[pygame_gui.windows.UIConfirmationDialog] = None
+        
+        # Set initial start button state based on unit placement
+        self._update_start_button_state()
     
     @property
     def selected_unit_type(self) -> Optional[UnitType]:
@@ -720,19 +723,21 @@ class SetupBattleScene(Scene):
             
             # Handle Enter key to start battle
             if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
-                emit_event(PLAY_SOUND, event=PlaySoundEvent(
-                    filename="ui_click.wav",
-                    volume=0.5
-                ))
-                pygame.event.post(
-                    BattleSceneEvent(
-                        current_scene_id=id(self),
-                        world_map_view=self.world_map_view,
-                        battle_id=self.battle_id,
-                        sandbox_mode=self.sandbox_mode,
-                    ).to_event()
-                )
-                return super().update(time_delta, events)
+                # Only start battle if there are allied units placed
+                if self._has_allied_units_placed():
+                    emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                        filename="ui_click.wav",
+                        volume=0.5
+                    ))
+                    pygame.event.post(
+                        BattleSceneEvent(
+                            current_scene_id=id(self),
+                            world_map_view=self.world_map_view,
+                            battle_id=self.battle_id,
+                            sandbox_mode=self.sandbox_mode,
+                        ).to_event()
+                    )
+                    return super().update(time_delta, events)
             
             # Handle number keys for unit selection from barracks
             if event.type == pygame.KEYDOWN and ((event.key >= pygame.K_1 and event.key <= pygame.K_9) or event.key == pygame.K_0):
@@ -787,15 +792,17 @@ class SetupBattleScene(Scene):
                         self.handle_return()
                         return super().update(time_delta, events)
                     elif event.ui_element == self.start_button:
-                        pygame.event.post(
-                            BattleSceneEvent(
-                                current_scene_id=id(self),
-                                world_map_view=self.world_map_view,
-                                battle_id=self.battle_id,
-                                sandbox_mode=self.sandbox_mode,
-                            ).to_event()
-                        )
-                        return super().update(time_delta, events)
+                        # Only start battle if there are allied units placed
+                        if self._has_allied_units_placed():
+                            pygame.event.post(
+                                BattleSceneEvent(
+                                    current_scene_id=id(self),
+                                    world_map_view=self.world_map_view,
+                                    battle_id=self.battle_id,
+                                    sandbox_mode=self.sandbox_mode,
+                                ).to_event()
+                            )
+                            return super().update(time_delta, events)
                     elif (self.save_dialog and 
                           event.ui_element == self.save_dialog.save_battle_button):
                         self.save_dialog.save_battle(is_test=False)
@@ -962,6 +969,9 @@ class SetupBattleScene(Scene):
         # Update selected unit manager for card animations
         selected_unit_manager.update(time_delta)
         
+        # Update start button state based on unit placement
+        self._update_start_button_state()
+        
         # Draw selection UI elements
         self.draw_selection_rectangle()
         if stop_drag_selecting:
@@ -1030,6 +1040,20 @@ class SetupBattleScene(Scene):
         
         # Rebuild the world to apply changes
         self.world_map_view.rebuild(battles=self.world_map_view.battles.values())
+
+    def _has_allied_units_placed(self) -> bool:
+        """Check if any allied units are placed on the battlefield."""
+        ally_placements = get_unit_placements(TeamType.TEAM1, self.battle)
+        return len(ally_placements) > 0
+
+    def _update_start_button_state(self) -> None:
+        """Update the start button enabled/disabled state based on unit placement."""
+        if self._has_allied_units_placed():
+            self.start_button.enable()
+            self.start_button.set_tooltip("Start the battle")
+        else:
+            self.start_button.disable()
+            self.start_button.set_tooltip("Place at least one unit to start the battle")
 
     def _close_scene_windows(self) -> bool:
         """Close any open windows specific to the setup battle scene."""
