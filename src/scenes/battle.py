@@ -4,7 +4,7 @@ import pygame
 import pygame_gui
 from auto_battle import AutoBattle, BattleOutcome
 from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event, UNMUTE_DRUMS, UnmuteDrumsEvent, PLAY_SOUND, PlaySoundEvent
-from scene_utils import use_world, has_unsaved_changes
+from scene_utils import use_world, has_unsaved_changes, get_unit_placements
 from scenes.scene import Scene
 from scenes.events import PreviousSceneEvent
 from world_map_view import WorldMapView, HexState, FillState
@@ -62,7 +62,7 @@ class BattleScene(Scene):
         self.world_map_view.rebuild(self.world_map_view.battles.values())
         # Fog all other battles except the current one
         fogged_states = {
-            b.hex_coords: HexState(fill=FillState.FOGGED) if b.hex_coords != self.battle.hex_coords else HexState(fill=FillState.NORMAL)
+            b.hex_coords: HexState(fill=FillState.FOGGED) if b.hex_coords != self.battle.hex_coords else HexState(fill=FillState.CLAIMED)
             for b in self.world_map_view.battles.values()
         }
         # Also fog all upgrade hexes during battle
@@ -83,7 +83,7 @@ class BattleScene(Scene):
         self.world_map_view.rebuild(self.world_map_view.battles.values())
         # Fog all other battles except the current one
         fogged_states = {
-            b.hex_coords: HexState(fill=FillState.FOGGED) if b.hex_coords != self.battle.hex_coords else HexState(fill=FillState.NORMAL)
+            b.hex_coords: HexState(fill=FillState.FOGGED) if b.hex_coords != self.battle.hex_coords else HexState(fill=FillState.CLAIMED)
             for b in self.world_map_view.battles.values()
         }
         # Also fog all upgrade hexes during battle
@@ -141,7 +141,8 @@ class BattleScene(Scene):
             save_text = format_button_text(save_text, KeyboardShortcuts.ENTER)
         
         # Prepare tooltip with score information
-        current_points = calculate_points_for_units(self.battle.allies or [])
+        current_placements = get_unit_placements(TeamType.TEAM1, self.battle)
+        current_points = calculate_points_for_units(current_placements)
         enemy_points = calculate_points_for_units(self.battle.enemies or [])
 
         if self.battle.hex_coords in progress_manager.solutions:
@@ -384,13 +385,16 @@ class BattleScene(Scene):
                         pygame.event.post(PreviousSceneEvent(current_scene_id=id(self)).to_event())
                         return super().update(time_delta, events)
                     elif hasattr(self, 'save_button') and event.ui_element == self.save_button:
+                        # Get current unit placements from ECS world
+                        current_placements = get_unit_placements(TeamType.TEAM1, self.battle)
+                        
                         # Check if the current solution could be a best solution
                         if (self.developer_mode and 
-                            self.battle.allies is not None and 
-                            len(self.battle.allies) > 0):
+                            current_placements is not None and 
+                            len(current_placements) > 0):
                             
                             # Get the current points used
-                            current_points = calculate_points_for_units(self.battle.allies)
+                            current_points = calculate_points_for_units(current_placements)
                             
                             # Check if the battle is corrupted
                             is_corrupted = progress_manager.get_hex_state(self.battle.hex_coords) in [HexLifecycleState.CORRUPTED, HexLifecycleState.RECLAIMED]
@@ -409,7 +413,7 @@ class BattleScene(Scene):
                                         is_test=self.battle.is_test,
                                         tip_voice_filename=self.battle.tip_voice_filename,
                                         best_solution=self.battle.best_solution,
-                                        best_corrupted_solution=self.battle.allies,
+                                        best_corrupted_solution=current_placements,
                                         corruption_powers=self.battle.corruption_powers
                                     )
                                     update_battle(self.battle, new_battle)
@@ -425,7 +429,7 @@ class BattleScene(Scene):
                                         hex_coords=self.battle.hex_coords,
                                         is_test=self.battle.is_test,
                                         tip_voice_filename=self.battle.tip_voice_filename,
-                                        best_solution=self.battle.allies,
+                                        best_solution=current_placements,
                                         best_corrupted_solution=self.battle.best_corrupted_solution,
                                         corruption_powers=self.battle.corruption_powers
                                     )
@@ -435,7 +439,7 @@ class BattleScene(Scene):
                         progress_manager.save_solution(
                             Solution(
                                 hex_coords=self.battle.hex_coords,
-                                unit_placements=self.battle.allies,
+                                unit_placements=current_placements,
                                 solved_corrupted=progress_manager.get_hex_state(self.battle.hex_coords) in [HexLifecycleState.CORRUPTED, HexLifecycleState.RECLAIMED]
                             )
                         )
