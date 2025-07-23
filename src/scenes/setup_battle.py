@@ -741,17 +741,22 @@ class SetupBattleScene(Scene):
                 else:
                     unit_index = event.key - pygame.K_1  # Convert to 0-based index
                 
-                # Get current faction from current tab
-                current_faction = None
-                for faction, tab_index in self.barracks.faction_to_tab_index.items():
-                    if tab_index == self.barracks.current_container_index:
-                        current_faction = faction
-                        break
+                # Get current tab and determine which unit list to use
+                current_tab_units = None
                 
-                if current_faction is not None:
-                    faction_units = self.barracks.unit_list_items_by_faction[current_faction]
-                    if unit_index < len(faction_units):
-                        unit_count = faction_units[unit_index]
+                # Check if we're on the "ALL" tab
+                if self.barracks.current_container_index == self.barracks.all_tab_index:
+                    current_tab_units = self.barracks.unit_list_items_by_faction["ALL"]
+                else:
+                    # Check if we're on a faction tab
+                    for faction, tab_index in self.barracks.faction_to_tab_index.items():
+                        if tab_index == self.barracks.current_container_index:
+                            current_tab_units = self.barracks.unit_list_items_by_faction[faction.name]
+                            break
+                
+                if current_tab_units is not None:
+                    if unit_index < len(current_tab_units):
+                        unit_count = current_tab_units[unit_index]
                         # Only select if the unit is interactive (has units available)
                         if unit_count.interactive:
                             play_intro(unit_count.unit_type)
