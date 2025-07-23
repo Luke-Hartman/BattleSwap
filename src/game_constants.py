@@ -45,7 +45,11 @@ class GameConstants(BaseModel):
     MAP_BATTLEFIELD_EDGE_COLOR: list[int]
     MAP_HIGHLIGHT_COLOR: list[int]
     MAP_FOG_COLOR: list[int]
-    MAP_UNFOCUSED_COLOR: list[int]
+    MAP_FOG_OVERLAY_COLOR: list[int]
+    MAP_UNCLAIMED_COLOR: list[int]
+    MAP_CLAIMED_COLOR: list[int]
+    MAP_CORRUPTED_COLOR: list[int]
+    MAP_RECLAIMED_COLOR: list[int]
 
     # Target Preview Settings
     TARGET_PREVIEW_SHIFT: float

@@ -29,7 +29,7 @@ from auto_battle import BattleOutcome, simulate_battle
 from ui_components.tip_box import TipBox
 import upgrade_hexes
 from voice import play_intro
-from world_map_view import FillState, HexState, WorldMapView
+from world_map_view import BorderState, FillState, HexState, WorldMapView, hex_lifecycle_to_fill_state
 from scene_utils import draw_grid, get_center_line, get_placement_pos, get_hovered_unit, get_unit_placements, get_legal_placement_area, clip_to_polygon, has_unsaved_changes, mouse_over_ui, calculate_group_placement_positions
 from ui_components.progress_panel import ProgressPanel
 from ui_components.corruption_power_editor import CorruptionPowerEditorDialog
@@ -117,23 +117,33 @@ class SetupBattleScene(Scene):
         
         if self.sandbox_mode:
             # Set unfocused states for all battles except the focused one
-            unfocused_states = {
-                other_battle.hex_coords: HexState(fill=FillState.UNFOCUSED) if other_battle.hex_coords != battle.hex_coords else HexState(fill=FillState.NORMAL)
-                for other_battle in self.world_map_view.battles.values()
-            }
+            unfocused_states = {}
+            for other_battle in self.world_map_view.battles.values():
+                if other_battle.hex_coords == battle.hex_coords:
+                    hex_state = progress_manager.get_hex_state(battle.hex_coords)
+                    fill_state = hex_lifecycle_to_fill_state(hex_state)
+                    unfocused_states[other_battle.hex_coords] = HexState(fill=fill_state, border=BorderState.YELLOW_BORDER)
+                else:
+                    unfocused_states[other_battle.hex_coords] = HexState(fill=FillState.UNCLAIMED)
         else:
             # Set unfocused for all solved battles except the focused one
             # Set fogged for all unsolved battles
             unfocused_states = {}
             for other_battle in self.world_map_view.battles.values():
                 if other_battle.hex_coords == battle.hex_coords:
-                    unfocused_states[other_battle.hex_coords] = HexState(fill=FillState.NORMAL)
+                    hex_state = progress_manager.get_hex_state(battle.hex_coords)
+                    fill_state = hex_lifecycle_to_fill_state(hex_state)
+                    unfocused_states[other_battle.hex_coords] = HexState(fill=fill_state, border=BorderState.YELLOW_BORDER)
                 else:
-                    unfocused_states[other_battle.hex_coords] = HexState(fill=FillState.FOGGED)
+                    hex_state = progress_manager.get_hex_state(other_battle.hex_coords)
+                    fill_state = hex_lifecycle_to_fill_state(hex_state)
+                    unfocused_states[other_battle.hex_coords] = HexState(fill=fill_state, fogged=True)
         
         # Also fog all upgrade hexes during setup battle
         for upgrade_hex_coords in upgrade_hexes.get_upgrade_hexes():
-            unfocused_states[upgrade_hex_coords] = HexState(fill=FillState.FOGGED)
+            hex_state = progress_manager.get_hex_state(upgrade_hex_coords)
+            fill_state = hex_lifecycle_to_fill_state(hex_state)
+            unfocused_states[upgrade_hex_coords] = HexState(fill=fill_state, fogged=True)
         
         self.world_map_view.reset_hex_states()
         self.world_map_view.update_hex_state(unfocused_states)

@@ -41,29 +41,45 @@ import upgrade_hexes
 
 class FillState(Enum):
     """State determining how a hex should be filled."""
-    NORMAL = auto()
-    HIGHLIGHTED = auto()
-    UNFOCUSED = auto()
-    FOGGED = auto()
+    UNCLAIMED = auto()
+    CLAIMED = auto()
+    CORRUPTED = auto()
+    RECLAIMED = auto()
 
 class BorderState(Enum):
     """State determining how a hex border should be drawn."""
     NORMAL = auto()
     GREEN_BORDER = auto()
     YELLOW_BORDER = auto()
-    RED_BORDER = auto()
-    DARK_RED_BORDER = auto()
 
 class HexState:
     """Combined state for fill and border of a hex."""
-    def __init__(self, fill: FillState = FillState.NORMAL, border: BorderState = BorderState.NORMAL):
+    def __init__(self, fill: FillState = FillState.CLAIMED, border: BorderState = BorderState.NORMAL, highlighted: bool = False, fogged: bool = False):
         self.fill = fill
         self.border = border
+        self.highlighted = highlighted
+        self.fogged = fogged
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, HexState):
             return NotImplemented
-        return self.fill == other.fill and self.border == other.border
+        return self.fill == other.fill and self.border == other.border and self.highlighted == other.highlighted and self.fogged == other.fogged
+
+
+def hex_lifecycle_to_fill_state(hex_lifecycle_state: Optional[HexLifecycleState]) -> FillState:
+    """Convert a HexLifecycleState to the corresponding FillState."""
+    if hex_lifecycle_state == HexLifecycleState.CORRUPTED:
+        return FillState.CORRUPTED
+    elif hex_lifecycle_state == HexLifecycleState.RECLAIMED:
+        return FillState.RECLAIMED
+    elif hex_lifecycle_state == HexLifecycleState.CLAIMED:
+        return FillState.CLAIMED
+    elif hex_lifecycle_state == HexLifecycleState.UNCLAIMED:
+        return FillState.UNCLAIMED
+    elif hex_lifecycle_state == HexLifecycleState.FOGGED:
+        return FillState.UNCLAIMED  # Fogged hexes show as unclaimed but with fogged overlay
+    else:
+        raise ValueError(f"Invalid hex lifecycle state: {hex_lifecycle_state}")
 
 class WorldMapView:
     # Configuration constants
@@ -200,7 +216,7 @@ class WorldMapView:
         
         for battle in self.battles.values():
             # Don't draw/update units for fogged battles
-            if self.hex_states.get(battle.hex_coords, HexState()).fill == FillState.FOGGED:
+            if self.hex_states.get(battle.hex_coords, HexState()).fogged:
                 continue
             
             esper.switch_world(battle.id)
@@ -382,43 +398,46 @@ class WorldMapView:
 
         is_upgrade_hex = upgrade_hexes.is_upgrade_hex(coords)
 
-        # Draw base hex fill based on type
+        # Draw hex fill based on state
         if self.get_battle_from_hex(coords) is not None or is_upgrade_hex:
+            # Choose base color based on fill state
+            if state.fill == FillState.UNCLAIMED:
+                color = gc.MAP_UNCLAIMED_COLOR
+            elif state.fill == FillState.CLAIMED:
+                color = gc.MAP_CLAIMED_COLOR
+            elif state.fill == FillState.CORRUPTED:
+                color = gc.MAP_CORRUPTED_COLOR
+            elif state.fill == FillState.RECLAIMED:
+                color = gc.MAP_RECLAIMED_COLOR
+            else:
+                raise ValueError(f"Invalid fill state: {state.fill}")
             draw_polygon(
                 screen=self.screen, 
                 polygon=screen_polygon, 
                 camera=self.camera, 
-                color=gc.MAP_BATTLEFIELD_COLOR, 
+                color=color, 
                 alpha=None,
                 world_coords=False,
             )
 
-        # Draw fill overlay based on state
-        if state.fill == FillState.HIGHLIGHTED:
+        if state.fogged:
+            draw_polygon(
+                screen=self.screen, 
+                polygon=screen_polygon, 
+                camera=self.camera, 
+                color=gc.MAP_FOG_OVERLAY_COLOR[:3], 
+                alpha=gc.MAP_FOG_OVERLAY_COLOR[3],
+                world_coords=False,
+            )
+
+        # Draw highlight overlay if highlighted
+        if state.highlighted:
             draw_polygon(
                 screen=self.screen, 
                 polygon=screen_polygon, 
                 camera=self.camera, 
                 color=gc.MAP_HIGHLIGHT_COLOR[:3], 
                 alpha=gc.MAP_HIGHLIGHT_COLOR[3],
-                world_coords=False,
-            )
-        elif state.fill == FillState.FOGGED:
-            draw_polygon(
-                screen=self.screen, 
-                polygon=screen_polygon, 
-                camera=self.camera, 
-                color=gc.MAP_FOG_COLOR[:3], 
-                alpha=gc.MAP_FOG_COLOR[3],
-                world_coords=False,
-            )
-        elif state.fill == FillState.UNFOCUSED:
-            draw_polygon(
-                screen=self.screen, 
-                polygon=screen_polygon, 
-                camera=self.camera, 
-                color=gc.MAP_UNFOCUSED_COLOR[:3], 
-                alpha=gc.MAP_UNFOCUSED_COLOR[3],
                 world_coords=False,
             )
 
@@ -482,12 +501,6 @@ class WorldMapView:
         border_states = [self.hex_states.get(coords, HexState()).border for coords in edge]
         if BorderState.YELLOW_BORDER in border_states:
             color = (255, 255, 0)
-            width = 2
-        elif BorderState.RED_BORDER in border_states:
-            color = (255, 0, 0)
-            width = 2
-        elif BorderState.DARK_RED_BORDER in border_states:
-            color = (100, 0, 0)
             width = 2
         elif BorderState.GREEN_BORDER in border_states:
             color = (0, 255, 0)

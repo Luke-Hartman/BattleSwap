@@ -7,7 +7,7 @@ from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event, UNMUTE_DRUMS, Unm
 from scene_utils import use_world, has_unsaved_changes, get_unit_placements
 from scenes.scene import Scene
 from scenes.events import PreviousSceneEvent
-from world_map_view import WorldMapView, HexState, FillState
+from world_map_view import BorderState, WorldMapView, HexState, FillState, hex_lifecycle_to_fill_state
 from ui_components.return_button import ReturnButton
 from progress_manager import HexLifecycleState, progress_manager, Solution, calculate_points_for_units
 from ui_components.time_controls import TimeControls
@@ -61,13 +61,21 @@ class BattleScene(Scene):
 
         self.world_map_view.rebuild(self.world_map_view.battles.values())
         # Fog all other battles except the current one
-        fogged_states = {
-            b.hex_coords: HexState(fill=FillState.FOGGED) if b.hex_coords != self.battle.hex_coords else HexState(fill=FillState.CLAIMED)
-            for b in self.world_map_view.battles.values()
-        }
+        fogged_states = {}
+        for b in self.world_map_view.battles.values():
+            if b.hex_coords == self.battle.hex_coords:
+                hex_state = progress_manager.get_hex_state(self.battle.hex_coords)
+                fill_state = hex_lifecycle_to_fill_state(hex_state)
+                fogged_states[b.hex_coords] = HexState(fill=fill_state, border=BorderState.YELLOW_BORDER)
+            else:
+                hex_state = progress_manager.get_hex_state(b.hex_coords)
+                fill_state = hex_lifecycle_to_fill_state(hex_state)
+                fogged_states[b.hex_coords] = HexState(fill=fill_state, fogged=True)
         # Also fog all upgrade hexes during battle
         for upgrade_hex_coords in upgrade_hexes.get_upgrade_hexes():
-            fogged_states[upgrade_hex_coords] = HexState(fill=FillState.FOGGED)
+            hex_state = progress_manager.get_hex_state(upgrade_hex_coords)
+            fill_state = hex_lifecycle_to_fill_state(hex_state)
+            fogged_states[upgrade_hex_coords] = HexState(fill=fill_state, fogged=True)
         self.world_map_view.reset_hex_states()
         self.world_map_view.update_hex_state(fogged_states)
 
@@ -82,13 +90,21 @@ class BattleScene(Scene):
         self.world_map_view.move_camera_above_battle(self.battle_id)
         self.world_map_view.rebuild(self.world_map_view.battles.values())
         # Fog all other battles except the current one
-        fogged_states = {
-            b.hex_coords: HexState(fill=FillState.FOGGED) if b.hex_coords != self.battle.hex_coords else HexState(fill=FillState.CLAIMED)
-            for b in self.world_map_view.battles.values()
-        }
+        fogged_states = {}
+        for b in self.world_map_view.battles.values():
+            if b.hex_coords == self.battle.hex_coords:
+                hex_state = progress_manager.get_hex_state(self.battle.hex_coords)
+                fill_state = hex_lifecycle_to_fill_state(hex_state)
+                fogged_states[b.hex_coords] = HexState(fill=fill_state, border=BorderState.YELLOW_BORDER)
+            else:
+                hex_state = progress_manager.get_hex_state(b.hex_coords)
+                fill_state = hex_lifecycle_to_fill_state(hex_state)
+                fogged_states[b.hex_coords] = HexState(fill=fill_state, fogged=True)
         # Also fog all upgrade hexes during battle
         for upgrade_hex_coords in upgrade_hexes.get_upgrade_hexes():
-            fogged_states[upgrade_hex_coords] = HexState(fill=FillState.FOGGED)
+            hex_state = progress_manager.get_hex_state(upgrade_hex_coords)
+            fill_state = hex_lifecycle_to_fill_state(hex_state)
+            fogged_states[upgrade_hex_coords] = HexState(fill=fill_state, fogged=True)
         self.world_map_view.reset_hex_states()
         self.world_map_view.update_hex_state(fogged_states)
         pygame.event.post(PreviousSceneEvent(current_scene_id=id(self), n=n).to_event())

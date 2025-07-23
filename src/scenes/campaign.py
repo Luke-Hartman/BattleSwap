@@ -520,20 +520,23 @@ class CampaignScene(Scene):
         states = defaultdict(HexState)
         for hex_coords, state in progress_manager.hex_states.items():
             if progress_manager.get_hex_state(hex_coords) == HexLifecycleState.CORRUPTED:
-                states[hex_coords].border = BorderState.RED_BORDER
+                states[hex_coords].fill = FillState.CORRUPTED
             elif progress_manager.get_hex_state(hex_coords) == HexLifecycleState.RECLAIMED:
-                states[hex_coords].border = BorderState.DARK_RED_BORDER
+                states[hex_coords].fill = FillState.RECLAIMED
             elif state == HexLifecycleState.CLAIMED:
-                states[hex_coords].fill = FillState.NORMAL
+                states[hex_coords].fill = FillState.CLAIMED
             elif state == HexLifecycleState.UNCLAIMED:
-                states[hex_coords].fill = FillState.UNFOCUSED
+                states[hex_coords].fill = FillState.UNCLAIMED
             elif state == HexLifecycleState.FOGGED:
-                states[hex_coords].fill = FillState.FOGGED
+                states[hex_coords].fill = FillState.UNCLAIMED
+                states[hex_coords].fogged = True
+            if state != HexLifecycleState.FOGGED:
+                print(f"hex_coords: {hex_coords}, state: {state}")
 
         if self.selected_hex is not None:
             states[self.selected_hex].border = BorderState.YELLOW_BORDER
         if self.hovered_hex is not None:
-            states[self.hovered_hex].fill = FillState.HIGHLIGHTED
+            states[self.hovered_hex].highlighted = True
         self.world_map_view.reset_hex_states()
         self.world_map_view.update_hex_state(states)
         

@@ -423,13 +423,13 @@ class CampaignEditorScene(Scene):
 
         states = defaultdict(HexState)
         for hex_coords in self.corrupted_hexes:
-            states[hex_coords].border = BorderState.RED_BORDER
+            states[hex_coords].fill = FillState.CORRUPTED
         if self.selected_hex is not None:
             states[self.selected_hex].border = BorderState.YELLOW_BORDER
         if self.move_target_hex is not None:
             states[self.move_target_hex].border = BorderState.GREEN_BORDER
         if self.hovered_hex is not None:
-            states[self.hovered_hex].fill = FillState.HIGHLIGHTED
+            states[self.hovered_hex].highlighted = True
         self.world_map_view.reset_hex_states()
         self.world_map_view.update_hex_state(states)
 
