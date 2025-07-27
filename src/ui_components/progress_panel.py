@@ -97,10 +97,12 @@ class ProgressPanel(UIPanel):
         else:
             enemy_points_text = f"{enemy_points} pts"
         
+        completion_link = f"<a href='progress_details'>{percentage}% completion</a>"
+        
         html_content = f"""{player_points_text} vs {enemy_points_text}
 {barracks_points} pts unused
 ({corruption_threshold} {points_link} unused {corruption_link})
-{percentage}% completion"""
+{completion_link}"""
         
         # Create single text box with all content
         self.info_text = UITextBox(
