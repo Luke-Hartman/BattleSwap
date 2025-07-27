@@ -15,8 +15,8 @@ class SaveBattleDialog:
     def __init__(
         self,
         manager: pygame_gui.UIManager,
-        ally_placements: Optional[List[Tuple[UnitType, Tuple[int, int]]]],
-        enemy_placements: List[Tuple[UnitType, Tuple[int, int]]],
+        ally_placements: Optional[List[Tuple[UnitType, Tuple[float, float]]]],
+        enemy_placements: List[Tuple[UnitType, Tuple[float, float]]],
         existing_battle_id: Optional[str],
         hex_coords: Optional[Tuple[int, int]] = None,
         show_battle_button: bool = True,

@@ -245,7 +245,7 @@ class WorldMapView:
     
 
     
-    def add_unit(self, battle_id: str, unit_type: UnitType, position: Tuple[int, int], team: TeamType) -> None:
+    def add_unit(self, battle_id: str, unit_type: UnitType, position: Tuple[float, float], team: TeamType) -> None:
         """
         Add a unit to the specified battle and play a sound effect.
 

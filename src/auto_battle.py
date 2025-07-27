@@ -103,8 +103,8 @@ class AutoBattle:
         return self.battle_outcome
 
 def simulate_battle(
-    ally_placements: List[Tuple[UnitType, Tuple[int, int]]],
-    enemy_placements: List[Tuple[UnitType, Tuple[int, int]]],
+    ally_placements: List[Tuple[UnitType, Tuple[float, float]]],
+    enemy_placements: List[Tuple[UnitType, Tuple[float, float]]],
     max_duration: float,
     corruption_powers: Optional[List[CorruptionPower]] = None,
     post_battle_callback: Optional[Callable[[BattleOutcome], Any]] = None,
@@ -154,8 +154,8 @@ def simulate_battle(
         return outcome
 
 def simulate_battle_with_dependencies(
-    ally_placements: List[Tuple[UnitType, Tuple[int, int]]],
-    enemy_placements: List[Tuple[UnitType, Tuple[int, int]]],
+    ally_placements: List[Tuple[UnitType, Tuple[float, float]]],
+    enemy_placements: List[Tuple[UnitType, Tuple[float, float]]],
     max_duration: float,
     corruption_powers: Optional[List[CorruptionPower]] = None,
     post_battle_callback: Optional[Callable[[BattleOutcome], Any]] = None,
