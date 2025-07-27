@@ -7,7 +7,9 @@ import esper
 
 from components.health import Health
 from components.position import Position
-from unit_condition import UnitCondition
+from components.team import TeamType
+from unit_condition import UnitCondition, All, OnTeam, Alive, Grounded
+from unit_sets import UnitSetType, unit_set_manager
 
 class Ranking(ABC):
 
@@ -96,11 +98,13 @@ class TargetStrategy:
     def __init__(
         self,
         unit_condition: UnitCondition,
-        rankings: List[Ranking]
+        rankings: List[Ranking],
+        unit_set_type: Optional[UnitSetType] = None
     ):
         self._target = None
         self.unit_condition = unit_condition
         self.rankings = rankings
+        self.unit_set_type = unit_set_type
 
     def find_target(self) -> Optional[int]:
         """Find the target for the given entity."""
@@ -108,7 +112,17 @@ class TargetStrategy:
         best_target = None
         best_scores = None
         
-        for other_entity, (_,) in esper.get_components(Position):
+        # Use pre-filtered unit set if specified, otherwise use all positioned entities
+        if self.unit_set_type is not None:
+            # Request the unit set to be computed
+            unit_set_manager.request_unit_set(self.unit_set_type)
+            # We'll get the actual set in the processor after compute_sets() is called
+            entities_to_check = unit_set_manager.get_unit_set(self.unit_set_type)
+        else:
+            # Fallback to original behavior
+            entities_to_check = [entity for entity, (_,) in esper.get_components(Position)]
+        
+        for other_entity in entities_to_check:
             if not self.unit_condition.check(other_entity):
                 continue
 
@@ -131,3 +145,129 @@ class TargetStrategy:
     @target.setter
     def target(self, target: Optional[int]):
         self._target = target
+
+
+def create_enemy_targeting_strategy(
+    team: TeamType,
+    rankings: List[Ranking],
+    grounded_only: bool = False,
+    additional_conditions: Optional[List[UnitCondition]] = None
+) -> TargetStrategy:
+    """Create a targeting strategy for enemy units with optimized unit sets.
+    
+    Args:
+        team: The team of the entity doing the targeting (enemies will be the other team)
+        rankings: The ranking criteria for target selection
+        grounded_only: Whether to target only grounded units
+        additional_conditions: Additional unit conditions to apply beyond team/alive/grounded
+    
+    Returns:
+        A TargetStrategy configured with the appropriate unit set
+    """
+    enemy_team = team.other()
+    
+    # Choose the appropriate pre-filtered unit set
+    if grounded_only:
+        if enemy_team == TeamType.TEAM1:
+            unit_set_type = UnitSetType.TEAM1_LIVING_GROUNDED
+        else:
+            unit_set_type = UnitSetType.TEAM2_LIVING_GROUNDED
+        base_conditions = [OnTeam(team=enemy_team), Alive(), Grounded()]
+    else:
+        if enemy_team == TeamType.TEAM1:
+            unit_set_type = UnitSetType.TEAM1_LIVING
+        else:
+            unit_set_type = UnitSetType.TEAM2_LIVING
+        base_conditions = [OnTeam(team=enemy_team), Alive()]
+    
+    # Add any additional conditions
+    if additional_conditions:
+        all_conditions = base_conditions + additional_conditions
+    else:
+        all_conditions = base_conditions
+    
+    return TargetStrategy(
+        unit_condition=All(all_conditions),
+        rankings=rankings,
+        unit_set_type=unit_set_type
+    )
+
+
+def create_friendly_targeting_strategy(
+    team: TeamType,
+    rankings: List[Ranking],
+    grounded_only: bool = False,
+    additional_conditions: Optional[List[UnitCondition]] = None
+) -> TargetStrategy:
+    """Create a targeting strategy for friendly units with optimized unit sets.
+    
+    Args:
+        team: The team to target
+        rankings: The ranking criteria for target selection
+        grounded_only: Whether to target only grounded units
+        additional_conditions: Additional unit conditions to apply beyond team/alive/grounded
+    
+    Returns:
+        A TargetStrategy configured with the appropriate unit set
+    """
+    # Choose the appropriate pre-filtered unit set
+    if grounded_only:
+        if team == TeamType.TEAM1:
+            unit_set_type = UnitSetType.TEAM1_LIVING_GROUNDED
+        else:
+            unit_set_type = UnitSetType.TEAM2_LIVING_GROUNDED
+        base_conditions = [OnTeam(team=team), Alive(), Grounded()]
+    else:
+        if team == TeamType.TEAM1:
+            unit_set_type = UnitSetType.TEAM1_LIVING
+        else:
+            unit_set_type = UnitSetType.TEAM2_LIVING
+        base_conditions = [OnTeam(team=team), Alive()]
+    
+    # Add any additional conditions
+    if additional_conditions:
+        all_conditions = base_conditions + additional_conditions
+    else:
+        all_conditions = base_conditions
+    
+    return TargetStrategy(
+        unit_condition=All(all_conditions),
+        rankings=rankings,
+        unit_set_type=unit_set_type
+    )
+
+
+def create_any_living_targeting_strategy(
+    rankings: List[Ranking],
+    grounded_only: bool = False,
+    additional_conditions: Optional[List[UnitCondition]] = None
+) -> TargetStrategy:
+    """Create a targeting strategy for any living units with optimized unit sets.
+    
+    Args:
+        rankings: The ranking criteria for target selection
+        grounded_only: Whether to target only grounded units
+        additional_conditions: Additional unit conditions to apply beyond alive/grounded
+    
+    Returns:
+        A TargetStrategy configured with the appropriate unit set
+    """
+    # Choose the appropriate pre-filtered unit set
+    if grounded_only:
+        unit_set_type = UnitSetType.ALL_LIVING_GROUNDED
+        base_conditions = [Alive(), Grounded()]
+    else:
+        unit_set_type = UnitSetType.ALL_LIVING
+        base_conditions = [Alive()]
+    
+    # Add any additional conditions
+    if additional_conditions:
+        all_conditions = base_conditions + additional_conditions
+    else:
+        all_conditions = base_conditions
+    
+    return TargetStrategy(
+        unit_condition=All(all_conditions),
+        rankings=rankings,
+        unit_set_type=unit_set_type
+    )

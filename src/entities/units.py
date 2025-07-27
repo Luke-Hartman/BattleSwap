@@ -34,7 +34,7 @@ from components.position import Position
 from components.animation import AnimationState, AnimationType
 from components.sprite_sheet import SpriteSheet
 from components.status_effect import CrusaderBannerBearerEmpowered, Fleeing, Healing, DamageOverTime, StatusEffects, ZombieInfection, CrusaderBannerBearerMovementSpeedBuff, CrusaderBannerBearerAbilitySpeedBuff
-from target_strategy import ByCurrentHealth, ByDistance, ByMissingHealth, ConditionPenalty, TargetStrategy, WeightedRanking
+from target_strategy import ByCurrentHealth, ByDistance, ByMissingHealth, ConditionPenalty, TargetStrategy, WeightedRanking, create_enemy_targeting_strategy, create_friendly_targeting_strategy, create_any_living_targeting_strategy
 from components.destination import Destination
 from components.team import Team, TeamType
 from components.unit_state import State, UnitState
@@ -344,11 +344,12 @@ def create_core_archer(
         corruption_powers=corruption_powers,
         tier=tier
     )
-    targetting_strategy = TargetStrategy(
+    targetting_strategy = create_enemy_targeting_strategy(
+        team=team,
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
         ],
-        unit_condition=All([OnTeam(team=team.other()), Alive()])
+        grounded_only=False
     )
     esper.add_component(
         entity,
