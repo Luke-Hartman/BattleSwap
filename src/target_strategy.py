@@ -9,6 +9,16 @@ from components.health import Health
 from components.position import Position
 from unit_condition import UnitCondition
 
+from enum import Enum, auto
+
+class TargetingGroup(Enum):
+    """Enum for different pre-filtered unit sets."""
+
+    TEAM1_LIVING = auto()
+    TEAM2_LIVING = auto()
+    EMPTY = auto()
+
+
 class Ranking(ABC):
 
     def __init__(self, ascending: bool, unit_condition: Optional[UnitCondition] = None):
@@ -95,29 +105,31 @@ class TargetStrategy:
 
     def __init__(
         self,
-        unit_condition: UnitCondition,
-        rankings: List[Ranking]
+        unit_condition: Optional[UnitCondition],
+        rankings: List[Ranking],
+        targetting_group: TargetingGroup
     ):
         self._target = None
         self.unit_condition = unit_condition
         self.rankings = rankings
+        self.targetting_group = targetting_group
 
-    def find_target(self) -> Optional[int]:
+    def find_target(self, targetting_groups: Dict[TargetingGroup, Set[int]]) -> Optional[int]:
         """Find the target for the given entity."""
         self.target = None
         best_target = None
         best_scores = None
         
-        for other_entity, (_,) in esper.get_components(Position):
-            if not self.unit_condition.check(other_entity):
+        for entity in targetting_groups[self.targetting_group]:
+            if self.unit_condition is not None and not self.unit_condition.check(entity):
                 continue
 
             # Calculate scores for this entity
-            current_scores = tuple(ranking.key(other_entity) for ranking in self.rankings)
+            current_scores = tuple(ranking.key(entity) for ranking in self.rankings)
             
             # If this is the first valid target or it's better than the current best
             if best_scores is None or current_scores < best_scores:
-                best_target = other_entity
+                best_target = entity
                 best_scores = current_scores
         
         self.target = best_target

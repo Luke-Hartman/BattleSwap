@@ -348,7 +348,8 @@ def create_core_archer(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
         ],
-        unit_condition=All([OnTeam(team=team.other()), Alive()])
+        unit_condition=None,
+        targetting_group=TargetingGroup.TEAM2_LIVING if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING
     )
     esper.add_component(
         entity,
@@ -476,7 +477,8 @@ def create_core_barbarian(
         rankings=[
             ByDistance(entity=entity, y_bias=4, ascending=True),
         ],
-        unit_condition=All([OnTeam(team=team.other()), Alive()])
+        unit_condition=None,
+        targetting_group=TargetingGroup.TEAM2_LIVING if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING
     )
     esper.add_component(
         entity,
@@ -575,7 +577,8 @@ def create_core_cavalry(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
         ],
-        unit_condition=All([OnTeam(team=team.other()), Alive()])
+        unit_condition=None,
+        targetting_group=TargetingGroup.TEAM2_LIVING if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING
     )
     esper.add_component(
         entity,
@@ -658,7 +661,8 @@ def create_core_duelist(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
         ],
-        unit_condition=All([OnTeam(team=team.other()), Alive()])
+        unit_condition=None,
+        targetting_group=TargetingGroup.TEAM2_LIVING if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING
     )
     esper.add_component(
         entity,
@@ -785,7 +789,8 @@ def create_core_longbowman(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
         ],
-        unit_condition=All([OnTeam(team=team.other()), Alive()])
+        unit_condition=None,
+        targetting_group=TargetingGroup.TEAM2_LIVING if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING
     )
     esper.add_component(
         entity,
@@ -904,7 +909,8 @@ def create_core_swordsman(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
         ],
-        unit_condition=All([OnTeam(team=team.other()), Alive()])
+        unit_condition=None,
+        targetting_group=TargetingGroup.TEAM2_LIVING if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING
     )
     esper.add_component(
         entity,
@@ -1000,7 +1006,8 @@ def create_core_wizard(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
         ],
-        unit_condition=All([OnTeam(team=team.other()), Alive()])
+        unit_condition=None,
+        targetting_group=TargetingGroup.TEAM2_LIVING if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING
     )
     esper.add_component(
         entity,
@@ -1133,13 +1140,8 @@ def create_crusader_banner_bearer(
                 }
             ),
         ],
-        unit_condition=All(
-            [
-                Alive(),
-                OnTeam(team=team),
-                Not(HasComponent(component=Follower)),
-            ]
-        )
+        unit_condition=Not(HasComponent(component=Follower)),
+        targetting_group=TargetingGroup.TEAM1_LIVING if team == TeamType.TEAM1 else TargetingGroup.TEAM2_LIVING
     )
     esper.add_component(
         entity,
@@ -1280,7 +1282,8 @@ def create_crusader_black_knight(
                 },
             ),
         ],
-        unit_condition=All([OnTeam(team=team.other()), Alive()])
+        unit_condition=None,
+        targetting_group=TargetingGroup.TEAM2_LIVING if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING
     )
     esper.add_component(
         entity,
@@ -1414,8 +1417,6 @@ def create_crusader_catapult(
         ],
         unit_condition=All(
             [
-                OnTeam(team=team.other()),
-                Alive(),
                 Grounded(),
                 MaximumDistanceFromEntity(
                     entity=entity,
@@ -1428,7 +1429,8 @@ def create_crusader_catapult(
                     y_bias=None
                 )
             ]
-        )
+        ),
+        targetting_group=TargetingGroup.TEAM2_LIVING if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING
     )
     esper.add_component(entity, Destination(target_strategy=targetting_strategy, x_offset=0))
     esper.add_component(entity, RangeIndicator(ranges=[catapult_min_range, catapult_max_range]))
@@ -1537,13 +1539,8 @@ def create_crusader_cleric(
                 }
             ),
         ],
-        unit_condition=All(
-            [
-                Alive(),
-                OnTeam(team=team),
-                Not(HasComponent(component=Follower)),
-            ]
-        )
+        unit_condition=Not(HasComponent(component=Follower)),
+        targetting_group=TargetingGroup.TEAM1_LIVING if team == TeamType.TEAM1 else TargetingGroup.TEAM2_LIVING
     )
     target_ally_to_heal = TargetStrategy(
         rankings=[
@@ -1553,11 +1550,12 @@ def create_crusader_cleric(
                     ByMissingHealth(ascending=False): 0.6,
                     ConditionPenalty(condition_to_check=IsEntity(entity=entity), value=10000): 1,
                 },
-                unit_condition=All([OnTeam(team=team), Alive(), HealthBelowPercent(percent=1)])
+                unit_condition=HealthBelowPercent(percent=1)
             ),
             ByDistance(entity=entity, y_bias=None, ascending=True),
         ],
-        unit_condition=All([OnTeam(team=team), Alive()])
+        unit_condition=None,
+        targetting_group=TargetingGroup.TEAM1_LIVING if team == TeamType.TEAM1 else TargetingGroup.TEAM2_LIVING
     )
     esper.add_component(
         entity,
@@ -1681,7 +1679,8 @@ def create_crusader_commander(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
         ],
-        unit_condition=All([OnTeam(team=team.other()), Alive()])
+        unit_condition=None,
+        targetting_group=TargetingGroup.TEAM2_LIVING if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING
     )
     esper.add_component(
         entity,
@@ -1796,11 +1795,13 @@ def create_crusader_crossbowman(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
         ],
-        unit_condition=All([OnTeam(team=team.other()), Alive()])
+        unit_condition=None,
+        targetting_group=TargetingGroup.TEAM2_LIVING if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING
     )
     no_target_strategy = TargetStrategy(
         rankings=[ByDistance(entity=entity, y_bias=2, ascending=True)],
         unit_condition=Never(),
+        targetting_group=TargetingGroup.EMPTY
     )
     esper.add_component(entity, Destination(target_strategy=targetting_strategy, x_offset=0))
     esper.add_component(
@@ -1994,7 +1995,8 @@ def create_crusader_defender(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
         ],
-        unit_condition=All([OnTeam(team=team.other()), Alive()])
+        unit_condition=None,
+        targetting_group=TargetingGroup.TEAM2_LIVING if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING
     )
     esper.add_component(
         entity,
@@ -2095,7 +2097,8 @@ def create_crusader_gold_knight(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
         ],
-        unit_condition=All([OnTeam(team=team.other()), Alive()])
+        unit_condition=None,
+        targetting_group=TargetingGroup.TEAM2_LIVING if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING
     )
     esper.add_component(
         entity,
@@ -2201,13 +2204,8 @@ def create_crusader_guardian_angel(
                 }
             ),
         ],
-        unit_condition=All(
-            [
-                Alive(),
-                OnTeam(team=team),
-                Not(HasComponent(component=Follower)),
-            ]
-        )
+        unit_condition=Not(HasComponent(component=Follower)),
+        targetting_group=TargetingGroup.TEAM1_LIVING if team == TeamType.TEAM1 else TargetingGroup.TEAM2_LIVING
     )
     esper.add_component(
         entity,
@@ -2334,7 +2332,8 @@ def create_crusader_paladin(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
         ],
-        unit_condition=All([OnTeam(team=team.other()), Alive()])
+        unit_condition=None,
+        targetting_group=TargetingGroup.TEAM2_LIVING if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING
     )
     esper.add_component(
         entity,
@@ -2349,6 +2348,7 @@ def create_crusader_paladin(
                     target_strategy=TargetStrategy(
                         rankings=[ByDistance(entity=entity, y_bias=2, ascending=True)],
                         unit_condition=Never(),
+                        targetting_group=TargetingGroup.EMPTY
                     ),
                     trigger_conditions=[
                         Cooldown(duration=gc.CRUSADER_PALADIN_SKILL_COOLDOWN),
@@ -2451,7 +2451,8 @@ def create_crusader_pikeman(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
         ],
-        unit_condition=All([OnTeam(team=team.other()), Alive()])
+        unit_condition=None,
+        targetting_group=TargetingGroup.TEAM2_LIVING if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING
     )
     esper.add_component(
         entity,
@@ -2575,7 +2576,8 @@ def create_crusader_red_knight(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
         ],
-        unit_condition=All([OnTeam(team=team.other()), Alive()])
+        unit_condition=None,
+        targetting_group=TargetingGroup.TEAM2_LIVING if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING
     )
     esper.add_component(
         entity,
@@ -2729,7 +2731,8 @@ def create_crusader_soldier(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
         ],
-        unit_condition=All([OnTeam(team=team.other()), Alive()])
+        unit_condition=None,
+        targetting_group=TargetingGroup.TEAM2_LIVING if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING
     )
     esper.add_component(
         entity,
@@ -2928,7 +2931,8 @@ def create_werebear(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
         ],
-        unit_condition=All([OnTeam(team=team.other()), Alive()])
+        unit_condition=None,
+        targetting_group=TargetingGroup.TEAM2_LIVING if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING
     )
     esper.add_component(
         entity,
@@ -3009,7 +3013,8 @@ def create_zombie_basic_zombie(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
         ],
-        unit_condition=All([OnTeam(team=team.other()), Alive()])
+        unit_condition=None,
+        targetting_group=TargetingGroup.TEAM2_LIVING if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING
     )
     esper.add_component(
         entity,
@@ -3108,7 +3113,8 @@ def create_zombie_brute(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
         ],
-        unit_condition=All([OnTeam(team=team.other()), Alive()])
+        unit_condition=None,
+        targetting_group=TargetingGroup.TEAM2_LIVING if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING
     )
     esper.add_component(
         entity,
@@ -3271,7 +3277,8 @@ def create_zombie_jumper(
                 },
             ),
         ],
-        unit_condition=All([OnTeam(team=team.other()), Alive()])
+        unit_condition=None,
+        targetting_group=TargetingGroup.TEAM2_LIVING if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING
     )
     esper.add_component(
         entity,
@@ -3421,7 +3428,8 @@ def create_zombie_spitter(
                 ascending=True,
             ),
         ],
-        unit_condition=All([OnTeam(team=team.other()), Alive()])
+        unit_condition=None,
+        targetting_group=TargetingGroup.TEAM2_LIVING if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING
     )
     esper.add_component(
         entity,
@@ -3566,7 +3574,8 @@ def create_zombie_tank(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
         ],
-        unit_condition=All([OnTeam(team=team.other()), Alive()])
+        unit_condition=None,
+        targetting_group=TargetingGroup.TEAM2_LIVING if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING
     )
     esper.add_component(
         entity,
@@ -3673,7 +3682,8 @@ def create_zombie_grabber(
                 ascending=True,
             ),
         ],
-        unit_condition=All([OnTeam(team=team.other()), Alive(), Not(HasComponent(Immobile))])
+        unit_condition=Not(HasComponent(Immobile)),
+        targetting_group=TargetingGroup.TEAM1_LIVING if team == TeamType.TEAM1 else TargetingGroup.TEAM2_LIVING
     )
     esper.add_component(
         entity,
