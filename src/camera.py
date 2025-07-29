@@ -226,7 +226,7 @@ class Camera:
         """Update the camera position based on input and animation."""
         if self._moving:
             # Advance time
-            self._elapsed += time_delta
+            self._elapsed += 1.5 * time_delta # Simple hack to make camera movement faster
             t = self._elapsed / self._duration
 
             if t >= 1.0:

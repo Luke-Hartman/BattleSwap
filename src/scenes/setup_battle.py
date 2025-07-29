@@ -133,6 +133,8 @@ class SetupBattleScene(Scene):
                 if other_battle.hex_coords == battle.hex_coords:
                     hex_state = progress_manager.get_hex_state(battle.hex_coords)
                     fill_state = hex_lifecycle_to_fill_state(hex_state)
+                    if fill_state == FillState.UNCLAIMED:
+                        fill_state = FillState.CLAIMED
                     unfocused_states[other_battle.hex_coords] = HexState(fill=fill_state, border=BorderState.YELLOW_BORDER)
                 else:
                     hex_state = progress_manager.get_hex_state(other_battle.hex_coords)

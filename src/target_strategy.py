@@ -1,7 +1,7 @@
 """Targetting strategy logic for Battle Swap."""
 
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
 import esper
 

@@ -530,8 +530,6 @@ class CampaignScene(Scene):
             elif state == HexLifecycleState.FOGGED:
                 states[hex_coords].fill = FillState.UNCLAIMED
                 states[hex_coords].fogged = True
-            if state != HexLifecycleState.FOGGED:
-                print(f"hex_coords: {hex_coords}, state: {state}")
 
         if self.selected_hex is not None:
             states[self.selected_hex].border = BorderState.YELLOW_BORDER

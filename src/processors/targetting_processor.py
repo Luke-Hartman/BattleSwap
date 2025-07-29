@@ -1,10 +1,13 @@
 """Processor responsible for targetting."""
 
 
+from collections import defaultdict
 import esper
 from components.ability import Abilities
 from components.destination import Destination
 from components.instant_ability import InstantAbilities
+from components.position import Position
+from components.team import Team, TeamType
 from components.unit_state import State, UnitState
 from target_strategy import TargetingGroup
 
@@ -15,8 +18,10 @@ class TargettingProcessor(esper.Processor):
     def process(self, dt: float):
         targetting_groups = defaultdict(set)
 
-        for ent, (position, team) in esper.get_components(Position, Team):
-            if team.team_type == TeamType.TEAM1:
+        for ent, (unit_state, team) in esper.get_components(UnitState, Team):
+            if unit_state.state == State.DEAD:
+                continue
+            if team.type == TeamType.TEAM1:
                 targetting_groups[TargetingGroup.TEAM1_LIVING].add(ent)
             else:
                 targetting_groups[TargetingGroup.TEAM2_LIVING].add(ent)
