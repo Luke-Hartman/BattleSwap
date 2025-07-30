@@ -27,7 +27,7 @@ from ui_components.start_button import StartButton
 from scenes.events import BattleSceneEvent, PreviousSceneEvent
 from ui_components.save_battle_dialog import SaveBattleDialog
 from auto_battle import BattleOutcome, simulate_battle
-from ui_components.tip_box import TipBox
+
 import upgrade_hexes
 from voice import play_intro
 from world_map_view import BorderState, FillState, HexState, WorldMapView, hex_lifecycle_to_fill_state
@@ -154,7 +154,6 @@ class SetupBattleScene(Scene):
         self.return_button = ReturnButton(self.manager)
         self.start_button = StartButton(self.manager)
         self.feedback_button = FeedbackButton(self.manager)
-        self.tip_box = TipBox(self.manager, battle)
         
         if is_corrupted:
             icon_size = (48, 48)

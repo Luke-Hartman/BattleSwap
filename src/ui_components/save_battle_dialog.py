@@ -45,12 +45,7 @@ class SaveBattleDialog:
             initial_text=existing_battle_id if existing_battle_id else ""
         )
 
-        self.tip_entry = pygame_gui.elements.UITextEntryBox(
-            relative_rect=pygame.Rect(10, 50, dialog_width - 20, 200),
-            manager=manager,
-            container=self.dialog,
-            initial_text="\n".join(battles.get_battle_id(existing_battle_id).tip) if existing_battle_id else "TODO"
-        )
+
 
         # Calculate button layout based on which buttons to show
         visible_button_count = sum([show_battle_button, show_test_button, True])  # +1 for cancel
@@ -62,7 +57,7 @@ class SaveBattleDialog:
         
         if show_battle_button:
             self.save_battle_button = pygame_gui.elements.UIButton(
-                relative_rect=pygame.Rect(current_x, 300, button_width, 30),
+                relative_rect=pygame.Rect(current_x, 60, button_width, 30),
                 text='Save Battle',
                 manager=manager,
                 container=self.dialog
@@ -71,7 +66,7 @@ class SaveBattleDialog:
 
         if show_test_button:
             self.save_test_button = pygame_gui.elements.UIButton(
-                relative_rect=pygame.Rect(current_x, 300, button_width, 30),
+                relative_rect=pygame.Rect(current_x, 60, button_width, 30),
                 text='Save Test',
                 manager=manager,
                 container=self.dialog
@@ -79,7 +74,7 @@ class SaveBattleDialog:
             current_x += button_width + 10
 
         self.cancel_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(current_x, 300, button_width, 30),
+            relative_rect=pygame.Rect(current_x, 60, button_width, 30),
             text='Cancel',
             manager=manager,
             container=self.dialog
@@ -95,7 +90,7 @@ class SaveBattleDialog:
     def save_battle(self, is_test: bool) -> None:
         """Save the battle with the current settings."""
         battle_id = self.id_entry.get_text()
-        tip = self.tip_entry.get_text().split('\n') if self.tip_entry.get_text() else ["TODO"]
+
 
         if self.existing_battle_id:
             existing_battle = battles.get_battle_id(self.existing_battle_id)
@@ -106,8 +101,6 @@ class SaveBattleDialog:
             id=battle_id,
             enemies=self.enemy_placements,
             allies=self.ally_placements if is_test else None,
-            tip=tip,
-            dependencies=[],
             is_test=is_test,
             hex_coords=self.hex_coords if not is_test else None,
             corruption_powers=existing_battle.corruption_powers if existing_battle else []

@@ -11,18 +11,11 @@
       ]
     ],
     "allies": null,
-    "tip": [
-      "This swordsman is no match for you!",
-      "Your available units are displayed at the bottom of the screen.",
-      "Click on your unit, then click anywhere on the left side of the battlefield to place them.",
-      "When you are ready to battle, click start in the upper right corner."
-    ],
     "hex_coords": [
       0,
       0
     ],
     "is_test": false,
-    "tip_voice_filename": "defeat_the_swordsman.wav",
     "best_solution": [
       [
         "CORE_ARCHER",
@@ -66,17 +59,11 @@
       ]
     ],
     "allies": null,
-    "tip": [
-      "Cavalry move much faster than a swordsman, but deal less damage.",
-      "",
-      "You can snap units to a grid using \"shift\", and control time using \"space\", \"+\", and \"-\"."
-    ],
     "hex_coords": [
       1,
       0
     ],
     "is_test": false,
-    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_SWORDSMAN",
@@ -134,15 +121,11 @@
       ]
     ],
     "allies": null,
-    "tip": [
-      "The Cavalry's speed gives them the edge in battle against archers."
-    ],
     "hex_coords": [
       2,
       0
     ],
     "is_test": false,
-    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_CAVALRY",
@@ -186,15 +169,11 @@
       ]
     ],
     "allies": null,
-    "tip": [
-      "Wizards shoot powerful fireballs that explode, damaging all nearby units. Spreading out your army can distract your foes."
-    ],
     "hex_coords": [
       3,
       0
     ],
     "is_test": false,
-    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_ARCHER",
@@ -273,15 +252,11 @@
       ]
     ],
     "allies": null,
-    "tip": [
-      "Each time you finish a level, you swap the army you used for the army you beat!"
-    ],
     "hex_coords": [
       3,
       -1
     ],
     "is_test": false,
-    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_WIZARD",
@@ -341,16 +316,11 @@
       ]
     ],
     "allies": null,
-    "tip": [
-      "The placement of your units is critical to an efficient victory.",
-      "Any units you save can be used in future levels!"
-    ],
     "hex_coords": [
       3,
       1
     ],
     "is_test": false,
-    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_ARCHER",
@@ -424,15 +394,11 @@
       ]
     ],
     "allies": null,
-    "tip": [
-      "Take the cavalry out before reinforcements arrive!"
-    ],
     "hex_coords": [
       2,
       1
     ],
     "is_test": false,
-    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_SWORDSMAN",
@@ -520,15 +486,11 @@
       ]
     ],
     "allies": null,
-    "tip": [
-      "Should you divide to conquer?"
-    ],
     "hex_coords": [
       4,
       0
     ],
     "is_test": false,
-    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_CAVALRY",
@@ -602,16 +564,11 @@
       ]
     ],
     "allies": null,
-    "tip": [
-      "Duelists deal very high damage, but are fragile and are vulnerable to archers.",
-      "When using duelists, try to keep them behind other units."
-    ],
     "hex_coords": [
       4,
       1
     ],
     "is_test": false,
-    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_CAVALRY",
@@ -725,18 +682,11 @@
       ]
     ],
     "allies": null,
-    "tip": [
-      "You can also revisit previous levels to improve your solutions.",
-      "When you revisit a level, you can remove units from your previous solution and add something different.",
-      "By doing this, you can free up units for future levels.",
-      "This is great to try whenever you're stuck on a level!"
-    ],
     "hex_coords": [
       6,
       0
     ],
     "is_test": false,
-    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_ARCHER",
@@ -883,16 +833,11 @@
       ]
     ],
     "allies": null,
-    "tip": [
-      "Defenders are weak but take less damage due to their armor, and also move slowly.",
-      "Rangers are slow but deal high damage."
-    ],
     "hex_coords": [
       7,
       1
     ],
     "is_test": false,
-    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_CAVALRY",
@@ -994,16 +939,11 @@
       ]
     ],
     "allies": null,
-    "tip": [
-      "Pikemen are like swordsmen with extra reach at the cost of slower movement.",
-      "Healers will restore the health of their damaged allies."
-    ],
     "hex_coords": [
       7,
       -1
     ],
     "is_test": false,
-    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_LONGBOWMAN",
@@ -1068,16 +1008,11 @@
       ]
     ],
     "allies": null,
-    "tip": [
-      "Paladins have  high health and they can heal themselves,",
-      "but they have low damage and are overwhelmed by groups."
-    ],
     "hex_coords": [
       8,
       -1
     ],
     "is_test": false,
-    "tip_voice_filename": null,
     "best_solution": [
       [
         "CRUSADER_PALADIN",
@@ -1163,15 +1098,11 @@
       ]
     ],
     "allies": null,
-    "tip": [
-      "Banner Bearers are defenseless on their own, but they improve their allies."
-    ],
     "hex_coords": [
       9,
       1
     ],
     "is_test": false,
-    "tip_voice_filename": null,
     "best_solution": [
       [
         "CRUSADER_CATAPULT",
@@ -1236,17 +1167,11 @@
       ]
     ],
     "allies": null,
-    "tip": [
-      "If you need to, you can also revisit previous levels to improve your solutions.",
-      "",
-      "Hint: Try taking them out one at a time."
-    ],
     "hex_coords": [
       9,
       -1
     ],
     "is_test": false,
-    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_SWORDSMAN",
@@ -1360,15 +1285,11 @@
       ]
     ],
     "allies": null,
-    "tip": [
-      "Defenders and pikemen are a powerful pairing."
-    ],
     "hex_coords": [
       8,
       0
     ],
     "is_test": false,
-    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_CAVALRY",
@@ -1470,16 +1391,11 @@
       ]
     ],
     "allies": null,
-    "tip": [
-      "Gold Knights damage all enemy units around them and heal a little with every hit.",
-      "This makes them excellent against groups of melee units, but vulnerable to ranged or strong opponents."
-    ],
     "hex_coords": [
       6,
       1
     ],
     "is_test": false,
-    "tip_voice_filename": null,
     "best_solution": [
       [
         "CRUSADER_BLACK_KNIGHT",
@@ -1553,15 +1469,11 @@
       ]
     ],
     "allies": null,
-    "tip": [
-      "Cavalry's here!"
-    ],
     "hex_coords": [
       6,
       2
     ],
     "is_test": false,
-    "tip_voice_filename": null,
     "best_solution": [
       [
         "CRUSADER_GUARDIAN_ANGEL",
@@ -1689,16 +1601,11 @@
       ]
     ],
     "allies": null,
-    "tip": [
-      "Remember that you can also revisit previous levels to improve your solutions.",
-      "It would be great to have a duelist or two to overwhelm the enemy's healing."
-    ],
     "hex_coords": [
       10,
       0
     ],
     "is_test": false,
-    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_SWORDSMAN",
@@ -1842,16 +1749,11 @@
       ]
     ],
     "allies": null,
-    "tip": [
-      "Stronger united!",
-      "Note that the banner bearer aura does not stack."
-    ],
     "hex_coords": [
       10,
       1
     ],
     "is_test": false,
-    "tip_voice_filename": null,
     "best_solution": [
       [
         "ZOMBIE_TANK",
@@ -1932,15 +1834,11 @@
       ]
     ],
     "allies": null,
-    "tip": [
-      "Remember that gold knights deal damage to all enemy units around them and heal a little with every hit."
-    ],
     "hex_coords": [
       8,
       1
     ],
     "is_test": false,
-    "tip_voice_filename": null,
     "best_solution": [
       [
         "CRUSADER_DEFENDER",
@@ -2024,15 +1922,11 @@
       ]
     ],
     "allies": null,
-    "tip": [
-      "The Black Knight scares away his foes with his cruel attacks."
-    ],
     "hex_coords": [
       10,
       -1
     ],
     "is_test": false,
-    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_SWORDSMAN",
@@ -2100,12 +1994,8 @@
         ]
       ]
     ],
-    "tip": [
-      "TODO"
-    ],
     "hex_coords": null,
     "is_test": true,
-    "tip_voice_filename": null,
     "best_solution": null,
     "best_corrupted_solution": null,
     "corruption_powers": []
@@ -2144,12 +2034,8 @@
         ]
       ]
     ],
-    "tip": [
-      "TODO"
-    ],
     "hex_coords": null,
     "is_test": true,
-    "tip_voice_filename": null,
     "best_solution": null,
     "best_corrupted_solution": null,
     "corruption_powers": []
@@ -2188,12 +2074,8 @@
         ]
       ]
     ],
-    "tip": [
-      "TODO"
-    ],
     "hex_coords": null,
     "is_test": true,
-    "tip_voice_filename": null,
     "best_solution": null,
     "best_corrupted_solution": null,
     "corruption_powers": []
@@ -2225,12 +2107,8 @@
         ]
       ]
     ],
-    "tip": [
-      "TODO"
-    ],
     "hex_coords": null,
     "is_test": true,
-    "tip_voice_filename": null,
     "best_solution": null,
     "best_corrupted_solution": null,
     "corruption_powers": []
@@ -2255,12 +2133,8 @@
         ]
       ]
     ],
-    "tip": [
-      "TODO"
-    ],
     "hex_coords": null,
     "is_test": true,
-    "tip_voice_filename": null,
     "best_solution": null,
     "best_corrupted_solution": null,
     "corruption_powers": []
@@ -2285,12 +2159,8 @@
         ]
       ]
     ],
-    "tip": [
-      "TODO"
-    ],
     "hex_coords": null,
     "is_test": true,
-    "tip_voice_filename": null,
     "best_solution": null,
     "best_corrupted_solution": null,
     "corruption_powers": []
@@ -2350,12 +2220,8 @@
         ]
       ]
     ],
-    "tip": [
-      "TODO"
-    ],
     "hex_coords": null,
     "is_test": true,
-    "tip_voice_filename": null,
     "best_solution": null,
     "best_corrupted_solution": null,
     "corruption_powers": []
@@ -2464,12 +2330,8 @@
         ]
       ]
     ],
-    "tip": [
-      "TODO"
-    ],
     "hex_coords": null,
     "is_test": true,
-    "tip_voice_filename": null,
     "best_solution": null,
     "best_corrupted_solution": null,
     "corruption_powers": []
@@ -2521,15 +2383,11 @@
       ]
     ],
     "allies": null,
-    "tip": [
-      "Wizards are unreliable allies."
-    ],
     "hex_coords": [
       5,
       -1
     ],
     "is_test": false,
-    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_CAVALRY",
@@ -2617,15 +2475,11 @@
       ]
     ],
     "allies": null,
-    "tip": [
-      "Zombies coming soon!"
-    ],
     "hex_coords": [
       12,
       0
     ],
     "is_test": false,
-    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_DUELIST",
@@ -2699,15 +2553,11 @@
       ]
     ],
     "allies": null,
-    "tip": [
-      "Longbowmen have very long range and powerful arrows."
-    ],
     "hex_coords": [
       4,
       -1
     ],
     "is_test": false,
-    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_CAVALRY",
@@ -2800,15 +2650,11 @@
       ]
     ],
     "allies": null,
-    "tip": [
-      "Longbowmen work great with units to protect them from fast units"
-    ],
     "hex_coords": [
       4,
       -2
     ],
     "is_test": false,
-    "tip_voice_filename": null,
     "best_solution": [
       [
         "CRUSADER_CLERIC",
@@ -2882,15 +2728,11 @@
       ]
     ],
     "allies": null,
-    "tip": [
-      "Guardian angels provide cheap and consistent healing to a single unit."
-    ],
     "hex_coords": [
       8,
       -2
     ],
     "is_test": false,
-    "tip_voice_filename": null,
     "best_solution": [
       [
         "CRUSADER_PIKEMAN",
@@ -2969,15 +2811,11 @@
       ]
     ],
     "allies": null,
-    "tip": [
-      "Soliders are well rounded units with ranged attacks, melee attacks, and armor."
-    ],
     "hex_coords": [
       10,
       -2
     ],
     "is_test": false,
-    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_LONGBOWMAN",
@@ -3119,15 +2957,11 @@
       ]
     ],
     "allies": null,
-    "tip": [
-      "Black knights thrive on chaos."
-    ],
     "hex_coords": [
       12,
       -3
     ],
     "is_test": false,
-    "tip_voice_filename": null,
     "best_solution": [
       [
         "CRUSADER_COMMANDER",
@@ -3353,15 +3187,11 @@
       ]
     ],
     "allies": null,
-    "tip": [
-      "Catapults hurl projectiles that deal extremely high damage to all units in an area."
-    ],
     "hex_coords": [
       8,
       2
     ],
     "is_test": false,
-    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_SWORDSMAN",
@@ -3496,15 +3326,11 @@
       ]
     ],
     "allies": null,
-    "tip": [
-      "Catapults are immobile, and can't hit targets which are too close."
-    ],
     "hex_coords": [
       9,
       3
     ],
     "is_test": false,
-    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_SWORDSMAN",
@@ -3711,15 +3537,11 @@
       ]
     ],
     "allies": null,
-    "tip": [
-      "Unlike most ranged units, soldiers are resistant to flanking."
-    ],
     "hex_coords": [
       11,
       -1
     ],
     "is_test": false,
-    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_WIZARD",

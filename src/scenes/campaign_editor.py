@@ -15,7 +15,7 @@ from scenes.scene import Scene
 from ui_components.return_button import ReturnButton
 from world_map_view import BorderState, FillState, WorldMapView, HexState
 import upgrade_hexes
-from ui_components.tip_box import TipBox
+
 from ui_components.save_battle_dialog import SaveBattleDialog
 from ui_components.corruption_icon import CorruptionIcon
 from selected_unit_manager import selected_unit_manager
@@ -46,7 +46,6 @@ class CampaignEditorScene(Scene):
         self.context_buttons: dict[str, pygame_gui.elements.UIButton] = {}
         # Store UI elements for battle info
         self.battle_id_label: Optional[pygame_gui.elements.UILabel] = None
-        self.tip_box: Optional[TipBox] = None
         self.corruption_icon: Optional[CorruptionIcon] = None
         
         # Store UI elements for campaign statistics
@@ -130,9 +129,6 @@ class CampaignEditorScene(Scene):
         if self.battle_id_label is not None:
             self.battle_id_label.kill()
             self.battle_id_label = None
-        if self.tip_box is not None:
-            self.tip_box.kill()
-            self.tip_box = None
         if self.corruption_icon is not None:
             self.corruption_icon.kill()
             self.corruption_icon = None
@@ -144,8 +140,6 @@ class CampaignEditorScene(Scene):
                 text=battle.id,
                 manager=self.manager
             )
-            # Create tip box
-            self.tip_box = TipBox(self.manager, battle)
             
             # Show corruption icon if battle is corrupted
             if battle.hex_coords in self.corrupted_hexes:

@@ -179,17 +179,7 @@ class TestEditorScene(Scene):
                 container=test_panel
             )
 
-            # Tip text - same position and size as battle editor
-            if test.tip:
-                tip_box = pygame_gui.elements.UITextBox(
-                    relative_rect=pygame.Rect(
-                        (unit_section_width, inner_padding),
-                        (300, panel_height - 2 * inner_padding)
-                    ),
-                    html_text="<br>".join(test.tip),
-                    manager=self.manager,
-                    container=test_panel
-                )
+
 
             # Test controls - where dependencies would be in battle editor
             status = self.test_statuses[test.id]
@@ -385,7 +375,7 @@ class TestEditorScene(Scene):
                 elif event.user_type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED:
                     if event.ui_element == self.battle_dropdown and event.text != "Create test from...":
                         battle = battles.get_battle_id(event.text).model_copy()
-                        battle.tip = ["Test for " + battle.id]
+
                         battle.id = battle.id + " (test)"
                         battle.is_test = True
                         battles.add_battle(battle)

@@ -31,7 +31,7 @@ class TextBox(UIPanel):
                 text=text,
                 manager=self.ui_manager,
                 container=self,
-                object_id='#tip_box'
+                object_id='#text_box'
             )
             self.labels.append(label)
             label.rebuild()  # Force UI to compute size

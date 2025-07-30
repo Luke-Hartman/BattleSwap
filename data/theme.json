@@ -443,7 +443,7 @@
             }
         }
     },
-    "#tip_box": {
+    "#text_box": {
         "misc": {
             "text_horiz_alignment": "center"
         }

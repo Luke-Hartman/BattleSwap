@@ -34,7 +34,6 @@ class Battle(BaseModel):
     id: str
     enemies: List[Tuple[UnitType, Tuple[float, float]]]
     allies: Optional[List[Tuple[UnitType, Tuple[float, float]]]]
-    tip: List[str]
     hex_coords: Optional[Tuple[int, int]]
     is_test: bool
     tip_voice_filename: Optional[str] = None
