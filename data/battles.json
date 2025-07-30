@@ -16,6 +16,7 @@
       0
     ],
     "is_test": false,
+    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_ARCHER",
@@ -64,6 +65,7 @@
       0
     ],
     "is_test": false,
+    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_SWORDSMAN",
@@ -126,6 +128,7 @@
       0
     ],
     "is_test": false,
+    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_CAVALRY",
@@ -174,6 +177,7 @@
       0
     ],
     "is_test": false,
+    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_ARCHER",
@@ -253,10 +257,11 @@
     ],
     "allies": null,
     "hex_coords": [
-      3,
-      -1
+      4,
+      0
     ],
     "is_test": false,
+    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_WIZARD",
@@ -317,10 +322,11 @@
     ],
     "allies": null,
     "hex_coords": [
-      3,
-      1
+      5,
+      0
     ],
     "is_test": false,
+    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_ARCHER",
@@ -395,10 +401,11 @@
     ],
     "allies": null,
     "hex_coords": [
-      2,
+      4,
       1
     ],
     "is_test": false,
+    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_SWORDSMAN",
@@ -487,10 +494,11 @@
     ],
     "allies": null,
     "hex_coords": [
-      4,
-      0
+      3,
+      1
     ],
     "is_test": false,
+    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_CAVALRY",
@@ -565,10 +573,11 @@
     ],
     "allies": null,
     "hex_coords": [
-      4,
+      5,
       1
     ],
     "is_test": false,
+    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_CAVALRY",
@@ -683,10 +692,11 @@
     ],
     "allies": null,
     "hex_coords": [
-      6,
+      7,
       0
     ],
     "is_test": false,
+    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_ARCHER",
@@ -834,10 +844,11 @@
     ],
     "allies": null,
     "hex_coords": [
-      7,
+      8,
       1
     ],
     "is_test": false,
+    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_CAVALRY",
@@ -940,10 +951,11 @@
     ],
     "allies": null,
     "hex_coords": [
-      7,
+      8,
       -1
     ],
     "is_test": false,
+    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_LONGBOWMAN",
@@ -1009,10 +1021,11 @@
     ],
     "allies": null,
     "hex_coords": [
-      8,
+      9,
       -1
     ],
     "is_test": false,
+    "tip_voice_filename": null,
     "best_solution": [
       [
         "CRUSADER_PALADIN",
@@ -1099,10 +1112,11 @@
     ],
     "allies": null,
     "hex_coords": [
-      9,
+      10,
       1
     ],
     "is_test": false,
+    "tip_voice_filename": null,
     "best_solution": [
       [
         "CRUSADER_CATAPULT",
@@ -1168,10 +1182,11 @@
     ],
     "allies": null,
     "hex_coords": [
-      9,
+      10,
       -1
     ],
     "is_test": false,
+    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_SWORDSMAN",
@@ -1286,10 +1301,11 @@
     ],
     "allies": null,
     "hex_coords": [
-      8,
+      9,
       0
     ],
     "is_test": false,
+    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_CAVALRY",
@@ -1392,10 +1408,11 @@
     ],
     "allies": null,
     "hex_coords": [
-      6,
+      7,
       1
     ],
     "is_test": false,
+    "tip_voice_filename": null,
     "best_solution": [
       [
         "CRUSADER_BLACK_KNIGHT",
@@ -1470,10 +1487,11 @@
     ],
     "allies": null,
     "hex_coords": [
-      6,
+      7,
       2
     ],
     "is_test": false,
+    "tip_voice_filename": null,
     "best_solution": [
       [
         "CRUSADER_GUARDIAN_ANGEL",
@@ -1602,10 +1620,11 @@
     ],
     "allies": null,
     "hex_coords": [
-      10,
+      11,
       0
     ],
     "is_test": false,
+    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_SWORDSMAN",
@@ -1750,10 +1769,11 @@
     ],
     "allies": null,
     "hex_coords": [
-      10,
+      11,
       1
     ],
     "is_test": false,
+    "tip_voice_filename": null,
     "best_solution": [
       [
         "ZOMBIE_TANK",
@@ -1835,10 +1855,11 @@
     ],
     "allies": null,
     "hex_coords": [
-      8,
+      9,
       1
     ],
     "is_test": false,
+    "tip_voice_filename": null,
     "best_solution": [
       [
         "CRUSADER_DEFENDER",
@@ -1923,10 +1944,11 @@
     ],
     "allies": null,
     "hex_coords": [
-      10,
+      11,
       -1
     ],
     "is_test": false,
+    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_SWORDSMAN",
@@ -1996,6 +2018,7 @@
     ],
     "hex_coords": null,
     "is_test": true,
+    "tip_voice_filename": null,
     "best_solution": null,
     "best_corrupted_solution": null,
     "corruption_powers": []
@@ -2036,6 +2059,7 @@
     ],
     "hex_coords": null,
     "is_test": true,
+    "tip_voice_filename": null,
     "best_solution": null,
     "best_corrupted_solution": null,
     "corruption_powers": []
@@ -2076,6 +2100,7 @@
     ],
     "hex_coords": null,
     "is_test": true,
+    "tip_voice_filename": null,
     "best_solution": null,
     "best_corrupted_solution": null,
     "corruption_powers": []
@@ -2109,6 +2134,7 @@
     ],
     "hex_coords": null,
     "is_test": true,
+    "tip_voice_filename": null,
     "best_solution": null,
     "best_corrupted_solution": null,
     "corruption_powers": []
@@ -2135,6 +2161,7 @@
     ],
     "hex_coords": null,
     "is_test": true,
+    "tip_voice_filename": null,
     "best_solution": null,
     "best_corrupted_solution": null,
     "corruption_powers": []
@@ -2161,6 +2188,7 @@
     ],
     "hex_coords": null,
     "is_test": true,
+    "tip_voice_filename": null,
     "best_solution": null,
     "best_corrupted_solution": null,
     "corruption_powers": []
@@ -2222,6 +2250,7 @@
     ],
     "hex_coords": null,
     "is_test": true,
+    "tip_voice_filename": null,
     "best_solution": null,
     "best_corrupted_solution": null,
     "corruption_powers": []
@@ -2332,6 +2361,7 @@
     ],
     "hex_coords": null,
     "is_test": true,
+    "tip_voice_filename": null,
     "best_solution": null,
     "best_corrupted_solution": null,
     "corruption_powers": []
@@ -2384,10 +2414,11 @@
     ],
     "allies": null,
     "hex_coords": [
-      5,
+      6,
       -1
     ],
     "is_test": false,
+    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_CAVALRY",
@@ -2476,10 +2507,11 @@
     ],
     "allies": null,
     "hex_coords": [
-      12,
+      13,
       0
     ],
     "is_test": false,
+    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_DUELIST",
@@ -2558,6 +2590,7 @@
       -1
     ],
     "is_test": false,
+    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_CAVALRY",
@@ -2651,10 +2684,11 @@
     ],
     "allies": null,
     "hex_coords": [
-      4,
+      5,
       -2
     ],
     "is_test": false,
+    "tip_voice_filename": null,
     "best_solution": [
       [
         "CRUSADER_CLERIC",
@@ -2729,10 +2763,11 @@
     ],
     "allies": null,
     "hex_coords": [
-      8,
+      9,
       -2
     ],
     "is_test": false,
+    "tip_voice_filename": null,
     "best_solution": [
       [
         "CRUSADER_PIKEMAN",
@@ -2812,10 +2847,11 @@
     ],
     "allies": null,
     "hex_coords": [
-      10,
+      11,
       -2
     ],
     "is_test": false,
+    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_LONGBOWMAN",
@@ -2958,10 +2994,11 @@
     ],
     "allies": null,
     "hex_coords": [
-      12,
+      13,
       -3
     ],
     "is_test": false,
+    "tip_voice_filename": null,
     "best_solution": [
       [
         "CRUSADER_COMMANDER",
@@ -3188,10 +3225,11 @@
     ],
     "allies": null,
     "hex_coords": [
-      8,
+      9,
       2
     ],
     "is_test": false,
+    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_SWORDSMAN",
@@ -3327,10 +3365,11 @@
     ],
     "allies": null,
     "hex_coords": [
-      9,
+      10,
       3
     ],
     "is_test": false,
+    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_SWORDSMAN",
@@ -3538,10 +3577,11 @@
     ],
     "allies": null,
     "hex_coords": [
-      11,
+      12,
       -1
     ],
     "is_test": false,
+    "tip_voice_filename": null,
     "best_solution": [
       [
         "CORE_WIZARD",
