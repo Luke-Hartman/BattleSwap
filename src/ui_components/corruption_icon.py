@@ -50,7 +50,7 @@ class CorruptionIcon(pygame_gui.elements.UIImage):
     
     def _get_tooltip_text(self) -> str:
         """Generate tooltip text based on corruption powers."""
-        tooltip = ""
+        tooltip = "Enemy units are Elite\n"
         for power in self.corruption_powers:
             tooltip += f"{power.description}\n"
         
