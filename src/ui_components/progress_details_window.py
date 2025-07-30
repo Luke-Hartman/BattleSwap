@@ -9,6 +9,7 @@ import battles
 from progress_manager import progress_manager, HexLifecycleState
 from components.unit_type import UnitType
 from components.unit_tier import UnitTier
+from ui_components.game_data import GlossaryEntryType
 
 
 class ProgressDetailsWindow:
@@ -29,8 +30,8 @@ class ProgressDetailsWindow:
         screen_height = screen_info.current_h
         
         # Window dimensions
-        window_width = 600
-        window_height = 450
+        window_width = 270
+        window_height = 190
         
         # Center the window
         window_x = (screen_width - window_width) // 2
@@ -40,7 +41,7 @@ class ProgressDetailsWindow:
         self.window = pygame_gui.elements.UIWindow(
             rect=pygame.Rect(window_x, window_y, window_width, window_height),
             manager=self.manager,
-            window_display_title="Progress Details",
+            window_display_title="Progress",
             resizable=False,
         )
         
@@ -129,26 +130,12 @@ class ProgressDetailsWindow:
         # Format statistics
         total_unit_types = len(all_unit_types)
         
-        stats_html = f"""<font size=4><b>Campaign Progress Details</b></font><br><br>
-
-<b>Unit Discovery:</b><br>
-• Units encountered: <b>{len(encountered_units)}/{total_unit_types}</b><br>
-• Units unlocked: <b>{len(unlocked_units)}/{total_unit_types}</b><br><br>
-
-<b>Unit Upgrades:</b><br>
-• Units upgraded to Advanced: <b>{advanced_units}/{total_unit_types}</b><br>
-• Units upgraded to Elite: <b>{elite_units}/{total_unit_types}</b><br><br>
-
-<b>Map Progress:</b><br>
-• Hexes encountered: <b>{encountered_hexes}/{total_hexes}</b><br>
-• Hexes claimed: <b>{claimed_hexes}/{total_hexes}</b><br>
-• Hexes reclaimed: <b>{reclaimed_hexes}/{total_hexes}</b><br><br>
-
-<font size=2><i>Units are encountered when you discover battles with unfogged enemies.<br>
-Units are unlocked when you complete battles and gain access to those unit types.<br>
-Hexes are encountered when they become unfogged and accessible.<br>
-Hexes are claimed when you complete battles or corruption challenges.<br>
-Hexes are reclaimed when you complete them again after corruption.</i></font>"""
+        stats_html = f"""Units unlocked: {len(unlocked_units)}/{total_unit_types}
+Units <a href='{GlossaryEntryType.UPGRADE.value}'>upgraded</a> to Advanced: {advanced_units}/{total_unit_types}
+Units <a href='{GlossaryEntryType.UPGRADE.value}'>upgraded</a> to Elite: {elite_units}/{total_unit_types}
+Hexes claimed: {claimed_hexes}/{total_hexes}
+Hexes <a href='{GlossaryEntryType.CORRUPTION.value}'>reclaimed</a>: {reclaimed_hexes}/{total_hexes}
+"""
         
         return stats_html
     
