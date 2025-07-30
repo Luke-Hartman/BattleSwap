@@ -3,6 +3,8 @@
 import pygame
 import pygame_gui
 from pygame_gui.elements import UIPanel, UILabel, UIButton, UITextBox
+from keyboard_shortcuts import format_button_text, KeyboardShortcuts
+from events import emit_event, PLAY_SOUND, PlaySoundEvent
 
 
 class CorruptionPanel(UIPanel):
@@ -86,7 +88,7 @@ class CorruptionPanel(UIPanel):
                 ((panel_width - button_width) // 2, button_y),
                 (button_width, button_height)
             ),
-            text="Continue",
+            text=format_button_text("Continue", KeyboardShortcuts.ENTER),
             manager=manager,
             container=self
         )
@@ -100,6 +102,21 @@ class CorruptionPanel(UIPanel):
         Returns:
             bool: True if the event was handled, False otherwise.
         """
+        # Handle Enter key
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+            # Play UI click sound
+            emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                filename="ui_click.wav",
+                volume=0.5
+            ))
+            # Simulate clicking the continue button
+            pygame.event.post(pygame.event.Event(
+                pygame.USEREVENT,
+                {'user_type': pygame_gui.UI_BUTTON_PRESSED, 'ui_element': self.continue_button}
+            ))
+            self.kill()
+            return True
+            
         if (event.type == pygame_gui.UI_BUTTON_PRESSED and 
             event.ui_element == self.continue_button):
             self.kill()
