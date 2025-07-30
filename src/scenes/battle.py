@@ -406,53 +406,6 @@ class BattleScene(Scene):
                         # Get current unit placements from ECS world
                         current_placements = get_unit_placements(TeamType.TEAM1, self.battle)
                         
-                        # Check if the current solution could be a best solution
-                        if (self.developer_mode and 
-                            current_placements is not None and 
-                            len(current_placements) > 0):
-                            
-                            # Get the current points used
-                            current_points = calculate_points_for_units(current_placements)
-                            
-                            # Check if the battle is corrupted
-                            is_corrupted = progress_manager.get_hex_state(self.battle.hex_coords) in [HexLifecycleState.CORRUPTED, HexLifecycleState.RECLAIMED]
-                            
-                            # If this is a corrupted battle
-                            if is_corrupted:
-                                # Compare with best corrupted solution
-                                if (self.battle.best_corrupted_solution is None or 
-                                    current_points <= calculate_points_for_units(self.battle.best_corrupted_solution)):
-                                    new_battle = Battle(
-                                        id=self.battle.id,
-                                        enemies=self.battle.enemies,
-                                        allies=None,
-                                        tip=self.battle.tip,
-                                        hex_coords=self.battle.hex_coords,
-                                        is_test=self.battle.is_test,
-                                        tip_voice_filename=self.battle.tip_voice_filename,
-                                        best_solution=self.battle.best_solution,
-                                        best_corrupted_solution=current_placements,
-                                        corruption_powers=self.battle.corruption_powers
-                                    )
-                                    update_battle(self.battle, new_battle)
-                            else:
-                                # If there's a best solution for non-corrupted, compare with it
-                                if (self.battle.best_solution is None or 
-                                    current_points <= calculate_points_for_units(self.battle.best_solution)):
-                                    new_battle = Battle(
-                                        id=self.battle.id,
-                                        enemies=self.battle.enemies,
-                                        allies=None,
-                                        tip=self.battle.tip,
-                                        hex_coords=self.battle.hex_coords,
-                                        is_test=self.battle.is_test,
-                                        tip_voice_filename=self.battle.tip_voice_filename,
-                                        best_solution=current_placements,
-                                        best_corrupted_solution=self.battle.best_corrupted_solution,
-                                        corruption_powers=self.battle.corruption_powers
-                                    )
-                                    update_battle(self.battle, new_battle)
-                        
                         # Save the solution
                         progress_manager.save_solution(
                             Solution(
