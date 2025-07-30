@@ -14,6 +14,7 @@ from components.unit_type import UnitType, UnitTypeComponent
 from entities.units import create_unit
 from events import CHANGE_MUSIC, PLAY_SOUND, ChangeMusicEvent, PlaySoundEvent, emit_event, UNMUTE_DRUMS, UnmuteDrumsEvent
 from hex_grid import axial_to_world
+from keyboard_shortcuts import format_button_text, KeyboardShortcuts
 from progress_manager import progress_manager
 from scenes.scene import Scene
 from game_constants import gc
@@ -339,7 +340,7 @@ class SetupBattleScene(Scene):
             manager=self.manager,
             window_title="Unsaved Changes",
             action_long_desc="You have unsaved changes. Are you sure you want to exit?" if not self.sandbox_mode else "Are you sure you want to exit?",
-            action_short_name="Exit",
+            action_short_name=format_button_text("Exit", KeyboardShortcuts.ENTER),
             blocking=True
         )
 

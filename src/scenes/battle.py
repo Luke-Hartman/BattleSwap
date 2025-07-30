@@ -286,7 +286,7 @@ class BattleScene(Scene):
             manager=self.manager,
             window_title="Confirmation",
             action_long_desc="You have unsaved changes. Are you sure you want to continue?",
-            action_short_name="Continue",
+            action_short_name=format_button_text("Continue", KeyboardShortcuts.ENTER),
             blocking=True
         )
 

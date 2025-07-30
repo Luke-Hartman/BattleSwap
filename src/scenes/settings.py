@@ -5,6 +5,7 @@ import pygame_gui
 from typing import Dict, Optional
 
 from events import CHANGE_MUSIC, CHANGE_MUSIC_VOLUME, ChangeMusicEvent, ChangeMusicVolumeEvent, emit_event
+from keyboard_shortcuts import format_button_text, KeyboardShortcuts
 from scenes.events import PreviousSceneEvent
 from scenes.scene import Scene
 from settings import settings, save_settings
@@ -229,7 +230,7 @@ class SettingsScene(Scene):
                                 manager=self.manager,
                                 window_title="Unsaved Changes",
                                 action_long_desc="You have unsaved changes. Are you sure you want to leave?",
-                                action_short_name="Leave",
+                                action_short_name=format_button_text("Leave", KeyboardShortcuts.ENTER),
                                 blocking=True
                             )
                         else:
