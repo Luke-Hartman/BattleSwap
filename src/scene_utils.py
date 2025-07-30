@@ -345,7 +345,7 @@ def get_unit_placements(team_type: TeamType, battle: Battle) -> List[Tuple[UnitT
 def mouse_over_ui(manager: pygame_gui.UIManager) -> bool:
     return manager.get_hovering_any_element()
 
-def has_unsaved_changes(battle: Battle) -> bool:
+def has_unsaved_changes(battle: Battle, unit_placements: List[Tuple[UnitType, Tuple[float, float]]]) -> bool:
     """Check if current unit placements differ from saved solution.
     
     Args:
@@ -355,8 +355,7 @@ def has_unsaved_changes(battle: Battle) -> bool:
         True if there are unsaved changes, False otherwise
     """
     saved_solution = progress_manager.solutions.get(battle.hex_coords)
-    current_placements = get_unit_placements(TeamType.TEAM1, battle)
-    current_set = set(current_placements)
+    current_set = set(unit_placements)
     
     if saved_solution is None:
         return len(current_set) > 0

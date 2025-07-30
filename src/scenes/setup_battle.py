@@ -30,7 +30,7 @@ from ui_components.tip_box import TipBox
 import upgrade_hexes
 from voice import play_intro
 from world_map_view import BorderState, FillState, HexState, WorldMapView, hex_lifecycle_to_fill_state
-from scene_utils import draw_grid, get_center_line, get_placement_pos, get_hovered_unit, get_unit_placements, get_legal_placement_area, clip_to_polygon, has_unsaved_changes, mouse_over_ui, calculate_group_placement_positions
+from scene_utils import draw_grid, get_center_line, get_placement_pos, get_hovered_unit, get_unit_placements, get_legal_placement_area, has_unsaved_changes, mouse_over_ui, calculate_group_placement_positions
 from ui_components.progress_panel import ProgressPanel
 from ui_components.corruption_power_editor import CorruptionPowerEditorDialog
 from corruption_powers import CorruptionPower
@@ -346,7 +346,7 @@ class SetupBattleScene(Scene):
     def handle_return(self) -> None:
         """Handle return button press or escape key."""
         if (
-            not self.sandbox_mode and has_unsaved_changes(self.battle)
+            not self.sandbox_mode and has_unsaved_changes(self.battle, get_unit_placements(TeamType.TEAM1, self.battle))
             or self.sandbox_mode and (
                 len(get_unit_placements(TeamType.TEAM1, self.battle)) > 0
                 or len(get_unit_placements(TeamType.TEAM2, self.battle)) > 0
