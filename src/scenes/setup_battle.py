@@ -290,7 +290,7 @@ class SetupBattleScene(Scene):
         # esper.remove_component(self.selected_partial_unit, UnitTypeComponent)
         esper.add_component(self.selected_partial_unit, Transparency(alpha=128))
     
-    def create_unit_of_selected_type(self, placement_pos: Tuple[int, int], team: TeamType) -> None:
+    def create_unit_of_selected_type(self, placement_pos: Tuple[float, float], team: TeamType) -> None:
         """Create a unit of the selected type (as a group of size 1)."""
         assert self.sandbox_mode or team == TeamType.TEAM1
         self.world_map_view.add_unit(
@@ -561,7 +561,7 @@ class SetupBattleScene(Scene):
         
         return False
 
-    def select_units_in_rect(self, start_pos: Tuple[int, int], end_pos: Tuple[int, int]) -> None:
+    def select_units_in_rect(self, start_pos: Tuple[float, float], end_pos: Tuple[float, float]) -> None:
         """Select all units within the given screen rectangle and pick them up."""
         esper.switch_world(self.battle_id)
         

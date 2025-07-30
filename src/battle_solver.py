@@ -97,7 +97,7 @@ class Fitness:
 
 
 class Individual:
-    def __init__(self, battle_id: str, unit_placements: List[Tuple[UnitType, Tuple[int, int]]]):
+    def __init__(self, battle_id: str, unit_placements: List[Tuple[UnitType, Tuple[float, float]]]):
         self.battle_id = battle_id
         self.unit_placements = sorted(unit_placements)
         self._fitness = None
@@ -293,7 +293,7 @@ def _get_random_legal_unit_type() -> UnitType:
         ALLOWED_UNIT_TYPES
     )
 
-def generate_random_army(target_cost: int, max_decrease: int = 100) -> List[Tuple[UnitType, Tuple[int, int]]]:
+def generate_random_army(target_cost: int, max_decrease: int = 100) -> List[Tuple[UnitType, Tuple[float, float]]]:
     current_cost = 0
     unit_placements = []
     while not (target_cost - max_decrease <= current_cost <= target_cost):

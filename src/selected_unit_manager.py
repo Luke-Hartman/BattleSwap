@@ -1,5 +1,5 @@
 """Service for managing the stats card UI."""
-from typing import Optional, List, Union
+from typing import Optional, List, Tuple, Union
 import pygame
 import pygame_gui
 
@@ -403,7 +403,7 @@ class SelectedUnitManager:
             entry.kill()
         self.glossary_entries.clear()
 
-    def _create_unit_card(self, unit_type: UnitType, position: tuple[int, int], unit_tier: UnitTier) -> UnitCard:
+    def _create_unit_card(self, unit_type: UnitType, position: Tuple[float, float], unit_tier: UnitTier) -> UnitCard:
         """Create a unit card with all stats populated."""
         unit_data = get_unit_data(unit_type, unit_tier)
         

@@ -14,7 +14,7 @@ from components.unit_type import UnitType
 from unit_values import unit_values
 
 class EloIndividual(Individual):
-    def __init__(self, unit_placements: List[Tuple[UnitType, Tuple[int, int]]], elo: float = 1000.0):
+    def __init__(self, unit_placements: List[Tuple[UnitType, Tuple[float, float]]], elo: float = 1000.0):
         super().__init__("army_evolution", unit_placements)
         self.elo = elo
         self.wins = 0
