@@ -26,6 +26,7 @@ from ui_components.upgrade_window import UpgradeWindow
 from world_map_view import BorderState, FillState, WorldMapView, HexState
 from scene_utils import use_world
 from ui_components.progress_panel import ProgressPanel
+from ui_components.progress_details_window import ProgressDetailsWindow
 from ui_components.congratulations_panel import CongratulationsPanel
 from ui_components.upgrade_tutorial_panel import UpgradeTutorialPanel
 from ui_components.corruption_icon import CorruptionIcon
@@ -52,6 +53,7 @@ class CampaignScene(Scene):
         self.corrupted_battles = None
         self.corruption_icon = None
         self.upgrade_tutorial = None
+        self.progress_details_window = None
 
         # Create camera with desired initial settings
         self.hovered_hex: Optional[Tuple[int, int]] = None
@@ -516,6 +518,20 @@ class CampaignScene(Scene):
             self.feedback_button.handle_event(event)
             if self.barracks is not None:
                 self.barracks.handle_event(event)
+            
+            # Handle progress details window events
+            if self.progress_details_window is not None:
+                if self.progress_details_window.process_event(event):
+                    continue
+                if not self.progress_details_window.is_alive():
+                    self.progress_details_window = None
+            
+            # Handle progress details link clicks
+            if event.type == pygame_gui.UI_TEXT_BOX_LINK_CLICKED:
+                if hasattr(event, 'link_target') and event.link_target == 'progress_details':
+                    if self.progress_details_window is None:
+                        self.progress_details_window = ProgressDetailsWindow(self.manager)
+                    continue
         # Update hex states while preserving fog of war
         states = defaultdict(HexState)
         for hex_coords, state in progress_manager.hex_states.items():
@@ -621,6 +637,12 @@ class CampaignScene(Scene):
             if hasattr(self.corruption_dialog, 'kill'):
                 self.corruption_dialog.kill()
             self.corruption_dialog = None
+            windows_closed = True
+            
+        # Check for progress details window
+        if hasattr(self, 'progress_details_window') and self.progress_details_window is not None:
+            self.progress_details_window.kill()
+            self.progress_details_window = None
             windows_closed = True
             
         # Fall back to base class behavior and combine results
