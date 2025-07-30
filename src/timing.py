@@ -87,9 +87,10 @@ def enter_battle() -> None:
 
 
 def leave_battle() -> None:
-    """Leave battle mode."""
-    global _in_battle
+    """Leave battle mode and unpause the game."""
+    global _in_battle, _is_paused
     _in_battle = False
+    _is_paused = False  # Always unpause when leaving battle
 
 
 def is_in_battle() -> bool:
