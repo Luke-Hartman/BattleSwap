@@ -14,7 +14,7 @@ from handlers.sound_handler import SoundHandler
 from handlers.state_machine import StateMachine
 from scenes.scene_manager import scene_manager
 from selected_unit_manager import selected_unit_manager
-from time_manager import time_manager
+import timing
 from visuals import load_visual_sheets
 from info_mode_manager import info_mode_manager
 #import steam
@@ -62,7 +62,7 @@ selected_unit_manager.initialize(scene_manager.manager)
 running = True
 clock = pygame.time.Clock()
 while running:
-    dt = clock.tick(time_manager.max_fps) / 1000
+    dt = clock.tick(timing.get_max_fps()) / 1000
     events = pygame.event.get()
 
     # Process modifier key events for info mode before scene processing
@@ -102,6 +102,6 @@ while running:
     # screen.blit(fps_text, fps_rect)
     
     pygame.display.flip()
-    time_manager.tick()
+    timing.tick()
 
 pygame.quit()

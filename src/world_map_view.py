@@ -32,7 +32,7 @@ from processors.targetting_processor import TargettingProcessor
 from processors.transparency_processor import TransparencyProcessor
 from scene_utils import draw_polygon, use_world, get_hovered_unit
 from events import PLAY_SOUND, PlaySoundEvent, emit_event
-from time_manager import time_manager
+import timing
 from components.focus import Focus
 from selected_unit_manager import selected_unit_manager
 from progress_manager import progress_manager, HexLifecycleState
@@ -221,7 +221,7 @@ class WorldMapView:
             
             esper.switch_world(battle.id)
             # dt should be either 1/60 or 0. This makes sure the game is deterministic.
-            esper.process(time_manager.dt)
+            esper.process(timing.get_dt())
 
     def get_hex_states(self) -> Dict[Tuple[int, int], HexState]:
         """Return a copy of all current hex states."""

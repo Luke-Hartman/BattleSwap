@@ -22,7 +22,7 @@ from components.velocity import Velocity
 from components.animation_effects import AnimationEffects
 from components.airborne import Airborne
 from events import ABILITY_ACTIVATED, ABILITY_COMPLETED, AbilityActivatedEvent, AbilityCompletedEvent, emit_event
-from time_manager import time_manager
+import timing
 
 class AnimationProcessor(esper.Processor):
     """
@@ -37,7 +37,7 @@ class AnimationProcessor(esper.Processor):
     
     def _get_start_time(self, sprite_sheet: SpriteSheet, animation_type: AnimationType) -> float:
         if sprite_sheet.synchronized_animations.get(animation_type, False):
-            return time_manager.global_clock % sprite_sheet.animation_durations[animation_type]
+            return timing.get_global_clock() % sprite_sheet.animation_durations[animation_type]
         else:
             return 0
 

@@ -11,7 +11,7 @@ from world_map_view import BorderState, WorldMapView, HexState, FillState, hex_l
 from ui_components.return_button import ReturnButton
 from progress_manager import HexLifecycleState, progress_manager, Solution, calculate_points_for_units
 from ui_components.time_controls import TimeControls
-from time_manager import time_manager
+import timing
 from battles import Battle, update_battle
 from selected_unit_manager import selected_unit_manager
 import upgrade_hexes
@@ -292,7 +292,7 @@ class BattleScene(Scene):
 
     def render_paused_text(self) -> None:
         """Render giant PAUSED text across the screen when the game is paused."""
-        if time_manager._is_paused:
+        if timing.is_paused():
             # Create semi-transparent overlay
             overlay = pygame.Surface((self.screen.get_width(), self.screen.get_height()), pygame.SRCALPHA)
             overlay.fill((0, 0, 0, 128))  # Semi-transparent black

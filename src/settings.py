@@ -16,6 +16,9 @@ class Settings(BaseModel):
     MUSIC_VOLUME: float = 0.5
     VOICE_VOLUME: float = 0.5
     DRUM_VOLUME: float = 0.5
+    
+    # Gameplay Settings
+    GAME_SPEED: float = 1.0
 
     class Config:
         frozen = False
