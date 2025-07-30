@@ -40,11 +40,12 @@ class Scene(ABC):
         """
         # Import here to avoid circular imports
         from selected_unit_manager import selected_unit_manager
+        from info_mode_manager import info_mode_manager
         
         windows_closed = False
         
         # Handle unit cards that are common across scenes
-        if selected_unit_manager.unit_cards:
+        if selected_unit_manager.unit_cards and info_mode_manager.info_mode:
             # Close all unit cards at once
             for card in selected_unit_manager.unit_cards:
                 card.kill()
@@ -57,12 +58,6 @@ class Scene(ABC):
             for entry in selected_unit_manager.glossary_entries:
                 entry.kill()
             selected_unit_manager.glossary_entries.clear()
-            windows_closed = True
-            
-        # Handle single unit card in normal mode
-        if selected_unit_manager.unit_card is not None:
-            selected_unit_manager.unit_card.kill()
-            selected_unit_manager.unit_card = None
             windows_closed = True
         
         return windows_closed
