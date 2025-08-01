@@ -27,9 +27,9 @@ pygame.init()
 #steam.init_steam()
 
 # Set up the display with OpenGL
-# Use the same approach as original but with OpenGL flags
-screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-screen_width, screen_height = screen.get_size()
+# Get screen size without creating a window first to avoid flickering
+display_info = pygame.display.Info()
+screen_width, screen_height = display_info.current_w, display_info.current_h
 screen = pygame.display.set_mode(
     (screen_width, screen_height),
     pygame.OPENGL | pygame.DOUBLEBUF | pygame.FULLSCREEN
