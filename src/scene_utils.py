@@ -4,9 +4,9 @@ from functools import lru_cache
 from typing import Generator, List, Tuple, Optional
 import esper
 import pygame
-import pygame.gfxdraw
 import pygame_gui
 import shapely
+from opengl_utils import gl_draw_line, gl_draw_shapely_polygon
 from battles import Battle
 from camera import Camera
 from components.placing import Placing
@@ -67,7 +67,7 @@ def draw_grid(
                 # Convert intersection coordinates to screen space
                 start_pos = camera.world_to_screen(intersection.coords[0][0], intersection.coords[0][1])
                 end_pos = camera.world_to_screen(intersection.coords[-1][0], intersection.coords[-1][1])
-                pygame.draw.line(screen, color, start_pos, end_pos, width)
+                gl_draw_line(start_pos, end_pos, color, width)
     
     # Draw horizontal lines
     for y in range(int(start_y), int(end_y), gc.GRID_SIZE):
@@ -85,7 +85,7 @@ def draw_grid(
                 # Convert intersection coordinates to screen space
                 start_pos = camera.world_to_screen(intersection.coords[0][0], intersection.coords[0][1])
                 end_pos = camera.world_to_screen(intersection.coords[-1][0], intersection.coords[-1][1])
-                pygame.draw.line(screen, color, start_pos, end_pos, width)
+                gl_draw_line(start_pos, end_pos, color, width)
     
     # Draw center lines
     # Vertical center line
@@ -95,7 +95,7 @@ def draw_grid(
         if isinstance(intersection, shapely.LineString):
             start_pos = camera.world_to_screen(intersection.coords[0][0], intersection.coords[0][1])
             end_pos = camera.world_to_screen(intersection.coords[-1][0], intersection.coords[-1][1])
-            pygame.draw.line(screen, (200, 200, 200), start_pos, end_pos, 3)
+            _gl_draw_line(start_pos, end_pos, (200, 200, 200), 3)
     
     # Horizontal center line
     center_line = shapely.LineString([(start_x, center_y), (end_x, center_y)])
@@ -104,7 +104,7 @@ def draw_grid(
         if isinstance(intersection, shapely.LineString):
             start_pos = camera.world_to_screen(intersection.coords[0][0], intersection.coords[0][1])
             end_pos = camera.world_to_screen(intersection.coords[-1][0], intersection.coords[-1][1])
-            pygame.draw.line(screen, (200, 200, 200), start_pos, end_pos, 3)
+            _gl_draw_line(start_pos, end_pos, (200, 200, 200), 3)
 
 def snap_position_to_grid(x: float, y: float, hex_coords: Tuple[int, int]) -> tuple[float, float]:
     """Snap world coordinates to the nearest grid intersection.
@@ -290,34 +290,26 @@ def draw_polygon(
     alpha: Optional[int] = None,
     world_coords: bool = True,
 ) -> bool:
-    """Draw a shapely polygon on the screen."""
+    """Draw a shapely polygon using OpenGL."""
     if world_coords:
         screen_polygon = camera.world_to_screen_polygon(polygon, clip=True)
     else:
         screen_polygon = camera.get_screen_polygon().intersection(polygon)
     if not is_drawable(screen_polygon):
         return False
-    if alpha is not None:
-        min_x, min_y, max_x, max_y = screen_polygon.bounds
-        surface = pygame.Surface((max_x - min_x, max_y - min_y), pygame.SRCALPHA)
-        color = (*color, alpha)
-    else:
-        surface = screen
+    
+    # Draw the polygon(s)
+    alpha_value = alpha if alpha is not None else 255
+    
     if isinstance(screen_polygon, shapely.MultiPolygon):
-        for polygon in screen_polygon:
-            coords = polygon.exterior.coords[:-1]
-            if alpha is not None:
-                # Translate coordinates to surface space
-                coords = [(x - min_x, y - min_y) for x, y in coords]
-            pygame.gfxdraw.filled_polygon(surface, coords, color)
+        for single_polygon in screen_polygon.geoms:
+            gl_draw_shapely_polygon(single_polygon, color, alpha_value)
     else:
-        coords = screen_polygon.exterior.coords[:-1]
-        if alpha is not None:
-            coords = [(x - min_x, y - min_y) for x, y in coords]
-        pygame.gfxdraw.filled_polygon(surface, coords, color)
-    if alpha is not None:
-        screen.blit(surface, (min_x, min_y))
+        gl_draw_shapely_polygon(screen_polygon, color, alpha_value)
+    
     return True
+
+
 
 @contextmanager
 def use_world(world_id: str) -> Generator[None, None, None]:

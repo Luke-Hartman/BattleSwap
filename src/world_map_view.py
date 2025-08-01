@@ -7,6 +7,7 @@ import pygame_gui
 from shapely import Polygon
 
 from game_constants import gc, reload_game_constants
+from opengl_utils import gl_draw_polygon, gl_draw_line
 from auto_battle import AutoBattle
 from battles import Battle
 from components.position import Position
@@ -28,11 +29,15 @@ from hex_grid import (
     get_edge_vertices,
     get_edges_for_hexes
 )
+
 from processors.targetting_processor import TargettingProcessor
 from processors.transparency_processor import TransparencyProcessor
 from scene_utils import draw_polygon, use_world, get_hovered_unit
 from events import PLAY_SOUND, PlaySoundEvent, emit_event
 import timing
+
+
+
 from components.focus import Focus
 from selected_unit_manager import selected_unit_manager
 from progress_manager import progress_manager, HexLifecycleState
@@ -474,8 +479,8 @@ class WorldMapView:
             y = screen_y + radius * math.sin(angle - math.pi / 2)
             points.append((x, y))
         
-        # Draw the star
-        pygame.draw.polygon(self.screen, (255, 255, 0), points)  # Yellow color
+        # Draw the star using OpenGL
+        gl_draw_polygon(points, (255, 255, 0))  # Yellow color
 
     def _draw_visible_edges(self) -> None:
         """Draw edges between adjacent hexes."""
@@ -514,7 +519,7 @@ class WorldMapView:
         v1, v2 = get_edge_vertices(edge)
         screen_v1 = self.camera.world_to_screen(*v1)
         screen_v2 = self.camera.world_to_screen(*v2)
-        pygame.draw.line(self.screen, color, screen_v1, screen_v2, width=width)
+        gl_draw_line(screen_v1, screen_v2, color, width)
 
     # ------------------------------
     # Geometry & Visibility Helpers

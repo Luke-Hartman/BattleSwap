@@ -427,7 +427,7 @@ class CampaignEditorScene(Scene):
         self.world_map_view.reset_hex_states()
         self.world_map_view.update_hex_state(states)
 
-        self.screen.fill(gc.MAP_BACKGROUND_COLOR)
+
         # Only update camera if no dialog is focused
         if not hasattr(self, 'save_battle_dialog'):
             self.world_map_view.camera.update(time_delta)

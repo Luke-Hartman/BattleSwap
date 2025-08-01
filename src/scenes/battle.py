@@ -443,7 +443,7 @@ class BattleScene(Scene):
             self.time_controls.handle_event(event)
             self.manager.process_events(event)
 
-        self.screen.fill(gc.MAP_BACKGROUND_COLOR)
+
         self.world_map_view.camera.update(time_delta)
         self.world_map_view.draw_map()
         self.world_map_view.update_battles(time_delta)

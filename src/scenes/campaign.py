@@ -5,6 +5,7 @@ from typing import Tuple, Optional, List
 import pygame
 import pygame_gui
 import esper
+from opengl_utils import gl_draw_circle
 
 from battles import get_battles
 from components.hitbox import Hitbox
@@ -554,7 +555,7 @@ class CampaignScene(Scene):
         self.world_map_view.reset_hex_states()
         self.world_map_view.update_hex_state(states)
         
-        self.screen.fill(gc.MAP_BACKGROUND_COLOR)
+
         
         self.world_map_view.camera.update(time_delta)
         self.world_map_view.draw_map()
@@ -572,7 +573,8 @@ class CampaignScene(Scene):
                                 radius = (hitbox.width ** 2 + hitbox.height ** 2) ** 0.5
                                 screen_pos = self.world_map_view.camera.world_to_screen(pos.x, pos.y)
                                 color = gc.TEAM1_COLOR if team.type == TeamType.TEAM1 else gc.TEAM2_COLOR
-                                pygame.draw.circle(self.screen, color, screen_pos, radius * self.world_map_view.camera.scale, width=1)
+                                color_rgba = (*color, 255)
+                                gl_draw_circle(screen_pos[0], screen_pos[1], radius * self.world_map_view.camera.scale, color_rgba, filled=False)
         
         self.manager.update(time_delta)
         self.manager.draw_ui(self.screen)

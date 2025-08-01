@@ -8,6 +8,7 @@ and runs the main game loop.
 import argparse
 import sys
 import pygame
+import OpenGL.GL as gl
 from entities.units import load_sprite_sheets
 from handlers.combat_handler import CombatHandler
 from handlers.sound_handler import SoundHandler
@@ -25,19 +26,53 @@ pygame.init()
 # Initialize Steamworks
 #steam.init_steam()
 
-# Set up the display
-# Use the full screen
-
-# This is slightly awkward, but it let's us
-# 1. Get the correct screen size
-# 2. Use the "SCALED" flag, which is apparently required for the steam overlay
-screen = pygame.display.set_mode((0, 0),pygame.FULLSCREEN)
+# Set up the display with OpenGL
+# Use the same approach as original but with OpenGL flags
+screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 screen_width, screen_height = screen.get_size()
 screen = pygame.display.set_mode(
     (screen_width, screen_height),
-    pygame.SCALED | pygame.FULLSCREEN
+    pygame.OPENGL | pygame.DOUBLEBUF | pygame.FULLSCREEN
 )
 pygame.display.set_caption("Battle Swap")
+
+# Set up OpenGL
+from game_constants import gc
+# Convert RGB [0-255] to OpenGL [0.0-1.0] format
+bg_r, bg_g, bg_b = gc.MAP_BACKGROUND_COLOR
+gl.glClearColor(bg_r / 255.0, bg_g / 255.0, bg_b / 255.0, 1)
+gl.glMatrixMode(gl.GL_PROJECTION)
+gl.glLoadIdentity()
+gl.glOrtho(0, screen_width, screen_height, 0, -1, 1)
+gl.glEnable(gl.GL_BLEND)
+gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
+
+# Create off-screen surface for game rendering
+game_surface = pygame.Surface((screen_width, screen_height), pygame.SRCALPHA)
+
+def surface_to_texture(surface):
+    """Convert pygame surface to OpenGL texture."""
+    texture_data = pygame.image.tobytes(surface, 'RGBA', False)
+    texture_id = gl.glGenTextures(1)
+    gl.glBindTexture(gl.GL_TEXTURE_2D, texture_id)
+    gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGBA, surface.get_width(), surface.get_height(), 
+                    0, gl.GL_RGBA, gl.GL_UNSIGNED_BYTE, texture_data)
+    gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR)
+    gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
+    return texture_id
+
+def draw_game_texture(texture_id, width, height):
+    """Draw the game texture to fill the screen."""
+    gl.glEnable(gl.GL_TEXTURE_2D)
+    gl.glBindTexture(gl.GL_TEXTURE_2D, texture_id)
+    gl.glColor4f(1, 1, 1, 1)
+    gl.glBegin(gl.GL_QUADS)
+    gl.glTexCoord2f(0, 0); gl.glVertex2f(0, 0)
+    gl.glTexCoord2f(1, 0); gl.glVertex2f(width, 0)
+    gl.glTexCoord2f(1, 1); gl.glVertex2f(width, height)
+    gl.glTexCoord2f(0, 1); gl.glVertex2f(0, height)
+    gl.glEnd()
+    gl.glDisable(gl.GL_TEXTURE_2D)
 
 # Initialize font for FPS counter
 fps_font = pygame.font.SysFont('Arial', 30)
@@ -55,7 +90,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--no_dev", action="store_true", default=False)
 args = parser.parse_args()
 
-scene_manager.initialize(screen, developer_mode=not args.no_dev)
+scene_manager.initialize(game_surface, developer_mode=not args.no_dev)
 selected_unit_manager.initialize(scene_manager.manager)
 
 # Main game loop
@@ -94,12 +129,24 @@ while running:
         # Process selected unit manager events (for future interactive features)
         selected_unit_manager.process_events(event)
 
+    # Clear OpenGL screen
+    gl.glClear(gl.GL_COLOR_BUFFER_BIT)
+    
+    # Clear game surface with transparency so OpenGL shows through
+    game_surface.fill((0, 0, 0, 0))
+    
+    # Update scene (renders to game_surface)
     running = scene_manager.update(dt, events)
     
-    # # Render FPS counter
+    # # Render FPS counter to game surface
     # fps_text = fps_font.render(f'FPS: {int(clock.get_fps())}', True, (255, 255, 255))
-    # fps_rect = fps_text.get_rect(topright=(screen.get_width() - 10, 10))
-    # screen.blit(fps_text, fps_rect)
+    # fps_rect = fps_text.get_rect(topright=(game_surface.get_width() - 10, 10))
+    # game_surface.blit(fps_text, fps_rect)
+    
+    # Convert game surface to OpenGL texture and render it
+    game_texture = surface_to_texture(game_surface)
+    draw_game_texture(game_texture, screen_width, screen_height)
+    gl.glDeleteTextures([game_texture])
     
     pygame.display.flip()
     timing.tick()

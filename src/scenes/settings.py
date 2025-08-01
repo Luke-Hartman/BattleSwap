@@ -249,6 +249,6 @@ class SettingsScene(Scene):
             self.manager.process_events(event)
 
         self.manager.update(time_delta)
-        self.screen.fill(gc.MAP_BACKGROUND_COLOR)
+
         self.manager.draw_ui(self.screen)
         return super().update(time_delta, events)

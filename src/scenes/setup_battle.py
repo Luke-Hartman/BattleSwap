@@ -4,6 +4,7 @@ import esper
 import pygame
 import pygame_gui
 import shapely
+from opengl_utils import gl_draw_rect, gl_draw_line, gl_draw_lines
 import battles
 from components.focus import Focus
 from components.placing import Placing
@@ -676,9 +677,8 @@ class SetupBattleScene(Scene):
         rect_w = max(rect_w, 1)
         rect_h = max(rect_h, 1)
         
-        # Draw selection rectangle
-        selection_rect = pygame.Rect(rect_x, rect_y, rect_w, rect_h)
-        pygame.draw.rect(self.screen, (0, 255, 0), selection_rect, 2)
+        # Draw selection rectangle using OpenGL
+        gl_draw_rect(rect_x, rect_y, rect_w, rect_h, (0, 255, 0, 255), filled=False)
         
         # Draw semi-transparent fill
         selection_surface = pygame.Surface((rect_w, rect_h), pygame.SRCALPHA)
@@ -936,7 +936,7 @@ class SetupBattleScene(Scene):
         if self.save_dialog is None or not self.save_dialog.dialog.alive():
             self.camera.update(time_delta)
 
-        self.screen.fill(gc.MAP_BACKGROUND_COLOR)
+
         # Update and draw the world map view
         self.world_map_view.draw_map()
         # Draw the grid lines if shift is held
@@ -952,18 +952,12 @@ class SetupBattleScene(Scene):
                 include_units=False,
             )
             for polygon in legal_area.geoms if isinstance(legal_area, shapely.MultiPolygon) else [legal_area]:
-                pygame.draw.lines(self.screen, (175, 175, 175), False, 
-                    [self.camera.world_to_screen(x, y) for x, y in polygon.exterior.coords], 
-                    width=2)
+                screen_coords = [self.camera.world_to_screen(x, y) for x, y in polygon.exterior.coords]
+                gl_draw_lines(screen_coords, (175, 175, 175), width=2, closed=False)
         # Draw white line down the middle of the hexagon
         center_line = get_center_line(battle_coords)
-        pygame.draw.lines(
-            self.screen,
-            gc.MAP_BATTLEFIELD_EDGE_COLOR,
-            False,
-            [self.camera.world_to_screen(x, y) for x, y in center_line.coords],
-            width=2,
-        )
+        center_screen_coords = [self.camera.world_to_screen(x, y) for x, y in center_line.coords]
+        gl_draw_lines(center_screen_coords, gc.MAP_BATTLEFIELD_EDGE_COLOR, width=2, closed=False)
 
         self.world_map_view.update_battles(time_delta)
         self.barracks.select_unit_type(self.selected_unit_type)

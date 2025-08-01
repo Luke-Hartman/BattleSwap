@@ -8,9 +8,9 @@ rendering entities with Position, AnimationState, SpriteSheet, and Team componen
 import math
 import esper
 import pygame
-import pygame.gfxdraw
 import pygame_gui
 from components.animation import AnimationType
+from opengl_utils import gl_draw_circle, gl_draw_line, gl_draw_rect
 from components.aura import Aura
 from components.destination import Destination
 from components.focus import Focus
@@ -65,7 +65,7 @@ class RenderingProcessor(esper.Processor):
         outline_color: tuple[int, int, int, int] | None = None
     ) -> None:
         """
-        Draw a circle with optional fill and outline colors.
+        Draw a circle with optional fill and outline colors using OpenGL.
 
         Args:
             center_x: X coordinate of circle center in world space
@@ -78,17 +78,17 @@ class RenderingProcessor(esper.Processor):
         if self.camera.is_box_off_screen(*world_rect):
             return
 
-        screen_pos, screen_size = self.camera.world_to_screen_rect(world_rect)
-        surface = pygame.Surface(screen_size, pygame.SRCALPHA)
-        center = (screen_size[0]/2, screen_size[1]/2)
+        # Convert to screen coordinates
+        screen_center = self.camera.world_to_screen(center_x, center_y)
         radius_screen = radius * self.camera.scale
         
+        # Draw filled circle
         if fill_color is not None:
-            pygame.draw.circle(surface, fill_color, center, radius_screen)
-        if outline_color is not None:
-            pygame.draw.circle(surface, outline_color, center, radius_screen, 1)
+            gl_draw_circle(screen_center[0], screen_center[1], radius_screen, fill_color, filled=True)
         
-        self.screen.blit(surface, screen_pos)
+        # Draw outline circle
+        if outline_color is not None:
+            gl_draw_circle(screen_center[0], screen_center[1], radius_screen, outline_color, filled=False)
 
     def draw_sprite_sheet(self, sprite_sheet: SpriteSheet) -> None:
         """
@@ -241,7 +241,7 @@ class RenderingProcessor(esper.Processor):
                 # Start with a partial dash
                 dash_start = start
                 dash_end = start + direction * min(dash_length - t, distance)
-                pygame.draw.aaline(surface, color, dash_start, dash_end, width)
+                gl_draw_line(dash_start, dash_end, color, width)
                 current_pos = dash_length + gap_length - t
             else:
                 current_pos = pattern_length - t
@@ -249,7 +249,7 @@ class RenderingProcessor(esper.Processor):
             while current_pos < distance:
                 dash_start = start + direction * current_pos
                 dash_end = start + direction * min(current_pos + dash_length, distance)
-                pygame.draw.aaline(surface, color, dash_start, dash_end, width)
+                gl_draw_line(dash_start, dash_end, color, width)
                 current_pos += pattern_length
 
         def draw_arrow(
@@ -336,12 +336,13 @@ class RenderingProcessor(esper.Processor):
         bar_pos = pygame.Rect(bar_x, bar_y, bar_width, bar_height)
 
         # Draw the background (empty health bar)
-        pygame.draw.rect(self.screen, (64, 64, 64), bar_pos)
+        gl_draw_rect(bar_pos.x, bar_pos.y, bar_pos.width, bar_pos.height, (64, 64, 64, 255), filled=True)
 
         # Draw the filled portion of the health bar
         fill_width = int(bar_width * health.current / health.maximum)
         fill_color = tuple(gc.TEAM1_COLOR) if team.type == TeamType.TEAM1 else tuple(gc.TEAM2_COLOR)
-        pygame.draw.rect(self.screen, fill_color, (bar_pos.x, bar_pos.y, fill_width, bar_height))
+        fill_color_rgba = (*fill_color, 255)
+        gl_draw_rect(bar_pos.x, bar_pos.y, fill_width, bar_height, fill_color_rgba, filled=True)
 
         # Draw the border of the health bar
-        pygame.draw.rect(self.screen, (192, 192, 192), bar_pos, 1)
+        gl_draw_rect(bar_pos.x, bar_pos.y, bar_pos.width, bar_pos.height, (192, 192, 192, 255), filled=False)
