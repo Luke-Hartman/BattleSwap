@@ -7,7 +7,6 @@ and runs the main game loop.
 
 import argparse
 import sys
-import time
 import pygame
 import OpenGL.GL as gl
 from entities.units import load_sprite_sheets
@@ -107,6 +106,11 @@ running = True
 clock = pygame.time.Clock()
 while running:
     dt = clock.tick(timing.get_max_fps()) / 1000
+    
+    # Check if pygame is still initialized before getting events
+    if not pygame.get_init():
+        break
+        
     events = pygame.event.get()
 
     # Process modifier key events for info mode before scene processing
