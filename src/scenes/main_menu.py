@@ -156,11 +156,10 @@ class MainMenuScene(Scene):
             return True
         return False
 
-    def update(self, time_delta: float, events: List[pygame.event.Event]) -> bool:
-        """Update the main menu scene."""
+    def handle_events(self, events: List[pygame.event.Event]) -> bool:
         for event in events:
             if event.type == pygame.QUIT:
-                return False
+                break
             
             if self.handle_confirmation_dialog_keys(event):
                 continue
@@ -227,7 +226,16 @@ class MainMenuScene(Scene):
                             self.confirmation_dialog = None
 
             self.manager.process_events(event)
+        return True
 
+    def update(self, time_delta: float, events: List[pygame.event.Event]) -> bool:
+        """Update the main menu scene."""
+        running = self.handle_events(events)
         self.manager.update(time_delta)
         self.manager.draw_ui(self.screen)
-        return True
+        
+        # Mark surface as dirty since we drew UI content
+        from main import mark_surface_dirty
+        mark_surface_dirty()
+        
+        return running

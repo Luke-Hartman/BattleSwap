@@ -140,4 +140,9 @@ class DeveloperToolsScene(Scene):
         self.manager.update(time_delta)
 
         self.manager.draw_ui(self.screen)
+        
+        # Mark surface as dirty since we drew UI content
+        from main import mark_surface_dirty
+        mark_surface_dirty()
+        
         return True

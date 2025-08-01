@@ -7,6 +7,7 @@ and runs the main game loop.
 
 import argparse
 import sys
+import time
 import pygame
 import OpenGL.GL as gl
 from entities.units import load_sprite_sheets
@@ -49,6 +50,14 @@ gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
 
 # Create off-screen surface for game rendering
 game_surface = pygame.Surface((screen_width, screen_height), pygame.SRCALPHA)
+
+# Dirty flag to track when content has been drawn to the surface
+surface_dirty = False
+
+def mark_surface_dirty():
+    """Mark the game surface as dirty (content has been drawn to it)."""
+    global surface_dirty
+    surface_dirty = True
 
 def surface_to_texture(surface):
     """Convert pygame surface to OpenGL texture."""
@@ -135,20 +144,22 @@ while running:
     # Clear game surface with transparency so OpenGL shows through
     game_surface.fill((0, 0, 0, 0))
     
+    # Reset dirty flag before scene update
+    surface_dirty = False
+    
     # Update scene (renders to game_surface)
     running = scene_manager.update(dt, events)
     
-    # # Render FPS counter to game surface
-    # fps_text = fps_font.render(f'FPS: {int(clock.get_fps())}', True, (255, 255, 255))
-    # fps_rect = fps_text.get_rect(topright=(game_surface.get_width() - 10, 10))
-    # game_surface.blit(fps_text, fps_rect)
-    
-    # Convert game surface to OpenGL texture and render it
-    game_texture = surface_to_texture(game_surface)
-    draw_game_texture(game_texture, screen_width, screen_height)
-    gl.glDeleteTextures([game_texture])
-    
-    pygame.display.flip()
-    timing.tick()
+    # Only convert to OpenGL and flip if content was drawn
+    if surface_dirty:
+        game_texture = surface_to_texture(game_surface)
+        draw_game_texture(game_texture, screen_width, screen_height)
+        gl.glDeleteTextures([game_texture])
+        pygame.display.flip()
+        timing.tick()
+    else:
+        # No content drawn - skip expensive operations
+        # Previous frame remains visible
+        pass
 
 pygame.quit()

@@ -609,6 +609,10 @@ class CampaignScene(Scene):
                 self.upgrade_button_flash_state = False
                 self._update_upgrade_button_flash_theme()  # Ensure we end on normal theme
 
+        # Mark surface as dirty since we drew content
+        from main import mark_surface_dirty
+        mark_surface_dirty()
+
         return super().update(time_delta, events)
 
     def _close_scene_windows(self) -> bool:

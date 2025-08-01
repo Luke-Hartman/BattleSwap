@@ -477,6 +477,10 @@ class BattleScene(Scene):
         # Render PAUSED text if the game is paused
         self.render_paused_text()
         
+        # Mark surface as dirty since we drew content
+        from main import mark_surface_dirty
+        mark_surface_dirty()
+        
         return super().update(time_delta, events)
 
     def _close_scene_windows(self) -> bool:
