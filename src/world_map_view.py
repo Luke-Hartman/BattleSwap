@@ -7,7 +7,7 @@ import pygame_gui
 from shapely import Polygon
 
 from game_constants import gc, reload_game_constants
-from opengl_utils import gl_draw_polygon, gl_draw_line
+from opengl_utils import gl_draw_polygon, gl_draw_line, gl_draw_star
 from auto_battle import AutoBattle
 from battles import Battle
 from components.position import Position
@@ -452,8 +452,6 @@ class WorldMapView:
 
     def _draw_upgrade_star(self, coords: Tuple[int, int]) -> None:
         """Draw a yellow star in the center of an upgrade hex."""
-        import math
-        
         # Get the center of the hex in world coordinates
         center_x, center_y = axial_to_world(*coords)
         
@@ -464,23 +462,9 @@ class WorldMapView:
         base_radius = 150  # 5x bigger than before
         outer_radius = base_radius * self.camera.zoom
         inner_radius = outer_radius * 0.4
-
         
-        # Create star points (5-pointed star)
-        points = []
-        for i in range(10):  # 10 points for 5-pointed star (outer and inner points)
-            angle = (i * math.pi) / 5  # 36 degrees per step
-            if i % 2 == 0:  # Outer point
-                radius = outer_radius
-            else:  # Inner point
-                radius = inner_radius
-            
-            x = screen_x + radius * math.cos(angle - math.pi / 2)  # Rotate -90 degrees to point up
-            y = screen_y + radius * math.sin(angle - math.pi / 2)
-            points.append((x, y))
-        
-        # Draw the star using OpenGL
-        gl_draw_polygon(points, (255, 255, 0))  # Yellow color
+        # Draw the star using OpenGL triangles (works correctly for concave shapes)
+        gl_draw_star(screen_x, screen_y, outer_radius, inner_radius, 5, (255, 255, 0))  # Yellow color
 
     def _draw_visible_edges(self) -> None:
         """Draw edges between adjacent hexes."""

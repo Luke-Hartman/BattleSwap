@@ -157,3 +157,42 @@ def gl_draw_lines(points: List[Tuple[float, float]], color: Tuple[int, int, int]
         gl.glVertex2f(x, y)
     
     gl.glEnd()
+
+
+def gl_draw_star(center_x: float, center_y: float, outer_radius: float, inner_radius: float, num_points: int, color: Tuple[int, int, int]) -> None:
+    """Draw a filled star using OpenGL triangles.
+    
+    Args:
+        center_x: X coordinate of star center
+        center_y: Y coordinate of star center
+        outer_radius: Radius to outer points
+        inner_radius: Radius to inner points
+        num_points: Number of star points (typically 5)
+        color: RGB color tuple (0-255)
+    """
+    gl.glColor3f(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0)
+    
+    # Calculate star points
+    points = []
+    for i in range(num_points * 2):  # Alternating outer and inner points
+        angle = (i * math.pi) / num_points  # Angle between points
+        if i % 2 == 0:  # Outer point
+            radius = outer_radius
+        else:  # Inner point
+            radius = inner_radius
+        
+        x = center_x + radius * math.cos(angle - math.pi / 2)  # Rotate -90 degrees to point up
+        y = center_y + radius * math.sin(angle - math.pi / 2)
+        points.append((x, y))
+    
+    # Draw triangles from center to each edge of the star
+    gl.glBegin(gl.GL_TRIANGLES)
+    for i in range(len(points)):
+        next_i = (i + 1) % len(points)
+        
+        # Triangle from center to current point to next point
+        gl.glVertex2f(center_x, center_y)  # Center
+        gl.glVertex2f(points[i][0], points[i][1])  # Current point
+        gl.glVertex2f(points[next_i][0], points[next_i][1])  # Next point
+    
+    gl.glEnd()
