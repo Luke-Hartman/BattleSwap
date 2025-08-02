@@ -478,7 +478,7 @@ class BattleScene(Scene):
         self.render_paused_text()
         
         # Mark surface as dirty since we drew content
-        from main import mark_surface_dirty
+        from surface_manager import mark_surface_dirty
         mark_surface_dirty()
         
         return super().update(time_delta, events)

@@ -18,6 +18,7 @@ from selected_unit_manager import selected_unit_manager
 import timing
 from visuals import load_visual_sheets
 from info_mode_manager import info_mode_manager
+from surface_manager import is_surface_dirty, reset_surface_dirty
 #import steam
 
 # Initialize Pygame
@@ -50,13 +51,7 @@ gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
 # Create off-screen surface for game rendering
 game_surface = pygame.Surface((screen_width, screen_height), pygame.SRCALPHA)
 
-# Dirty flag to track when content has been drawn to the surface
-surface_dirty = False
 
-def mark_surface_dirty():
-    """Mark the game surface as dirty (content has been drawn to it)."""
-    global surface_dirty
-    surface_dirty = True
 
 def surface_to_texture(surface):
     """Convert pygame surface to OpenGL texture."""
@@ -149,13 +144,13 @@ while running:
     game_surface.fill((0, 0, 0, 0))
     
     # Reset dirty flag before scene update
-    surface_dirty = False
+    reset_surface_dirty()
     
     # Update scene (renders to game_surface)
     running = scene_manager.update(dt, events)
     
     # Only convert to OpenGL and flip if content was drawn
-    if surface_dirty:
+    if is_surface_dirty():
         game_texture = surface_to_texture(game_surface)
         draw_game_texture(game_texture, screen_width, screen_height)
         gl.glDeleteTextures([game_texture])

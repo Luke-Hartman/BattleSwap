@@ -610,7 +610,7 @@ class CampaignScene(Scene):
                 self._update_upgrade_button_flash_theme()  # Ensure we end on normal theme
 
         # Mark surface as dirty since we drew content
-        from main import mark_surface_dirty
+        from surface_manager import mark_surface_dirty
         mark_surface_dirty()
 
         return super().update(time_delta, events)
