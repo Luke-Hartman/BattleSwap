@@ -6,9 +6,11 @@ providing a consistent interface for all OpenGL drawing operations.
 """
 
 import math
-from typing import List, Tuple
+from typing import List, Tuple, Dict, Optional
 import OpenGL.GL as gl
 import shapely
+import pygame
+from weakref import WeakKeyDictionary
 
 
 def gl_draw_line(start: Tuple[float, float], end: Tuple[float, float], color: Tuple[int, int, int], width: int = 1) -> None:
@@ -196,3 +198,113 @@ def gl_draw_star(center_x: float, center_y: float, outer_radius: float, inner_ra
         gl.glVertex2f(points[next_i][0], points[next_i][1])  # Next point
     
     gl.glEnd()
+
+
+# Texture caching - maps pygame surface objects to OpenGL texture IDs
+_texture_cache: WeakKeyDictionary[pygame.Surface, int] = WeakKeyDictionary()
+
+
+def surface_to_texture(surface: pygame.Surface) -> int:
+    """Convert a pygame surface to an OpenGL texture.
+    
+    Args:
+        surface: The pygame surface to convert
+        
+    Returns:
+        OpenGL texture ID
+    """
+    # Check cache first
+    if surface in _texture_cache:
+        return _texture_cache[surface]
+    
+    # Convert surface to string format for OpenGL
+    texture_data = pygame.image.tostring(surface, "RGBA", True)
+    width, height = surface.get_size()
+    
+    # Generate and bind texture
+    texture_id = gl.glGenTextures(1)
+    gl.glBindTexture(gl.GL_TEXTURE_2D, texture_id)
+    
+    # Set texture parameters
+    gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR)
+    gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
+    gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_EDGE)
+    gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE)
+    
+    # Upload texture data
+    gl.glTexImage2D(
+        gl.GL_TEXTURE_2D,
+        0,
+        gl.GL_RGBA,
+        width,
+        height,
+        0,
+        gl.GL_RGBA,
+        gl.GL_UNSIGNED_BYTE,
+        texture_data
+    )
+    
+    # Cache the texture
+    _texture_cache[surface] = texture_id
+    
+    return texture_id
+
+
+def delete_texture(texture_id: int) -> None:
+    """Delete an OpenGL texture.
+    
+    Args:
+        texture_id: The OpenGL texture ID to delete
+    """
+    gl.glDeleteTextures([texture_id])
+
+
+def clear_texture_cache() -> None:
+    """Clear all cached textures and free GPU memory."""
+    for texture_id in _texture_cache.values():
+        gl.glDeleteTextures([texture_id])
+    _texture_cache.clear()
+
+
+def gl_draw_sprite(
+    surface: pygame.Surface,
+    x: float,
+    y: float,
+    width: float,
+    height: float,
+    alpha: float = 1.0
+) -> None:
+    """Draw a pygame surface as an OpenGL textured quad.
+    
+    Args:
+        surface: The pygame surface to draw
+        x: Left edge X coordinate
+        y: Top edge Y coordinate  
+        width: Width to draw the sprite
+        height: Height to draw the sprite
+        alpha: Alpha transparency (0.0 to 1.0)
+    """
+    # Get or create texture
+    texture_id = surface_to_texture(surface)
+    
+    # Enable texturing
+    gl.glEnable(gl.GL_TEXTURE_2D)
+    gl.glBindTexture(gl.GL_TEXTURE_2D, texture_id)
+    
+    # Set color with alpha
+    gl.glColor4f(1.0, 1.0, 1.0, alpha)
+    
+    # Draw textured quad with flipped texture coordinates to match pygame coordinate system
+    gl.glBegin(gl.GL_QUADS)
+    gl.glTexCoord2f(0.0, 1.0)  # Top-left of texture
+    gl.glVertex2f(x, y)
+    gl.glTexCoord2f(1.0, 1.0)  # Top-right of texture
+    gl.glVertex2f(x + width, y)
+    gl.glTexCoord2f(1.0, 0.0)  # Bottom-right of texture
+    gl.glVertex2f(x + width, y + height)
+    gl.glTexCoord2f(0.0, 0.0)  # Bottom-left of texture
+    gl.glVertex2f(x, y + height)
+    gl.glEnd()
+    
+    # Disable texturing
+    gl.glDisable(gl.GL_TEXTURE_2D)

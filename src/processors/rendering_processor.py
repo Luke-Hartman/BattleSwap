@@ -10,7 +10,7 @@ import esper
 import pygame
 import pygame_gui
 from components.animation import AnimationType
-from opengl_utils import gl_draw_circle, gl_draw_line, gl_draw_rect
+from opengl_utils import gl_draw_circle, gl_draw_line, gl_draw_rect, gl_draw_sprite
 from components.aura import Aura
 from components.destination import Destination
 from components.focus import Focus
@@ -92,7 +92,7 @@ class RenderingProcessor(esper.Processor):
 
     def draw_sprite_sheet(self, sprite_sheet: SpriteSheet) -> None:
         """
-        Draw a sprite sheet at the given world position.
+        Draw a sprite sheet at the given world position using OpenGL.
         
         Args:
             sprite_sheet: The sprite sheet to draw
@@ -106,22 +106,23 @@ class RenderingProcessor(esper.Processor):
         ):
             return
 
+        # Convert world coordinates to screen coordinates
         rect_topleft = sprite_sheet.rect.topleft
-        rect_width = sprite_sheet.rect.width
-        rect_height = sprite_sheet.rect.height
-        new_top_left = self.camera.world_to_screen(rect_topleft[0], rect_topleft[1])
-        new_rect = pygame.Rect(new_top_left, (rect_width * self.camera.scale, rect_height * self.camera.scale))
+        screen_pos = self.camera.world_to_screen(rect_topleft[0], rect_topleft[1])
+        
+        # Calculate scaled dimensions
+        scaled_width = sprite_sheet.rect.width * self.camera.scale
+        scaled_height = sprite_sheet.rect.height * self.camera.scale
 
-        # Scale the sprite if needed
-        if self.camera.scale != 1.0:
-            scaled_size = (
-                int(sprite_sheet.rect.width * self.camera.scale),
-                int(sprite_sheet.rect.height * self.camera.scale)
-            )
-            scaled_image = pygame.transform.scale(sprite_sheet.image, scaled_size)
-            self.screen.blit(scaled_image, new_rect)
-        else:
-            self.screen.blit(sprite_sheet.image, new_rect)
+        # Draw using OpenGL
+        gl_draw_sprite(
+            surface=sprite_sheet.image,
+            x=screen_pos[0],
+            y=screen_pos[1],
+            width=scaled_width,
+            height=scaled_height,
+            alpha=1.0
+        )
 
     def process(self, dt: float):
         # Draw all auras
