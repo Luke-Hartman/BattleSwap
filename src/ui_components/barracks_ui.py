@@ -8,6 +8,7 @@ from pygame_gui.elements import UIPanel, UIScrollingContainer, UIButton, UILabel
 
 import battles
 from components.unit_type import UnitType
+from screen_dimensions import get_width, get_height
 from entities.units import unit_theme_ids, Faction
 from selected_unit_manager import selected_unit_manager
 from progress_manager import progress_manager
@@ -154,14 +155,14 @@ class BarracksUI(UITabContainer):
         }
         
         side_padding = 75
-        panel_width = pygame.display.Info().current_w - 2 * side_padding - 220  # Reduced width to make room for grades panel
+        panel_width = get_width() - 2 * side_padding - 220  # Reduced width to make room for grades panel
         padding = 10
         
         needs_scrollbar, content_height = self._calculate_panel_dimensions(panel_width, "ALL")
         
         super().__init__(
             relative_rect=pygame.Rect(
-                (side_padding, pygame.display.Info().current_h - content_height - 10 - 30),
+                (side_padding, get_height() - content_height - 10 - 30),
                 (panel_width, content_height + 30)
             ),
             manager=manager,
@@ -480,13 +481,13 @@ class BarracksUI(UITabContainer):
         """Resize the panel based on the current tab's content."""
         current_tab_name = self.get_tab(self.current_container_index)["text"]
         side_padding = 75
-        panel_width = pygame.display.Info().current_w - 2 * side_padding - 220
+        panel_width = get_width() - 2 * side_padding - 220
         
         needs_scrollbar, content_height = self._calculate_panel_dimensions(panel_width, current_tab_name)
         
         # Calculate new panel position and size
         new_rect = pygame.Rect(
-            (side_padding, pygame.display.Info().current_h - content_height - 10 - 30),
+            (side_padding, get_height() - content_height - 10 - 30),
             (panel_width, content_height + 30)
         )
         

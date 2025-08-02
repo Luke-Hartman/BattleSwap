@@ -19,6 +19,7 @@ import timing
 from visuals import load_visual_sheets
 from info_mode_manager import info_mode_manager
 from surface_manager import is_surface_dirty, reset_surface_dirty
+import screen_dimensions
 #import steam
 
 # Initialize Pygame
@@ -28,25 +29,32 @@ pygame.init()
 #steam.init_steam()
 
 # Set up the display with OpenGL
-# Get screen size without creating a window first to avoid flickering
 display_info = pygame.display.Info()
-screen_width, screen_height = display_info.current_w, display_info.current_h
+requested_width, requested_height = display_info.current_w, display_info.current_h
 screen = pygame.display.set_mode(
-    (screen_width, screen_height),
+    (requested_width, requested_height),
     pygame.OPENGL | pygame.DOUBLEBUF | pygame.FULLSCREEN
 )
 pygame.display.set_caption("Battle Swap")
 
-# Set up OpenGL
+# Set up OpenGL and get actual viewport dimensions
 from game_constants import gc
-# Convert RGB [0-255] to OpenGL [0.0-1.0] format
 bg_r, bg_g, bg_b = gc.MAP_BACKGROUND_COLOR
 gl.glClearColor(bg_r / 255.0, bg_g / 255.0, bg_b / 255.0, 1)
+gl.glEnable(gl.GL_BLEND)
+gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
+
+# Get actual OpenGL viewport dimensions (handles macOS dock/menubar correctly)
+viewport = gl.glGetIntegerv(gl.GL_VIEWPORT)
+screen_width, screen_height = viewport[2], viewport[3]
+
+# Configure OpenGL projection with actual dimensions
 gl.glMatrixMode(gl.GL_PROJECTION)
 gl.glLoadIdentity()
 gl.glOrtho(0, screen_width, screen_height, 0, -1, 1)
-gl.glEnable(gl.GL_BLEND)
-gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
+
+# Set global screen dimensions and log the result
+screen_dimensions.set_dimensions(screen_width, screen_height)
 
 # Create off-screen surface for game rendering
 game_surface = pygame.Surface((screen_width, screen_height), pygame.SRCALPHA)

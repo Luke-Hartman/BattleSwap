@@ -13,6 +13,7 @@ from auto_battle import simulate_battle, BattleOutcome
 from ui_components.save_battle_dialog import SaveBattleDialog
 from world_map_view import WorldMapView
 from game_constants import gc
+from screen_dimensions import get_width, get_height
 from keyboard_shortcuts import format_button_text, KeyboardShortcuts
 
 class TestStatus(Enum):
@@ -53,8 +54,8 @@ class TestEditorScene(Scene):
         top_panel_height = 40
         
         # Create scrollable container for the entire content
-        container_width = pygame.display.Info().current_w - 2 * padding
-        container_height = pygame.display.Info().current_h - padding
+        container_width = get_width() - 2 * padding
+        container_height = get_height() - padding
         self.scroll_container = pygame_gui.elements.UIScrollingContainer(
             relative_rect=pygame.Rect((padding, 0), (container_width, container_height)),
             manager=self.manager
@@ -109,7 +110,7 @@ class TestEditorScene(Scene):
 
         self.show_failures_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(
-                (pygame.display.Info().current_w - 270, padding),
+                (get_width() - 270, padding),
                 (130, button_height)
             ),
             text="Show All Tests" if self.show_only_failures else "Show Failures",
@@ -119,7 +120,7 @@ class TestEditorScene(Scene):
 
         self.run_all_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(
-                (pygame.display.Info().current_w - 130, padding),
+                (get_width() - 130, padding),
                 (100, button_height)
             ),
             text="Run All",

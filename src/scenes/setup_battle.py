@@ -39,6 +39,7 @@ from corruption_powers import CorruptionPower
 from selected_unit_manager import selected_unit_manager
 from components.sprite_sheet import SpriteSheet
 from components.unit_tier import UnitTier
+from screen_dimensions import get_width, get_height
 
 
 class SetupBattleScene(Scene):
@@ -158,7 +159,7 @@ class SetupBattleScene(Scene):
         
         if is_corrupted:
             icon_size = (48, 48)
-            icon_position = (pygame.display.Info().current_w - icon_size[0] - 15, 50)
+            icon_position = (get_width() - icon_size[0] - 15, 50)
             self.corruption_icon = CorruptionIcon(
                 manager=self.manager,
                 position=icon_position,
@@ -192,7 +193,7 @@ class SetupBattleScene(Scene):
         barracks_bottom = self.barracks.rect.bottom
         self.progress_panel = ProgressPanel(
             relative_rect=pygame.Rect(
-                (pygame.display.Info().current_w - 295, barracks_bottom - 108),
+                (get_width() - 295, barracks_bottom - 108),
                 (235, 115)
             ),
             manager=self.manager,
@@ -206,7 +207,7 @@ class SetupBattleScene(Scene):
         if self.developer_mode:
             self.save_button = pygame_gui.elements.UIButton(
                 relative_rect=pygame.Rect(
-                    (pygame.display.Info().current_w - 310, 10),
+                    (get_width() - 310, 10),
                     (100, 30)
                 ),
                 text='Save Battle',
@@ -214,7 +215,7 @@ class SetupBattleScene(Scene):
             )
             self.simulate_button = pygame_gui.elements.UIButton(
                 relative_rect=pygame.Rect(
-                    (pygame.display.Info().current_w - 420, 10),
+                    (get_width() - 420, 10),
                     (100, 30)
                 ),
                 text='Simulate',
@@ -222,7 +223,7 @@ class SetupBattleScene(Scene):
             )
             self.results_box = pygame_gui.elements.UILabel(
                 relative_rect=pygame.Rect(
-                    (pygame.display.Info().current_w - 420, 50),  # Position below simulate button
+                    (get_width() - 420, 50),  # Position below simulate button
                     (100, 30)
                 ),
                 text='',
@@ -231,7 +232,7 @@ class SetupBattleScene(Scene):
             # Add edit corruption powers button
             self.edit_corruption_button = pygame_gui.elements.UIButton(
                 relative_rect=pygame.Rect(
-                    (pygame.display.Info().current_w - 530, 10),
+                    (get_width() - 530, 10),
                     (100, 30)
                 ),
                 text='Edit Powers',
@@ -240,7 +241,7 @@ class SetupBattleScene(Scene):
             # Add toggle corruption button
             self.toggle_corruption_button = pygame_gui.elements.UIButton(
                 relative_rect=pygame.Rect(
-                    (pygame.display.Info().current_w - 530, 50),
+                    (get_width() - 530, 50),
                     (100, 30)
                 ),
                 text='Toggle Corruption',
@@ -336,7 +337,7 @@ class SetupBattleScene(Scene):
     def show_exit_confirmation(self) -> None:
         """Show confirmation dialog for exiting with unsaved changes."""
         self.confirmation_dialog = pygame_gui.windows.UIConfirmationDialog(
-            rect=pygame.Rect((pygame.display.Info().current_w/2 - 150, pygame.display.Info().current_h/2 - 100), (300, 200)),
+            rect=pygame.Rect((get_width()/2 - 150, get_height()/2 - 100), (300, 200)),
             manager=self.manager,
             window_title="Unsaved Changes",
             action_long_desc="You have unsaved changes. Are you sure you want to exit?" if not self.sandbox_mode else "Are you sure you want to exit?",
@@ -1000,7 +1001,7 @@ class SetupBattleScene(Scene):
 
         if self.is_corrupted:
             icon_size = (48, 48)
-            icon_position = (pygame.display.Info().current_w - icon_size[0] - 15, 50)
+            icon_position = (get_width() - icon_size[0] - 15, 50)
             self.corruption_icon = CorruptionIcon(
                 manager=self.manager,
                 position=icon_position,
@@ -1030,7 +1031,7 @@ class SetupBattleScene(Scene):
             
             # Create corruption icon
             icon_size = (48, 48)
-            icon_position = (pygame.display.Info().current_w - icon_size[0] - 15, 50)
+            icon_position = (get_width() - icon_size[0] - 15, 50)
             self.corruption_icon = CorruptionIcon(
                 manager=self.manager,
                 position=icon_position,

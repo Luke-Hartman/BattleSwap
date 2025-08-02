@@ -8,6 +8,7 @@ from pygame_gui.core import ObjectID
 from components.unit_type import UnitType
 from components.unit_tier import UnitTier
 from entities.units import unit_theme_ids, Faction
+from screen_dimensions import get_width, get_height
 from progress_manager import progress_manager
 from ui_components.unit_card import UnitCard
 from ui_components.game_data import get_unit_data, StatType, get_upgrade_description
@@ -83,7 +84,7 @@ class UpgradeWindow:
     def _create_window(self) -> None:
         """Create the upgrade window and its contents."""
         # Get screen dimensions
-        screen_info = pygame.display.Info()
+        screen_info = type('obj', (object,), {'current_w': get_width(), 'current_h': get_height()})()
         screen_width = screen_info.current_w
         screen_height = screen_info.current_h
         
@@ -785,7 +786,7 @@ class UpgradeWindow:
             return
         
         # Create confirmation dialog
-        screen_info = pygame.display.Info()
+        screen_info = type('obj', (object,), {'current_w': get_width(), 'current_h': get_height()})()
         dialog_width = 200
         dialog_height = 150  # Increased to accommodate title bar and buttons
         dialog_x = (screen_info.current_w - dialog_width) // 2

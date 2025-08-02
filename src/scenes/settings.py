@@ -11,6 +11,7 @@ from scenes.scene import Scene
 from settings import settings, save_settings
 from ui_components.return_button import ReturnButton
 from game_constants import gc
+from screen_dimensions import get_width, get_height
 
 class SettingsScene(Scene):
     """Scene for modifying user settings."""
@@ -41,8 +42,8 @@ class SettingsScene(Scene):
         # Create a panel to hold settings
         panel_width = 400
         panel_height = 270
-        screen_width = pygame.display.Info().current_w
-        screen_height = pygame.display.Info().current_h
+        screen_width = get_width()
+        screen_height = get_height()
         
         settings_panel = pygame_gui.elements.UIPanel(
             relative_rect=pygame.Rect(
@@ -226,7 +227,7 @@ class SettingsScene(Scene):
                     elif event.ui_element == self.return_button:
                         if self.has_unsaved_changes():
                             self.confirmation_dialog = pygame_gui.windows.UIConfirmationDialog(
-                                rect=pygame.Rect((pygame.display.Info().current_w/2 - 150, pygame.display.Info().current_h/2 - 100), (300, 200)),
+                                rect=pygame.Rect((get_width()/2 - 150, get_height()/2 - 100), (300, 200)),
                                 manager=self.manager,
                                 window_title="Unsaved Changes",
                                 action_long_desc="You have unsaved changes. Are you sure you want to leave?",

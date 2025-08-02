@@ -20,6 +20,7 @@ from scenes.scene import Scene
 from selected_unit_manager import selected_unit_manager
 from ui_components.barracks_ui import BarracksUI
 from ui_components.return_button import ReturnButton
+from screen_dimensions import get_width, get_height
 from ui_components.feedback_button import FeedbackButton
 from ui_components.corruption_panel import CorruptionPanel
 from ui_components.corruption_congratulations_panel import CorruptionCongratulationsPanel
@@ -90,7 +91,7 @@ class CampaignScene(Scene):
             barracks_bottom = self.barracks.rect.bottom
             self.progress_panel = ProgressPanel(
                 relative_rect=pygame.Rect(
-                    (pygame.display.Info().current_w - 295, barracks_bottom - 108),
+                    (get_width() - 295, barracks_bottom - 108),
                     (235, 115)
                 ),
                 manager=self.manager,
@@ -245,7 +246,7 @@ class CampaignScene(Scene):
         # Show corruption icon for corrupted battles
         if battle is not None and progress_manager.get_hex_state(battle.hex_coords) in [HexLifecycleState.CORRUPTED, HexLifecycleState.RECLAIMED]:
             icon_size = (48, 48)
-            icon_position = (pygame.display.Info().current_w - icon_size[0] - 15, 50)
+            icon_position = (get_width() - icon_size[0] - 15, 50)
             self.corruption_icon = CorruptionIcon(
                 manager=self.manager,
                 position=icon_position,

@@ -6,6 +6,7 @@ from pygame_gui.elements import UIPanel, UILabel, UIButton, UIDropDownMenu, UISe
 from typing import List, Callable
 from corruption_powers import CorruptionPower, IncreasedMaxHealth, IncreasedDamage, IncreasedMovementSpeed, IncreasedAbilitySpeed
 from components.team import TeamType
+from screen_dimensions import get_width, get_height
 
 class CorruptionPowerEditorDialog(UIPanel):
     """Dialog for editing corruption powers of a battle."""
@@ -25,8 +26,8 @@ class CorruptionPowerEditorDialog(UIPanel):
         """
         panel_width = 600
         panel_height = 550
-        screen_width = pygame.display.Info().current_w
-        screen_height = pygame.display.Info().current_h
+        screen_width = get_width()
+        screen_height = get_height()
         
         super().__init__(
             relative_rect=pygame.Rect(

@@ -9,6 +9,7 @@ from scenes.events import SettingsSceneEvent, SetupBattleSceneEvent, CampaignSce
 from world_map_view import WorldMapView
 from progress_manager import progress_manager, reset_progress, has_incompatible_save
 from game_constants import gc
+from screen_dimensions import get_width, get_height
 class MainMenuScene(Scene):
     """Main menu scene with primary navigation options for the game."""
 
@@ -25,7 +26,7 @@ class MainMenuScene(Scene):
         # Check for incompatible save file
         if has_incompatible_save():
             self.confirmation_dialog = pygame_gui.windows.UIConfirmationDialog(
-                rect=pygame.Rect((pygame.display.Info().current_w/2 - 200, pygame.display.Info().current_h/2 - 100), (400, 200)),
+                rect=pygame.Rect((get_width()/2 - 200, get_height()/2 - 100), (400, 200)),
                 manager=self.manager,
                 window_title="Game Updated",
                 action_long_desc="The game has had breaking changes and your saved progress is no longer compatible. You'll need to reset your progress. Sorry for the inconvenience!",
@@ -45,11 +46,11 @@ class MainMenuScene(Scene):
             total_buttons_height = 4 * button_height + 3 * button_spacing
 
         # Calculate starting Y position to center the buttons vertically
-        screen_height = pygame.display.Info().current_h
+        screen_height = get_height()
         start_y = (screen_height - total_buttons_height) // 2
         
         # Calculate X position to center buttons horizontally
-        screen_width = pygame.display.Info().current_w
+        screen_width = get_width()
         button_x = (screen_width - button_width) // 2
 
         # Create reset progress button in top right corner
@@ -137,7 +138,7 @@ class MainMenuScene(Scene):
     def show_quit_confirmation(self) -> None:
         """Show confirmation dialog for quitting the game."""
         self.confirmation_dialog = pygame_gui.windows.UIConfirmationDialog(
-            rect=pygame.Rect((pygame.display.Info().current_w/2 - 150, pygame.display.Info().current_h/2 - 100), (300, 200)),
+            rect=pygame.Rect((get_width()/2 - 150, get_height()/2 - 100), (300, 200)),
             manager=self.manager,
             window_title="Quit Game",
             action_long_desc="Are you sure you want to quit the game?",
@@ -207,7 +208,7 @@ class MainMenuScene(Scene):
                     
                     elif event.ui_element == self.reset_button:
                         self.confirmation_dialog = pygame_gui.windows.UIConfirmationDialog(
-                            rect=pygame.Rect((pygame.display.Info().current_w/2 - 150, pygame.display.Info().current_h/2 - 100), (300, 200)),
+                            rect=pygame.Rect((get_width()/2 - 150, get_height()/2 - 100), (300, 200)),
                             manager=self.manager,
                             window_title="Reset Progress",
                             action_long_desc="Are you sure you want to reset all game progress? This cannot be undone.",

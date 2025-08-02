@@ -14,6 +14,7 @@ from scenes.events import (
 from ui_components.return_button import ReturnButton
 from world_map_view import WorldMapView
 from game_constants import gc
+from screen_dimensions import get_width, get_height
 
 class DeveloperToolsScene(Scene):
     """Scene containing developer tools and utilities."""
@@ -35,11 +36,11 @@ class DeveloperToolsScene(Scene):
         total_buttons_height = 3 * button_height + 2 * button_spacing
         
         # Calculate starting Y position to center the buttons vertically
-        screen_height = pygame.display.Info().current_h
+        screen_height = get_height()
         start_y = (screen_height - total_buttons_height) // 2
         
         # Calculate X position to center buttons horizontally
-        screen_width = pygame.display.Info().current_w
+        screen_width = get_width()
         button_x = (screen_width - button_width) // 2
 
         # Create title

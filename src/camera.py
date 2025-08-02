@@ -15,8 +15,9 @@ class Camera:
             world_y: Y coordinate in world space to center the camera on
             zoom: Initial zoom level
         """
-        screen_width = pygame.display.Info().current_w
-        screen_height = pygame.display.Info().current_h
+        from screen_dimensions import get_width, get_height
+        screen_width = get_width()
+        screen_height = get_height()
         self._rect = pygame.Rect(
             world_x - screen_width/2,
             world_y - screen_height/2,

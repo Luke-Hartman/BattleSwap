@@ -1,5 +1,6 @@
 from collections import defaultdict
 from game_constants import gc
+from screen_dimensions import get_width, get_height
 from typing import List, Tuple, Optional
 
 import pygame
@@ -98,7 +99,7 @@ class CampaignEditorScene(Scene):
         upgrade_hexes_count = len(upgrade_hexes.get_upgrade_hexes())
         
         # Position for statistics display (top right corner)
-        screen_width = pygame.display.Info().current_w
+        screen_width = get_width()
         label_width = 200
         label_height = 30
         padding = 10
@@ -144,7 +145,7 @@ class CampaignEditorScene(Scene):
             # Show corruption icon if battle is corrupted
             if battle.hex_coords in self.corrupted_hexes:
                 icon_size = (48, 48)
-                icon_position = (pygame.display.Info().current_w - icon_size[0] - 15, 50)
+                icon_position = (get_width() - icon_size[0] - 15, 50)
                 self.corruption_icon = CorruptionIcon(
                     manager=self.manager,
                     position=icon_position,

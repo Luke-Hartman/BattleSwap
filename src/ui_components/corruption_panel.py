@@ -5,6 +5,7 @@ import pygame_gui
 from pygame_gui.elements import UIPanel, UILabel, UIButton, UITextBox
 from keyboard_shortcuts import format_button_text, KeyboardShortcuts
 from events import emit_event, PLAY_SOUND, PlaySoundEvent
+from screen_dimensions import get_width, get_height
 
 
 class CorruptionPanel(UIPanel):
@@ -25,8 +26,8 @@ class CorruptionPanel(UIPanel):
         """
         panel_width = 500
         panel_height = 330
-        screen_width = pygame.display.Info().current_w
-        screen_height = pygame.display.Info().current_h
+        screen_width = get_width()
+        screen_height = get_height()
         
         super().__init__(
             relative_rect=pygame.Rect(

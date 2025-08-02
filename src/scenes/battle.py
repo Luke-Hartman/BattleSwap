@@ -16,6 +16,7 @@ from battles import Battle, update_battle
 from selected_unit_manager import selected_unit_manager
 import upgrade_hexes
 from keyboard_shortcuts import format_button_text, KeyboardShortcuts
+from screen_dimensions import get_width, get_height
 
 class BattleScene(Scene):
     """The scene for the battle."""
@@ -117,8 +118,8 @@ class BattleScene(Scene):
         """Create the victory panel with large text and buttons."""
         panel_width = 300
         panel_height = 200
-        screen_width = pygame.display.Info().current_w
-        screen_height = pygame.display.Info().current_h
+        screen_width = get_width()
+        screen_height = get_height()
 
         self.victory_panel = pygame_gui.elements.UIPanel(
             relative_rect=pygame.Rect(
@@ -222,8 +223,8 @@ class BattleScene(Scene):
         """Create the defeat panel with large text and buttons."""
         panel_width = 320
         panel_height = 150
-        screen_width = pygame.display.Info().current_w
-        screen_height = pygame.display.Info().current_h
+        screen_width = get_width()
+        screen_height = get_height()
         
         self.defeat_panel = pygame_gui.elements.UIPanel(
             relative_rect=pygame.Rect(
@@ -282,7 +283,7 @@ class BattleScene(Scene):
     def show_continue_confirmation(self) -> None:
         """Show confirmation dialog for continuing with unsaved changes."""
         self.confirmation_dialog = pygame_gui.windows.UIConfirmationDialog(
-            rect=pygame.Rect((pygame.display.Info().current_w/2 - 150, pygame.display.Info().current_h/2 - 100), (300, 200)),
+            rect=pygame.Rect((get_width()/2 - 150, get_height()/2 - 100), (300, 200)),
             manager=self.manager,
             window_title="Confirmation",
             action_long_desc="You have unsaved changes. Are you sure you want to continue?",

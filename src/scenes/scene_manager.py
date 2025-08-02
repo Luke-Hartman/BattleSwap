@@ -39,6 +39,7 @@ from scenes.developer_tools import DeveloperToolsScene
 from scenes.settings import SettingsScene
 from world_map_view import WorldMapView
 from progress_manager import progress_manager
+from screen_dimensions import get_width, get_height
 
 def get_resource_path(relative_path: str) -> Path:
     """Get absolute path to resource, works for dev and for PyInstaller."""
@@ -89,7 +90,7 @@ class SceneManager:
         self.screen = screen
         theme_path = str(get_resource_path('data/theme.json'))
         self.manager = pygame_gui.UIManager(
-            (pygame.display.Info().current_w, pygame.display.Info().current_h), 
+            (get_width(), get_height()), 
             theme_path
         )
         self.developer_mode = developer_mode

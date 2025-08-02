@@ -4,6 +4,7 @@ import pygame
 import pygame_gui
 from pygame_gui.elements import UIButton
 from keyboard_shortcuts import format_button_text, KeyboardShortcuts
+from screen_dimensions import get_width, get_height
 
 
 class StartButton(UIButton):
@@ -22,7 +23,7 @@ class StartButton(UIButton):
         button_height = 30
         
         button_rect = pygame.Rect(
-            (pygame.display.Info().current_w - button_width - 10, 10),
+            (get_width() - button_width - 10, 10),
             (button_width, button_height)
         )
         

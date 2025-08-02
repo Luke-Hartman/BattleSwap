@@ -8,6 +8,7 @@ from collections import defaultdict
 import battles
 from progress_manager import progress_manager, HexLifecycleState
 from components.unit_type import UnitType
+from screen_dimensions import get_width, get_height
 from components.unit_tier import UnitTier
 from ui_components.game_data import GlossaryEntryType
 
@@ -25,7 +26,7 @@ class ProgressDetailsWindow:
     def _create_window(self) -> None:
         """Create the progress details window and its contents."""
         # Get screen dimensions
-        screen_info = pygame.display.Info()
+        screen_info = type('obj', (object,), {'current_w': get_width(), 'current_h': get_height()})()
         screen_width = screen_info.current_w
         screen_height = screen_info.current_h
         

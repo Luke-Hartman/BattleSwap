@@ -4,6 +4,7 @@ import pygame_gui
 from typing import List, Tuple, Optional, Protocol, Callable
 from components.unit_type import UnitType
 import battles
+from screen_dimensions import get_width, get_height
 
 class SaveBattleCallback(Protocol):
     """Protocol for save battle callback function."""
@@ -24,8 +25,8 @@ class SaveBattleDialog:
     ):
         dialog_width = 300
         dialog_height = 370
-        screen_width = pygame.display.Info().current_w
-        screen_height = pygame.display.Info().current_h
+        screen_width = get_width()
+        screen_height = get_height()
         
         self.dialog = pygame_gui.elements.UIWindow(
             rect=pygame.Rect(

@@ -5,6 +5,7 @@ import pygame_gui
 import timing
 from events import PLAY_SOUND, PlaySoundEvent, emit_event
 from keyboard_shortcuts import format_button_text, KeyboardShortcuts
+from screen_dimensions import get_width, get_height
 
 class TimeControls:
     """UI component for controlling game time speed."""
@@ -19,7 +20,7 @@ class TimeControls:
         Args:
             manager: The pygame_gui UIManager
         """
-        position = (pygame.display.Info().current_w - 250, 10)
+        position = (get_width() - 250, 10)
         width = 120
         height = 30
         button_width = 30

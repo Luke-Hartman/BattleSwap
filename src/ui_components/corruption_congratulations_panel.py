@@ -5,6 +5,7 @@ import pygame
 import pygame_gui
 from pygame_gui.elements import UIPanel, UILabel, UIButton
 from progress_manager import progress_manager
+from screen_dimensions import get_width, get_height
 
 
 class CorruptionCongratulationsPanel(UIPanel):
@@ -21,8 +22,8 @@ class CorruptionCongratulationsPanel(UIPanel):
         """
         panel_width = 600
         panel_height = 330
-        screen_width = pygame.display.Info().current_w
-        screen_height = pygame.display.Info().current_h
+        screen_width = get_width()
+        screen_height = get_height()
         
         super().__init__(
             relative_rect=pygame.Rect(
