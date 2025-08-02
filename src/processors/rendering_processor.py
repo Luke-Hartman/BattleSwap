@@ -345,4 +345,4 @@ class RenderingProcessor(esper.Processor):
         gl_draw_rect(bar_pos.x, bar_pos.y, fill_width, bar_height, fill_color_rgba, filled=True)
 
         # Draw the border of the health bar
-        gl_draw_rect(bar_pos.x, bar_pos.y, bar_pos.width, bar_pos.height, (192, 192, 192, 255), filled=False)
+        #gl_draw_rect(bar_pos.x, bar_pos.y, bar_pos.width, bar_pos.height, (192, 192, 192, 255), filled=False)
