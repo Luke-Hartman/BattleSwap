@@ -78,13 +78,14 @@ unit_theme_ids: Dict[UnitType, str] = {
     UnitType.CRUSADER_PIKEMAN: "#crusader_pikeman_icon",
     UnitType.CRUSADER_RED_KNIGHT: "#crusader_red_knight_icon",
     UnitType.CRUSADER_SOLDIER: "#crusader_soldier_icon",
-    UnitType.WEREBEAR: "#werebear_icon",
+    UnitType.ORC_WARRIOR: "#orc_warrior_icon",
     UnitType.ZOMBIE_BASIC_ZOMBIE: "#zombie_basic_zombie_icon",
     UnitType.ZOMBIE_BRUTE: "#zombie_brute_icon",
     UnitType.ZOMBIE_GRABBER: "#zombie_grabber_icon",
     UnitType.ZOMBIE_JUMPER: "#zombie_jumper_icon",
     UnitType.ZOMBIE_SPITTER: "#zombie_spitter_icon",
     UnitType.ZOMBIE_TANK: "#zombie_tank_icon",
+    UnitType.WEREBEAR: "#werebear_icon",
 }
 
 unit_icon_surfaces: Dict[UnitType, pygame.Surface] = {}
@@ -117,7 +118,8 @@ class Faction(Enum):
     CORE = 0
     CRUSADERS = 1
     ZOMBIES = 2
-    MISC = 3
+    ORC = 3
+    MISC = 4
     
     @staticmethod
     def faction_of(unit_type: UnitType) -> "Faction":
@@ -148,6 +150,7 @@ _unit_to_faction = {
     UnitType.CRUSADER_PIKEMAN: Faction.CRUSADERS,
     UnitType.CRUSADER_RED_KNIGHT: Faction.CRUSADERS,
     UnitType.CRUSADER_SOLDIER: Faction.CRUSADERS,
+    UnitType.ORC_WARRIOR: Faction.ORC,
     UnitType.ZOMBIE_BASIC_ZOMBIE: Faction.ZOMBIES,
     UnitType.ZOMBIE_BRUTE: Faction.ZOMBIES,
     UnitType.ZOMBIE_GRABBER: Faction.ZOMBIES,
@@ -180,7 +183,7 @@ def load_sprite_sheets():
         UnitType.CRUSADER_PIKEMAN: "CrusaderPikeman.png",
         UnitType.CRUSADER_RED_KNIGHT: "CrusaderRedKnight.png",
         UnitType.CRUSADER_SOLDIER: "CrusaderSoldier.png",
-        UnitType.WEREBEAR: "Werebear.png",
+        UnitType.ORC_WARRIOR: "OrcWarrior.png",
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombie.png",
         UnitType.ZOMBIE_BRUTE: "ZombieBasicZombie.png",
         UnitType.ZOMBIE_GRABBER: "ZombieBasicZombie.png",
@@ -216,6 +219,7 @@ def load_sprite_sheets():
         UnitType.CRUSADER_PIKEMAN: "CrusaderPikemanIcon.png",
         UnitType.CRUSADER_RED_KNIGHT: "CrusaderRedKnightIcon.png",
         UnitType.CRUSADER_SOLDIER: "CrusaderSoldierIcon.png",
+        UnitType.ORC_WARRIOR: "OrcWarriorIcon.png",
         UnitType.WEREBEAR: "WerebearIcon.png",
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombieIcon.png",
         UnitType.ZOMBIE_BRUTE: "ZombieBruteIcon.png",
@@ -272,6 +276,7 @@ def create_unit(
         UnitType.CRUSADER_PIKEMAN: create_crusader_pikeman,
         UnitType.CRUSADER_RED_KNIGHT: create_crusader_red_knight,
         UnitType.CRUSADER_SOLDIER: create_crusader_soldier,
+        UnitType.ORC_WARRIOR: create_orc_warrior,
         UnitType.WEREBEAR: create_werebear,
         UnitType.ZOMBIE_BASIC_ZOMBIE: create_zombie_basic_zombie,
         UnitType.ZOMBIE_BRUTE: create_zombie_brute,
@@ -968,6 +973,128 @@ def create_core_swordsman(
     }))
     return entity
 
+def create_orc_warrior(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+    ) -> int:
+    """Create an orc warrior entity with all necessary components."""
+    # Calculate tier-specific values
+    orc_warrior_health = gc.ORC_WARRIOR_HP
+    orc_warrior_damage = gc.ORC_WARRIOR_ATTACK_DAMAGE
+    orc_warrior_movement_speed = gc.ORC_WARRIOR_MOVEMENT_SPEED
+    
+    # Advanced tier: 30% more health and damage
+    if tier == UnitTier.ADVANCED or tier == UnitTier.ELITE:
+        orc_warrior_health = orc_warrior_health * 1.3
+        orc_warrior_damage = orc_warrior_damage * 1.3
+    
+    # Elite tier: 30% increased movement and attack speed
+    if tier == UnitTier.ELITE:
+        orc_warrior_movement_speed = gc.ORC_WARRIOR_MOVEMENT_SPEED * 1.3
+    
+    entity = unit_base_entity(
+        x=x,
+        y=y,
+        team=team,
+        unit_type=UnitType.ORC_WARRIOR,
+        movement_speed=orc_warrior_movement_speed,
+        health=orc_warrior_health,
+        hitbox=Hitbox(
+            width=16,
+            height=32,
+        ),
+        corruption_powers=corruption_powers,
+        tier=tier
+    )
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=2, ascending=True),
+        ],
+        unit_condition=None,
+        targetting_group=TargetingGroup.TEAM2_LIVING if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING
+    )
+    esper.add_component(
+        entity,
+        Destination(target_strategy=targetting_strategy, x_offset=gc.ORC_WARRIOR_ATTACK_RANGE*2/3)
+    )
+    esper.add_component(
+        entity,
+        Abilities(
+            abilities=[
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                Grounded(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.ORC_WARRIOR_ATTACK_RANGE,
+                                    y_bias=3
+                                ),
+                            ])
+                        )
+                    ],
+                    persistent_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.ORC_WARRIOR_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    y_bias=3
+                                ),
+                            ])
+                        )
+                    ],
+                    effects={
+                        2: [
+                            Damages(
+                                damage=orc_warrior_damage, 
+                                recipient=Recipient.TARGET,
+                                on_kill_effects=[
+                                    AppliesStatusEffect(
+                                        status_effect=Healing(time_remaining=1, dps=orc_warrior_health / 1),
+                                        recipient=Recipient.OWNER
+                                    ),
+                                    PlaySound([
+                                        (SoundEffect(filename=f"orc_kill_sound{i}.wav", volume=0.50), 1.0) for i in range(1, 5)
+                                    ]),
+                                    CreatesAttachedVisual(
+                                        recipient=Recipient.OWNER,
+                                        visual=Visual.Healing,
+                                        animation_duration=1,
+                                        expiration_duration=1,
+                                        scale=2,
+                                        random_starting_frame=True,
+                                        layer=1,
+                                        on_death=lambda e: esper.delete_entity(e),
+                                    )
+                                ]
+                            ),
+                            PlaySound([
+                                (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
+                            ]),
+                        ]
+                    },
+                )
+            ]
+        )
+    )
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.ORC_WARRIOR, tier))
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [2, 5]
+        },
+    }))
+    return entity
+
 def create_core_wizard(
         x: int,
         y: int,
@@ -1334,6 +1461,7 @@ def create_crusader_black_knight(
                                             recipient=Recipient.TARGET
                                         ),
                                         CreatesAttachedVisual(
+                                            recipient=Recipient.TARGET,
                                             visual=Visual.Fear,
                                             animation_duration=0.3,
                                             expiration_duration=gc.CRUSADER_BLACK_KNIGHT_FLEE_DURATION,
@@ -1626,6 +1754,7 @@ def create_crusader_cleric(
                         2: [
                             Heals(amount=gc.CRUSADER_CLERIC_HEALING, recipient=Recipient.TARGET),
                             CreatesAttachedVisual(
+                                recipient=Recipient.TARGET,
                                 visual=Visual.Healing,
                                 animation_duration=1,
                                 expiration_duration=1,
@@ -2265,6 +2394,7 @@ def create_crusader_guardian_angel(
                             recipient=Recipient.TARGET
                         ),
                         CreatesAttachedVisual(
+                            recipient=Recipient.TARGET,
                             visual=Visual.Healing,
                             animation_duration=gc.CRUSADER_GUARDIAN_ANGEL_HEAL_COOLDOWN + 1/30,
                             expiration_duration=gc.CRUSADER_GUARDIAN_ANGEL_HEAL_COOLDOWN + 1/30,
@@ -3947,6 +4077,32 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
             AnimationType.WALKING: gc.CORE_SWORDSMAN_ANIMATION_WALKING_DURATION,
             AnimationType.ABILITY1: gc.CORE_SWORDSMAN_ANIMATION_ATTACK_DURATION,
             AnimationType.DYING: gc.CORE_SWORDSMAN_ANIMATION_DYING_DURATION,
+        },
+        sprite_center_offset=(0, -8),
+        synchronized_animations={
+            AnimationType.IDLE: True,
+        }
+    )
+    if unit_type == UnitType.ORC_WARRIOR:
+        # Elite tier: 30% faster attack animation
+        idle_animation_duration = gc.ORC_WARRIOR_ANIMATION_IDLE_DURATION
+        attack_animation_duration = gc.ORC_WARRIOR_ANIMATION_ATTACK_DURATION
+        if tier == UnitTier.ELITE:
+            attack_animation_duration = attack_animation_duration * 0.77
+            idle_animation_duration = idle_animation_duration * 0.77
+        
+        return SpriteSheet(
+        surface=sprite_sheets[UnitType.ORC_WARRIOR],
+        frame_width=32,
+        frame_height=32,
+        scale=gc.MINIFOLKS_SCALE,
+        frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.ABILITY1: 5, AnimationType.DYING: 6},
+        rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 3, AnimationType.DYING: 5},
+        animation_durations={
+            AnimationType.IDLE: idle_animation_duration,
+            AnimationType.WALKING: gc.ORC_WARRIOR_ANIMATION_WALKING_DURATION,
+            AnimationType.ABILITY1: attack_animation_duration,
+            AnimationType.DYING: gc.ORC_WARRIOR_ANIMATION_DYING_DURATION,
         },
         sprite_center_offset=(0, -8),
         synchronized_animations={

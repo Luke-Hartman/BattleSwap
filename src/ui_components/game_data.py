@@ -134,6 +134,10 @@ UPGRADE_DESCRIPTIONS = {
         UnitTier.ADVANCED: "30% increased health and damage",
         UnitTier.ELITE: "30% increased health and damage"
     },
+    UnitType.ORC_WARRIOR: {
+        UnitTier.ADVANCED: "30% increased health and damage",
+        UnitTier.ELITE: "30% increased movement and attack speed"
+    },
     UnitType.CORE_WIZARD: {
         UnitTier.ADVANCED: "50% increased damage",
         UnitTier.ELITE: "50% increased damage"
@@ -504,6 +508,54 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
                 StatType.DEFENSE: 1 if unit_tier == UnitTier.ADVANCED else 2 if unit_tier == UnitTier.ELITE else 0,
                 StatType.RANGE: 0,
                 StatType.SPEED: 0,
+                StatType.UTILITY: 0
+            }
+        )
+    
+    if unit_type == UnitType.ORC_WARRIOR:
+        # Calculate tier-specific values
+        orc_warrior_damage = gc.ORC_WARRIOR_ATTACK_DAMAGE
+        orc_warrior_health = gc.ORC_WARRIOR_HP
+        orc_warrior_movement_speed = gc.ORC_WARRIOR_MOVEMENT_SPEED
+        orc_warrior_attack_animation_duration = gc.ORC_WARRIOR_ANIMATION_ATTACK_DURATION
+        
+        # Advanced tier: 30% more health and damage
+        if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE:
+            orc_warrior_damage = orc_warrior_damage * 1.3
+            orc_warrior_health = orc_warrior_health * 1.3
+        
+        # Elite tier: 30% increased movement and attack speed
+        if unit_tier == UnitTier.ELITE:
+            orc_warrior_movement_speed = gc.ORC_WARRIOR_MOVEMENT_SPEED * 1.3
+            orc_warrior_attack_animation_duration = gc.ORC_WARRIOR_ANIMATION_ATTACK_DURATION * 0.77  # 30% faster = 0.77x duration
+        
+        return UnitData(
+            name="Orc Warrior",
+            description="Orc Warriors are balanced melee units that deal high damage and heal to full whenever they get a killing blow.",
+            tier=unit_tier,
+            stats={
+                StatType.DEFENSE: defense_stat(orc_warrior_health),
+                StatType.SPEED: speed_stat(orc_warrior_movement_speed),
+                StatType.DAMAGE: damage_stat(orc_warrior_damage / orc_warrior_attack_animation_duration),
+                StatType.RANGE: range_stat(gc.ORC_WARRIOR_ATTACK_RANGE),
+                StatType.UTILITY: None
+            },
+            tooltips={
+                StatType.DEFENSE: f"{int(orc_warrior_health)} maximum health",
+                StatType.SPEED: f"{orc_warrior_movement_speed:.1f} units per second",
+                StatType.DAMAGE: f"{int(orc_warrior_damage)} per hit ({orc_warrior_damage / orc_warrior_attack_animation_duration:.1f} per second)",
+                StatType.RANGE: f"{gc.ORC_WARRIOR_ATTACK_RANGE} units",
+                StatType.UTILITY: None
+            },
+            tips={
+                "Strong when": ["Against weaker melee units", "In a large group", "Able to kill multiple units quickly"],
+                "Weak when": ["Against ranged units", "Overwhelmed before killing any units"],
+            },
+            modification_levels={
+                StatType.DAMAGE: 1 if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE else 0,
+                StatType.DEFENSE: 1 if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE else 0,
+                StatType.RANGE: 0,
+                StatType.SPEED: 1 if unit_tier == UnitTier.ELITE else 0,
                 StatType.UTILITY: 0
             }
         )

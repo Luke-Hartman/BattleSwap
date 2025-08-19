@@ -58,6 +58,7 @@ ALLOWED_UNIT_TYPES = [
     UnitType.CRUSADER_PALADIN,
     UnitType.CRUSADER_PIKEMAN,
     UnitType.CRUSADER_SOLDIER,
+    UnitType.ORC_WARRIOR,
     # UnitType.ZOMBIE_BASIC,
     # UnitType.ZOMBIE_BRUTE,
     # UnitType.ZOMBIE_GRABBER,

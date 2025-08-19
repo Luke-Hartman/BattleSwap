@@ -422,10 +422,12 @@ class AppliesStatusEffect(Effect):
         recipient_status_effects = esper.component_for_entity(recipient, StatusEffects)
         recipient_status_effects.add(self.status_effect)
 
-
 @dataclass
 class CreatesAttachedVisual(Effect):
     """Effect creates a visual effect that is attached to the target."""
+
+    recipient: Recipient
+    """The recipient of the effect."""
 
     visual: Visual
     """The visual of the effect."""
@@ -455,17 +457,27 @@ class CreatesAttachedVisual(Effect):
     """The layer of the effect."""
 
     def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
-        assert target is not None
+        if self.recipient == Recipient.OWNER:
+            assert owner is not None
+            recipient = owner
+        elif self.recipient == Recipient.PARENT:
+            assert parent is not None
+            recipient = parent
+        elif self.recipient == Recipient.TARGET:
+            assert target is not None
+            recipient = target
+        else:
+            raise ValueError(f"Invalid recipient: {self.recipient}")
         entity = esper.create_entity()
-        position = esper.component_for_entity(target, Position)
-        team = esper.component_for_entity(target, Team)
+        position = esper.component_for_entity(recipient, Position)
+        team = esper.component_for_entity(recipient, Team)
         if self.offset:
-            offset = self.offset(target)
+            offset = self.offset(recipient)
         else:
             offset = (0, 0)
         esper.add_component(entity, Position(x=position.x + offset[0], y=position.y + offset[1]))
         esper.add_component(entity, Team(type=team.type))
-        esper.add_component(entity, Attached(entity=target, on_death=self.on_death, offset=offset))
+        esper.add_component(entity, Attached(entity=recipient, on_death=self.on_death, offset=offset))
         sprite_sheet = create_visual_spritesheet(
             visual=self.visual,
             scale=self.scale,
@@ -480,7 +492,7 @@ class CreatesAttachedVisual(Effect):
         esper.add_component(entity, AnimationState(type=AnimationType.IDLE, time_elapsed=time_elapsed))
         esper.add_component(entity, Expiration(time_left=self.expiration_duration))
         if self.unique_key:
-            esper.add_component(entity, Unique(key=self.unique_key(target)))
+            esper.add_component(entity, Unique(key=self.unique_key(recipient)))
 
 
 @dataclass
