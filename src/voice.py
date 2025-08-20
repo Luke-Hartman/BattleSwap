@@ -27,9 +27,9 @@ class VoiceOptions:
         return selected_line
 
 introductions = VoiceOptions({
-    UnitType.CORE_DUELIST: [
-        f"core_duelist_intro{i + 1}.wav" for i in range(3)
-    ]
+    # UnitType.CORE_DUELIST: [
+    #     f"core_duelist_intro{i + 1}.wav" for i in range(3)
+    # ]
 })
 def play_intro(unit_type: UnitType) -> None:
     """Play the intro voice line for a unit."""
@@ -39,13 +39,30 @@ def play_intro(unit_type: UnitType) -> None:
         pass
 
 deaths = VoiceOptions({
-    UnitType.CORE_DUELIST: [
-        f"core_duelist_death{i + 1}.wav" for i in range(4)
-    ]
+    # UnitType.CORE_DUELIST: [
+    #     f"core_duelist_death{i + 1}.wav" for i in range(4)
+    # ]
 })
 def play_death(unit_type: UnitType) -> None:
     """Play the death voice line for a unit."""
     try:
         emit_event(PLAY_VOICE, event=PlayVoiceEvent(filename=deaths[unit_type], force=False))
+    except KeyError:
+        pass
+
+kill_voices = VoiceOptions({
+    UnitType.ORC_BERSERKER: [
+        "orc_berserker_kill.wav",
+        "orc_berserker_blood.wav",
+        "orc_berserker_death.wav"
+    ],
+    UnitType.ORC_WARRIOR: [
+        f"orc_kill_sound{i}.wav" for i in range(1, 5)
+    ]
+})
+def play_kill(unit_type: UnitType) -> None:
+    """Play the kill voice line for a unit."""
+    try:
+        emit_event(PLAY_VOICE, event=PlayVoiceEvent(filename=kill_voices[unit_type], force=False))
     except KeyError:
         pass

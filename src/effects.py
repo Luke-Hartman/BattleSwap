@@ -122,6 +122,20 @@ class Damages(Effect):
 
 
 @dataclass
+class PlayVoice(Effect):
+    """Effect plays a voice line."""
+    
+    voice_function: callable
+    """The voice function to call."""
+    
+    unit_type: UnitType
+    """The unit type to play the voice for."""
+    
+    def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
+        self.voice_function(self.unit_type)
+
+
+@dataclass
 class Heals(Effect):
     """Effect heals target."""
 

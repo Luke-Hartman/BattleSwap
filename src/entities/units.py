@@ -47,7 +47,7 @@ from components.orientation import Orientation, FacingDirection
 from effects import (
     AddsForcedMovement, AppliesStatusEffect, AttachToTarget, CreatesUnit, CreatesVisual, 
     CreatesAttachedVisual, CreatesLobbed, CreatesProjectile, CreatesVisualLink, Damages, 
-    Forget, Heals, IncreaseAmmo, Jump, PlaySound, Recipient, 
+    Forget, Heals, IncreaseAmmo, Jump, PlaySound, PlayVoice, Recipient, 
     SoundEffect, StanceChange, RememberTarget, CreatesVisualAoE, CreatesCircleAoE
 )
 from unit_condition import (
@@ -57,6 +57,7 @@ from unit_condition import (
 from visuals import Visual
 from components.dying import OnDeathEffect
 from corruption_powers import CorruptionPower, IncreasedAbilitySpeed, IncreasedDamage, IncreasedMaxHealth, IncreasedMovementSpeed
+from voice import play_kill
 
 unit_theme_ids: Dict[UnitType, str] = {
     UnitType.CORE_ARCHER: "#core_archer_icon", 
@@ -1063,11 +1064,7 @@ def create_orc_berserker(
                 status_effect=Healing(time_remaining=1, dps=orc_berserker_health / 1),
                 recipient=Recipient.OWNER
             ),
-            PlaySound([
-                (SoundEffect(filename=f"orc_berserker_blood.wav", volume=0.50), 1.0),
-                (SoundEffect(filename=f"orc_berserker_death.wav", volume=0.50), 1.0),
-                (SoundEffect(filename=f"orc_berserker_kill.wav", volume=0.50), 1.0),
-            ]),
+            PlayVoice(voice_function=play_kill, unit_type=UnitType.ORC_BERSERKER),
         ]
     esper.add_component(
         entity,
@@ -1236,9 +1233,6 @@ def create_orc_berserker(
             ])]
             for frame in [2, 5]
         },
-        AnimationType.ABILITY3: {
-            1: [PlaySound(SoundEffect(filename="orc_kill_sound1.wav", volume=0.50))]
-        }
     }))
     return entity
 
@@ -1329,9 +1323,7 @@ def create_orc_warrior(
                                         status_effect=Healing(time_remaining=1, dps=orc_warrior_health / 1),
                                         recipient=Recipient.OWNER
                                     ),
-                                    PlaySound([
-                                        (SoundEffect(filename=f"orc_kill_sound{i}.wav", volume=0.50), 1.0) for i in range(1, 5)
-                                    ]),
+                                    PlayVoice(voice_function=play_kill, unit_type=UnitType.ORC_WARRIOR),
                                     CreatesAttachedVisual(
                                         recipient=Recipient.OWNER,
                                         visual=Visual.Healing,

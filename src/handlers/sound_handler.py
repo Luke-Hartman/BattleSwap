@@ -67,7 +67,7 @@ class SoundHandler:
         voice = self.voices[event.filename]
         voice.set_volume(settings.VOICE_VOLUME)
         # TODO: Voices disabled for now
-        #self._voice_channel.play(voice)
+        self._voice_channel.play(voice)
 
     def handle_stop_all_sounds(self, event: StopAllSoundsEvent) -> None:
         """Stop all currently playing sound effects."""
