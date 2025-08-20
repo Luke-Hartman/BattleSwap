@@ -135,8 +135,8 @@ UPGRADE_DESCRIPTIONS = {
         UnitTier.ELITE: "30% increased health and damage"
     },
     UnitType.ORC_BERSERKER: {
-        UnitTier.ADVANCED: "30% increased health and damage",
-        UnitTier.ELITE: "30% increased movement and attack speed"
+        UnitTier.ADVANCED: "50% increased damage",
+        UnitTier.ELITE: "50% increased life"
     },
     UnitType.ORC_WARRIOR: {
         UnitTier.ADVANCED: "30% increased health and damage",
@@ -525,17 +525,14 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         orc_berserker_throwing_animation_duration = gc.ORC_BERSERKER_ANIMATION_THROWING_DURATION
         orc_berserker_melee_animation_duration = gc.ORC_BERSERKER_ANIMATION_MELEE_DURATION
         
-        # Advanced tier: 30% more health and damage
+        # Advanced tier: 50% increased damage
         if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE:
-            orc_berserker_ranged_damage = orc_berserker_ranged_damage * 1.3
-            orc_berserker_melee_damage = orc_berserker_melee_damage * 1.3
-            orc_berserker_health = orc_berserker_health * 1.3
+            orc_berserker_ranged_damage = orc_berserker_ranged_damage * 1.5
+            orc_berserker_melee_damage = orc_berserker_melee_damage * 1.5
         
-        # Elite tier: 30% increased movement and attack speed
+        # Elite tier: 50% increased life
         if unit_tier == UnitTier.ELITE:
-            orc_berserker_movement_speed = gc.ORC_BERSERKER_MOVEMENT_SPEED * 1.3
-            orc_berserker_throwing_animation_duration = gc.ORC_BERSERKER_ANIMATION_THROWING_DURATION * 0.77  # 30% faster = 0.77x duration
-            orc_berserker_melee_animation_duration = gc.ORC_BERSERKER_ANIMATION_MELEE_DURATION * 0.77  # 30% faster = 0.77x duration
+            orc_berserker_health = orc_berserker_health * 1.5
         
         return UnitData(
             name="Orc Berserker",
@@ -561,9 +558,9 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             },
             modification_levels={
                 StatType.DAMAGE: 1 if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE else 0,
-                StatType.DEFENSE: 1 if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE else 0,
+                StatType.DEFENSE: 1 if unit_tier == UnitTier.ELITE else 0,
                 StatType.RANGE: 0,
-                StatType.SPEED: 1 if unit_tier == UnitTier.ELITE else 0,
+                StatType.SPEED: 0,
                 StatType.UTILITY: 0
             }
         )

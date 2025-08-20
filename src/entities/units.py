@@ -993,15 +993,14 @@ def create_orc_berserker(
     orc_berserker_melee_damage = gc.ORC_BERSERKER_MELEE_DAMAGE
     orc_berserker_movement_speed = gc.ORC_BERSERKER_MOVEMENT_SPEED
     
-    # Advanced tier: 30% more health and damage
+    # Advanced tier: 50% increased damage
     if tier == UnitTier.ADVANCED or tier == UnitTier.ELITE:
-        orc_berserker_health = orc_berserker_health * 1.3
-        orc_berserker_ranged_damage = orc_berserker_ranged_damage * 1.3
-        orc_berserker_melee_damage = orc_berserker_melee_damage * 1.3
+        orc_berserker_ranged_damage = orc_berserker_ranged_damage * 1.5
+        orc_berserker_melee_damage = orc_berserker_melee_damage * 1.5
     
-    # Elite tier: 30% increased movement and attack speed
+    # Elite tier: 50% increased life
     if tier == UnitTier.ELITE:
-        orc_berserker_movement_speed = gc.ORC_BERSERKER_MOVEMENT_SPEED * 1.3
+        orc_berserker_health = orc_berserker_health * 1.5
     
     MELEE = 0
     RANGED = 1
@@ -4357,14 +4356,10 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
         }
     )
     if unit_type == UnitType.ORC_BERSERKER:
-        # Elite tier: 30% faster attack animation
+        # No animation speed upgrades for orc berserker
         idle_animation_duration = gc.ORC_BERSERKER_ANIMATION_IDLE_DURATION
         throwing_animation_duration = gc.ORC_BERSERKER_ANIMATION_THROWING_DURATION
         melee_animation_duration = gc.ORC_BERSERKER_ANIMATION_MELEE_DURATION
-        if tier == UnitTier.ELITE:
-            throwing_animation_duration = throwing_animation_duration * 0.77
-            melee_animation_duration = melee_animation_duration * 0.77
-            idle_animation_duration = idle_animation_duration * 0.77
         
         return SpriteSheet(
             surface=sprite_sheets[UnitType.ORC_BERSERKER],
