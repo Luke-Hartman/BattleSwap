@@ -25,6 +25,7 @@ class Visual(Enum):
     Fireball = auto()
     Healing = auto()
     Ignited = auto()
+    OrcThrowingAxe = auto()
     Tongue = auto()
     TongueTip = auto()
 
@@ -46,6 +47,7 @@ def load_visual_sheets():
         Visual.Fireball: os.path.join("assets", "effects", "Wizard.png"),
         Visual.Healing: os.path.join("assets", "units", "CrusaderCleric.png"),
         Visual.Ignited: os.path.join("assets", "effects", "Ignited.png"),
+        Visual.OrcThrowingAxe: os.path.join("assets", "effects", "OrcThrowingAxe.png"),
         Visual.Tongue: os.path.join("assets", "effects", "Tongue.png"),
         Visual.TongueTip: os.path.join("assets", "effects", "TongueTip.png"),
     }
@@ -286,20 +288,39 @@ def create_visual_spritesheet(
         )
     elif visual == Visual.Ignited:
         if duration is None:
-            duration = 0.2
+            duration = 0.5
         if scale is None:
             scale = gc.TINY_RPG_SCALE
         if frames is None:
-            raise NotImplementedError("Ignited visual cannot specify frames")
+            frames = (0, 4)
         return SpriteSheet(
             surface=visual_sheets[visual],
             frame_width=32,
             frame_height=32,
             scale=scale,
-            frames={AnimationType.IDLE: 3},
+            frames={AnimationType.IDLE: frames[1] - frames[0]},
             rows={AnimationType.IDLE: 0},
             animation_durations={AnimationType.IDLE: duration},
             sprite_center_offset=(0, 0),
+            start_frames={AnimationType.IDLE: frames[0]},
+            layer=layer
+        )
+    elif visual == Visual.OrcThrowingAxe:
+        if duration is None:
+            duration = 0.2
+        if scale is None:
+            scale = gc.MINIFOLKS_SCALE
+        if frames is None:
+            frames = (0, 4)
+        return SpriteSheet(
+            surface=visual_sheets[visual],
+            frame_width=16,
+            frame_height=16,
+            scale=scale,
+            frames={AnimationType.IDLE: frames[1] - frames[0]},
+            rows={AnimationType.IDLE: 0},
+            animation_durations={AnimationType.IDLE: duration},
+            sprite_center_offset=(-.5, -.5),
             layer=layer
         )
     elif visual == Visual.Tongue:

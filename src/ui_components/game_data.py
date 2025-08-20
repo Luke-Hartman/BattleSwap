@@ -134,6 +134,10 @@ UPGRADE_DESCRIPTIONS = {
         UnitTier.ADVANCED: "30% increased health and damage",
         UnitTier.ELITE: "30% increased health and damage"
     },
+    UnitType.ORC_BERSERKER: {
+        UnitTier.ADVANCED: "30% increased health and damage",
+        UnitTier.ELITE: "30% increased movement and attack speed"
+    },
     UnitType.ORC_WARRIOR: {
         UnitTier.ADVANCED: "30% increased health and damage",
         UnitTier.ELITE: "30% increased movement and attack speed"
@@ -512,6 +516,58 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             }
         )
     
+    if unit_type == UnitType.ORC_BERSERKER:
+        # Calculate tier-specific values
+        orc_berserker_ranged_damage = gc.ORC_BERSERKER_RANGED_DAMAGE
+        orc_berserker_melee_damage = gc.ORC_BERSERKER_MELEE_DAMAGE
+        orc_berserker_health = gc.ORC_BERSERKER_HP
+        orc_berserker_movement_speed = gc.ORC_BERSERKER_MOVEMENT_SPEED
+        orc_berserker_throwing_animation_duration = gc.ORC_BERSERKER_ANIMATION_THROWING_DURATION
+        orc_berserker_melee_animation_duration = gc.ORC_BERSERKER_ANIMATION_MELEE_DURATION
+        
+        # Advanced tier: 30% more health and damage
+        if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE:
+            orc_berserker_ranged_damage = orc_berserker_ranged_damage * 1.3
+            orc_berserker_melee_damage = orc_berserker_melee_damage * 1.3
+            orc_berserker_health = orc_berserker_health * 1.3
+        
+        # Elite tier: 30% increased movement and attack speed
+        if unit_tier == UnitTier.ELITE:
+            orc_berserker_movement_speed = gc.ORC_BERSERKER_MOVEMENT_SPEED * 1.3
+            orc_berserker_throwing_animation_duration = gc.ORC_BERSERKER_ANIMATION_THROWING_DURATION * 0.77  # 30% faster = 0.77x duration
+            orc_berserker_melee_animation_duration = gc.ORC_BERSERKER_ANIMATION_MELEE_DURATION * 0.77  # 30% faster = 0.77x duration
+        
+        return UnitData(
+            name="Orc Berserker",
+            description="Orc Berserkers can throwing axes at short range and use melee attacks. They heal from <a href='{GlossaryEntryType.KILLING_BLOW.value}'>Killing Blows</a>.",
+            tier=unit_tier,
+            stats={
+                StatType.DEFENSE: defense_stat(orc_berserker_health * 1.5),
+                StatType.SPEED: speed_stat(orc_berserker_movement_speed),
+                StatType.DAMAGE: damage_stat(orc_berserker_melee_damage * 2 / orc_berserker_melee_animation_duration),
+                StatType.RANGE: range_stat(gc.ORC_BERSERKER_RANGED_RANGE),
+                StatType.UTILITY: None
+            },
+            tooltips={
+                StatType.DEFENSE: f"{int(orc_berserker_health)} maximum health. Heals for {int(orc_berserker_health)} from Killing Blows.",
+                StatType.SPEED: f"{orc_berserker_movement_speed:.1f} units per second",
+                StatType.DAMAGE: f"Ranged: {int(orc_berserker_ranged_damage)} per hit ({orc_berserker_ranged_damage / orc_berserker_throwing_animation_duration:.1f} per second), Melee: {int(orc_berserker_melee_damage)}x2 per hit ({orc_berserker_melee_damage * 2 / orc_berserker_melee_animation_duration:.1f} per second)",
+                StatType.RANGE: f"Melee: {gc.ORC_BERSERKER_MELEE_RANGE} units, Ranged: {gc.ORC_BERSERKER_RANGED_RANGE} units",
+                StatType.UTILITY: None
+            },
+            tips={
+                "Strong when": ["Able to damage slow melee units with ranged attacks", "Able to adapt to different ranges", "Able to kill multiple units quickly"],
+                "Weak when": ["Overwhelmed before killing any units", "Against high armor units", "Against powerful melee units", "Against very long ranged units"],
+            },
+            modification_levels={
+                StatType.DAMAGE: 1 if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE else 0,
+                StatType.DEFENSE: 1 if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE else 0,
+                StatType.RANGE: 0,
+                StatType.SPEED: 1 if unit_tier == UnitTier.ELITE else 0,
+                StatType.UTILITY: 0
+            }
+        )
+    
     if unit_type == UnitType.ORC_WARRIOR:
         # Calculate tier-specific values
         orc_warrior_damage = gc.ORC_WARRIOR_ATTACK_DAMAGE
@@ -531,17 +587,17 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         
         return UnitData(
             name="Orc Warrior",
-            description="Orc Warriors are balanced melee units that deal high damage and heal to full whenever they get a killing blow.",
+            description="Orc Warriors are balanced melee units that deal high damage and heal from Killing Blows.",
             tier=unit_tier,
             stats={
-                StatType.DEFENSE: defense_stat(orc_warrior_health),
+                StatType.DEFENSE: defense_stat(orc_warrior_health * 1.5),
                 StatType.SPEED: speed_stat(orc_warrior_movement_speed),
                 StatType.DAMAGE: damage_stat(orc_warrior_damage / orc_warrior_attack_animation_duration),
                 StatType.RANGE: range_stat(gc.ORC_WARRIOR_ATTACK_RANGE),
                 StatType.UTILITY: None
             },
             tooltips={
-                StatType.DEFENSE: f"{int(orc_warrior_health)} maximum health",
+                StatType.DEFENSE: f"{int(orc_warrior_health)} maximum health. Heals for {int(orc_warrior_health)} from Killing Blows.",
                 StatType.SPEED: f"{orc_warrior_movement_speed:.1f} units per second",
                 StatType.DAMAGE: f"{int(orc_warrior_damage)} per hit ({orc_warrior_damage / orc_warrior_attack_animation_duration:.1f} per second)",
                 StatType.RANGE: f"{gc.ORC_WARRIOR_ATTACK_RANGE} units",
@@ -549,7 +605,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             },
             tips={
                 "Strong when": ["Against weaker melee units", "In a large group", "Able to kill multiple units quickly"],
-                "Weak when": ["Against ranged units", "Overwhelmed before killing any units"],
+                "Weak when": ["Against ranged units", "Overwhelmed before killing any units", "Against powerful melee units"],
             },
             modification_levels={
                 StatType.DAMAGE: 1 if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE else 0,

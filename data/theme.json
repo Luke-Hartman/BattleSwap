@@ -394,6 +394,13 @@
             }
         }
     },
+    "#orc_berserker_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/OrcBerserkerIcon.png"
+            }
+        }
+    },
     "#orc_warrior_icon": {
         "images": {
             "normal_image": {

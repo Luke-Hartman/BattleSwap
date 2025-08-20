@@ -25,6 +25,7 @@ from components.range_indicator import RangeIndicator
 from components.smooth_movement import SmoothMovement
 from components.stance import Stance
 from components.visual_link import VisualLink
+from components.instant_ability import InstantAbilities, InstantAbility
 from components.animation_effects import AnimationEffects
 from game_constants import gc
 from components.ability import Abilities, Ability, Cooldown, HasTarget, SatisfiesUnitCondition
@@ -78,6 +79,7 @@ unit_theme_ids: Dict[UnitType, str] = {
     UnitType.CRUSADER_PIKEMAN: "#crusader_pikeman_icon",
     UnitType.CRUSADER_RED_KNIGHT: "#crusader_red_knight_icon",
     UnitType.CRUSADER_SOLDIER: "#crusader_soldier_icon",
+    UnitType.ORC_BERSERKER: "#orc_berserker_icon",
     UnitType.ORC_WARRIOR: "#orc_warrior_icon",
     UnitType.ZOMBIE_BASIC_ZOMBIE: "#zombie_basic_zombie_icon",
     UnitType.ZOMBIE_BRUTE: "#zombie_brute_icon",
@@ -150,6 +152,7 @@ _unit_to_faction = {
     UnitType.CRUSADER_PIKEMAN: Faction.CRUSADERS,
     UnitType.CRUSADER_RED_KNIGHT: Faction.CRUSADERS,
     UnitType.CRUSADER_SOLDIER: Faction.CRUSADERS,
+    UnitType.ORC_BERSERKER: Faction.ORC,
     UnitType.ORC_WARRIOR: Faction.ORC,
     UnitType.ZOMBIE_BASIC_ZOMBIE: Faction.ZOMBIES,
     UnitType.ZOMBIE_BRUTE: Faction.ZOMBIES,
@@ -183,6 +186,7 @@ def load_sprite_sheets():
         UnitType.CRUSADER_PIKEMAN: "CrusaderPikeman.png",
         UnitType.CRUSADER_RED_KNIGHT: "CrusaderRedKnight.png",
         UnitType.CRUSADER_SOLDIER: "CrusaderSoldier.png",
+        UnitType.ORC_BERSERKER: "OrcBerserker.png",
         UnitType.ORC_WARRIOR: "OrcWarrior.png",
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombie.png",
         UnitType.ZOMBIE_BRUTE: "ZombieBasicZombie.png",
@@ -219,6 +223,7 @@ def load_sprite_sheets():
         UnitType.CRUSADER_PIKEMAN: "CrusaderPikemanIcon.png",
         UnitType.CRUSADER_RED_KNIGHT: "CrusaderRedKnightIcon.png",
         UnitType.CRUSADER_SOLDIER: "CrusaderSoldierIcon.png",
+        UnitType.ORC_BERSERKER: "OrcBerserkerIcon.png",
         UnitType.ORC_WARRIOR: "OrcWarriorIcon.png",
         UnitType.WEREBEAR: "WerebearIcon.png",
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombieIcon.png",
@@ -276,6 +281,7 @@ def create_unit(
         UnitType.CRUSADER_PIKEMAN: create_crusader_pikeman,
         UnitType.CRUSADER_RED_KNIGHT: create_crusader_red_knight,
         UnitType.CRUSADER_SOLDIER: create_crusader_soldier,
+        UnitType.ORC_BERSERKER: create_orc_berserker,
         UnitType.ORC_WARRIOR: create_orc_warrior,
         UnitType.WEREBEAR: create_werebear,
         UnitType.ZOMBIE_BASIC_ZOMBIE: create_zombie_basic_zombie,
@@ -970,6 +976,270 @@ def create_core_swordsman(
             ])]
             for frame in [2, 5]
         },
+    }))
+    return entity
+
+def create_orc_berserker(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+    ) -> int:
+    """Create an orc berserker entity with all necessary components."""
+    # Calculate tier-specific values
+    orc_berserker_health = gc.ORC_BERSERKER_HP
+    orc_berserker_ranged_damage = gc.ORC_BERSERKER_RANGED_DAMAGE
+    orc_berserker_melee_damage = gc.ORC_BERSERKER_MELEE_DAMAGE
+    orc_berserker_movement_speed = gc.ORC_BERSERKER_MOVEMENT_SPEED
+    
+    # Advanced tier: 30% more health and damage
+    if tier == UnitTier.ADVANCED or tier == UnitTier.ELITE:
+        orc_berserker_health = orc_berserker_health * 1.3
+        orc_berserker_ranged_damage = orc_berserker_ranged_damage * 1.3
+        orc_berserker_melee_damage = orc_berserker_melee_damage * 1.3
+    
+    # Elite tier: 30% increased movement and attack speed
+    if tier == UnitTier.ELITE:
+        orc_berserker_movement_speed = gc.ORC_BERSERKER_MOVEMENT_SPEED * 1.3
+    
+    MELEE = 0
+    RANGED = 1
+    entity = unit_base_entity(
+        x=x,
+        y=y,
+        team=team,
+        unit_type=UnitType.ORC_BERSERKER,
+        movement_speed=orc_berserker_movement_speed,
+        health=orc_berserker_health,
+        hitbox=Hitbox(
+            width=16,
+            height=32,
+        ),
+        corruption_powers=corruption_powers,
+        tier=tier
+    )
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=2, ascending=True),
+        ],
+        unit_condition=None,
+        targetting_group=TargetingGroup.TEAM2_LIVING if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING
+    )
+    esper.add_component(
+        entity,
+        Destination(target_strategy=targetting_strategy, x_offset=gc.ORC_BERSERKER_MELEE_RANGE*2/3)
+    )
+    esper.add_component(
+        entity,
+        RangeIndicator(ranges=[gc.ORC_BERSERKER_RANGED_RANGE])
+    )
+    esper.add_component(entity, Stance(stance=RANGED))
+    esper.add_component(
+        entity,
+        InstantAbilities(
+            abilities=[
+                InstantAbility(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        SatisfiesUnitCondition(InStance(stance=MELEE)),
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                MinimumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.ORC_BERSERKER_SWITCH_STANCE_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    y_bias=None,
+                                ),
+                            ])
+                        )
+                    ],
+                    effects=[StanceChange(stance=RANGED)]
+                )
+            ]
+        )
+    )
+    on_kill_effects = [
+        AppliesStatusEffect(
+                status_effect=Healing(time_remaining=1, dps=orc_berserker_health / 1),
+                recipient=Recipient.OWNER
+            ),
+            PlaySound([
+                (SoundEffect(filename=f"orc_berserker_blood.wav", volume=0.50), 1.0),
+                (SoundEffect(filename=f"orc_berserker_death.wav", volume=0.50), 1.0),
+                (SoundEffect(filename=f"orc_berserker_kill.wav", volume=0.50), 1.0),
+            ]),
+        ]
+    esper.add_component(
+        entity,
+        Abilities(
+            abilities=[
+                # Switch stance to melee
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        SatisfiesUnitCondition(InStance(stance=RANGED)),
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.ORC_BERSERKER_SWITCH_STANCE_RANGE,
+                                    y_bias=None,
+                                ),
+                            ])
+                        )
+                    ],
+                    persistent_conditions=[],
+                    effects={
+                        1: [
+                            StanceChange(stance=MELEE),
+                        ]
+                    }
+                ),
+                # Melee attack (2 hits)
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        SatisfiesUnitCondition(InStance(stance=MELEE)),
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                Grounded(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.ORC_BERSERKER_MELEE_RANGE,
+                                    y_bias=3
+                                ),
+                            ])
+                        ),
+                    ],
+                    persistent_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.ORC_BERSERKER_MELEE_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    y_bias=3
+                                ),
+                            ])
+                        )
+                    ],
+                    effects={
+                        2: [
+                            Damages(
+                                damage=orc_berserker_melee_damage, 
+                                recipient=Recipient.TARGET,
+                                on_kill_effects=on_kill_effects
+                            ),
+                            Damages(
+                                damage=orc_berserker_melee_damage, 
+                                recipient=Recipient.TARGET,
+                                on_kill_effects=on_kill_effects,
+                            ),
+                            PlaySound([
+                                (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
+                            ]),
+                            PlaySound([
+                                (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
+                            ]),
+                        ]
+                    }
+                ),
+                # Ranged attack (throwing axe)
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        SatisfiesUnitCondition(InStance(stance=RANGED)),
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                Grounded(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.ORC_BERSERKER_RANGED_RANGE,
+                                    y_bias=None,
+                                ),
+                            ])
+                        ),
+                    ],
+                    persistent_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                Grounded(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.ORC_BERSERKER_RANGED_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    y_bias=None
+                                ),
+                                MinimumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.ORC_BERSERKER_SWITCH_STANCE_RANGE,
+                                    y_bias=None
+                                )
+                            ])
+                        )
+                    ],
+                    effects={
+                        2: [
+                            CreatesProjectile(
+                                projectile_speed=gc.CORE_ARCHER_PROJECTILE_SPEED,
+                                effects=[
+                                    Damages(
+                                        damage=orc_berserker_ranged_damage, 
+                                        recipient=Recipient.TARGET,
+                                        on_kill_effects=on_kill_effects
+                                    ),
+                                ],
+                                visual=Visual.OrcThrowingAxe,
+                                projectile_offset_x=5*gc.MINIFOLKS_SCALE,
+                                projectile_offset_y=0,
+                                unit_condition=All([OnTeam(team=team.other()), Alive(), Grounded()]),
+                                on_create=lambda projectile_entity: esper.add_component(
+                                    projectile_entity, 
+                                    AnimationEffects({
+                                        AnimationType.IDLE: {
+                                            0: [
+                                                PlaySound(
+                                                    sound_effects=[
+                                                        (SoundEffect(filename="normal_swoosh.wav", volume=0.25), 1.0),
+                                                    ]
+                                                )
+                                            ],
+                                            2: [
+                                                PlaySound(
+                                                    sound_effects=[
+                                                        (SoundEffect(filename="normal_swoosh.wav", volume=0.1), 1.0),
+                                                    ]
+                                                )
+                                            ]
+                                        }
+                                    })
+                                ),
+                            ),
+                            PlaySound(
+                                sound_effects=[
+                                    (SoundEffect(filename="normal_swoosh.wav", volume=0.25), 1.0),
+                                ]
+                            ),
+                        ]
+                    }
+                )
+            ]
+        )
+    )
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.ORC_BERSERKER, tier))
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [2, 5]
+        },
+        AnimationType.ABILITY3: {
+            1: [PlaySound(SoundEffect(filename="orc_kill_sound1.wav", volume=0.50))]
+        }
     }))
     return entity
 
@@ -2271,6 +2541,9 @@ def create_crusader_gold_knight(
                                 location=Recipient.PARENT,
                             ),
                             PlaySound(SoundEffect(filename="deep_swoosh.wav", volume=0.50)),
+                        ],
+                        2: [
+                            PlaySound(SoundEffect(filename="normal_swoosh.wav", volume=0.2)),
                         ]
                     },
                 )
@@ -4083,6 +4356,50 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
             AnimationType.IDLE: True,
         }
     )
+    if unit_type == UnitType.ORC_BERSERKER:
+        # Elite tier: 30% faster attack animation
+        idle_animation_duration = gc.ORC_BERSERKER_ANIMATION_IDLE_DURATION
+        throwing_animation_duration = gc.ORC_BERSERKER_ANIMATION_THROWING_DURATION
+        melee_animation_duration = gc.ORC_BERSERKER_ANIMATION_MELEE_DURATION
+        if tier == UnitTier.ELITE:
+            throwing_animation_duration = throwing_animation_duration * 0.77
+            melee_animation_duration = melee_animation_duration * 0.77
+            idle_animation_duration = idle_animation_duration * 0.77
+        
+        return SpriteSheet(
+            surface=sprite_sheets[UnitType.ORC_BERSERKER],
+            frame_width=32,
+            frame_height=32,
+            scale=gc.MINIFOLKS_SCALE,
+            frames={
+                AnimationType.IDLE: 4, 
+                AnimationType.WALKING: 6, 
+                AnimationType.ABILITY1: 4, # switch stance
+                AnimationType.ABILITY2: 6, # melee  
+                AnimationType.ABILITY3: 6, # ranged attack
+                AnimationType.DYING: 4
+            },
+            rows={
+                AnimationType.IDLE: 0, 
+                AnimationType.WALKING: 1, 
+                AnimationType.ABILITY1: 0, # switch stance
+                AnimationType.ABILITY2: 5, # melee attack
+                AnimationType.ABILITY3: 4, # ranged attack
+                AnimationType.DYING: 8
+            },
+            animation_durations={
+                AnimationType.IDLE: idle_animation_duration,
+                AnimationType.WALKING: gc.ORC_BERSERKER_ANIMATION_WALKING_DURATION,
+                AnimationType.ABILITY1: gc.ORC_BERSERKER_ANIMATION_TRANSITION_DURATION,
+                AnimationType.ABILITY2: melee_animation_duration,
+                AnimationType.ABILITY3: throwing_animation_duration,
+                AnimationType.DYING: gc.ORC_BERSERKER_ANIMATION_DYING_DURATION,
+            },
+            sprite_center_offset=(0, -8),
+            synchronized_animations={
+                AnimationType.IDLE: True,
+            }
+        )
     if unit_type == UnitType.ORC_WARRIOR:
         # Elite tier: 30% faster attack animation
         idle_animation_duration = gc.ORC_WARRIOR_ANIMATION_IDLE_DURATION
@@ -4092,23 +4409,23 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
             idle_animation_duration = idle_animation_duration * 0.77
         
         return SpriteSheet(
-        surface=sprite_sheets[UnitType.ORC_WARRIOR],
-        frame_width=32,
-        frame_height=32,
-        scale=gc.MINIFOLKS_SCALE,
-        frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.ABILITY1: 5, AnimationType.DYING: 6},
-        rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 3, AnimationType.DYING: 5},
-        animation_durations={
-            AnimationType.IDLE: idle_animation_duration,
-            AnimationType.WALKING: gc.ORC_WARRIOR_ANIMATION_WALKING_DURATION,
-            AnimationType.ABILITY1: attack_animation_duration,
-            AnimationType.DYING: gc.ORC_WARRIOR_ANIMATION_DYING_DURATION,
-        },
-        sprite_center_offset=(0, -8),
-        synchronized_animations={
-            AnimationType.IDLE: True,
-        }
-    )
+            surface=sprite_sheets[UnitType.ORC_WARRIOR],
+            frame_width=32,
+            frame_height=32,
+            scale=gc.MINIFOLKS_SCALE,
+            frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.ABILITY1: 5, AnimationType.DYING: 6},
+            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 3, AnimationType.DYING: 5},
+            animation_durations={
+                AnimationType.IDLE: idle_animation_duration,
+                AnimationType.WALKING: gc.ORC_WARRIOR_ANIMATION_WALKING_DURATION,
+                AnimationType.ABILITY1: attack_animation_duration,
+                AnimationType.DYING: gc.ORC_WARRIOR_ANIMATION_DYING_DURATION,
+            },
+            sprite_center_offset=(0, -8),
+            synchronized_animations={
+                AnimationType.IDLE: True,
+            }
+        )
     if unit_type == UnitType.CORE_WIZARD:
         return SpriteSheet(
             surface=sprite_sheets[UnitType.CORE_WIZARD],
