@@ -107,7 +107,9 @@ class Damages(Effect):
             damage = recipient_armor.calculate_damage_after_armor(damage)
             emit_event(PLAY_SOUND, event=PlaySoundEvent(filename=f"sword_hitting_armor{random.randint(1, 4)}.wav", volume=0.50))
         else:
-            emit_event(PLAY_SOUND, event=PlaySoundEvent(filename="arrow_hitting_flesh.wav", volume=0.50))
+            # Calculate volume based on damage: 0.3 for 100 damage, 3.0 for 300+ damage
+            volume = max(0.3, min(3.0, 0.3 + (damage - 100) * (3.0 - 0.3) / 200))
+            emit_event(PLAY_SOUND, event=PlaySoundEvent(filename="arrow_hitting_flesh.wav", volume=volume))
         if recipient_health is None:
             raise AssertionError("Recipient has no health component")
 
