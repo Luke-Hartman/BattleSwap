@@ -47,7 +47,7 @@ from components.orientation import Orientation, FacingDirection
 from effects import (
     AddsForcedMovement, AppliesStatusEffect, AttachToTarget, CreatesUnit, CreatesVisual, 
     CreatesAttachedVisual, CreatesLobbed, CreatesProjectile, CreatesVisualLink, Damages, 
-    Forget, Heals, IncreaseAmmo, Jump, PlaySound, PlayVoice, Recipient, 
+    Forget, Heals, HealToFull, IncreaseAmmo, IncreasesMaxHealthFromTarget, Jump, PlaySound, PlayVoice, Recipient, 
     SoundEffect, StanceChange, RememberTarget, CreatesVisualAoE, CreatesCircleAoE
 )
 from unit_condition import (
@@ -82,6 +82,7 @@ unit_theme_ids: Dict[UnitType, str] = {
     UnitType.CRUSADER_SOLDIER: "#crusader_soldier_icon",
     UnitType.ORC_BERSERKER: "#orc_berserker_icon",
     UnitType.ORC_WARRIOR: "#orc_warrior_icon",
+    UnitType.ORC_WARCHIEF: "#orc_warchief_icon",
     UnitType.ZOMBIE_BASIC_ZOMBIE: "#zombie_basic_zombie_icon",
     UnitType.ZOMBIE_BRUTE: "#zombie_brute_icon",
     UnitType.ZOMBIE_GRABBER: "#zombie_grabber_icon",
@@ -155,6 +156,7 @@ _unit_to_faction = {
     UnitType.CRUSADER_SOLDIER: Faction.CRUSADERS,
     UnitType.ORC_BERSERKER: Faction.ORC,
     UnitType.ORC_WARRIOR: Faction.ORC,
+    UnitType.ORC_WARCHIEF: Faction.ORC,
     UnitType.ZOMBIE_BASIC_ZOMBIE: Faction.ZOMBIES,
     UnitType.ZOMBIE_BRUTE: Faction.ZOMBIES,
     UnitType.ZOMBIE_GRABBER: Faction.ZOMBIES,
@@ -189,6 +191,7 @@ def load_sprite_sheets():
         UnitType.CRUSADER_SOLDIER: "CrusaderSoldier.png",
         UnitType.ORC_BERSERKER: "OrcBerserker.png",
         UnitType.ORC_WARRIOR: "OrcWarrior.png",
+        UnitType.ORC_WARCHIEF: "OrcWarchief.png",
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombie.png",
         UnitType.ZOMBIE_BRUTE: "ZombieBasicZombie.png",
         UnitType.ZOMBIE_GRABBER: "ZombieBasicZombie.png",
@@ -226,6 +229,7 @@ def load_sprite_sheets():
         UnitType.CRUSADER_SOLDIER: "CrusaderSoldierIcon.png",
         UnitType.ORC_BERSERKER: "OrcBerserkerIcon.png",
         UnitType.ORC_WARRIOR: "OrcWarriorIcon.png",
+        UnitType.ORC_WARCHIEF: "OrcWarchiefIcon.png",
         UnitType.WEREBEAR: "WerebearIcon.png",
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombieIcon.png",
         UnitType.ZOMBIE_BRUTE: "ZombieBruteIcon.png",
@@ -284,6 +288,7 @@ def create_unit(
         UnitType.CRUSADER_SOLDIER: create_crusader_soldier,
         UnitType.ORC_BERSERKER: create_orc_berserker,
         UnitType.ORC_WARRIOR: create_orc_warrior,
+        UnitType.ORC_WARCHIEF: create_orc_warchief,
         UnitType.WEREBEAR: create_werebear,
         UnitType.ZOMBIE_BASIC_ZOMBIE: create_zombie_basic_zombie,
         UnitType.ZOMBIE_BRUTE: create_zombie_brute,
@@ -1060,8 +1065,7 @@ def create_orc_berserker(
         )
     )
     on_kill_effects = [
-        AppliesStatusEffect(
-                status_effect=Healing(time_remaining=1, dps=orc_berserker_health / 1),
+        HealToFull(
                 recipient=Recipient.OWNER
             ),
             PlayVoice(voice_function=play_kill, unit_type=UnitType.ORC_BERSERKER),
@@ -1319,8 +1323,7 @@ def create_orc_warrior(
                                 damage=orc_warrior_damage, 
                                 recipient=Recipient.TARGET,
                                 on_kill_effects=[
-                                    AppliesStatusEffect(
-                                        status_effect=Healing(time_remaining=1, dps=orc_warrior_health / 1),
+                                    HealToFull(
                                         recipient=Recipient.OWNER
                                     ),
                                     PlayVoice(voice_function=play_kill, unit_type=UnitType.ORC_WARRIOR),
@@ -1346,6 +1349,126 @@ def create_orc_warrior(
         )
     )
     esper.add_component(entity, get_unit_sprite_sheet(UnitType.ORC_WARRIOR, tier))
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [2, 5]
+        },
+    }))
+    return entity
+
+def create_orc_warchief(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+    ) -> int:
+    """Create an orc warchief entity with all necessary components."""
+    # Calculate tier-specific values
+    orc_warchief_health = gc.ORC_WARCHIEF_HP
+    orc_warchief_damage = gc.ORC_WARCHIEF_ATTACK_DAMAGE
+    
+    # Advanced tier: 50% increased health
+    if tier == UnitTier.ADVANCED or tier == UnitTier.ELITE:
+        orc_warchief_health = orc_warchief_health * 1.5
+    
+    # Elite tier: 50% increased damage
+    if tier == UnitTier.ELITE:
+        orc_warchief_damage = orc_warchief_damage * 1.5
+    
+    entity = unit_base_entity(
+        x=x,
+        y=y,
+        team=team,
+        unit_type=UnitType.ORC_WARCHIEF,
+        movement_speed=gc.ORC_WARCHIEF_MOVEMENT_SPEED,
+        health=orc_warchief_health,
+        hitbox=Hitbox(
+            width=16,
+            height=32,
+        ),
+        corruption_powers=corruption_powers,
+        tier=tier
+    )
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=2, ascending=True),
+        ],
+        unit_condition=None,
+        targetting_group=TargetingGroup.TEAM2_LIVING if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING
+    )
+    esper.add_component(
+        entity,
+        Destination(target_strategy=targetting_strategy, x_offset=gc.ORC_WARCHIEF_ATTACK_RANGE*2/3)
+    )
+    esper.add_component(
+        entity,
+        Abilities(
+            abilities=[
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                Grounded(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.ORC_WARCHIEF_ATTACK_RANGE,
+                                    y_bias=3
+                                ),
+                            ])
+                        )
+                    ],
+                    persistent_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.ORC_WARCHIEF_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    y_bias=3
+                                ),
+                            ])
+                        )
+                    ],
+                    effects={
+                        2: [
+                            Damages(
+                                damage=orc_warchief_damage, 
+                                recipient=Recipient.TARGET,
+                                on_kill_effects=[
+                                    IncreasesMaxHealthFromTarget(
+                                        recipient=Recipient.OWNER
+                                    ),
+                                    HealToFull(
+                                        recipient=Recipient.OWNER
+                                    ),
+                                    PlayVoice(voice_function=play_kill, unit_type=UnitType.ORC_WARCHIEF),
+                                    CreatesAttachedVisual(
+                                        recipient=Recipient.OWNER,
+                                        visual=Visual.Healing,
+                                        animation_duration=1,
+                                        expiration_duration=1,
+                                        scale=2,
+                                        random_starting_frame=True,
+                                        layer=1,
+                                        on_death=lambda e: esper.delete_entity(e),
+                                    )
+                                ]
+                            ),
+                            PlaySound([
+                                (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
+                            ]),
+                        ]
+                    },
+                )
+            ]
+        )
+    )
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.ORC_WARCHIEF, tier))
     esper.add_component(entity, AnimationEffects({
         AnimationType.WALKING: {
             frame: [PlaySound(sound_effects=[
@@ -4407,6 +4530,26 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
                 AnimationType.WALKING: gc.ORC_WARRIOR_ANIMATION_WALKING_DURATION,
                 AnimationType.ABILITY1: attack_animation_duration,
                 AnimationType.DYING: gc.ORC_WARRIOR_ANIMATION_DYING_DURATION,
+            },
+            sprite_center_offset=(0, -8),
+            synchronized_animations={
+                AnimationType.IDLE: True,
+            }
+        )
+    if unit_type == UnitType.ORC_WARCHIEF:
+        # No animation speed upgrades for orc warchief
+        return SpriteSheet(
+            surface=sprite_sheets[UnitType.ORC_WARCHIEF],
+            frame_width=32,
+            frame_height=32,
+            scale=gc.MINIFOLKS_SCALE,
+            frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.ABILITY1: 5, AnimationType.DYING: 6},
+            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 3, AnimationType.DYING: 5},
+            animation_durations={
+                AnimationType.IDLE: gc.ORC_WARCHIEF_ANIMATION_IDLE_DURATION,
+                AnimationType.WALKING: gc.ORC_WARCHIEF_ANIMATION_WALKING_DURATION,
+                AnimationType.ABILITY1: gc.ORC_WARCHIEF_ANIMATION_ATTACK_DURATION,
+                AnimationType.DYING: gc.ORC_WARCHIEF_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(0, -8),
             synchronized_animations={

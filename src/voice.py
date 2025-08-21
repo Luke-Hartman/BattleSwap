@@ -58,6 +58,12 @@ kill_voices = VoiceOptions({
     ],
     UnitType.ORC_WARRIOR: [
         f"orc_kill_sound{i}.wav" for i in range(1, 5)
+    ],
+    UnitType.ORC_WARCHIEF: [
+        "orc_warlord_laugh.wav",
+        "orc_warlord_pathetic.wav",
+        "orc_warlord_unstoppable.wav",
+        "orc_warlord_too_late.wav"
     ]
 })
 def play_kill(unit_type: UnitType) -> None:

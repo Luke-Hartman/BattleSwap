@@ -29,7 +29,7 @@ from components.orientation import FacingDirection, Orientation
 from components.position import Position
 from components.projectile import Projectile
 from components.stance import Stance
-from components.status_effect import CrusaderBannerBearerEmpowered, StatusEffect, StatusEffects
+from components.status_effect import CrusaderBannerBearerEmpowered, Healing, StatusEffect, StatusEffects
 from components.team import Team, TeamType
 from components.unique import Unique
 from components.unit_type import UnitType
@@ -160,6 +160,37 @@ class Heals(Effect):
 
         recipient_health = esper.component_for_entity(recipient, Health)
         recipient_health.current = min(recipient_health.current + self.amount, recipient_health.maximum)
+
+
+@dataclass
+class HealToFull(Effect):
+    """Effect that creates a 1-second healing status effect equal to all missing health."""
+
+    recipient: Recipient
+    """The recipient of the effect."""
+
+    def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
+        if self.recipient == Recipient.OWNER:
+            assert owner is not None
+            recipient = owner
+        elif self.recipient == Recipient.PARENT:
+            assert parent is not None
+            recipient = parent
+        elif self.recipient == Recipient.TARGET:
+            assert target is not None
+            recipient = target
+        else:
+            raise ValueError(f"Invalid recipient: {self.recipient}")
+        
+        # Calculate missing health
+        health_component = esper.component_for_entity(recipient, Health)
+        missing_health = health_component.maximum - health_component.current
+        
+        if missing_health > 0:
+            # Create a healing status effect that heals all missing health over 1 second
+            healing_status = Healing(time_remaining=1.0, dps=missing_health)
+            status_effects = esper.component_for_entity(recipient, StatusEffects)
+            status_effects.add(healing_status)
 
 
 @dataclass
@@ -435,6 +466,35 @@ class AppliesStatusEffect(Effect):
             raise ValueError(f"Invalid recipient: {self.recipient}")
         recipient_status_effects = esper.component_for_entity(recipient, StatusEffects)
         recipient_status_effects.add(self.status_effect)
+    
+@dataclass
+class IncreasesMaxHealthFromTarget(Effect):
+    """Effect that permanently increases the maximum health of the owner by the target's maximum health."""
+
+    recipient: Recipient
+    """The recipient of the effect (should be OWNER)."""
+
+    def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
+        if self.recipient == Recipient.OWNER:
+            assert owner is not None
+            recipient = owner
+        elif self.recipient == Recipient.PARENT:
+            assert parent is not None
+            recipient = parent
+        elif self.recipient == Recipient.TARGET:
+            assert target is not None
+            recipient = target
+        else:
+            raise ValueError(f"Invalid recipient: {self.recipient}")
+        
+        # Get the target's maximum health before they die
+        if target is not None and esper.has_component(target, Health):
+            target_health = esper.component_for_entity(target, Health)
+            health_increase = target_health.maximum
+            
+            # Apply the health increase to the owner
+            owner_health = esper.component_for_entity(recipient, Health)
+            owner_health.maximum += health_increase
 
 @dataclass
 class CreatesAttachedVisual(Effect):

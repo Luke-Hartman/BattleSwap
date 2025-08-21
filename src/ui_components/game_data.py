@@ -142,6 +142,10 @@ UPGRADE_DESCRIPTIONS = {
         UnitTier.ADVANCED: "30% increased health and damage",
         UnitTier.ELITE: "30% increased movement and attack speed"
     },
+    UnitType.ORC_WARCHIEF: {
+        UnitTier.ADVANCED: "50% increased health",
+        UnitTier.ELITE: "50% increased damage"
+    },
     UnitType.CORE_WIZARD: {
         UnitTier.ADVANCED: "50% increased damage",
         UnitTier.ELITE: "50% increased damage"
@@ -546,7 +550,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
                 StatType.UTILITY: None
             },
             tooltips={
-                StatType.DEFENSE: f"{int(orc_berserker_health)} maximum health. Heals for {int(orc_berserker_health)} from Killing Blows.",
+                StatType.DEFENSE: f"{int(orc_berserker_health)} maximum health. Recovers missing health over 1 second from Killing Blows.",
                 StatType.SPEED: f"{orc_berserker_movement_speed:.1f} units per second",
                 StatType.DAMAGE: f"Ranged: {int(orc_berserker_ranged_damage)} per hit ({orc_berserker_ranged_damage / orc_berserker_throwing_animation_duration:.1f} per second), Melee: {int(orc_berserker_melee_damage)}x2 per hit ({orc_berserker_melee_damage * 2 / orc_berserker_melee_animation_duration:.1f} per second)",
                 StatType.RANGE: f"Melee: {gc.ORC_BERSERKER_MELEE_RANGE} units, Ranged: {gc.ORC_BERSERKER_RANGED_RANGE} units",
@@ -594,7 +598,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
                 StatType.UTILITY: None
             },
             tooltips={
-                StatType.DEFENSE: f"{int(orc_warrior_health)} maximum health. Heals for {int(orc_warrior_health)} from Killing Blows.",
+                StatType.DEFENSE: f"{int(orc_warrior_health)} maximum health. Recovers missing health over 1 second from Killing Blows.",
                 StatType.SPEED: f"{orc_warrior_movement_speed:.1f} units per second",
                 StatType.DAMAGE: f"{int(orc_warrior_damage)} per hit ({orc_warrior_damage / orc_warrior_attack_animation_duration:.1f} per second)",
                 StatType.RANGE: f"{gc.ORC_WARRIOR_ATTACK_RANGE} units",
@@ -609,6 +613,50 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
                 StatType.DEFENSE: 1 if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE else 0,
                 StatType.RANGE: 0,
                 StatType.SPEED: 1 if unit_tier == UnitTier.ELITE else 0,
+                StatType.UTILITY: 0
+            }
+        )
+    
+    if unit_type == UnitType.ORC_WARCHIEF:
+        # Calculate tier-specific values
+        orc_warchief_damage = gc.ORC_WARCHIEF_ATTACK_DAMAGE
+        orc_warchief_health = gc.ORC_WARCHIEF_HP
+        
+        # Advanced tier: 50% increased health
+        if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE:
+            orc_warchief_health = orc_warchief_health * 1.5
+        
+        # Elite tier: 50% increased damage
+        if unit_tier == UnitTier.ELITE:
+            orc_warchief_damage = orc_warchief_damage * 1.5
+        
+        return UnitData(
+            name="Orc Warchief",
+            description="Orc Warchiefs are powerful melee units with high health and damage that heal to full and gain additional maximum health from <a href='{GlossaryEntryType.KILLING_BLOW.value}'>Killing Blows</a>.",
+            tier=unit_tier,
+            stats={
+                StatType.DEFENSE: defense_stat(orc_warchief_health * 1.5),
+                StatType.SPEED: speed_stat(gc.ORC_WARCHIEF_MOVEMENT_SPEED),
+                StatType.DAMAGE: damage_stat(orc_warchief_damage / gc.ORC_WARCHIEF_ANIMATION_ATTACK_DURATION),
+                StatType.RANGE: range_stat(gc.ORC_WARCHIEF_ATTACK_RANGE),
+                StatType.UTILITY: None
+            },
+            tooltips={
+                StatType.DEFENSE: f"{int(orc_warchief_health)} maximum health. Recovers missing health over 1 second and gains additional maximum health equal to the target's maximum health from Killing Blows.",
+                StatType.SPEED: f"{gc.ORC_WARCHIEF_MOVEMENT_SPEED} units per second",
+                StatType.DAMAGE: f"{int(orc_warchief_damage)} per hit ({orc_warchief_damage / gc.ORC_WARCHIEF_ANIMATION_ATTACK_DURATION:.1f} per second)",
+                StatType.RANGE: f"{gc.ORC_WARCHIEF_ATTACK_RANGE} units",
+                StatType.UTILITY: None
+            },
+            tips={
+                "Strong when": ["Able to gain a large amount of health from killing units", "Able to kill multiple units quickly", "Able to kill units with high health"],
+                "Weak when": ["Against ranged units", "Overwhelmed before killing any units", "Against even more powerful melee units"],
+            },
+            modification_levels={
+                StatType.DAMAGE: 1 if unit_tier == UnitTier.ELITE else 0,
+                StatType.DEFENSE: 1 if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE else 0,
+                StatType.RANGE: 0,
+                StatType.SPEED: 0,
                 StatType.UTILITY: 0
             }
         )

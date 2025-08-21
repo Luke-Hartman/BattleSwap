@@ -408,6 +408,13 @@
             }
         }
     },
+    "#orc_warchief_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/OrcWarchiefIcon.png"
+            }
+        }
+    },
     "#werebear_icon": {
         "images": {
             "normal_image": {
