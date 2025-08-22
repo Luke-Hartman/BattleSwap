@@ -47,7 +47,7 @@ from components.orientation import Orientation, FacingDirection
 from effects import (
     AddsForcedMovement, AppliesStatusEffect, AttachToTarget, CreatesUnit, CreatesVisual, 
     CreatesAttachedVisual, CreatesLobbed, CreatesProjectile, CreatesVisualLink, Damages, 
-    Forget, Heals, HealToFull, IncreaseAmmo, IncreasesMaxHealthFromTarget, Jump, PlaySound, PlayVoice, Recipient, 
+    Forget, Heals, HealToFull, IncreaseAmmo, IncreasesMaxHealthFromTarget, Jump, PlaySound, Recipient, 
     SoundEffect, StanceChange, RememberTarget, CreatesVisualAoE, CreatesCircleAoE
 )
 from unit_condition import (
@@ -57,7 +57,6 @@ from unit_condition import (
 from visuals import Visual
 from components.dying import OnDeathEffect
 from corruption_powers import CorruptionPower, IncreasedAbilitySpeed, IncreasedDamage, IncreasedMaxHealth, IncreasedMovementSpeed
-from voice import play_kill
 
 unit_theme_ids: Dict[UnitType, str] = {
     UnitType.CORE_ARCHER: "#core_archer_icon", 
@@ -1066,10 +1065,22 @@ def create_orc_berserker(
     )
     on_kill_effects = [
         HealToFull(
-                recipient=Recipient.OWNER
-            ),
-            PlayVoice(voice_function=play_kill, unit_type=UnitType.ORC_BERSERKER),
-        ]
+            recipient=Recipient.OWNER
+        ),
+        PlaySound([
+            (SoundEffect(filename=f"orc_berserker_kill_sound{i+1}.wav", volume=0.50), 1.0) for i in range(4)
+        ]),
+        CreatesAttachedVisual(
+            recipient=Recipient.OWNER,
+            visual=Visual.Healing,
+            animation_duration=1,
+            expiration_duration=1,
+            scale=2,
+            random_starting_frame=True,
+            layer=1,
+            on_death=lambda e: esper.delete_entity(e),
+        )
+    ]
     esper.add_component(
         entity,
         Abilities(
@@ -1325,8 +1336,10 @@ def create_orc_warrior(
                                 on_kill_effects=[
                                     HealToFull(
                                         recipient=Recipient.OWNER
-                                    ),
-                                    PlayVoice(voice_function=play_kill, unit_type=UnitType.ORC_WARRIOR),
+                                    ),  
+                                    PlaySound([
+                                        (SoundEffect(filename=f"orc_kill_sound{i+1}.wav", volume=0.50), 1.0) for i in range(4)
+                                    ]),
                                     CreatesAttachedVisual(
                                         recipient=Recipient.OWNER,
                                         visual=Visual.Healing,
@@ -1446,7 +1459,9 @@ def create_orc_warchief(
                                     HealToFull(
                                         recipient=Recipient.OWNER
                                     ),
-                                    PlayVoice(voice_function=play_kill, unit_type=UnitType.ORC_WARCHIEF),
+                                    PlaySound([
+                                        (SoundEffect(filename=f"orc_warchief_kill_sound{i+1}.wav", volume=0.50), 1.0) for i in range(4)
+                                    ]),
                                     CreatesAttachedVisual(
                                         recipient=Recipient.OWNER,
                                         visual=Visual.Healing,
