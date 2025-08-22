@@ -1195,7 +1195,7 @@ def create_orc_berserker(
                     effects={
                         2: [
                             CreatesProjectile(
-                                projectile_speed=gc.CORE_ARCHER_PROJECTILE_SPEED,
+                                projectile_speed=gc.ORC_BERSERKER_PROJECTILE_SPEED,
                                 effects=[
                                     Damages(
                                         damage=orc_berserker_ranged_damage, 
