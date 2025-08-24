@@ -401,6 +401,13 @@
             }
         }
     },
+    "#orc_goblin_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/OrcGoblinIcon.png"
+            }
+        }
+    },
     "#orc_warrior_icon": {
         "images": {
             "normal_image": {
