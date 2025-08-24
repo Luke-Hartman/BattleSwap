@@ -408,6 +408,13 @@
             }
         }
     },
+    "#orc_warg_rider_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/OrcWargRiderIcon.png"
+            }
+        }
+    },
     "#orc_warrior_icon": {
         "images": {
             "normal_image": {

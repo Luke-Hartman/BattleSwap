@@ -83,6 +83,7 @@ unit_theme_ids: Dict[UnitType, str] = {
     UnitType.ORC_WARRIOR: "#orc_warrior_icon",
     UnitType.ORC_WARCHIEF: "#orc_warchief_icon",
     UnitType.ORC_GOBLIN: "#orc_goblin_icon",
+    UnitType.ORC_WARG_RIDER: "#orc_warg_rider_icon",
     UnitType.ZOMBIE_BASIC_ZOMBIE: "#zombie_basic_zombie_icon",
     UnitType.ZOMBIE_BRUTE: "#zombie_brute_icon",
     UnitType.ZOMBIE_GRABBER: "#zombie_grabber_icon",
@@ -158,6 +159,7 @@ _unit_to_faction = {
     UnitType.ORC_WARRIOR: Faction.ORC,
     UnitType.ORC_WARCHIEF: Faction.ORC,
     UnitType.ORC_GOBLIN: Faction.ORC,
+    UnitType.ORC_WARG_RIDER: Faction.ORC,
     UnitType.ZOMBIE_BASIC_ZOMBIE: Faction.ZOMBIES,
     UnitType.ZOMBIE_BRUTE: Faction.ZOMBIES,
     UnitType.ZOMBIE_GRABBER: Faction.ZOMBIES,
@@ -194,6 +196,7 @@ def load_sprite_sheets():
         UnitType.ORC_WARRIOR: "OrcWarrior.png",
         UnitType.ORC_WARCHIEF: "OrcWarchief.png",
         UnitType.ORC_GOBLIN: "OrcGoblin.png",
+        UnitType.ORC_WARG_RIDER: "OrcWargRider.png",
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombie.png",
         UnitType.ZOMBIE_BRUTE: "ZombieBasicZombie.png",
         UnitType.ZOMBIE_GRABBER: "ZombieBasicZombie.png",
@@ -233,6 +236,7 @@ def load_sprite_sheets():
         UnitType.ORC_WARRIOR: "OrcWarriorIcon.png",
         UnitType.ORC_WARCHIEF: "OrcWarchiefIcon.png",
         UnitType.ORC_GOBLIN: "OrcGoblinIcon.png",
+        UnitType.ORC_WARG_RIDER: "OrcWargRiderIcon.png",
         UnitType.WEREBEAR: "WerebearIcon.png",
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombieIcon.png",
         UnitType.ZOMBIE_BRUTE: "ZombieBruteIcon.png",
@@ -293,6 +297,7 @@ def create_unit(
         UnitType.ORC_WARRIOR: create_orc_warrior,
         UnitType.ORC_WARCHIEF: create_orc_warchief,
         UnitType.ORC_GOBLIN: create_orc_goblin,
+        UnitType.ORC_WARG_RIDER: create_orc_warg_rider,
         UnitType.WEREBEAR: create_werebear,
         UnitType.ZOMBIE_BASIC_ZOMBIE: create_zombie_basic_zombie,
         UnitType.ZOMBIE_BRUTE: create_zombie_brute,
@@ -1611,6 +1616,138 @@ def create_orc_goblin(
         AnimationType.WALKING: {
             frame: [PlaySound(sound_effects=[
                 (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [2, 5]
+        },
+    }))
+    
+    return entity
+
+def create_orc_warg_rider(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+    ) -> int:
+    """Create an orc warg rider entity with all necessary components."""
+    # Calculate tier-specific values
+    warg_rider_damage = gc.ORC_WARG_RIDER_ATTACK_DAMAGE
+    warg_rider_movement_speed = gc.ORC_WARG_RIDER_MOVEMENT_SPEED
+    
+    # Advanced tier: 25% increased attack and movement speed
+    if tier == UnitTier.ADVANCED or tier == UnitTier.ELITE:
+        warg_rider_movement_speed = warg_rider_movement_speed * 1.25
+    
+    # Elite tier: 50% increased damage
+    if tier == UnitTier.ELITE:
+        warg_rider_damage = warg_rider_damage * 1.5
+    
+    entity = unit_base_entity(
+        x=x,
+        y=y,
+        team=team,
+        unit_type=UnitType.ORC_WARG_RIDER,
+        movement_speed=warg_rider_movement_speed,
+        health=gc.ORC_WARG_RIDER_HP,
+        hitbox=Hitbox(
+            width=16,
+            height=32,
+        ),
+        corruption_powers=corruption_powers,
+        tier=tier
+    )
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=2, ascending=True),
+        ],
+        unit_condition=None,
+        targetting_group=TargetingGroup.TEAM2_LIVING_VISIBLE if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING_VISIBLE
+    )
+    esper.add_component(
+        entity,
+        Destination(target_strategy=targetting_strategy, x_offset=gc.ORC_WARG_RIDER_ATTACK_RANGE*2/3)
+    )
+    on_kill_effects = [
+        HealToFull(
+            recipient=Recipient.OWNER
+        ),
+        PlaySound([
+            (SoundEffect(filename=f"orc_warg_rider_kill_sound{i+1}.wav", volume=0.50), 1.0) for i in range(4)
+        ]),
+        CreatesAttachedVisual(
+            recipient=Recipient.OWNER,
+            visual=Visual.Healing,
+            animation_duration=1,
+            expiration_duration=1,
+            scale=2,
+            random_starting_frame=True,
+            layer=1,
+            on_death=lambda e: esper.delete_entity(e),
+        )
+    ]
+    esper.add_component(
+        entity,
+        Abilities(
+            abilities=[
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                Grounded(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.ORC_WARG_RIDER_ATTACK_RANGE,
+                                    y_bias=3
+                                ),
+                            ])
+                        )
+                    ],
+                    persistent_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.ORC_WARG_RIDER_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    y_bias=3
+                                ),
+                            ])
+                        )
+                    ],
+                    effects={
+                        1: [
+                            PlaySound([
+                                (SoundEffect(filename=f"warg_bite.wav", volume=0.40), 1.0)
+                            ]),
+                        ],
+                        2: [
+                            Damages(
+                                damage=warg_rider_damage * 2/3, 
+                                recipient=Recipient.TARGET,
+                                on_kill_effects=on_kill_effects
+                            ),
+                            Damages(
+                                damage=warg_rider_damage * 1/3, 
+                                recipient=Recipient.TARGET,
+                                on_kill_effects=on_kill_effects
+                            ),
+                            PlaySound([
+                                (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
+                            ]),
+                        ]
+                    }
+                )
+            ]
+        )
+    )
+    
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.ORC_WARG_RIDER, tier))
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"horse_footsteps_grass{i+1}.wav", volume=0.15), 1.0) for i in range(4)
             ])]
             for frame in [2, 5]
         },
@@ -4671,6 +4808,36 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
                 AnimationType.WALKING: gc.ORC_GOBLIN_ANIMATION_WALKING_DURATION,
                 AnimationType.ABILITY1: attack_animation_duration,
                 AnimationType.DYING: gc.ORC_GOBLIN_ANIMATION_DYING_DURATION,
+            },
+            sprite_center_offset=(0, -8),
+            synchronized_animations={
+                AnimationType.IDLE: True,
+            }
+        )
+    if unit_type == UnitType.ORC_WARG_RIDER:
+        # Calculate tier-specific animation durations
+        attack_animation_duration = gc.ORC_WARG_RIDER_ANIMATION_ATTACK_DURATION
+        idle_animation_duration = gc.ORC_WARG_RIDER_ANIMATION_IDLE_DURATION
+        walking_animation_duration = gc.ORC_WARG_RIDER_ANIMATION_WALKING_DURATION
+        
+        # Advanced tier: 25% faster attack, idle, and walking animations
+        if tier == UnitTier.ADVANCED or tier == UnitTier.ELITE:
+            attack_animation_duration = attack_animation_duration * 0.8  # 25% faster = 0.8x duration
+            idle_animation_duration = idle_animation_duration * 0.8  # 25% faster = 0.8x duration
+            walking_animation_duration = walking_animation_duration * 0.8  # 25% faster = 0.8x duration
+        
+        return SpriteSheet(
+            surface=sprite_sheets[UnitType.ORC_WARG_RIDER],
+            frame_width=32,
+            frame_height=32,
+            scale=gc.MINIFOLKS_SCALE,
+            frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.ABILITY1: 6, AnimationType.DYING: 5},
+            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 3, AnimationType.DYING: 5},
+            animation_durations={
+                AnimationType.IDLE: idle_animation_duration,
+                AnimationType.WALKING: walking_animation_duration,
+                AnimationType.ABILITY1: attack_animation_duration,
+                AnimationType.DYING: gc.ORC_WARG_RIDER_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(0, -8),
             synchronized_animations={

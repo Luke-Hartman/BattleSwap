@@ -152,6 +152,10 @@ UPGRADE_DESCRIPTIONS = {
         UnitTier.ADVANCED: "150% increased invisibility duration",
         UnitTier.ELITE: "25% increased movement and attack speed"
     },
+    UnitType.ORC_WARG_RIDER: {
+        UnitTier.ADVANCED: "25% increased attack and movement speed",
+        UnitTier.ELITE: "50% increased damage"
+    },
     UnitType.CORE_WIZARD: {
         UnitTier.ADVANCED: "50% increased damage",
         UnitTier.ELITE: "50% increased damage"
@@ -641,7 +645,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             description="Orc Warchiefs are powerful melee units with high health and damage that heal to full and gain additional maximum health from <a href='{GlossaryEntryType.KILLING_BLOW.value}'>Killing Blows</a>.",
             tier=unit_tier,
             stats={
-                StatType.DEFENSE: defense_stat(orc_warchief_health * 1.5),
+                StatType.DEFENSE: defense_stat(orc_warchief_health + 2000),
                 StatType.SPEED: speed_stat(gc.ORC_WARCHIEF_MOVEMENT_SPEED),
                 StatType.DAMAGE: damage_stat(orc_warchief_damage / gc.ORC_WARCHIEF_ANIMATION_ATTACK_DURATION),
                 StatType.RANGE: range_stat(gc.ORC_WARCHIEF_ATTACK_RANGE),
@@ -1660,4 +1664,50 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
                 StatType.UTILITY: 1 if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE else 0
             }
         )
+    
+    if unit_type == UnitType.ORC_WARG_RIDER:
+        # Calculate tier-specific values
+        warg_rider_movement_speed = gc.ORC_WARG_RIDER_MOVEMENT_SPEED
+        warg_rider_attack_damage = gc.ORC_WARG_RIDER_ATTACK_DAMAGE
+        warg_rider_attack_duration = gc.ORC_WARG_RIDER_ANIMATION_ATTACK_DURATION
+        
+        # Advanced tier: 25% increased movement speed
+        if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE:
+            warg_rider_movement_speed = warg_rider_movement_speed * 1.25
+        
+        # Elite tier: 50% increased damage
+        if unit_tier == UnitTier.ELITE:
+            warg_rider_attack_damage = warg_rider_attack_damage * 1.5
+
+        return UnitData(
+            name="Orc Warg Rider",
+            description=f"Orc Warg Riders are fast melee units that deal two strikes when attacking. They heal to full health after getting a <a href='{GlossaryEntryType.KILLING_BLOW.value}'>Killing Blow</a>.",
+            tier=unit_tier,
+            stats={
+                StatType.DEFENSE: defense_stat(gc.ORC_WARG_RIDER_HP * 1.5),
+                StatType.SPEED: speed_stat(warg_rider_movement_speed),
+                StatType.DAMAGE: damage_stat(warg_rider_attack_damage / warg_rider_attack_duration),
+                StatType.RANGE: range_stat(gc.ORC_WARG_RIDER_ATTACK_RANGE),
+                StatType.UTILITY: None,
+            },
+            tooltips={
+                StatType.DEFENSE: f"{int(gc.ORC_WARG_RIDER_HP)} maximum health. Heals to full health after killing a unit",
+                StatType.SPEED: f"{warg_rider_movement_speed:.1f} units per second",
+                StatType.DAMAGE: f"{warg_rider_attack_damage*2/3} + {warg_rider_attack_damage*1/3} per attack ({warg_rider_attack_damage / warg_rider_attack_duration:.1f} per second)",
+                StatType.RANGE: f"{gc.ORC_WARG_RIDER_ATTACK_RANGE} units",
+                StatType.UTILITY: None,
+            },
+            tips={
+                "Strong when": ["Able to kill units quickly", "Against isolated targets", "In a group with other fast units"],
+                "Weak when": ["Against armor", "Against more powerful units", "Surrounded by enemies"],
+            },
+            modification_levels={
+                StatType.DAMAGE: 1 if unit_tier == UnitTier.ELITE else 0,
+                StatType.DEFENSE: 0,
+                StatType.RANGE: 0,
+                StatType.SPEED: 1 if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE else 0,
+                StatType.UTILITY: 0,
+            }
+        )
+    
     raise ValueError(f"Unknown unit type: {unit_type}")
