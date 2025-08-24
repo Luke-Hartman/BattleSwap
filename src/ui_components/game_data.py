@@ -1710,4 +1710,50 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             }
         )
     
+    if unit_type == UnitType.PIRATE_CREW:
+        # Calculate tier-specific values
+        pirate_crew_damage = gc.PIRATE_CREW_ATTACK_DAMAGE
+        pirate_crew_health = gc.PIRATE_CREW_HP
+        pirate_crew_movement_speed = gc.PIRATE_CREW_MOVEMENT_SPEED
+        
+        # Advanced tier: 25% increased attack and movement speed
+        if unit_tier == UnitTier.ADVANCED:
+            pirate_crew_damage = pirate_crew_damage * 1.25
+            pirate_crew_movement_speed = pirate_crew_movement_speed * 1.25
+        
+        # Elite tier: 50% more damage total
+        elif unit_tier == UnitTier.ELITE:
+            pirate_crew_damage = pirate_crew_damage * 1.5
+        
+        return UnitData(
+            name="Pirate Crew",
+            description="Pirate Crew are balanced melee units with a single-use <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a> jump attack.",
+            tier=unit_tier,
+            stats={
+                StatType.DEFENSE: defense_stat(pirate_crew_health),
+                StatType.SPEED: speed_stat(pirate_crew_movement_speed * 1.5),
+                StatType.DAMAGE: damage_stat(pirate_crew_damage / gc.PIRATE_CREW_ANIMATION_ATTACK_DURATION + 50),
+                StatType.RANGE: range_stat(gc.PIRATE_CREW_ATTACK_RANGE),
+                StatType.UTILITY: None
+            },
+            tooltips={
+                StatType.DEFENSE: f"{int(pirate_crew_health)} maximum health",
+                StatType.SPEED: f"{pirate_crew_movement_speed:.1f} units per second, can jump {gc.PIRATE_CREW_MAXIMUM_JUMP_RANGE} units once",
+                StatType.DAMAGE: f"{int(pirate_crew_damage)} per hit ({pirate_crew_damage / gc.PIRATE_CREW_ANIMATION_ATTACK_DURATION:.1f} per second). Jump deals {gc.PIRATE_CREW_JUMP_DAMAGE} damage in a small area.",
+                StatType.RANGE: f"Melee: {gc.PIRATE_CREW_ATTACK_RANGE} units, Jump: {gc.PIRATE_CREW_MINIMUM_JUMP_RANGE} to {gc.PIRATE_CREW_MAXIMUM_JUMP_RANGE} units",
+                StatType.UTILITY: None
+            },
+            tips={
+                "Strong when": ["Able to hit multiple units with jump", "In a group with other pirate crew", "Against units with low health"],
+                "Weak when": ["In long fights", "Against very long ranged units"],
+            },
+            modification_levels={
+                StatType.DEFENSE: 0,
+                StatType.SPEED: 1 if unit_tier == UnitTier.ADVANCED else 0,
+                StatType.DAMAGE: 1 if unit_tier == UnitTier.ADVANCED else 0,
+                StatType.RANGE: 0,
+                StatType.UTILITY: 0,
+            }
+        )
+    
     raise ValueError(f"Unknown unit type: {unit_type}")

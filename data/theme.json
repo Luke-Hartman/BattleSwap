@@ -429,6 +429,13 @@
             }
         }
     },
+    "#pirate_crew_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/PirateCrewIcon.png"
+            }
+        }
+    },
     "#werebear_icon": {
         "images": {
             "normal_image": {

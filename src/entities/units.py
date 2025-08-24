@@ -45,9 +45,9 @@ from components.velocity import Velocity
 from components.health import Health
 from components.orientation import Orientation, FacingDirection
 from effects import (
-    AddsForcedMovement, AppliesStatusEffect, AttachToTarget, CreatesUnit, CreatesVisual, 
+    AddsForcedMovement, AppliesStatusEffect, CreatesUnit, CreatesVisual, 
     CreatesAttachedVisual, CreatesLobbed, CreatesProjectile, CreatesVisualLink, Damages, 
-    Forget, Heals, HealToFull, IncreaseAmmo, IncreasesMaxHealthFromTarget, Jump, PlaySound, Recipient, 
+    Heals, HealToFull, IncreaseAmmo, IncreasesMaxHealthFromTarget, Jump, PlaySound, Recipient, 
     SoundEffect, StanceChange, RememberTarget, CreatesVisualAoE, CreatesCircleAoE
 )
 from unit_condition import (
@@ -84,13 +84,14 @@ unit_theme_ids: Dict[UnitType, str] = {
     UnitType.ORC_WARCHIEF: "#orc_warchief_icon",
     UnitType.ORC_GOBLIN: "#orc_goblin_icon",
     UnitType.ORC_WARG_RIDER: "#orc_warg_rider_icon",
+    UnitType.PIRATE_CREW: "#pirate_crew_icon",
+    UnitType.WEREBEAR: "#werebear_icon",
     UnitType.ZOMBIE_BASIC_ZOMBIE: "#zombie_basic_zombie_icon",
     UnitType.ZOMBIE_BRUTE: "#zombie_brute_icon",
     UnitType.ZOMBIE_GRABBER: "#zombie_grabber_icon",
     UnitType.ZOMBIE_JUMPER: "#zombie_jumper_icon",
     UnitType.ZOMBIE_SPITTER: "#zombie_spitter_icon",
     UnitType.ZOMBIE_TANK: "#zombie_tank_icon",
-    UnitType.WEREBEAR: "#werebear_icon",
 }
 
 unit_icon_surfaces: Dict[UnitType, pygame.Surface] = {}
@@ -124,7 +125,8 @@ class Faction(Enum):
     CRUSADERS = 1
     ZOMBIES = 2
     ORC = 3
-    MISC = 4
+    PIRATE = 4
+    MISC = 5
     
     @staticmethod
     def faction_of(unit_type: UnitType) -> "Faction":
@@ -160,13 +162,14 @@ _unit_to_faction = {
     UnitType.ORC_WARCHIEF: Faction.ORC,
     UnitType.ORC_GOBLIN: Faction.ORC,
     UnitType.ORC_WARG_RIDER: Faction.ORC,
+    UnitType.PIRATE_CREW: Faction.PIRATE,
+    UnitType.WEREBEAR: Faction.MISC,
     UnitType.ZOMBIE_BASIC_ZOMBIE: Faction.ZOMBIES,
     UnitType.ZOMBIE_BRUTE: Faction.ZOMBIES,
     UnitType.ZOMBIE_GRABBER: Faction.ZOMBIES,
     UnitType.ZOMBIE_JUMPER: Faction.ZOMBIES,
     UnitType.ZOMBIE_SPITTER: Faction.ZOMBIES,
     UnitType.ZOMBIE_TANK: Faction.ZOMBIES,
-    UnitType.WEREBEAR: Faction.MISC,
 }
 
 def load_sprite_sheets():
@@ -197,6 +200,8 @@ def load_sprite_sheets():
         UnitType.ORC_WARCHIEF: "OrcWarchief.png",
         UnitType.ORC_GOBLIN: "OrcGoblin.png",
         UnitType.ORC_WARG_RIDER: "OrcWargRider.png",
+        UnitType.PIRATE_CREW: "PirateCrew.png",
+        UnitType.WEREBEAR: "Werebear.png",
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombie.png",
         UnitType.ZOMBIE_BRUTE: "ZombieBasicZombie.png",
         UnitType.ZOMBIE_GRABBER: "ZombieBasicZombie.png",
@@ -237,6 +242,7 @@ def load_sprite_sheets():
         UnitType.ORC_WARCHIEF: "OrcWarchiefIcon.png",
         UnitType.ORC_GOBLIN: "OrcGoblinIcon.png",
         UnitType.ORC_WARG_RIDER: "OrcWargRiderIcon.png",
+        UnitType.PIRATE_CREW: "PirateCrewIcon.png",
         UnitType.WEREBEAR: "WerebearIcon.png",
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombieIcon.png",
         UnitType.ZOMBIE_BRUTE: "ZombieBruteIcon.png",
@@ -298,6 +304,7 @@ def create_unit(
         UnitType.ORC_WARCHIEF: create_orc_warchief,
         UnitType.ORC_GOBLIN: create_orc_goblin,
         UnitType.ORC_WARG_RIDER: create_orc_warg_rider,
+        UnitType.PIRATE_CREW: create_pirate_crew,
         UnitType.WEREBEAR: create_werebear,
         UnitType.ZOMBIE_BASIC_ZOMBIE: create_zombie_basic_zombie,
         UnitType.ZOMBIE_BRUTE: create_zombie_brute,
@@ -2276,9 +2283,6 @@ def create_crusader_catapult(
                         4: [
                             PlaySound(SoundEffect(filename="catapult_reload_creak.wav", volume=0.50)),
                         ],
-                        6: [
-                            PlaySound(SoundEffect(filename="catapult_reload_slam.wav", volume=0.50)),
-                        ],
                     }
                 )
             ]
@@ -3697,6 +3701,163 @@ def create_crusader_soldier(
     }))
     return entity
 
+
+def create_pirate_crew(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+    ) -> int:
+    """Create a pirate crew entity with all necessary components."""
+    # Calculate tier-specific values
+    pirate_crew_health = gc.PIRATE_CREW_HP
+    pirate_crew_damage = gc.PIRATE_CREW_ATTACK_DAMAGE
+    pirate_crew_movement_speed = gc.PIRATE_CREW_MOVEMENT_SPEED
+    
+    # Advanced tier: 25% increased attack and movement speed
+    if tier == UnitTier.ADVANCED:
+        pirate_crew_movement_speed = pirate_crew_movement_speed * 1.25
+    
+    # Elite tier: 50% more damage total
+    elif tier == UnitTier.ELITE:
+        pirate_crew_damage = pirate_crew_damage * 1.5
+    
+    entity = unit_base_entity(
+        x=x,
+        y=y,
+        team=team,
+        unit_type=UnitType.PIRATE_CREW,
+        movement_speed=pirate_crew_movement_speed,
+        health=pirate_crew_health,
+        hitbox=Hitbox(
+            width=16,
+            height=32,
+        ),
+        corruption_powers=corruption_powers,
+        tier=tier
+    )
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=2, ascending=True),
+        ],
+        unit_condition=None,
+        targetting_group=TargetingGroup.TEAM2_LIVING_VISIBLE if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING_VISIBLE
+    )
+    esper.add_component(
+        entity,
+        Destination(target_strategy=targetting_strategy, x_offset=gc.PIRATE_CREW_ATTACK_RANGE*2/3)
+    )
+    esper.add_component(entity, RangeIndicator([gc.PIRATE_CREW_MINIMUM_JUMP_RANGE, gc.PIRATE_CREW_MAXIMUM_JUMP_RANGE]))
+    esper.add_component(
+        entity,
+        Abilities(
+            abilities=[
+                # Basic melee attack
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                Grounded(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.PIRATE_CREW_ATTACK_RANGE,
+                                    y_bias=3
+                                ),
+                            ])
+                        )
+                    ],
+                    persistent_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.PIRATE_CREW_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    y_bias=3
+                                ),
+                            ])
+                        )
+                    ],
+                    effects={
+                        2: [
+                            Damages(damage=pirate_crew_damage, recipient=Recipient.TARGET),
+                            PlaySound([
+                                (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
+                            ]),
+                        ]
+                    },
+                ),
+                # Jump attack ability (single use)
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        Cooldown(duration=float("inf")),
+                        SatisfiesUnitCondition(Grounded()),
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                Grounded(),
+                                MinimumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.PIRATE_CREW_MINIMUM_JUMP_RANGE,
+                                    y_bias=None
+                                ),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.PIRATE_CREW_MAXIMUM_JUMP_RANGE,
+                                    y_bias=None
+                                ),
+                            ])
+                        )
+                    ],
+                    persistent_conditions=[
+                        SatisfiesUnitCondition(Grounded()),
+                        HasTarget(
+                            unit_condition=All([
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.PIRATE_CREW_MAXIMUM_JUMP_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    y_bias=None
+                                ),
+                            ])
+                        )
+                    ],
+                    effects={0: [
+                        PlaySound(SoundEffect(filename="pirate_crew_jump.wav", volume=0.50)),
+                        Jump(
+                            min_range=gc.PIRATE_CREW_MINIMUM_JUMP_RANGE,
+                            max_range=gc.PIRATE_CREW_MAXIMUM_JUMP_RANGE,
+                            max_angle=gc.PIRATE_CREW_MAXIMUM_JUMP_ANGLE,
+                            effects=[
+                                CreatesCircleAoE(
+                                    radius=gc.PIRATE_CREW_JUMP_RADIUS,
+                                    effects=[
+                                        Damages(damage=gc.PIRATE_CREW_JUMP_DAMAGE, recipient=Recipient.TARGET),
+                                    ],
+                                    unit_condition=All([OnTeam(team=team.other()), Alive(), Grounded()]),
+                                    location=Recipient.OWNER,
+                                ),
+                                PlaySound(SoundEffect(filename="pirate_crew_jump_land.wav", volume=0.50)),
+                            ],
+                        )
+                    ]},
+                )
+            ]
+        )
+    )
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.PIRATE_CREW, tier))
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [2, 5]
+        },
+    }))
+    return entity
+
 def create_werebear(
         x: int,
         y: int,
@@ -4818,13 +4979,11 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
         # Calculate tier-specific animation durations
         attack_animation_duration = gc.ORC_WARG_RIDER_ANIMATION_ATTACK_DURATION
         idle_animation_duration = gc.ORC_WARG_RIDER_ANIMATION_IDLE_DURATION
-        walking_animation_duration = gc.ORC_WARG_RIDER_ANIMATION_WALKING_DURATION
         
         # Advanced tier: 25% faster attack, idle, and walking animations
         if tier == UnitTier.ADVANCED or tier == UnitTier.ELITE:
             attack_animation_duration = attack_animation_duration * 0.8  # 25% faster = 0.8x duration
             idle_animation_duration = idle_animation_duration * 0.8  # 25% faster = 0.8x duration
-            walking_animation_duration = walking_animation_duration * 0.8  # 25% faster = 0.8x duration
         
         return SpriteSheet(
             surface=sprite_sheets[UnitType.ORC_WARG_RIDER],
@@ -4835,7 +4994,7 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
             rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 3, AnimationType.DYING: 5},
             animation_durations={
                 AnimationType.IDLE: idle_animation_duration,
-                AnimationType.WALKING: walking_animation_duration,
+                AnimationType.WALKING: gc.ORC_WARG_RIDER_ANIMATION_WALKING_DURATION,
                 AnimationType.ABILITY1: attack_animation_duration,
                 AnimationType.DYING: gc.ORC_WARG_RIDER_ANIMATION_DYING_DURATION,
             },
@@ -5374,6 +5533,50 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
                 AnimationType.DYING: gc.ZOMBIE_GRABBER_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(2, 8),
+            synchronized_animations={
+                AnimationType.IDLE: True,
+            }
+        )
+    if unit_type == UnitType.PIRATE_CREW:
+        # Advanced tier: 25% increased attack and movement speed
+        # Elite tier: 50% more damage total
+        idle_animation_duration = gc.PIRATE_CREW_ANIMATION_IDLE_DURATION
+        attack_animation_duration = gc.PIRATE_CREW_ANIMATION_ATTACK_DURATION
+        
+        if tier == UnitTier.ADVANCED:
+            idle_animation_duration = idle_animation_duration / 1.25  # 25% faster
+            attack_animation_duration = attack_animation_duration / 1.25  # 25% faster
+        
+        return SpriteSheet(
+            surface=sprite_sheets[UnitType.PIRATE_CREW],
+            frame_width=32,
+            frame_height=32,
+            scale=gc.MINIFOLKS_SCALE,
+            frames={
+                AnimationType.IDLE: 4, 
+                AnimationType.WALKING: 6, 
+                AnimationType.ABILITY1: 5, 
+                AnimationType.ABILITY2: 1,
+                AnimationType.DYING: 4,
+                AnimationType.AIRBORNE: 1,
+            },
+            rows={
+                AnimationType.IDLE: 0, 
+                AnimationType.WALKING: 1, 
+                AnimationType.ABILITY1: 3, 
+                AnimationType.ABILITY2: 2,
+                AnimationType.DYING: 5,
+                AnimationType.AIRBORNE: 4,
+            },
+            animation_durations={
+                AnimationType.IDLE: idle_animation_duration,
+                AnimationType.WALKING: gc.PIRATE_CREW_ANIMATION_WALKING_DURATION,
+                AnimationType.ABILITY1: attack_animation_duration,
+                AnimationType.ABILITY2: gc.PIRATE_CREW_ANIMATION_JUMP_DURATION,
+                AnimationType.DYING: gc.PIRATE_CREW_ANIMATION_DYING_DURATION,
+                AnimationType.AIRBORNE: gc.PIRATE_CREW_ANIMATION_AIRBORNE_DURATION,
+            },
+            sprite_center_offset=(0, -8),
             synchronized_animations={
                 AnimationType.IDLE: True,
             }

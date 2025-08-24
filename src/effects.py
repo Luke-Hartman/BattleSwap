@@ -1,3 +1,4 @@
+import warnings
 from abc import abstractmethod
 from dataclasses import dataclass
 from enum import Enum, auto
@@ -9,6 +10,9 @@ import esper
 from pygame import Vector2
 import numpy as np
 from scipy.optimize import minimize
+
+# Suppress the specific RuntimeWarning about values outside bounds during optimization
+warnings.filterwarnings('ignore', message='Values in x were outside bounds during a minimize step, clipping to bounds', category=RuntimeWarning)
 
 from components.ammo import Ammo
 from components.angle import Angle
