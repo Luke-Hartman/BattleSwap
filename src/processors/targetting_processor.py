@@ -9,6 +9,7 @@ from components.instant_ability import InstantAbilities
 from components.position import Position
 from components.team import Team, TeamType
 from components.unit_state import State, UnitState
+from components.status_effect import Invisible, StatusEffects
 from target_strategy import TargetingGroup
 
 
@@ -21,10 +22,22 @@ class TargettingProcessor(esper.Processor):
         for ent, (unit_state, team) in esper.get_components(UnitState, Team):
             if unit_state.state == State.DEAD:
                 continue
+            
+            # Check if unit is invisible
+            is_invisible = False
+            if esper.has_component(ent, StatusEffects):
+                status_effects = esper.component_for_entity(ent, StatusEffects)
+                is_invisible = any(
+                    isinstance(effect, Invisible)
+                    for effect in status_effects.active_effects()
+                )
+            if is_invisible:
+                continue
+            
             if team.type == TeamType.TEAM1:
-                targetting_groups[TargetingGroup.TEAM1_LIVING].add(ent)
+                targetting_groups[TargetingGroup.TEAM1_LIVING_VISIBLE].add(ent)
             else:
-                targetting_groups[TargetingGroup.TEAM2_LIVING].add(ent)
+                targetting_groups[TargetingGroup.TEAM2_LIVING_VISIBLE].add(ent)
 
         target_strategies = set()
         for ent, (unit_state, destination) in esper.get_components(UnitState, Destination):

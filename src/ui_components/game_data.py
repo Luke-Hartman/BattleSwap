@@ -59,6 +59,7 @@ class GlossaryEntryType(enum.Enum):
     POINTS = "Points"
     SPREADER = "Spreader"
     UPGRADE = "Upgrade"
+    INVISIBLE = "Invisible"
 
 class StatType(enum.Enum):
     """Types of stats that units can have."""
@@ -105,7 +106,8 @@ GLOSSARY_ENTRIES = {
     GlossaryEntryType.KILLING_BLOW: "A killing blow is when an instance of damage is enough to kill a unit. Some units have special abilities that trigger when they deal a killing blow.",
     GlossaryEntryType.POINTS: f"Points represent the value of a unit. When you have more than {gc.CORRUPTION_TRIGGER_POINTS} points of units in your <a href='{GlossaryEntryType.BARRACKS.value}'>Barracks</a>, <a href='{GlossaryEntryType.CORRUPTION.value}'>Corruption</a> will trigger.",
     GlossaryEntryType.SPREADER: f"While most units target the nearest enemy unit, Spreaders prioritize units that are not <a href='{GlossaryEntryType.INFECTION.value}'>Infected</a>.",
-    GlossaryEntryType.UPGRADE: "Units come in three tiers: Basic, Advanced and Elite. All units start as Basic. You can find special upgrade hexes to promote your units from Basic to Advanced. To promote a unit to Elite, one of your upgrade hexes must be <a href='{GlossaryEntryType.CORRUPTION.value}'>Corrupted</a>. Enemy units start as Basic, but become Elite when they are <a href='{GlossaryEntryType.CORRUPTION.value}'>Corrupted</a>."
+    GlossaryEntryType.UPGRADE: "Units come in three tiers: Basic, Advanced and Elite. All units start as Basic. You can find special upgrade hexes to promote your units from Basic to Advanced. To promote a unit to Elite, one of your upgrade hexes must be <a href='{GlossaryEntryType.CORRUPTION.value}'>Corrupted</a>. Enemy units start as Basic, but become Elite when they are <a href='{GlossaryEntryType.CORRUPTION.value}'>Corrupted</a>.",
+    GlossaryEntryType.INVISIBLE: "Invisible units cannot be targeted by enemies. They become visible when they attack or use abilities."
 }
 
 # Upgrade descriptions for each unit type
@@ -145,6 +147,10 @@ UPGRADE_DESCRIPTIONS = {
     UnitType.ORC_WARCHIEF: {
         UnitTier.ADVANCED: "50% increased health",
         UnitTier.ELITE: "50% increased damage"
+    },
+    UnitType.ORC_GOBLIN: {
+        UnitTier.ADVANCED: "150% increased invisibility duration",
+        UnitTier.ELITE: "25% increased movement and attack speed"
     },
     UnitType.CORE_WIZARD: {
         UnitTier.ADVANCED: "50% increased damage",
@@ -1606,6 +1612,52 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             },
             modification_levels={
                 StatType.DEFENSE: 1 if unit_tier == UnitTier.ADVANCED else 2 if unit_tier == UnitTier.ELITE else 0
+            }
+        )
+    
+    if unit_type == UnitType.ORC_GOBLIN:
+        # Calculate tier-specific values
+        orc_goblin_movement_speed = gc.ORC_GOBLIN_MOVEMENT_SPEED
+        orc_goblin_attack_duration = gc.ORC_GOBLIN_ANIMATION_ATTACK_DURATION
+        orc_goblin_invisible_duration = gc.ORC_GOBLIN_INVISIBLE_DURATION
+        
+        # Advanced tier: 150% increased invisibility duration
+        if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE:
+            orc_goblin_invisible_duration = orc_goblin_invisible_duration * 2.5
+        
+        # Elite tier: 25% increased movement speed and ability speed
+        if unit_tier == UnitTier.ELITE:
+            orc_goblin_movement_speed = orc_goblin_movement_speed * 1.25
+            orc_goblin_attack_duration = orc_goblin_attack_duration * 0.8  # 25% faster = 0.8x duration
+
+        return UnitData(
+            name="Orc Goblin",
+            description=f"Orc Goblins are fast <a href='{GlossaryEntryType.HUNTER.value}'>Hunters</a> that become <a href='{GlossaryEntryType.INVISIBLE.value}'>Invisible</a> for {orc_goblin_invisible_duration:.1f} seconds after getting a <a href='{GlossaryEntryType.KILLING_BLOW.value}'>Killing Blow</a>.",
+            tier=unit_tier,
+            stats={
+                StatType.DEFENSE: defense_stat(gc.ORC_GOBLIN_HP),
+                StatType.SPEED: speed_stat(orc_goblin_movement_speed),
+                StatType.DAMAGE: damage_stat(gc.ORC_GOBLIN_ATTACK_DAMAGE / orc_goblin_attack_duration),
+                StatType.RANGE: range_stat(gc.ORC_GOBLIN_ATTACK_RANGE),
+                StatType.UTILITY: 7.5 if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE else 3
+            },
+            tooltips={
+                StatType.DEFENSE: f"{int(gc.ORC_GOBLIN_HP)} maximum health",
+                StatType.SPEED: f"{orc_goblin_movement_speed:.1f} units per second",
+                StatType.DAMAGE: f"{int(gc.ORC_GOBLIN_ATTACK_DAMAGE)} per hit ({gc.ORC_GOBLIN_ATTACK_DAMAGE / orc_goblin_attack_duration:.1f} per second)",
+                StatType.RANGE: f"{gc.ORC_GOBLIN_ATTACK_RANGE} units",
+                StatType.UTILITY: f"Becomes invisible for {orc_goblin_invisible_duration:.1f} seconds after killing a unit"
+            },
+            tips={
+                "Strong when": ["Able to kill units quickly", "Against isolated targets", "Enemies are distracted"],
+                "Weak when": ["Against more powerful units", "Surrounded by enemies"],
+            },
+            modification_levels={
+                StatType.DAMAGE: 1 if unit_tier == UnitTier.ELITE else 0,
+                StatType.DEFENSE: 0,
+                StatType.RANGE: 0,
+                StatType.SPEED: 1 if unit_tier == UnitTier.ELITE else 0,
+                StatType.UTILITY: 1 if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE else 0
             }
         )
     raise ValueError(f"Unknown unit type: {unit_type}")

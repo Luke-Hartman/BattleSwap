@@ -73,6 +73,11 @@ class Grabbed(StatusEffect):
     grab_speed: float
     """The speed at which the unit moves towards the grabber."""
 
+@dataclass
+class Invisible(StatusEffect):
+    """Status effect that makes a unit invisible and untargetable."""
+    # No additional fields needed beyond the base time_remaining
+
 class StatusEffects:
     """Component that stores the status effects of a unit."""
     # TODO: This not really a following ECS best practice
@@ -86,6 +91,7 @@ class StatusEffects:
             Fleeing: [],
             Healing: [],
             ZombieInfection: [],
+            Invisible: [],
         }
 
     def add(self, status_effect: StatusEffect) -> None:
@@ -119,6 +125,9 @@ class StatusEffects:
         if self._status_by_type[Fleeing]:
             longest_fleeing = max(self._status_by_type[Fleeing], key=lambda e: e.time_remaining)
             active_effects.append(longest_fleeing)
+        if self._status_by_type[Invisible]:
+            longest_invisible = max(self._status_by_type[Invisible], key=lambda e: e.time_remaining)
+            active_effects.append(longest_invisible)
         if self._status_by_type[ZombieInfection]:
             most_recent_zombie_infection = max(self._status_by_type[ZombieInfection], key=lambda e: e.time_remaining)
             active_effects.append(most_recent_zombie_infection)

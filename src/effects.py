@@ -41,6 +41,7 @@ from visuals import Visual, create_visual_spritesheet
 from unit_condition import UnitCondition
 from game_constants import gc
 from components.airborne import Airborne
+from components.status_effect import Invisible
 
 class Recipient(Enum):
     """The recipient of an effect."""
@@ -468,6 +469,30 @@ class AppliesStatusEffect(Effect):
             raise ValueError(f"Invalid recipient: {self.recipient}")
         recipient_status_effects = esper.component_for_entity(recipient, StatusEffects)
         recipient_status_effects.add(self.status_effect)
+    
+@dataclass
+class RemoveInvisible(Effect):
+    """Effect that removes the invisible status effect from the target."""
+
+    recipient: Recipient
+    """The recipient of the effect."""
+
+    def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
+        if self.recipient == Recipient.OWNER:
+            assert owner is not None
+            recipient = owner
+        elif self.recipient == Recipient.PARENT:
+            assert parent is not None
+            recipient = parent
+        elif self.recipient == Recipient.TARGET:
+            assert target is not None
+            recipient = target
+        else:
+            raise ValueError(f"Invalid recipient: {self.recipient}")
+        
+        recipient_status_effects = esper.component_for_entity(recipient, StatusEffects)
+        # Remove all invisible effects
+        recipient_status_effects._status_by_type[Invisible].clear()
     
 @dataclass
 class IncreasesMaxHealthFromTarget(Effect):

@@ -14,8 +14,8 @@ from enum import Enum, auto
 class TargetingGroup(Enum):
     """Enum for different pre-filtered unit sets."""
 
-    TEAM1_LIVING = auto()
-    TEAM2_LIVING = auto()
+    TEAM1_LIVING_VISIBLE = auto()
+    TEAM2_LIVING_VISIBLE = auto()
     EMPTY = auto()
 
 

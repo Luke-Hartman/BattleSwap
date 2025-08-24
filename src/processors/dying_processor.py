@@ -55,6 +55,7 @@ class DyingProcessor(esper.Processor):
                     corruption_powers=zombie_infection.corruption_powers,
                     tier=tier
                 )
+                # This is a hack to hide the corpse of the unit
                 esper.add_component(ent, Transparency(alpha=0))
             
             esper.remove_component(ent, Dying)
