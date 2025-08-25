@@ -239,6 +239,14 @@ UPGRADE_DESCRIPTIONS = {
     UnitType.WEREBEAR: {
         UnitTier.ADVANCED: "50% increased health",
         UnitTier.ELITE: "50% increased health"
+    },
+    UnitType.PIRATE_CREW: {
+        UnitTier.ADVANCED: "25% increased attack and movement speed",
+        UnitTier.ELITE: "50% increased damage"
+    },
+    UnitType.PIRATE_GUNNER: {
+        UnitTier.ADVANCED: "70% increased gun damage",
+        UnitTier.ELITE: "70% increased gun damage"
     }
 }
 
@@ -619,7 +627,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
                 "Weak when": ["Against ranged units", "Overwhelmed before killing any units", "Against powerful melee units"],
             },
             modification_levels={
-                StatType.DAMAGE: 1 if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE else 0,
+                StatType.DAMAGE: 1 if unit_tier == UnitTier.ADVANCED else 2 if unit_tier == UnitTier.ELITE else 0,
                 StatType.DEFENSE: 1 if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE else 0,
                 StatType.RANGE: 0,
                 StatType.SPEED: 1 if unit_tier == UnitTier.ELITE else 0,
@@ -1750,7 +1758,51 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             modification_levels={
                 StatType.DEFENSE: 0,
                 StatType.SPEED: 1 if unit_tier == UnitTier.ADVANCED else 0,
-                StatType.DAMAGE: 1 if unit_tier == UnitTier.ADVANCED else 0,
+                StatType.DAMAGE: 1 if unit_tier == UnitTier.ADVANCED else 2 if unit_tier == UnitTier.ELITE else 0,
+                StatType.RANGE: 0,
+                StatType.UTILITY: 0,
+            }
+        )
+    
+    if unit_type == UnitType.PIRATE_GUNNER:
+        # Calculate tier-specific values
+        pirate_gunner_gun_damage = gc.PIRATE_GUNNER_GUN_DAMAGE
+        pirate_gunner_melee_damage = gc.PIRATE_GUNNER_MELEE_DAMAGE
+        
+        # Advanced tier: 70% increased gun damage
+        if unit_tier == UnitTier.ADVANCED:
+            pirate_gunner_gun_damage = pirate_gunner_gun_damage * 1.7
+        
+        # Elite tier: 140% increased gun damage total (70% + 70%)
+        elif unit_tier == UnitTier.ELITE:
+            pirate_gunner_gun_damage = pirate_gunner_gun_damage * 2.4
+        
+        return UnitData(
+            name="Pirate Gunner",
+            description="Pirate Gunners are ranged units with a powerful single-use musket shot and a melee attack for close combat.",
+            tier=unit_tier,
+            stats={
+                StatType.DEFENSE: defense_stat(gc.PIRATE_GUNNER_HP),
+                StatType.SPEED: speed_stat(gc.PIRATE_GUNNER_MOVEMENT_SPEED),
+                StatType.DAMAGE: damage_stat(pirate_gunner_gun_damage / gc.PIRATE_GUNNER_ANIMATION_GUN_DURATION + pirate_gunner_melee_damage / gc.PIRATE_GUNNER_ANIMATION_MELEE_DURATION),
+                StatType.RANGE: range_stat(gc.PIRATE_GUNNER_GUN_RANGE),
+                StatType.UTILITY: None
+            },
+            tooltips={
+                StatType.DEFENSE: f"{int(gc.PIRATE_GUNNER_HP)} maximum health",
+                StatType.SPEED: f"{gc.PIRATE_GUNNER_MOVEMENT_SPEED:.1f} units per second",
+                StatType.DAMAGE: f"Gun: {int(pirate_gunner_gun_damage)} (single use), Melee: {int(pirate_gunner_melee_damage)} per hit ({pirate_gunner_melee_damage / gc.PIRATE_GUNNER_ANIMATION_MELEE_DURATION:.1f} per second)",
+                StatType.RANGE: f"Gun: {gc.PIRATE_GUNNER_GUN_RANGE} units, Melee: {gc.PIRATE_GUNNER_MELEE_RANGE} units",
+                StatType.UTILITY: None
+            },
+            tips={
+                "Strong when": ["Able to get a good shot with the musket", "Against high-value targets"],
+                "Weak when": ["After using the musket", "Distracted by low-value targets"],
+            },
+            modification_levels={
+                StatType.DEFENSE: 0,
+                StatType.SPEED: 0,
+                StatType.DAMAGE: 1 if unit_tier == UnitTier.ADVANCED else 2 if unit_tier == UnitTier.ELITE else 0,
                 StatType.RANGE: 0,
                 StatType.UTILITY: 0,
             }

@@ -64,6 +64,7 @@ ALLOWED_UNIT_TYPES = [
     UnitType.ORC_WARRIOR,
     UnitType.ORC_WARCHIEF,
     UnitType.PIRATE_CREW,
+    UnitType.PIRATE_GUNNER,
     # UnitType.ZOMBIE_BASIC,
     # UnitType.ZOMBIE_BRUTE,
     # UnitType.ZOMBIE_GRABBER,

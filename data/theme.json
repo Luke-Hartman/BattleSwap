@@ -436,6 +436,13 @@
             }
         }
     },
+    "#pirate_gunner_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/PirateGunnerIcon.png"
+            }
+        }
+    },
     "#werebear_icon": {
         "images": {
             "normal_image": {

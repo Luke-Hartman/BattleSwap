@@ -85,6 +85,7 @@ unit_theme_ids: Dict[UnitType, str] = {
     UnitType.ORC_GOBLIN: "#orc_goblin_icon",
     UnitType.ORC_WARG_RIDER: "#orc_warg_rider_icon",
     UnitType.PIRATE_CREW: "#pirate_crew_icon",
+    UnitType.PIRATE_GUNNER: "#pirate_gunner_icon",
     UnitType.WEREBEAR: "#werebear_icon",
     UnitType.ZOMBIE_BASIC_ZOMBIE: "#zombie_basic_zombie_icon",
     UnitType.ZOMBIE_BRUTE: "#zombie_brute_icon",
@@ -163,6 +164,7 @@ _unit_to_faction = {
     UnitType.ORC_GOBLIN: Faction.ORC,
     UnitType.ORC_WARG_RIDER: Faction.ORC,
     UnitType.PIRATE_CREW: Faction.PIRATE,
+    UnitType.PIRATE_GUNNER: Faction.PIRATE,
     UnitType.WEREBEAR: Faction.MISC,
     UnitType.ZOMBIE_BASIC_ZOMBIE: Faction.ZOMBIES,
     UnitType.ZOMBIE_BRUTE: Faction.ZOMBIES,
@@ -201,6 +203,7 @@ def load_sprite_sheets():
         UnitType.ORC_GOBLIN: "OrcGoblin.png",
         UnitType.ORC_WARG_RIDER: "OrcWargRider.png",
         UnitType.PIRATE_CREW: "PirateCrew.png",
+        UnitType.PIRATE_GUNNER: "PirateGunner.png",
         UnitType.WEREBEAR: "Werebear.png",
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombie.png",
         UnitType.ZOMBIE_BRUTE: "ZombieBasicZombie.png",
@@ -243,6 +246,7 @@ def load_sprite_sheets():
         UnitType.ORC_GOBLIN: "OrcGoblinIcon.png",
         UnitType.ORC_WARG_RIDER: "OrcWargRiderIcon.png",
         UnitType.PIRATE_CREW: "PirateCrewIcon.png",
+        UnitType.PIRATE_GUNNER: "PirateGunnerIcon.png",
         UnitType.WEREBEAR: "WerebearIcon.png",
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombieIcon.png",
         UnitType.ZOMBIE_BRUTE: "ZombieBruteIcon.png",
@@ -305,6 +309,7 @@ def create_unit(
         UnitType.ORC_GOBLIN: create_orc_goblin,
         UnitType.ORC_WARG_RIDER: create_orc_warg_rider,
         UnitType.PIRATE_CREW: create_pirate_crew,
+        UnitType.PIRATE_GUNNER: create_pirate_gunner,
         UnitType.WEREBEAR: create_werebear,
         UnitType.ZOMBIE_BASIC_ZOMBIE: create_zombie_basic_zombie,
         UnitType.ZOMBIE_BRUTE: create_zombie_brute,
@@ -3858,6 +3863,140 @@ def create_pirate_crew(
     }))
     return entity
 
+def create_pirate_gunner(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+    ) -> int:
+    """Create a pirate gunner entity with all necessary components."""
+    # Calculate tier-specific values
+    pirate_gunner_gun_damage = gc.PIRATE_GUNNER_GUN_DAMAGE
+    
+    # Advanced tier: 70% increased gun damage
+    if tier == UnitTier.ADVANCED:
+        pirate_gunner_gun_damage = pirate_gunner_gun_damage * 1.7
+    
+    # Elite tier: 140% increased gun damage total (70% + 70%)
+    elif tier == UnitTier.ELITE:
+        pirate_gunner_gun_damage = pirate_gunner_gun_damage * 2.4
+    
+    entity = unit_base_entity(
+        x=x,
+        y=y,
+        team=team,
+        unit_type=UnitType.PIRATE_GUNNER,
+        movement_speed=gc.PIRATE_GUNNER_MOVEMENT_SPEED,
+        health=gc.PIRATE_GUNNER_HP,
+        hitbox=Hitbox(
+            width=16,
+            height=32,
+        ),
+        corruption_powers=corruption_powers,
+        tier=tier
+    )
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=2, ascending=True),
+        ],
+        unit_condition=None,
+        targetting_group=TargetingGroup.TEAM2_LIVING_VISIBLE if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING_VISIBLE
+    )
+    esper.add_component(
+        entity,
+        Destination(target_strategy=targetting_strategy, x_offset=0)
+    )
+    esper.add_component(entity, RangeIndicator(ranges=[gc.PIRATE_GUNNER_GUN_RANGE]))
+    esper.add_component(
+        entity,
+        Abilities(
+            abilities=[
+                # Gun attack (ranged, single use)
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        Cooldown(duration=float("inf")),
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                Grounded(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.PIRATE_GUNNER_GUN_RANGE,
+                                    y_bias=3
+                                ),
+                            ])
+                        )
+                    ],
+                    persistent_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.PIRATE_GUNNER_GUN_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    y_bias=3
+                                ),
+                            ])
+                        )
+                    ],
+                    effects={
+                        2: [
+                            Damages(damage=pirate_gunner_gun_damage, recipient=Recipient.TARGET),
+                            PlaySound(SoundEffect(filename="pirate_gunner_gun.wav", volume=0.75)),
+                        ]
+                    },
+                ),
+                # Melee attack
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                Grounded(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.PIRATE_GUNNER_MELEE_RANGE,
+                                    y_bias=3
+                                ),
+                            ])
+                        )
+                    ],
+                    persistent_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.PIRATE_GUNNER_MELEE_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    y_bias=3
+                                ),
+                            ])
+                        )
+                    ],
+                    effects={
+                        3: [
+                            Damages(damage=gc.PIRATE_GUNNER_MELEE_DAMAGE, recipient=Recipient.TARGET),
+                            PlaySound([
+                                (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
+                            ]),
+                        ]
+                    },
+                )
+            ]
+        )
+    )
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.PIRATE_GUNNER, tier))
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [2, 5]
+        },
+    }))
+    return entity
+
 def create_werebear(
         x: int,
         y: int,
@@ -5575,6 +5714,38 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
                 AnimationType.ABILITY2: gc.PIRATE_CREW_ANIMATION_JUMP_DURATION,
                 AnimationType.DYING: gc.PIRATE_CREW_ANIMATION_DYING_DURATION,
                 AnimationType.AIRBORNE: gc.PIRATE_CREW_ANIMATION_AIRBORNE_DURATION,
+            },
+            sprite_center_offset=(0, -8),
+            synchronized_animations={
+                AnimationType.IDLE: True,
+            }
+        )
+    if unit_type == UnitType.PIRATE_GUNNER:
+        return SpriteSheet(
+            surface=sprite_sheets[UnitType.PIRATE_GUNNER],
+            frame_width=32,
+            frame_height=32,
+            scale=gc.MINIFOLKS_SCALE,
+            frames={
+                AnimationType.IDLE: 4, 
+                AnimationType.WALKING: 6, 
+                AnimationType.ABILITY1: 7, 
+                AnimationType.ABILITY2: 6,
+                AnimationType.DYING: 4,
+            },
+            rows={
+                AnimationType.IDLE: 0, 
+                AnimationType.WALKING: 1, 
+                AnimationType.ABILITY1: 3, 
+                AnimationType.ABILITY2: 4,
+                AnimationType.DYING: 6,
+            },
+            animation_durations={
+                AnimationType.IDLE: gc.PIRATE_GUNNER_ANIMATION_IDLE_DURATION,
+                AnimationType.WALKING: gc.PIRATE_GUNNER_ANIMATION_WALKING_DURATION,
+                AnimationType.ABILITY1: gc.PIRATE_GUNNER_ANIMATION_GUN_DURATION,
+                AnimationType.ABILITY2: gc.PIRATE_GUNNER_ANIMATION_MELEE_DURATION,
+                AnimationType.DYING: gc.PIRATE_GUNNER_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(0, -8),
             synchronized_animations={
