@@ -1784,7 +1784,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             stats={
                 StatType.DEFENSE: defense_stat(gc.PIRATE_GUNNER_HP),
                 StatType.SPEED: speed_stat(gc.PIRATE_GUNNER_MOVEMENT_SPEED),
-                StatType.DAMAGE: damage_stat(pirate_gunner_gun_damage / gc.PIRATE_GUNNER_ANIMATION_GUN_DURATION + pirate_gunner_melee_damage / gc.PIRATE_GUNNER_ANIMATION_MELEE_DURATION),
+                StatType.DAMAGE: damage_stat(pirate_gunner_gun_damage / 1.5),
                 StatType.RANGE: range_stat(gc.PIRATE_GUNNER_GUN_RANGE),
                 StatType.UTILITY: None
             },
@@ -1805,6 +1805,54 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
                 StatType.DAMAGE: 1 if unit_tier == UnitTier.ADVANCED else 2 if unit_tier == UnitTier.ELITE else 0,
                 StatType.RANGE: 0,
                 StatType.UTILITY: 0,
+            }
+        )
+    
+    if unit_type == UnitType.PIRATE_CAPTAIN:
+        # Calculate tier-specific values
+        pirate_captain_gun_damage = gc.PIRATE_CAPTAIN_GUN_DAMAGE
+        pirate_captain_melee_damage = gc.PIRATE_CAPTAIN_MELEE_DAMAGE
+        pirate_captain_health = gc.PIRATE_CAPTAIN_HP
+        gun_cooldown = gc.PIRATE_CAPTAIN_GUN_COOLDOWN
+        
+        # Advanced tier: 50% reduced cooldown on gun attack
+        if unit_tier == UnitTier.ADVANCED:
+            gun_cooldown = gun_cooldown * 0.5
+        
+        # Elite tier: 30% increased damage and health
+        if unit_tier == UnitTier.ELITE:
+            pirate_captain_gun_damage = pirate_captain_gun_damage * 1.3
+            pirate_captain_melee_damage = pirate_captain_melee_damage * 1.3
+            pirate_captain_health = pirate_captain_health * 1.3
+        
+        return UnitData(
+            name="Pirate Captain",
+            description="Pirate Captains are powerful hybrid units with a pistol and sword.",
+            tier=unit_tier,
+            stats={
+                StatType.DEFENSE: defense_stat(pirate_captain_health),
+                StatType.SPEED: speed_stat(gc.PIRATE_CAPTAIN_MOVEMENT_SPEED),
+                StatType.DAMAGE: damage_stat(pirate_captain_gun_damage / gc.PIRATE_CAPTAIN_ANIMATION_GUN_DURATION + pirate_captain_melee_damage / gc.PIRATE_CAPTAIN_ANIMATION_MELEE_DURATION),
+                StatType.RANGE: range_stat(gc.PIRATE_CAPTAIN_MAXIMUM_GUN_RANGE),
+                StatType.UTILITY: None
+            },
+            tooltips={
+                StatType.DEFENSE: f"{int(pirate_captain_health)} maximum health",
+                StatType.SPEED: f"{gc.PIRATE_CAPTAIN_MOVEMENT_SPEED:.1f} units per second",
+                StatType.DAMAGE: f"Gun: {int(pirate_captain_gun_damage)} per shot ({gun_cooldown:.1f}s cooldown), Melee: {int(pirate_captain_melee_damage)} per hit ({pirate_captain_melee_damage / gc.PIRATE_CAPTAIN_ANIMATION_MELEE_DURATION:.1f} per second)",
+                StatType.RANGE: f"Gun: Between {gc.PIRATE_CAPTAIN_MINIMUM_GUN_RANGE} and {gc.PIRATE_CAPTAIN_MAXIMUM_GUN_RANGE} units, Melee: {gc.PIRATE_CAPTAIN_MELEE_RANGE} units",
+                StatType.UTILITY: None
+            },
+            tips={
+                "Strong when": ["Able to kill low-health units from range", "Against weaker melee or ranged units", "When in a large group"],
+                "Weak when": ["Against longer ranged units", "Overwhelmed by enemies"],
+            },
+            modification_levels={
+                StatType.DEFENSE: 1 if unit_tier == UnitTier.ELITE else 0,
+                StatType.SPEED: 0,
+                StatType.DAMAGE: 1 if unit_tier == UnitTier.ELITE else 0,
+                StatType.RANGE: 0,
+                StatType.UTILITY: 1 if unit_tier == UnitTier.ADVANCED else 0,
             }
         )
     
