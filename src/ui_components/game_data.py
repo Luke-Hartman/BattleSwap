@@ -247,6 +247,10 @@ UPGRADE_DESCRIPTIONS = {
     UnitType.PIRATE_GUNNER: {
         UnitTier.ADVANCED: "70% increased gun damage",
         UnitTier.ELITE: "70% increased gun damage"
+    },
+    UnitType.PIRATE_CANNON: {
+        UnitTier.ADVANCED: "50% increased damage",
+        UnitTier.ELITE: "50% increased damage"
     }
 }
 
@@ -1717,7 +1721,50 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
                 StatType.UTILITY: 0,
             }
         )
-    
+    if unit_type == UnitType.PIRATE_CANNON:
+        # Calculate tier-specific values
+        cannon_damage = gc.PIRATE_CANNON_DAMAGE
+        cannon_range = gc.PIRATE_CANNON_RANGE
+        
+        # Advanced tier: 50% increased damage
+        if unit_tier == UnitTier.ADVANCED:
+            cannon_damage = cannon_damage * 1.5
+        
+        # Elite tier: 100% increased damage total
+        elif unit_tier == UnitTier.ELITE:
+            cannon_damage = cannon_damage * 2.0
+        
+        return UnitData(
+            name="Pirate Cannon",
+            description="Pirate Cannons are powerful ranged units with a single devastating shot that pierces through units.",
+            tier=unit_tier,
+            stats={
+                StatType.DEFENSE: defense_stat(gc.PIRATE_CANNON_HP),
+                StatType.SPEED: speed_stat(gc.PIRATE_CANNON_MOVEMENT_SPEED),
+                StatType.DAMAGE: damage_stat(cannon_damage * 1.5),
+                StatType.RANGE: range_stat(cannon_range),
+                StatType.UTILITY: None
+            },
+            tooltips={
+                StatType.DEFENSE: f"{int(gc.PIRATE_CANNON_HP)} maximum health",
+                StatType.SPEED: f"{gc.PIRATE_CANNON_MOVEMENT_SPEED:.1f} units per second",
+                StatType.DAMAGE: f"{int(cannon_damage)} in one shot that pierces through units",
+                StatType.RANGE: f"{cannon_range} units",
+                StatType.UTILITY: None
+            },
+            tips={
+                "Strong when": ["Able to get a good shot", "Against high-value targets", "In a defensive position"],
+                "Weak when": ["After firing", "Against fast units", "Overwhelmed by enemies"],
+            },
+            modification_levels={
+                StatType.DEFENSE: 0,
+                StatType.SPEED: 0,
+                StatType.DAMAGE: 1 if unit_tier == UnitTier.ADVANCED else 2 if unit_tier == UnitTier.ELITE else 0,
+                StatType.RANGE: 0,
+                StatType.UTILITY: 0,
+            }
+        )
+
     if unit_type == UnitType.PIRATE_CREW:
         # Calculate tier-specific values
         pirate_crew_damage = gc.PIRATE_CREW_ATTACK_DAMAGE

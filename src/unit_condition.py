@@ -330,3 +330,17 @@ class HasComponent(UnitCondition):
 
     def check(self, entity: int) -> bool:
         return esper.has_component(entity, self.component)
+
+
+@dataclass
+class HasStatusEffect(UnitCondition):
+    """The unit has the given status effect."""
+
+    status_effect_class: Type
+    """The class of status effect to check for."""
+
+    def check(self, entity: int) -> bool:
+        if not esper.has_component(entity, StatusEffects):
+            return False
+        status_effects = esper.component_for_entity(entity, StatusEffects)
+        return any(isinstance(effect, self.status_effect_class) for effect in status_effects.active_effects())

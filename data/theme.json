@@ -443,6 +443,20 @@
             }
         }
     },
+    "#pirate_captain_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/PirateCaptainIcon.png"
+            }
+        }
+    },
+    "#pirate_cannon_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/PirateCannonIcon.png"
+            }
+        }
+    },
     "#werebear_icon": {
         "images": {
             "normal_image": {

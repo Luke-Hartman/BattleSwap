@@ -78,6 +78,21 @@ class Invisible(StatusEffect):
     """Status effect that makes a unit invisible and untargetable."""
     # No additional fields needed beyond the base time_remaining
 
+@dataclass
+class Immobilized(StatusEffect):
+    """Status effect that immobilizes a unit, preventing movement."""
+    # No additional fields needed beyond the base time_remaining
+
+@dataclass
+class WontPursue(StatusEffect):
+    """Status effect that prevents a unit from pursuing.
+    
+    These units can be moved by forced movement, but won't transition to the pursuing state.
+
+    More specifically, they won't react to a destination target in the idle processor.
+    """
+    # No additional fields needed beyond the base time_remaining
+
 class StatusEffects:
     """Component that stores the status effects of a unit."""
     # TODO: This not really a following ECS best practice
@@ -92,6 +107,8 @@ class StatusEffects:
             Healing: [],
             ZombieInfection: [],
             Invisible: [],
+            Immobilized: [],
+            WontPursue: [],
         }
 
     def add(self, status_effect: StatusEffect) -> None:
@@ -131,6 +148,12 @@ class StatusEffects:
         if self._status_by_type[ZombieInfection]:
             most_recent_zombie_infection = max(self._status_by_type[ZombieInfection], key=lambda e: e.time_remaining)
             active_effects.append(most_recent_zombie_infection)
+        if self._status_by_type[Immobilized]:
+            longest_immobilized = max(self._status_by_type[Immobilized], key=lambda e: e.time_remaining)
+            active_effects.append(longest_immobilized)
+        if self._status_by_type[WontPursue]:
+            longest_wont_pursue = max(self._status_by_type[WontPursue], key=lambda e: e.time_remaining)
+            active_effects.append(longest_wont_pursue)
         active_effects.extend(self._status_by_type[Healing])
         return active_effects
 

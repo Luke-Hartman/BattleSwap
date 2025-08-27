@@ -26,6 +26,7 @@ class Visual(Enum):
     Healing = auto()
     Ignited = auto()
     OrcThrowingAxe = auto()
+    PirateCannonBall = auto()
     Tongue = auto()
     TongueTip = auto()
 
@@ -48,6 +49,7 @@ def load_visual_sheets():
         Visual.Healing: os.path.join("assets", "units", "CrusaderCleric.png"),
         Visual.Ignited: os.path.join("assets", "effects", "Ignited.png"),
         Visual.OrcThrowingAxe: os.path.join("assets", "effects", "OrcThrowingAxe.png"),
+        Visual.PirateCannonBall: os.path.join("assets", "effects", "PirateCannonBall.png"),
         Visual.Tongue: os.path.join("assets", "effects", "Tongue.png"),
         Visual.TongueTip: os.path.join("assets", "effects", "TongueTip.png"),
     }
@@ -318,6 +320,24 @@ def create_visual_spritesheet(
             frame_height=16,
             scale=scale,
             frames={AnimationType.IDLE: frames[1] - frames[0]},
+            rows={AnimationType.IDLE: 0},
+            animation_durations={AnimationType.IDLE: duration},
+            sprite_center_offset=(-.5, -.5),
+            layer=layer
+        )
+    elif visual == Visual.PirateCannonBall:
+        if duration is None:
+            duration = 1.0  # Doesn't matter for single frame
+        if scale is None:
+            scale = gc.MINIFOLKS_SCALE
+        if frames is not None:
+            raise NotImplementedError("PirateCannonBall visual cannot specify frames")
+        return SpriteSheet(
+            surface=visual_sheets[visual],
+            frame_width=16,
+            frame_height=16,
+            scale=scale,
+            frames={AnimationType.IDLE: 1},
             rows={AnimationType.IDLE: 0},
             animation_durations={AnimationType.IDLE: duration},
             sprite_center_offset=(-.5, -.5),

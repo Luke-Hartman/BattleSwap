@@ -16,7 +16,6 @@ from components.entity_memory import EntityMemory
 from components.follower import Follower
 from components.forced_movement import ForcedMovement
 from components.hitbox import Hitbox
-from components.immobile import Immobile
 from components.immunity import ImmuneToZombieInfection
 from components.instant_ability import InstantAbilities, InstantAbility
 from components.no_nudge import NoNudge
@@ -34,7 +33,7 @@ from components.aura import Aura
 from components.position import Position
 from components.animation import AnimationState, AnimationType
 from components.sprite_sheet import SpriteSheet
-from components.status_effect import CrusaderBannerBearerEmpowered, Fleeing, Healing, DamageOverTime, Invisible, StatusEffects, ZombieInfection, CrusaderBannerBearerMovementSpeedBuff, CrusaderBannerBearerAbilitySpeedBuff
+from components.status_effect import CrusaderBannerBearerEmpowered, Fleeing, Healing, DamageOverTime, Invisible, StatusEffects, WontPursue, ZombieInfection, CrusaderBannerBearerMovementSpeedBuff, CrusaderBannerBearerAbilitySpeedBuff
 from target_strategy import ByCurrentHealth, ByDistance, ByMissingHealth, ConditionPenalty, TargetStrategy, TargetingGroup, WeightedRanking
 from components.destination import Destination
 from components.team import Team, TeamType
@@ -44,6 +43,7 @@ from components.unit_type import UnitType, UnitTypeComponent
 from components.velocity import Velocity
 from components.health import Health
 from components.orientation import Orientation, FacingDirection
+from components.status_effect import Immobilized
 from effects import (
     AddsForcedMovement, AppliesStatusEffect, CreatesUnit, CreatesVisual, 
     CreatesAttachedVisual, CreatesLobbed, CreatesProjectile, CreatesVisualLink, Damages, 
@@ -51,7 +51,7 @@ from effects import (
     SoundEffect, StanceChange, RememberTarget, CreatesVisualAoE, CreatesCircleAoE
 )
 from unit_condition import (
-    All, Alive, Always, AmmoEquals, Any, Grounded, HasComponent, HealthBelowPercent, InStance, Infected, IsEntity, IsUnitType, MaximumDistanceFromDestination, MinimumDistanceFromEntity, Never, Not, OnTeam,
+    All, Alive, Always, AmmoEquals, Any, Grounded, HasComponent, HasStatusEffect, HealthBelowPercent, InStance, Infected, IsEntity, IsUnitType, MaximumDistanceFromDestination, MinimumDistanceFromEntity, Never, Not, OnTeam,
     MaximumDistanceFromEntity, RememberedBy, RememberedSatisfies
 )
 from visuals import Visual
@@ -87,6 +87,7 @@ unit_theme_ids: Dict[UnitType, str] = {
     UnitType.PIRATE_CREW: "#pirate_crew_icon",
     UnitType.PIRATE_GUNNER: "#pirate_gunner_icon",
     UnitType.PIRATE_CAPTAIN: "#pirate_captain_icon",
+    UnitType.PIRATE_CANNON: "#pirate_cannon_icon",
     UnitType.WEREBEAR: "#werebear_icon",
     UnitType.ZOMBIE_BASIC_ZOMBIE: "#zombie_basic_zombie_icon",
     UnitType.ZOMBIE_BRUTE: "#zombie_brute_icon",
@@ -167,6 +168,7 @@ _unit_to_faction = {
     UnitType.PIRATE_CREW: Faction.PIRATE,
     UnitType.PIRATE_GUNNER: Faction.PIRATE,
     UnitType.PIRATE_CAPTAIN: Faction.PIRATE,
+    UnitType.PIRATE_CANNON: Faction.PIRATE,
     UnitType.WEREBEAR: Faction.MISC,
     UnitType.ZOMBIE_BASIC_ZOMBIE: Faction.ZOMBIES,
     UnitType.ZOMBIE_BRUTE: Faction.ZOMBIES,
@@ -207,6 +209,7 @@ def load_sprite_sheets():
         UnitType.PIRATE_CREW: "PirateCrew.png",
         UnitType.PIRATE_GUNNER: "PirateGunner.png",
         UnitType.PIRATE_CAPTAIN: "PirateCaptain.png",
+        UnitType.PIRATE_CANNON: "PirateCannon.png",
         UnitType.WEREBEAR: "Werebear.png",
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombie.png",
         UnitType.ZOMBIE_BRUTE: "ZombieBasicZombie.png",
@@ -251,6 +254,7 @@ def load_sprite_sheets():
         UnitType.PIRATE_CREW: "PirateCrewIcon.png",
         UnitType.PIRATE_GUNNER: "PirateGunnerIcon.png",
         UnitType.PIRATE_CAPTAIN: "PirateCaptainIcon.png",
+        UnitType.PIRATE_CANNON: "PirateCannonIcon.png",
         UnitType.WEREBEAR: "WerebearIcon.png",
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombieIcon.png",
         UnitType.ZOMBIE_BRUTE: "ZombieBruteIcon.png",
@@ -315,6 +319,7 @@ def create_unit(
         UnitType.PIRATE_CREW: create_pirate_crew,
         UnitType.PIRATE_GUNNER: create_pirate_gunner,
         UnitType.PIRATE_CAPTAIN: create_pirate_captain,
+        UnitType.PIRATE_CANNON: create_pirate_cannon,
         UnitType.WEREBEAR: create_werebear,
         UnitType.ZOMBIE_BASIC_ZOMBIE: create_zombie_basic_zombie,
         UnitType.ZOMBIE_BRUTE: create_zombie_brute,
@@ -2214,7 +2219,9 @@ def create_crusader_catapult(
         corruption_powers=corruption_powers,
         tier=tier
     )
-    esper.add_component(entity, Immobile())
+    # Add permanent immobilization effect
+    immobilized_effect = Immobilized(time_remaining=float("inf"))
+    esper.component_for_entity(entity, StatusEffects).add(immobilized_effect)
     targetting_strategy = TargetStrategy(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
@@ -4002,6 +4009,116 @@ def create_pirate_gunner(
     }))
     return entity
 
+def create_pirate_cannon(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+    ) -> int:
+    """Create a pirate cannon entity with all necessary components."""
+    # Calculate tier-specific values
+    cannon_damage = gc.PIRATE_CANNON_DAMAGE
+    cannon_range = gc.PIRATE_CANNON_RANGE
+    
+    # Advanced tier: 50% increased damage
+    if tier == UnitTier.ADVANCED:
+        cannon_damage = cannon_damage * 1.5
+    
+    # Elite tier: 100% increased damage total
+    elif tier == UnitTier.ELITE:
+        cannon_damage = cannon_damage * 2.0
+    
+    entity = unit_base_entity(
+        x=x,
+        y=y,
+        team=team,
+        unit_type=UnitType.PIRATE_CANNON,
+        movement_speed=gc.PIRATE_CANNON_MOVEMENT_SPEED,
+        health=gc.PIRATE_CANNON_HP,
+        hitbox=Hitbox(
+            width=16,
+            height=32,
+        ),
+        corruption_powers=corruption_powers,
+        tier=tier
+    )
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=2, ascending=True),
+        ],
+        unit_condition=None,
+        targetting_group=TargetingGroup.TEAM2_LIVING_VISIBLE if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING_VISIBLE
+    )
+    esper.add_component(entity, Destination(target_strategy=targetting_strategy, x_offset=0))
+    esper.add_component(entity, RangeIndicator(ranges=[cannon_range]))
+    esper.add_component(
+        entity,
+        Ammo(current=1, max=1)  # Single shot with 1 ammo
+    )
+    esper.add_component(
+        entity,
+        Abilities(
+            abilities=[
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                Grounded(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=cannon_range,
+                                    y_bias=None
+                                )
+                            ])
+                        ),
+                        SatisfiesUnitCondition(
+                            AmmoEquals(1)  # Only shoot if we have ammo
+                        )
+                    ],
+                    persistent_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                Grounded(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=cannon_range + gc.TARGETTING_GRACE_DISTANCE,
+                                    y_bias=None
+                                )
+                            ])
+                        )
+                    ],
+                    effects={
+                        0: [
+                            PlaySound(SoundEffect(filename="pirate_cannon.wav", volume=0.75)),
+                            CreatesProjectile(
+                                projectile_speed=gc.PIRATE_CANNON_PROJECTILE_SPEED,
+                                effects=[
+                                    Damages(damage=cannon_damage, recipient=Recipient.TARGET),
+                                ],
+                                visual=Visual.PirateCannonBall,
+                                projectile_offset_x=5*gc.MINIFOLKS_SCALE,
+                                projectile_offset_y=0,
+                                unit_condition=All([OnTeam(team=team.other()), Alive(), Grounded()]),
+                                pierce=1000,
+                            ),
+                            IncreaseAmmo(amount=-1),
+                            AppliesStatusEffect(
+                                status_effect=WontPursue(time_remaining=float("inf")),
+                                recipient=Recipient.OWNER
+                            ),
+                        ]
+                    }
+                )
+            ]
+        )
+    )
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.PIRATE_CANNON, tier))
+    return entity
+
 def create_pirate_captain(
         x: int,
         y: int,
@@ -4145,6 +4262,8 @@ def create_pirate_captain(
         },
     }))
     return entity
+
+
 
 def create_werebear(
         x: int,
@@ -4923,7 +5042,7 @@ def create_zombie_grabber(
                 ascending=True,
             ),
         ],
-        unit_condition=Not(HasComponent(Immobile)),
+        unit_condition=Not(HasStatusEffect(Immobilized)),
         targetting_group=TargetingGroup.TEAM1_LIVING_VISIBLE if team == TeamType.TEAM1 else TargetingGroup.TEAM2_LIVING_VISIBLE
     )
     esper.add_component(
@@ -5927,6 +6046,35 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
                 AnimationType.ABILITY1: gc.PIRATE_CAPTAIN_ANIMATION_GUN_DURATION,
                 AnimationType.ABILITY2: gc.PIRATE_CAPTAIN_ANIMATION_MELEE_DURATION,
                 AnimationType.DYING: gc.PIRATE_CAPTAIN_ANIMATION_DYING_DURATION,
+            },
+            sprite_center_offset=(0, -8),
+            synchronized_animations={
+                AnimationType.IDLE: True,
+            }
+        )
+    if unit_type == UnitType.PIRATE_CANNON:
+        return SpriteSheet(
+            surface=sprite_sheets[UnitType.PIRATE_CANNON],
+            frame_width=32,
+            frame_height=32,
+            scale=gc.MINIFOLKS_SCALE,
+            frames={
+                AnimationType.IDLE: 1, 
+                AnimationType.WALKING: 4, 
+                AnimationType.ABILITY1: 2, 
+                AnimationType.DYING: 4
+            },
+            rows={
+                AnimationType.IDLE: 0, 
+                AnimationType.WALKING: 1, 
+                AnimationType.ABILITY1: 2, 
+                AnimationType.DYING: 5
+            },
+            animation_durations={
+                AnimationType.IDLE: gc.PIRATE_CANNON_ANIMATION_IDLE_DURATION,
+                AnimationType.WALKING: gc.PIRATE_CANNON_ANIMATION_WALKING_DURATION,
+                AnimationType.ABILITY1: gc.PIRATE_CANNON_ANIMATION_ATTACK_DURATION,
+                AnimationType.DYING: gc.PIRATE_CANNON_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(0, -8),
             synchronized_animations={

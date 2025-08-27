@@ -2,7 +2,7 @@
 
 from components.dying import Dying
 from components.health import Health
-from components.status_effect import CrusaderBannerBearerEmpowered, CrusaderBannerBearerMovementSpeedBuff, CrusaderBannerBearerAbilitySpeedBuff, Fleeing, Healing, DamageOverTime, StatusEffects, ZombieInfection, Invisible
+from components.status_effect import CrusaderBannerBearerEmpowered, CrusaderBannerBearerMovementSpeedBuff, CrusaderBannerBearerAbilitySpeedBuff, Fleeing, Healing, DamageOverTime, StatusEffects, WontPursue, ZombieInfection, Invisible, Immobilized
 import esper
 
 from components.unit_state import State, UnitState
@@ -41,6 +41,10 @@ class StatusEffectProcessor(esper.Processor):
                     pass
                 elif isinstance(status_effect, Invisible):
                     pass # Handled in the transparency processor
+                elif isinstance(status_effect, Immobilized):
+                    pass # Handled in the movement processor
+                elif isinstance(status_effect, WontPursue):
+                    pass # Handled in the targeting processor
                 else:
                     raise ValueError(f"Unknown status effect: {status_effect}")
 

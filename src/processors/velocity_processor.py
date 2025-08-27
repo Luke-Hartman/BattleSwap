@@ -9,21 +9,33 @@ import esper
 from components.angle import Angle
 from components.angular_velocity import AngularVelocity
 from components.forced_movement import ForcedMovement
-from components.immobile import Immobile
 from components.position import Position
 from components.velocity import Velocity
+from components.status_effect import StatusEffects, Immobilized
 
 class VelocityProcessor(esper.Processor):
     """Processor responsible for translating entities."""
 
     def process(self, dt: float):
         for ent, (pos, velocity) in esper.get_components(Position, Velocity):
-            if not esper.has_component(ent, Immobile) and not esper.has_component(ent, ForcedMovement):
+            # Check if entity is immobilized by status effect
+            is_immobilized = False
+            if esper.has_component(ent, StatusEffects):
+                status_effects = esper.component_for_entity(ent, StatusEffects)
+                is_immobilized = any(isinstance(effect, Immobilized) for effect in status_effects.active_effects())
+            
+            if not is_immobilized and not esper.has_component(ent, ForcedMovement):
                 pos.x += velocity.x * dt
                 pos.y += velocity.y * dt
         
         for ent, (angle, angular_velocity) in esper.get_components(Angle, AngularVelocity):
-            if not esper.has_component(ent, Immobile):
+            # Check if entity is immobilized by status effect
+            is_immobilized = False
+            if esper.has_component(ent, StatusEffects):
+                status_effects = esper.component_for_entity(ent, StatusEffects)
+                is_immobilized = any(isinstance(effect, Immobilized) for effect in status_effects.active_effects())
+            
+            if not is_immobilized:
                 angle.angle += angular_velocity.velocity * dt
 
         for ent, (pos, forced_movement) in esper.get_components(Position, ForcedMovement):

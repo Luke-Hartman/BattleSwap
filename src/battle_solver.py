@@ -66,6 +66,7 @@ ALLOWED_UNIT_TYPES = [
     UnitType.PIRATE_CAPTAIN,
     UnitType.PIRATE_CREW,
     UnitType.PIRATE_GUNNER,
+    UnitType.PIRATE_CANNON,
     # UnitType.ZOMBIE_BASIC,
     # UnitType.ZOMBIE_BRUTE,
     # UnitType.ZOMBIE_GRABBER,
