@@ -3806,11 +3806,11 @@ def create_pirate_crew(
                         ]
                     },
                 ),
-                # Jump attack ability (single use)
+                # Jump attack ability
                 Ability(
                     target_strategy=targetting_strategy,
                     trigger_conditions=[
-                        Cooldown(duration=float("inf")),
+                        Cooldown(duration=gc.PIRATE_CREW_JUMP_COOLDOWN),
                         SatisfiesUnitCondition(Grounded()),
                         HasTarget(
                             unit_condition=All([
@@ -3917,18 +3917,68 @@ def create_pirate_gunner(
     )
     esper.add_component(
         entity,
-        Destination(target_strategy=targetting_strategy, x_offset=0)
+        Destination(target_strategy=targetting_strategy, x_offset=0, min_distance=gc.PIRATE_GUNNER_GUN_RANGE)
     )
     esper.add_component(entity, RangeIndicator(ranges=[gc.PIRATE_GUNNER_GUN_RANGE]))
+    
+    MELEE = 0
+    RANGED = 1
+    esper.add_component(entity, Stance(stance=RANGED))
+    
+    esper.add_component(
+        entity,
+        InstantAbilities(
+            abilities=[
+                # Switch to ranged stance when enemies move away
+                InstantAbility(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        SatisfiesUnitCondition(InStance(stance=MELEE)),
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                MinimumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.PIRATE_GUNNER_SWITCH_STANCE_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    y_bias=None,
+                                ),
+                            ])
+                        )
+                    ],
+                    effects=[StanceChange(stance=RANGED)]
+                ),
+                # Switch to melee stance when enemies get close
+                InstantAbility(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        SatisfiesUnitCondition(InStance(stance=RANGED)),
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.PIRATE_GUNNER_SWITCH_STANCE_RANGE,
+                                    y_bias=None,
+                                ),
+                            ])
+                        )
+                    ],
+                    effects=[StanceChange(stance=MELEE)]
+                )
+            ]
+        )
+    )
+    
     esper.add_component(
         entity,
         Abilities(
             abilities=[
-                # Gun attack (ranged, single use)
+                # Gun attack (ranged long cooldown)
+                # Note that unlike some other stance units, they can still use their gun in melee range.
                 Ability(
                     target_strategy=targetting_strategy,
                     trigger_conditions=[
-                        Cooldown(duration=float("inf")),
+                        Cooldown(duration=gc.PIRATE_GUNNER_GUN_COOLDOWN),
                         HasTarget(
                             unit_condition=All([
                                 Alive(),
@@ -3963,6 +4013,7 @@ def create_pirate_gunner(
                 Ability(
                     target_strategy=targetting_strategy,
                     trigger_conditions=[
+                        SatisfiesUnitCondition(InStance(stance=MELEE)),
                         HasTarget(
                             unit_condition=All([
                                 Alive(),
@@ -4050,12 +4101,8 @@ def create_pirate_cannon(
         unit_condition=None,
         targetting_group=TargetingGroup.TEAM2_LIVING_VISIBLE if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING_VISIBLE
     )
-    esper.add_component(entity, Destination(target_strategy=targetting_strategy, x_offset=0))
+    esper.add_component(entity, Destination(target_strategy=targetting_strategy, x_offset=0, min_distance=cannon_range))
     esper.add_component(entity, RangeIndicator(ranges=[cannon_range]))
-    esper.add_component(
-        entity,
-        Ammo(current=1, max=1)  # Single shot with 1 ammo
-    )
     esper.add_component(
         entity,
         Abilities(
@@ -4063,6 +4110,7 @@ def create_pirate_cannon(
                 Ability(
                     target_strategy=targetting_strategy,
                     trigger_conditions=[
+                        Cooldown(duration=gc.PIRATE_CANNON_COOLDOWN),
                         HasTarget(
                             unit_condition=All([
                                 Alive(),
@@ -4073,9 +4121,6 @@ def create_pirate_cannon(
                                     y_bias=None
                                 )
                             ])
-                        ),
-                        SatisfiesUnitCondition(
-                            AmmoEquals(1)  # Only shoot if we have ammo
                         )
                     ],
                     persistent_conditions=[
@@ -4105,11 +4150,8 @@ def create_pirate_cannon(
                                 unit_condition=All([OnTeam(team=team.other()), Alive(), Grounded()]),
                                 pierce=1000,
                             ),
-                            IncreaseAmmo(amount=-1),
-                            AppliesStatusEffect(
-                                status_effect=WontPursue(time_remaining=float("inf")),
-                                recipient=Recipient.OWNER
-                            ),
+
+
                         ]
                     }
                 )
@@ -4168,7 +4210,7 @@ def create_pirate_captain(
         entity,
         Destination(target_strategy=targetting_strategy, x_offset=0)
     )
-    esper.add_component(entity, RangeIndicator(ranges=[gc.PIRATE_CAPTAIN_MINIMUM_GUN_RANGE, gc.PIRATE_CAPTAIN_MAXIMUM_GUN_RANGE]))
+    esper.add_component(entity, RangeIndicator(ranges=[gc.PIRATE_CAPTAIN_MAXIMUM_GUN_RANGE]))
     esper.add_component(
         entity,
         Abilities(
@@ -4182,11 +4224,6 @@ def create_pirate_captain(
                             unit_condition=All([
                                 Alive(),
                                 Grounded(),
-                                MinimumDistanceFromEntity(
-                                    entity=entity,
-                                    distance=gc.PIRATE_CAPTAIN_MINIMUM_GUN_RANGE,
-                                    y_bias=None
-                                ),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=gc.PIRATE_CAPTAIN_MAXIMUM_GUN_RANGE,

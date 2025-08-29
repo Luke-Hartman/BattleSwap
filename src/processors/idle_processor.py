@@ -1,8 +1,10 @@
+import math
 import esper
 from components.airborne import Airborne
 from components.destination import Destination
 from components.forced_movement import ForcedMovement
 from components.orientation import FacingDirection, Orientation
+from components.position import Position
 from components.team import Team, TeamType
 from components.unit_state import State, UnitState
 from components.velocity import Velocity
@@ -19,6 +21,11 @@ class IdleProcessor(esper.Processor):
                     continue
                 target = destination.target_strategy.target
                 if target is not None:
+                    destination_pos = destination.get_destination_position(ent, dt)
+                    entity_pos = esper.component_for_entity(ent, Position)
+                    distance = entity_pos.distance(destination_pos, y_bias=None)
+                    if distance < destination.min_distance:
+                        continue # Don't need to do anything, we're already at the destination
                     emit_event(DESTINATION_TARGET_ACQUIRED, event=DestinationTargetAcquiredEvent(ent, target))
                 velocity.x = 0
                 velocity.y = 0

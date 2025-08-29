@@ -80,6 +80,11 @@ class DestinationTargetLostEvent:
     entity: int
 
 @dataclass
+class DestinationReachedEvent:
+    """Event triggered when a unit reaches its destination."""
+    entity: int
+
+@dataclass
 class FleeingStartedEvent:
     """Event triggered when a unit starts fleeing."""
     entity: int
@@ -174,6 +179,7 @@ CIRCLE_AOE_HIT = 'circle_aoe_hit'
 DEATH = 'death'
 DESTINATION_TARGET_ACQUIRED = 'destination_target_acquired'
 DESTINATION_TARGET_LOST = 'destination_target_lost'
+DESTINATION_REACHED = 'destination_reached'
 FLEEING_STARTED = 'fleeing_started'
 FLEEING_EXPIRED = 'fleeing_expired'
 GRAB_STARTED = 'grab_started'

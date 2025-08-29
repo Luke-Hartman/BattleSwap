@@ -1736,7 +1736,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         
         return UnitData(
             name="Pirate Cannon",
-            description="Pirate Cannons are powerful ranged units with a single devastating shot that pierces through units.",
+            description="Pirate Cannons are powerful ranged units with a devastating shot that pierces through units on a long cooldown.",
             tier=unit_tier,
             stats={
                 StatType.DEFENSE: defense_stat(gc.PIRATE_CANNON_HP),
@@ -1748,13 +1748,13 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             tooltips={
                 StatType.DEFENSE: f"{int(gc.PIRATE_CANNON_HP)} maximum health",
                 StatType.SPEED: f"{gc.PIRATE_CANNON_MOVEMENT_SPEED:.1f} units per second",
-                StatType.DAMAGE: f"{int(cannon_damage)} in one shot that pierces through units",
+                StatType.DAMAGE: f"{int(cannon_damage)} per shot that pierces through units ({gc.PIRATE_CANNON_COOLDOWN:.0f}s cooldown)",
                 StatType.RANGE: f"{cannon_range} units",
                 StatType.UTILITY: None
             },
             tips={
                 "Strong when": ["Able to get a good shot", "Against high-value targets", "In a defensive position"],
-                "Weak when": ["After firing", "Against fast units", "Overwhelmed by enemies"],
+                "Weak when": ["Cannon is on cooldown", "Against fast units", "Overwhelmed by enemies"],
             },
             modification_levels={
                 StatType.DEFENSE: 0,
@@ -1782,7 +1782,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         
         return UnitData(
             name="Pirate Crew",
-            description="Pirate Crew are balanced melee units with a single-use <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a> jump attack.",
+            description="Pirate Crew are balanced melee units with a <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a> jump attack on a long cooldown.",
             tier=unit_tier,
             stats={
                 StatType.DEFENSE: defense_stat(pirate_crew_health),
@@ -1793,14 +1793,14 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             },
             tooltips={
                 StatType.DEFENSE: f"{int(pirate_crew_health)} maximum health",
-                StatType.SPEED: f"{pirate_crew_movement_speed:.1f} units per second, can jump {gc.PIRATE_CREW_MAXIMUM_JUMP_RANGE} units once",
+                StatType.SPEED: f"{pirate_crew_movement_speed:.1f} units per second, can jump {gc.PIRATE_CREW_MAXIMUM_JUMP_RANGE} units every {gc.PIRATE_CREW_JUMP_COOLDOWN:.0f} seconds",
                 StatType.DAMAGE: f"{int(pirate_crew_damage)} per hit ({pirate_crew_damage / gc.PIRATE_CREW_ANIMATION_ATTACK_DURATION:.1f} per second). Jump deals {gc.PIRATE_CREW_JUMP_DAMAGE} damage in a small area.",
                 StatType.RANGE: f"Melee: {gc.PIRATE_CREW_ATTACK_RANGE} units, Jump: {gc.PIRATE_CREW_MINIMUM_JUMP_RANGE} to {gc.PIRATE_CREW_MAXIMUM_JUMP_RANGE} units",
                 StatType.UTILITY: None
             },
             tips={
                 "Strong when": ["Able to hit multiple units with jump", "In a group with other pirate crew", "Against units with low health"],
-                "Weak when": ["In long fights", "Against very long ranged units"],
+                "Weak when": ["Against very long ranged units"],
             },
             modification_levels={
                 StatType.DEFENSE: 0,
@@ -1826,7 +1826,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         
         return UnitData(
             name="Pirate Gunner",
-            description="Pirate Gunners are ranged units with a powerful single-use musket shot and a melee attack for close combat.",
+            description="Pirate Gunners are ranged units with a powerful musket shot on a long cooldown and a melee attack for close combat.",
             tier=unit_tier,
             stats={
                 StatType.DEFENSE: defense_stat(gc.PIRATE_GUNNER_HP),
@@ -1838,13 +1838,13 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             tooltips={
                 StatType.DEFENSE: f"{int(gc.PIRATE_GUNNER_HP)} maximum health",
                 StatType.SPEED: f"{gc.PIRATE_GUNNER_MOVEMENT_SPEED:.1f} units per second",
-                StatType.DAMAGE: f"Gun: {int(pirate_gunner_gun_damage)} (single use), Melee: {int(pirate_gunner_melee_damage)} per hit ({pirate_gunner_melee_damage / gc.PIRATE_GUNNER_ANIMATION_MELEE_DURATION:.1f} per second)",
+                StatType.DAMAGE: f"Gun: {int(pirate_gunner_gun_damage)} ({gc.PIRATE_GUNNER_GUN_COOLDOWN:.0f}s cooldown), Melee: {int(pirate_gunner_melee_damage)} per hit ({pirate_gunner_melee_damage / gc.PIRATE_GUNNER_ANIMATION_MELEE_DURATION:.1f} per second)",
                 StatType.RANGE: f"Gun: {gc.PIRATE_GUNNER_GUN_RANGE} units, Melee: {gc.PIRATE_GUNNER_MELEE_RANGE} units",
                 StatType.UTILITY: None
             },
             tips={
                 "Strong when": ["Able to get a good shot with the musket", "Against high-value targets"],
-                "Weak when": ["After using the musket", "Distracted by low-value targets"],
+                "Weak when": ["Musket is on cooldown", "Distracted by low-value targets"],
             },
             modification_levels={
                 StatType.DEFENSE: 0,
@@ -1887,7 +1887,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
                 StatType.DEFENSE: f"{int(pirate_captain_health)} maximum health",
                 StatType.SPEED: f"{gc.PIRATE_CAPTAIN_MOVEMENT_SPEED:.1f} units per second",
                 StatType.DAMAGE: f"Gun: {int(pirate_captain_gun_damage)} per shot ({gun_cooldown:.1f}s cooldown), Melee: {int(pirate_captain_melee_damage)} per hit ({pirate_captain_melee_damage / gc.PIRATE_CAPTAIN_ANIMATION_MELEE_DURATION:.1f} per second)",
-                StatType.RANGE: f"Gun: Between {gc.PIRATE_CAPTAIN_MINIMUM_GUN_RANGE} and {gc.PIRATE_CAPTAIN_MAXIMUM_GUN_RANGE} units, Melee: {gc.PIRATE_CAPTAIN_MELEE_RANGE} units",
+                StatType.RANGE: f"Gun: {gc.PIRATE_CAPTAIN_MAXIMUM_GUN_RANGE} units, Melee: {gc.PIRATE_CAPTAIN_MELEE_RANGE} units",
                 StatType.UTILITY: None
             },
             tips={

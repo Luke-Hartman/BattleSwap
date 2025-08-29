@@ -17,7 +17,7 @@ from components.unit_state import UnitState, State
 from components.movement import Movement
 from components.velocity import Velocity
 from components.orientation import Orientation, FacingDirection
-from events import emit_event, DestinationTargetLostEvent, DESTINATION_TARGET_LOST
+from events import emit_event, DestinationTargetLostEvent, DESTINATION_TARGET_LOST, DESTINATION_REACHED, DestinationReachedEvent
 
 class PursuingProcessor(esper.Processor):
     """Processor responsible for moving units towards their destination."""
@@ -32,19 +32,15 @@ class PursuingProcessor(esper.Processor):
             if unit_state.state == State.PURSUING and target is not None:
                 target_pos = esper.component_for_entity(target, Position)
                 orientation.facing = FacingDirection.RIGHT if target_pos.x > pos.x else FacingDirection.LEFT
-                team = esper.component_for_entity(ent, Team)
-                destination_position_x = target_pos.x + destination.get_x_offset(team.type, orientation.facing)
-                destination_position_y = target_pos.y
-                target_velocity = esper.component_for_entity(target, Velocity)
-                destination_position_x += target_velocity.x * dt
-                destination_position_y += target_velocity.y * dt
-                destination_dx = destination_position_x - pos.x
-                destination_dy = destination_position_y - pos.y
+                destination_pos = destination.get_destination_position(ent, dt)
+                destination_dx = destination_pos.x - pos.x
+                destination_dy = destination_pos.y - pos.y
                 destination_distance = math.sqrt(destination_dx**2 + destination_dy**2)
 
                 if destination_distance < destination.min_distance:
                     velocity.x = 0
                     velocity.y = 0
+                    emit_event(DESTINATION_REACHED, event=DestinationReachedEvent(ent))
                 else:
                     if dt == 0:
                         speed = 0
