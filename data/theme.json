@@ -457,6 +457,13 @@
             }
         }
     },
+    "#pirate_harpooner_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/PirateHarpoonerIcon.png"
+            }
+        }
+    },
     "#werebear_icon": {
         "images": {
             "normal_image": {

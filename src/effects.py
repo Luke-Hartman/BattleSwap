@@ -46,6 +46,7 @@ from unit_condition import UnitCondition
 from game_constants import gc
 from components.airborne import Airborne
 from components.status_effect import Invisible
+from components.repeat import Repeat
 
 class Recipient(Enum):
     """The recipient of an effect."""
@@ -1218,4 +1219,39 @@ class CreatesVisualLink(Effect):
             tile_size=self.tile_size,
             entity_delete_condition=self.entity_delete_condition,
             other_entity_delete_condition=self.other_entity_delete_condition,
+        ))
+
+@dataclass
+class CreatesRepeat(Effect):
+    """Effect creates a repeat component that continually applies effects at intervals."""
+
+    recipient: Recipient
+    """The recipient that gets the repeat component."""
+
+    effects: List[Effect]
+    """The effects to repeat."""
+
+    interval: float
+    """The interval between effect applications in seconds."""
+
+    stop_condition: UnitCondition
+    """The condition that, when met, stops the repeating effects."""
+
+    def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
+        if self.recipient == Recipient.OWNER:
+            recipient = owner
+        elif self.recipient == Recipient.PARENT:
+            recipient = parent
+        elif self.recipient == Recipient.TARGET:
+            recipient = target
+        else:
+            raise ValueError(f"Invalid recipient: {self.recipient}")
+        
+        esper.add_component(recipient, Repeat(
+            effects=self.effects,
+            interval=self.interval,
+            stop_condition=self.stop_condition,
+            owner=owner,
+            parent=parent,
+            target=target,
         ))

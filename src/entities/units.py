@@ -45,7 +45,7 @@ from components.health import Health
 from components.orientation import Orientation, FacingDirection
 from components.status_effect import Immobilized
 from effects import (
-    AddsForcedMovement, AppliesStatusEffect, CreatesUnit, CreatesVisual, 
+    AddsForcedMovement, AppliesStatusEffect, CreatesRepeat, CreatesUnit, CreatesVisual, 
     CreatesAttachedVisual, CreatesLobbed, CreatesProjectile, CreatesVisualLink, Damages, 
     Heals, HealToFull, IncreaseAmmo, IncreasesMaxHealthFromTarget, Jump, PlaySound, Recipient, 
     SoundEffect, StanceChange, RememberTarget, CreatesVisualAoE, CreatesCircleAoE
@@ -88,6 +88,7 @@ unit_theme_ids: Dict[UnitType, str] = {
     UnitType.PIRATE_GUNNER: "#pirate_gunner_icon",
     UnitType.PIRATE_CAPTAIN: "#pirate_captain_icon",
     UnitType.PIRATE_CANNON: "#pirate_cannon_icon",
+    UnitType.PIRATE_HARPOONER: "#pirate_harpooner_icon",
     UnitType.WEREBEAR: "#werebear_icon",
     UnitType.ZOMBIE_BASIC_ZOMBIE: "#zombie_basic_zombie_icon",
     UnitType.ZOMBIE_BRUTE: "#zombie_brute_icon",
@@ -169,6 +170,7 @@ _unit_to_faction = {
     UnitType.PIRATE_GUNNER: Faction.PIRATE,
     UnitType.PIRATE_CAPTAIN: Faction.PIRATE,
     UnitType.PIRATE_CANNON: Faction.PIRATE,
+    UnitType.PIRATE_HARPOONER: Faction.PIRATE,
     UnitType.WEREBEAR: Faction.MISC,
     UnitType.ZOMBIE_BASIC_ZOMBIE: Faction.ZOMBIES,
     UnitType.ZOMBIE_BRUTE: Faction.ZOMBIES,
@@ -210,6 +212,7 @@ def load_sprite_sheets():
         UnitType.PIRATE_GUNNER: "PirateGunner.png",
         UnitType.PIRATE_CAPTAIN: "PirateCaptain.png",
         UnitType.PIRATE_CANNON: "PirateCannon.png",
+        UnitType.PIRATE_HARPOONER: "PirateHarpooner.png",
         UnitType.WEREBEAR: "Werebear.png",
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombie.png",
         UnitType.ZOMBIE_BRUTE: "ZombieBasicZombie.png",
@@ -255,6 +258,7 @@ def load_sprite_sheets():
         UnitType.PIRATE_GUNNER: "PirateGunnerIcon.png",
         UnitType.PIRATE_CAPTAIN: "PirateCaptainIcon.png",
         UnitType.PIRATE_CANNON: "PirateCannonIcon.png",
+        UnitType.PIRATE_HARPOONER: "PirateHarpoonerIcon.png",
         UnitType.WEREBEAR: "WerebearIcon.png",
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombieIcon.png",
         UnitType.ZOMBIE_BRUTE: "ZombieBruteIcon.png",
@@ -320,6 +324,7 @@ def create_unit(
         UnitType.PIRATE_GUNNER: create_pirate_gunner,
         UnitType.PIRATE_CAPTAIN: create_pirate_captain,
         UnitType.PIRATE_CANNON: create_pirate_cannon,
+        UnitType.PIRATE_HARPOONER: create_pirate_harpooner,
         UnitType.WEREBEAR: create_werebear,
         UnitType.ZOMBIE_BASIC_ZOMBIE: create_zombie_basic_zombie,
         UnitType.ZOMBIE_BRUTE: create_zombie_brute,
@@ -5080,7 +5085,7 @@ def create_zombie_grabber(
             ),
         ],
         unit_condition=Not(HasStatusEffect(Immobilized)),
-        targetting_group=TargetingGroup.TEAM1_LIVING_VISIBLE if team == TeamType.TEAM1 else TargetingGroup.TEAM2_LIVING_VISIBLE
+        targetting_group=TargetingGroup.TEAM2_LIVING_VISIBLE if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING_VISIBLE
     )
     esper.add_component(
         entity,
@@ -5221,6 +5226,219 @@ def create_zombie_grabber(
         )
     )
     esper.add_component(entity, get_unit_sprite_sheet(UnitType.ZOMBIE_GRABBER, tier))
+    return entity
+
+def create_pirate_harpooner(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+    ) -> int:
+    """Create a pirate harpooner entity with all necessary components."""
+    # Calculate tier-specific values
+    harpooner_health = gc.PIRATE_HARPOONER_HP
+    harpoon_damage = gc.PIRATE_HARPOONER_HARPOON_DAMAGE
+    melee_damage = gc.PIRATE_HARPOONER_ATTACK_DAMAGE
+    harpoon_cooldown = gc.PIRATE_HARPOONER_HARPOON_COOLDOWN
+    
+    # Advanced tier: 50% cooldown recovery (faster cooldown)
+    if tier == UnitTier.ADVANCED:
+        harpoon_cooldown = harpoon_cooldown * 0.5
+    
+    # Elite tier: 25% increased attack damage and health
+    elif tier == UnitTier.ELITE:
+        harpooner_health = harpooner_health * 1.25
+        harpoon_damage = harpoon_damage * 1.25
+        melee_damage = melee_damage * 1.25
+        harpoon_cooldown = harpoon_cooldown * 0.5  # Keep the cooldown improvement from advanced
+    
+    entity = unit_base_entity(
+        x=x,
+        y=y,
+        team=team,
+        unit_type=UnitType.PIRATE_HARPOONER,
+        movement_speed=gc.PIRATE_HARPOONER_MOVEMENT_SPEED,
+        health=harpooner_health,
+        hitbox=Hitbox(
+            width=16,
+            height=32,
+        ),
+        corruption_powers=corruption_powers,
+        tier=tier
+    )
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            WeightedRanking(
+                rankings={
+                    ByDistance(entity=entity, y_bias=2, ascending=True): 1,
+                },
+                ascending=True,
+            ),
+        ],
+        unit_condition=Not(HasStatusEffect(Immobilized)),
+        targetting_group=TargetingGroup.TEAM2_LIVING_VISIBLE if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING_VISIBLE
+    )
+    esper.add_component(
+        entity,
+        Destination(target_strategy=targetting_strategy, x_offset=gc.PIRATE_HARPOONER_ATTACK_RANGE*2/3)
+    )
+    esper.add_component(entity, RangeIndicator(ranges=[gc.PIRATE_HARPOONER_HARPOON_MINIMUM_RANGE, gc.PIRATE_HARPOONER_HARPOON_MAXIMUM_RANGE]))
+    esper.add_component(
+        entity,
+        Abilities(
+            abilities=[
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        SatisfiesUnitCondition(
+                            unit_condition=RememberedSatisfies(
+                                condition=Any([
+                                    HasComponent(ForcedMovement),
+                                    HasComponent(Projectile),
+                                ])
+                            )
+                        )
+                    ],
+                    persistent_conditions=[
+                        SatisfiesUnitCondition(
+                            unit_condition=RememberedSatisfies(
+                                condition=Any([
+                                    HasComponent(ForcedMovement),
+                                    HasComponent(Projectile),
+                                ])
+                            )
+                        )
+                    ],
+                    effects={},
+                ),
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                Grounded(), 
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.PIRATE_HARPOONER_HARPOON_MAXIMUM_RANGE,
+                                    y_bias=None
+                                ),
+                                MinimumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.PIRATE_HARPOONER_HARPOON_MINIMUM_RANGE,
+                                    y_bias=None
+                                )
+                            ])
+                        ),
+                        Cooldown(duration=harpoon_cooldown),
+                    ],
+                    persistent_conditions=[],
+                    effects={
+                        0: [
+                            CreatesProjectile(
+                                projectile_speed=gc.PIRATE_HARPOONER_HARPOON_PROJECTILE_SPEED,
+                                effects=[
+                                    RememberTarget(recipient=Recipient.OWNER),
+                                    Damages(damage=harpoon_damage, recipient=Recipient.TARGET),
+                                    AddsForcedMovement(
+                                        recipient=Recipient.TARGET,
+                                        destination=Recipient.OWNER,
+                                        speed=gc.PIRATE_HARPOONER_HARPOON_FORCED_MOVEMENT_SPEED,
+                                        offset_x=30,
+                                        offset_y=0,
+                                    ),
+                                    CreatesVisualLink(
+                                        start_entity=Recipient.TARGET,
+                                        other_entity=Recipient.OWNER,
+                                        visual=Visual.Rope,
+                                        tile_size=2,
+                                        entity_delete_condition=Not(HasComponent(ForcedMovement)),
+                                    ),
+                                    CreatesRepeat(
+                                        recipient=Recipient.TARGET,
+                                        effects=[
+                                            PlaySound(sound_effects=[
+                                                (SoundEffect(filename=f"harpoon_click{i}.wav", volume=1.0), 1.0)
+                                                for i in range(11)
+                                            ])
+                                        ],
+                                        interval=0.05,
+                                        stop_condition=Not(HasComponent(ForcedMovement)),
+                                    )
+                                ],
+                                visual=Visual.PirateHarpoon,
+                                projectile_offset_x=5*gc.MINIFOLKS_SCALE,
+                                projectile_offset_y=0,
+                                unit_condition=All([OnTeam(team=team.other()), Alive(), Grounded()]),
+                                max_distance=gc.PIRATE_HARPOONER_HARPOON_MAXIMUM_RANGE,
+                                on_create=lambda projectile: (
+                                    esper.add_component(entity, EntityMemory(projectile)),
+                                    esper.add_component(entity, VisualLink(
+                                        other_entity=projectile,
+                                        visual=Visual.Rope,
+                                        tile_size=1,
+                                    )),
+                                    CreatesRepeat(
+                                        recipient=Recipient.OWNER,
+                                        effects=[
+                                            PlaySound(sound_effects=[
+                                                (SoundEffect(filename=f"harpoon_click{i}.wav", volume=1.0), 1.0)
+                                                for i in range(11)
+                                            ])
+                                        ],
+                                        interval=0.05,
+                                        stop_condition=Not(HasComponent(VisualLink)),
+                                    ).apply(owner=entity, parent=entity, target=entity)
+                                ),
+                            ),
+                            PlaySound(SoundEffect(filename="pirate_harpoon.wav", volume=0.6)),
+                        ]
+                    },
+                ),
+                # Uses melee attack otherwise
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                Grounded(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.PIRATE_HARPOONER_ATTACK_RANGE,
+                                    y_bias=3
+                                ),
+                            ])
+                        )
+                    ],
+                    persistent_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.PIRATE_HARPOONER_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    y_bias=3
+                                ),
+                            ])
+                        )
+                    ],
+                    effects={2: [
+                        Damages(damage=melee_damage, recipient=Recipient.TARGET),
+                    ]},
+                )
+            ]
+        )
+    )
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.PIRATE_HARPOONER, tier))
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [2, 5]
+        },
+    }))
     return entity
 
 def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
@@ -5977,6 +6195,54 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
                 AnimationType.DYING: gc.ZOMBIE_GRABBER_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(2, 8),
+            synchronized_animations={
+                AnimationType.IDLE: True,
+            }
+        )
+    if unit_type == UnitType.PIRATE_HARPOONER:
+        # Advanced tier: 50% cooldown recovery
+        # Elite tier: 25% increased attack damage and health
+        harpoon_animation_duration = gc.PIRATE_HARPOONER_ANIMATION_HARPOON_DURATION
+        channeling_animation_duration = gc.PIRATE_HARPOONER_ANIMATION_CHANNELING_DURATION
+        attack_animation_duration = gc.PIRATE_HARPOONER_ANIMATION_ATTACK_DURATION
+        
+        if tier == UnitTier.ADVANCED:
+            harpoon_animation_duration = harpoon_animation_duration * 0.5  # 50% faster cooldown
+            channeling_animation_duration = channeling_animation_duration * 0.5
+        elif tier == UnitTier.ELITE:
+            harpoon_animation_duration = harpoon_animation_duration * 0.5  # Keep the speed improvement
+            channeling_animation_duration = channeling_animation_duration * 0.5
+        
+        return SpriteSheet(
+            surface=sprite_sheets[UnitType.PIRATE_HARPOONER],
+            frame_width=32,
+            frame_height=32,
+            scale=gc.MINIFOLKS_SCALE,
+            frames={
+                AnimationType.IDLE: 4,
+                AnimationType.WALKING: 6,
+                AnimationType.ABILITY1: 4,
+                AnimationType.ABILITY2: 10,
+                AnimationType.ABILITY3: 4,
+                AnimationType.DYING: 5,
+            },
+            rows={
+                AnimationType.IDLE: 0,
+                AnimationType.WALKING: 1,
+                AnimationType.ABILITY1: 0,
+                AnimationType.ABILITY2: 3,
+                AnimationType.ABILITY3: 4,
+                AnimationType.DYING: 6,
+            },
+            animation_durations={
+                AnimationType.IDLE: gc.PIRATE_HARPOONER_ANIMATION_IDLE_DURATION,
+                AnimationType.WALKING: gc.PIRATE_HARPOONER_ANIMATION_WALKING_DURATION,
+                AnimationType.ABILITY1: channeling_animation_duration,
+                AnimationType.ABILITY2: harpoon_animation_duration,
+                AnimationType.ABILITY3: attack_animation_duration,
+                AnimationType.DYING: gc.PIRATE_HARPOONER_ANIMATION_DYING_DURATION,
+            },
+            sprite_center_offset=(0, -8),
             synchronized_animations={
                 AnimationType.IDLE: True,
             }

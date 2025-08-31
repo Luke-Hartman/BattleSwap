@@ -27,6 +27,8 @@ class Visual(Enum):
     Ignited = auto()
     OrcThrowingAxe = auto()
     PirateCannonBall = auto()
+    PirateHarpoon = auto()
+    Rope = auto()
     Tongue = auto()
     TongueTip = auto()
 
@@ -50,6 +52,8 @@ def load_visual_sheets():
         Visual.Ignited: os.path.join("assets", "effects", "Ignited.png"),
         Visual.OrcThrowingAxe: os.path.join("assets", "effects", "OrcThrowingAxe.png"),
         Visual.PirateCannonBall: os.path.join("assets", "effects", "PirateCannonBall.png"),
+        Visual.PirateHarpoon: os.path.join("assets", "effects", "PirateHarpoon.png"),
+        Visual.Rope: os.path.join("assets", "effects", "rope.png"),
         Visual.Tongue: os.path.join("assets", "effects", "Tongue.png"),
         Visual.TongueTip: os.path.join("assets", "effects", "TongueTip.png"),
     }
@@ -341,6 +345,42 @@ def create_visual_spritesheet(
             rows={AnimationType.IDLE: 0},
             animation_durations={AnimationType.IDLE: duration},
             sprite_center_offset=(-.5, -.5),
+            layer=layer
+        )
+    elif visual == Visual.PirateHarpoon:
+        if duration is None:
+            duration = 1.0  # Doesn't matter for single frame
+        if scale is None:
+            scale = gc.MINIFOLKS_SCALE
+        if frames is not None:
+            raise NotImplementedError("PirateHarpoon visual cannot specify frames")
+        return SpriteSheet(
+            surface=visual_sheets[visual],
+            frame_width=16,
+            frame_height=16,
+            scale=scale,
+            frames={AnimationType.IDLE: 1},
+            rows={AnimationType.IDLE: 0},
+            animation_durations={AnimationType.IDLE: duration},
+            sprite_center_offset=(-.5, -.5),
+            layer=layer
+        )
+    elif visual == Visual.Rope:
+        if duration is None:
+            duration = 0.2
+        if scale is None:
+            scale = 1
+        if frames is None:
+            frames = (0, 1)
+        return SpriteSheet(
+            surface=visual_sheets[visual],
+            frame_width=8,
+            frame_height=8,
+            scale=scale,
+            frames={AnimationType.IDLE: frames[1] - frames[0]},
+            rows={AnimationType.IDLE: 0},
+            animation_durations={AnimationType.IDLE: duration},
+            sprite_center_offset=(0, 0),
             layer=layer
         )
     elif visual == Visual.Tongue:

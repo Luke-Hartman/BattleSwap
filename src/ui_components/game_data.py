@@ -251,6 +251,14 @@ UPGRADE_DESCRIPTIONS = {
     UnitType.PIRATE_CANNON: {
         UnitTier.ADVANCED: "50% increased damage",
         UnitTier.ELITE: "50% increased damage"
+    },
+    UnitType.PIRATE_CAPTAIN: {
+        UnitTier.ADVANCED: "100% increased cooldown recovery",
+        UnitTier.ELITE: "30% increased damage and health"
+    },
+    UnitType.PIRATE_HARPOONER: {
+        UnitTier.ADVANCED: "100% increased cooldown recovery",
+        UnitTier.ELITE: "25% increased damage and health"
     }
 }
 
@@ -1459,6 +1467,55 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             }
         )
     
+    if unit_type == UnitType.PIRATE_HARPOONER:
+        # Calculate tier-specific values
+        harpooner_health = gc.PIRATE_HARPOONER_HP
+        harpoon_damage = gc.PIRATE_HARPOONER_HARPOON_DAMAGE
+        melee_damage = gc.PIRATE_HARPOONER_ATTACK_DAMAGE
+        harpoon_cooldown = gc.PIRATE_HARPOONER_HARPOON_COOLDOWN
+        
+        # Advanced tier: 50% cooldown recovery (faster cooldown)
+        if unit_tier == UnitTier.ADVANCED:
+            harpoon_cooldown = harpoon_cooldown * 0.5
+        
+        # Elite tier: 25% increased attack damage and health
+        elif unit_tier == UnitTier.ELITE:
+            harpooner_health = harpooner_health * 1.25
+            harpoon_damage = harpoon_damage * 1.25
+            melee_damage = melee_damage * 1.25
+            harpoon_cooldown = harpoon_cooldown * 0.5  # Keep the cooldown improvement from advanced
+        
+        return UnitData(
+            name="Harpooner",
+            description="Harpooners are melee units that cangrab and pull enemies towards them with their harpoons.",
+            tier=unit_tier,
+            stats={ 
+                StatType.DEFENSE: defense_stat(harpooner_health),
+                StatType.SPEED: speed_stat(gc.PIRATE_HARPOONER_MOVEMENT_SPEED),
+                StatType.DAMAGE: damage_stat(melee_damage / gc.PIRATE_HARPOONER_ANIMATION_ATTACK_DURATION),
+                StatType.RANGE: range_stat(gc.PIRATE_HARPOONER_HARPOON_MAXIMUM_RANGE),
+                StatType.UTILITY: 7.5
+            },
+            tooltips={
+                StatType.DEFENSE: f"{harpooner_health:.0f} maximum health",
+                StatType.SPEED: f"{gc.PIRATE_HARPOONER_MOVEMENT_SPEED} units per second",
+                StatType.DAMAGE: f"{melee_damage:.0f} per hit ({melee_damage / gc.PIRATE_HARPOONER_ANIMATION_ATTACK_DURATION:.1f} per second), Harpoon deals {harpoon_damage:.0f} per hit with a {harpoon_cooldown:.1f} second cooldown",
+                StatType.RANGE: f"Melee: {gc.PIRATE_HARPOONER_ATTACK_RANGE} units, Harpoon: {gc.PIRATE_HARPOONER_HARPOON_MINIMUM_RANGE} to {gc.PIRATE_HARPOONER_HARPOON_MAXIMUM_RANGE} units",
+                StatType.UTILITY: f"Can grab and pull enemies towards them with harpoons"
+            },
+            tips={
+                "Strong when": ["Pulling enemy units into a group of allies", "In a large group", "Behind other units", "Against ranged units"],
+                "Weak when": ["In one-on-one combat", f"Against <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a>"],
+            },
+            modification_levels={
+                StatType.DEFENSE: 1 if unit_tier == UnitTier.ELITE else 0,
+                StatType.DAMAGE: 1 if unit_tier == UnitTier.ELITE else 0,
+                StatType.SPEED: 0,
+                StatType.RANGE: 0,
+                StatType.UTILITY: 0 if unit_tier == UnitTier.BASIC else 1
+            }
+        )
+    
     if unit_type == UnitType.ZOMBIE_JUMPER:
         # Calculate tier-specific values
         zombie_jumper_health = gc.ZOMBIE_JUMPER_HP
@@ -1897,9 +1954,9 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             modification_levels={
                 StatType.DEFENSE: 1 if unit_tier == UnitTier.ELITE else 0,
                 StatType.SPEED: 0,
-                StatType.DAMAGE: 1 if unit_tier == UnitTier.ELITE else 0,
+                StatType.DAMAGE: 2 if unit_tier == UnitTier.ELITE else 1 if unit_tier == UnitTier.ADVANCED else 0,
                 StatType.RANGE: 0,
-                StatType.UTILITY: 1 if unit_tier == UnitTier.ADVANCED else 0,
+                StatType.UTILITY: 0,
             }
         )
     
