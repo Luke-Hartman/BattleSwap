@@ -4712,6 +4712,7 @@ def create_zombie_brute(
     esper.add_component(entity, Ammo(1, 1))
     
     # Add on death effect to spawn zombies if ammo is 1
+    # TODO: Add on death sounds (right now can't use different conditions for each effect)
     esper.add_component(
         entity,
         OnDeathEffect(
@@ -4822,7 +4823,6 @@ def create_zombie_brute(
             for frame in [1, 3]
         },
     }))
-    esper.add_component(entity, ZOMBIE_DEATH_SOUNDS)
     return entity
 
 def create_zombie_jumper(
