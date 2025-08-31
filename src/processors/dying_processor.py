@@ -4,6 +4,7 @@ import esper
 from components.dying import Dying, OnDeathEffect
 from components.forced_movement import ForcedMovement
 from components.position import Position
+from components.sprite_sheet import SpriteSheet
 from components.team import Team, TeamType
 from components.unit_tier import UnitTier
 from components.unit_type import UnitType, UnitTypeComponent
@@ -53,9 +54,10 @@ class DyingProcessor(esper.Processor):
                     team=zombie_infection.team,
                     unit_type=UnitType.ZOMBIE_BASIC_ZOMBIE,
                     corruption_powers=zombie_infection.corruption_powers,
-                    tier=tier
+                    tier=tier,
+                    play_spawning=True
                 )
                 # This is a hack to hide the corpse of the unit
-                esper.add_component(ent, Transparency(alpha=0))
+                esper.remove_component(ent, SpriteSheet)
             
             esper.remove_component(ent, Dying)

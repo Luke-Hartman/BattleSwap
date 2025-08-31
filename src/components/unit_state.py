@@ -31,6 +31,9 @@ class State(Enum):
     """The unit is grabbing another unit."""
     DEAD = auto()
     """The unit is dead."""
+    
+    SPAWNING = auto()
+    """The unit is spawning."""
 
 @dataclass
 class UnitState:

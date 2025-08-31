@@ -21,7 +21,7 @@ from components.unit_state import UnitState, State
 from components.velocity import Velocity
 from components.animation_effects import AnimationEffects
 from components.airborne import Airborne
-from events import ABILITY_ACTIVATED, ABILITY_COMPLETED, AbilityActivatedEvent, AbilityCompletedEvent, emit_event
+from events import ABILITY_ACTIVATED, ABILITY_COMPLETED, SPAWNING_COMPLETED, AbilityActivatedEvent, AbilityCompletedEvent, SpawningCompletedEvent, emit_event
 import timing
 
 class AnimationProcessor(esper.Processor):
@@ -64,7 +64,8 @@ class AnimationProcessor(esper.Processor):
                 State.ABILITY3: AnimationType.ABILITY3,
                 State.ABILITY4: AnimationType.ABILITY4,
                 State.ABILITY5: AnimationType.ABILITY5,
-                State.DEAD: AnimationType.DYING
+                State.DEAD: AnimationType.DYING,
+                State.SPAWNING: AnimationType.SPAWNING
             }[unit_state.state]
 
             # Override with airborne animation if airborne
@@ -157,6 +158,8 @@ class AnimationProcessor(esper.Processor):
                 if new_frame == frame_count:
                     if index is not None:
                         emit_event(ABILITY_COMPLETED, event=AbilityCompletedEvent(ent, index))
+                    elif anim_state.type == AnimationType.SPAWNING:
+                        emit_event(SPAWNING_COMPLETED, event=SpawningCompletedEvent(ent))
                     # Stay on the last frame of the animation for one more tick.
                     anim_state.current_frame = frame_count - 1
                     # Reset the time so if the animation is supposed to loop it will start over.

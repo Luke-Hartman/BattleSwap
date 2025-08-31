@@ -214,7 +214,7 @@ def load_sprite_sheets():
         UnitType.PIRATE_CANNON: "PirateCannon.png",
         UnitType.PIRATE_HARPOONER: "PirateHarpooner.png",
         UnitType.WEREBEAR: "Werebear.png",
-        UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombie.png",
+        UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombieNew.png",
         UnitType.ZOMBIE_BRUTE: "ZombieBasicZombie.png",
         UnitType.ZOMBIE_GRABBER: "ZombieBasicZombie.png",
         UnitType.ZOMBIE_JUMPER: "ZombieBasicZombie.png",
@@ -292,6 +292,7 @@ def create_unit(
     team: TeamType,
     corruption_powers: Optional[List[CorruptionPower]],
     tier: UnitTier = UnitTier.BASIC,
+    play_spawning: bool = False,
 ) -> int:
     """Create a unit entity with all necessary components."""
     return {
@@ -332,7 +333,7 @@ def create_unit(
         UnitType.ZOMBIE_JUMPER: create_zombie_jumper,
         UnitType.ZOMBIE_SPITTER: create_zombie_spitter,
         UnitType.ZOMBIE_TANK: create_zombie_tank,
-    }[unit_type](x, y, team, corruption_powers, tier)
+    }[unit_type](x, y, team, corruption_powers, tier, play_spawning)
 
 def unit_base_entity(
         x: int,
@@ -344,15 +345,16 @@ def unit_base_entity(
         hitbox: Hitbox,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create a unit entity with all components shared by all units."""
     entity = esper.create_entity()
     esper.add_component(entity, Position(x=x, y=y))
     esper.add_component(entity, Velocity(x=0, y=0))
     esper.add_component(entity, Movement(speed=movement_speed))
-    esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
+    esper.add_component(entity, AnimationState(type=AnimationType.SPAWNING if play_spawning else AnimationType.IDLE))
     esper.add_component(entity, Team(type=team))
-    esper.add_component(entity, UnitState())
+    esper.add_component(entity, UnitState(state=State.SPAWNING if play_spawning else State.IDLE))
     esper.add_component(entity, UnitTypeComponent(type=unit_type))
     health_power = _get_corruption_power(corruption_powers, IncreasedMaxHealth, team)
     if health_power is not None:
@@ -381,6 +383,7 @@ def create_core_archer(
         team: TeamType,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create an archer entity with all necessary components."""
     entity = unit_base_entity(
@@ -395,7 +398,8 @@ def create_core_archer(
             height=32,
         ),
         corruption_powers=corruption_powers,
-        tier=tier
+        tier=tier,
+        play_spawning=play_spawning
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -496,6 +500,7 @@ def create_core_barbarian(
         team: TeamType,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create a barbarian entity with all necessary components."""
     # Calculate tier-specific values
@@ -524,7 +529,8 @@ def create_core_barbarian(
             height=38,
         ),
         corruption_powers=corruption_powers,
-        tier=tier
+        tier=tier,
+        play_spawning=play_spawning
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -597,6 +603,7 @@ def create_core_cavalry(
         team: TeamType,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create a cavalry entity with all necessary components."""
     # Calculate tier-specific values
@@ -623,7 +630,8 @@ def create_core_cavalry(
             height=46,
         ),
         corruption_powers=corruption_powers,
-        tier=tier
+        tier=tier,
+        play_spawning=play_spawning
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -693,6 +701,7 @@ def create_core_duelist(
         team: TeamType,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create a duelist entity with all necessary components."""
     entity = unit_base_entity(
@@ -707,7 +716,8 @@ def create_core_duelist(
             height=36,
         ),
         corruption_powers=corruption_powers,
-        tier=tier
+        tier=tier,
+        play_spawning=play_spawning
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -806,6 +816,7 @@ def create_core_longbowman(
         team: TeamType,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create a longbowman entity with all necessary components."""
     # Calculate tier-specific values
@@ -835,7 +846,8 @@ def create_core_longbowman(
             height=36,
         ),
         corruption_powers=corruption_powers,
-        tier=tier
+        tier=tier,
+        play_spawning=play_spawning
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -927,6 +939,7 @@ def create_core_swordsman(
         team: TeamType,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create a swordsman entity with all necessary components."""
     # Calculate tier-specific values
@@ -955,7 +968,8 @@ def create_core_swordsman(
             height=32,
         ),
         corruption_powers=corruption_powers,
-        tier=tier
+        tier=tier,
+        play_spawning=play_spawning
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -1027,6 +1041,7 @@ def create_orc_berserker(
         team: TeamType,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create an orc berserker entity with all necessary components."""
     # Calculate tier-specific values
@@ -1058,7 +1073,8 @@ def create_orc_berserker(
             height=32,
         ),
         corruption_powers=corruption_powers,
-        tier=tier
+        tier=tier,
+        play_spawning=play_spawning
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -1294,6 +1310,7 @@ def create_orc_warrior(
         team: TeamType,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create an orc warrior entity with all necessary components."""
     # Calculate tier-specific values
@@ -1322,7 +1339,8 @@ def create_orc_warrior(
             height=32,
         ),
         corruption_powers=corruption_powers,
-        tier=tier
+        tier=tier,
+        play_spawning=play_spawning
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -1415,6 +1433,7 @@ def create_orc_warchief(
         team: TeamType,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create an orc warchief entity with all necessary components."""
     # Calculate tier-specific values
@@ -1441,7 +1460,8 @@ def create_orc_warchief(
             height=32,
         ),
         corruption_powers=corruption_powers,
-        tier=tier
+        tier=tier,
+        play_spawning=play_spawning
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -1537,6 +1557,7 @@ def create_orc_goblin(
         team: TeamType,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create an orc goblin entity with all necessary components."""
     # Calculate tier-specific values
@@ -1563,7 +1584,8 @@ def create_orc_goblin(
             height=32,
         ),
         corruption_powers=corruption_powers,
-        tier=tier
+        tier=tier,
+        play_spawning=play_spawning
     )
     
     # Hunter targeting strategy like black knight
@@ -1656,6 +1678,7 @@ def create_orc_warg_rider(
         team: TeamType,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create an orc warg rider entity with all necessary components."""
     # Calculate tier-specific values
@@ -1682,7 +1705,8 @@ def create_orc_warg_rider(
             height=32,
         ),
         corruption_powers=corruption_powers,
-        tier=tier
+        tier=tier,
+        play_spawning=play_spawning
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -1788,6 +1812,7 @@ def create_core_wizard(
         team: TeamType,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create a wizard entity with all necessary components."""
     # Calculate tier-specific damage
@@ -1813,7 +1838,8 @@ def create_core_wizard(
             height=36,
         ),
         corruption_powers=corruption_powers,
-        tier=tier
+        tier=tier,
+        play_spawning=play_spawning
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -1916,6 +1942,7 @@ def create_crusader_banner_bearer(
         team: TeamType,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create a banner bearer entity with all necessary components."""
     # Calculate tier-specific health
@@ -2056,6 +2083,7 @@ def create_crusader_black_knight(
         team: TeamType,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create a black knight entity with all necessary components."""
     # Calculate tier-specific values
@@ -2084,7 +2112,8 @@ def create_crusader_black_knight(
             height=54,
         ),
         corruption_powers=corruption_powers,
-        tier=tier
+        tier=tier,
+        play_spawning=play_spawning
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -2193,6 +2222,7 @@ def create_crusader_catapult(
         team: TeamType,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create a catapult entity with all necessary components."""
     # Calculate tier-specific values
@@ -2222,7 +2252,8 @@ def create_crusader_catapult(
             height=20,
         ),
         corruption_powers=corruption_powers,
-        tier=tier
+        tier=tier,
+        play_spawning=play_spawning
     )
     # Add permanent immobilization effect
     immobilized_effect = Immobilized(time_remaining=float("inf"))
@@ -2319,6 +2350,7 @@ def create_crusader_cleric(
         team: TeamType,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create a cleric entity with all necessary components."""
     # Calculate tier-specific range
@@ -2340,7 +2372,8 @@ def create_crusader_cleric(
             height=36,
         ),
         corruption_powers=corruption_powers,
-        tier=tier
+        tier=tier,
+        play_spawning=play_spawning
     )
     esper.add_component(entity, Follower())
     target_leader = TargetStrategy(
@@ -2473,6 +2506,7 @@ def create_crusader_commander(
         team: TeamType,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create a commander entity with all necessary components."""
     entity = unit_base_entity(
@@ -2487,7 +2521,8 @@ def create_crusader_commander(
             height=36,
         ),
         corruption_powers=corruption_powers,
-        tier=tier
+        tier=tier,
+        play_spawning=play_spawning
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -2578,6 +2613,7 @@ def create_crusader_crossbowman(
         team: TeamType,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create a crossbowman entity with all necessary components."""
     # Calculate tier-specific values
@@ -2603,7 +2639,8 @@ def create_crusader_crossbowman(
             height=36,
         ),
         corruption_powers=corruption_powers,
-        tier=tier
+        tier=tier,
+        play_spawning=play_spawning
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -2773,6 +2810,7 @@ def create_crusader_defender(
         team: TeamType,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create a defender entity with all necessary components."""
     # Calculate tier-specific values
@@ -2803,7 +2841,8 @@ def create_crusader_defender(
             height=32,
         ),
         corruption_powers=corruption_powers,
-        tier=tier
+        tier=tier,
+        play_spawning=play_spawning
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -2874,6 +2913,7 @@ def create_crusader_gold_knight(
         team: TeamType,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create a gold knight entity with all necessary components."""
     # Calculate tier-specific values
@@ -2905,7 +2945,8 @@ def create_crusader_gold_knight(
             height=38,
         ),
         corruption_powers=corruption_powers,
-        tier=tier
+        tier=tier,
+        play_spawning=play_spawning
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -2983,6 +3024,7 @@ def create_crusader_guardian_angel(
         team: TeamType,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create an angel entity with all necessary components."""
     # Calculate tier-specific healing
@@ -3008,7 +3050,8 @@ def create_crusader_guardian_angel(
             height=22,
         ),
         corruption_powers=corruption_powers,
-        tier=tier
+        tier=tier,
+        play_spawning=play_spawning
     )
     esper.add_component(entity, SmoothMovement())
     esper.add_component(entity, Follower())
@@ -3118,6 +3161,7 @@ def create_crusader_paladin(
         team: TeamType,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create a paladin entity with all necessary components."""
     # Calculate tier-specific values
@@ -3144,7 +3188,8 @@ def create_crusader_paladin(
             height=54,
         ),
         corruption_powers=corruption_powers,
-        tier=tier
+        tier=tier,
+        play_spawning=play_spawning
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -3235,6 +3280,7 @@ def create_crusader_pikeman(
         team: TeamType,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create a pikeman entity with all necessary components."""
     # Calculate tier-specific values
@@ -3263,7 +3309,8 @@ def create_crusader_pikeman(
             height=32,
         ),
         corruption_powers=corruption_powers,
-        tier=tier
+        tier=tier,
+        play_spawning=play_spawning
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -3374,6 +3421,7 @@ def create_crusader_red_knight(
         team: TeamType,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create a red knight entity with all necessary components."""
     entity = unit_base_entity(
@@ -3388,7 +3436,8 @@ def create_crusader_red_knight(
             height=34,
         ),
         corruption_powers=corruption_powers,
-        tier=tier
+        tier=tier,
+        play_spawning=play_spawning
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -3507,6 +3556,7 @@ def create_crusader_soldier(
         team: TeamType,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create a soldier entity with all necessary components."""
     # Calculate tier-specific values
@@ -3543,7 +3593,8 @@ def create_crusader_soldier(
             height=32,
         ),
         corruption_powers=corruption_powers,
-        tier=tier
+        tier=tier,
+        play_spawning=play_spawning
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -3730,6 +3781,7 @@ def create_pirate_crew(
         team: TeamType,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create a pirate crew entity with all necessary components."""
     # Calculate tier-specific values
@@ -3757,7 +3809,8 @@ def create_pirate_crew(
             height=32,
         ),
         corruption_powers=corruption_powers,
-        tier=tier
+        tier=tier,
+        play_spawning=play_spawning
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -3886,6 +3939,7 @@ def create_pirate_gunner(
         team: TeamType,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create a pirate gunner entity with all necessary components."""
     # Calculate tier-specific values
@@ -3911,7 +3965,8 @@ def create_pirate_gunner(
             height=32,
         ),
         corruption_powers=corruption_powers,
-        tier=tier
+        tier=tier,
+        play_spawning=play_spawning
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -4071,6 +4126,7 @@ def create_pirate_cannon(
         team: TeamType,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create a pirate cannon entity with all necessary components."""
     # Calculate tier-specific values
@@ -4097,7 +4153,8 @@ def create_pirate_cannon(
             height=32,
         ),
         corruption_powers=corruption_powers,
-        tier=tier
+        tier=tier,
+        play_spawning=play_spawning
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -4172,6 +4229,7 @@ def create_pirate_captain(
         team: TeamType,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create a pirate captain entity with all necessary components."""
     # Calculate tier-specific values
@@ -4202,7 +4260,8 @@ def create_pirate_captain(
             height=32,
         ),
         corruption_powers=corruption_powers,
-        tier=tier
+        tier=tier,
+        play_spawning=play_spawning
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -4313,6 +4372,7 @@ def create_werebear(
         team: TeamType,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create a werebear entity with all necessary components."""
     entity = unit_base_entity(
@@ -4327,7 +4387,8 @@ def create_werebear(
             height=40,
         ),
         corruption_powers=corruption_powers,
-        tier=tier
+        tier=tier,
+        play_spawning=play_spawning
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -4387,6 +4448,7 @@ def create_zombie_basic_zombie(
         team: TeamType,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create a zombie entity with all necessary components."""
     # Calculate tier-specific health
@@ -4409,7 +4471,8 @@ def create_zombie_basic_zombie(
         health=zombie_health,
         hitbox=Hitbox(width=16, height=32),
         corruption_powers=corruption_powers,
-        tier=tier
+        tier=tier,
+        play_spawning=play_spawning
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -4452,7 +4515,7 @@ def create_zombie_basic_zombie(
                             ])
                         )
                     ],
-                    effects={3: [
+                    effects={1: [
                         Damages(damage=gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_DAMAGE, recipient=Recipient.TARGET),
                         AppliesStatusEffect(
                             status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers),
@@ -4484,6 +4547,7 @@ def create_zombie_brute(
         team: TeamType,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create a brute zombie entity with all necessary components."""
     # Calculate tier-specific values
@@ -4509,7 +4573,8 @@ def create_zombie_brute(
         health=brute_health,
         hitbox=Hitbox(width=24, height=48),
         corruption_powers=corruption_powers,
-        tier=tier
+        tier=tier,
+        play_spawning=play_spawning
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -4643,6 +4708,7 @@ def create_zombie_jumper(
         team: TeamType,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create a jumper zombie entity with all necessary components."""
     # Calculate tier-specific values
@@ -4668,7 +4734,8 @@ def create_zombie_jumper(
         health=jumper_health,
         hitbox=Hitbox(width=16, height=32),
         corruption_powers=corruption_powers,
-        tier=tier
+        tier=tier,
+        play_spawning=play_spawning
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -4948,6 +5015,7 @@ def create_zombie_tank(
         team: TeamType,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create a tank zombie entity with all necessary components."""
     # Calculate tier-specific health
@@ -4970,7 +5038,8 @@ def create_zombie_tank(
         health=tank_health,
         hitbox=Hitbox(width=32, height=64),
         corruption_powers=corruption_powers,
-        tier=tier
+        tier=tier,
+        play_spawning=play_spawning
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -5042,6 +5111,7 @@ def create_zombie_grabber(
         team: TeamType,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create a grabber entity with all necessary components."""
     # Calculate tier-specific values
@@ -5073,7 +5143,8 @@ def create_zombie_grabber(
             height=32,
         ),
         corruption_powers=corruption_powers,
-        tier=tier
+        tier=tier,
+        play_spawning=play_spawning
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -5234,6 +5305,7 @@ def create_pirate_harpooner(
         team: TeamType,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create a pirate harpooner entity with all necessary components."""
     # Calculate tier-specific values
@@ -5265,7 +5337,8 @@ def create_pirate_harpooner(
             height=32,
         ),
         corruption_powers=corruption_powers,
-        tier=tier
+        tier=tier,
+        play_spawning=play_spawning
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -6042,18 +6115,19 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
     if unit_type == UnitType.ZOMBIE_BASIC_ZOMBIE:
         return SpriteSheet(
             surface=sprite_sheets[UnitType.ZOMBIE_BASIC_ZOMBIE],
-            frame_width=100,
-            frame_height=100,
-            scale=gc.TINY_RPG_SCALE,
-            frames={AnimationType.IDLE: 3, AnimationType.WALKING: 4, AnimationType.ABILITY1: 5, AnimationType.DYING: 6},
-            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 2, AnimationType.DYING: 3},
+            frame_width=32,
+            frame_height=32,
+            scale=gc.MINIFOLKS_SCALE,
+            frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.ABILITY1: 4, AnimationType.DYING: 4, AnimationType.SPAWNING: 9},
+            rows={AnimationType.IDLE: 1, AnimationType.WALKING: 2, AnimationType.ABILITY1: 5, AnimationType.DYING: 8, AnimationType.SPAWNING: 0},
             animation_durations={
                 AnimationType.IDLE: gc.ZOMBIE_BASIC_ZOMBIE_ANIMATION_IDLE_DURATION,
                 AnimationType.WALKING: gc.ZOMBIE_BASIC_ZOMBIE_ANIMATION_WALKING_DURATION,
                 AnimationType.ABILITY1: gc.ZOMBIE_BASIC_ZOMBIE_ANIMATION_ATTACK_DURATION,
                 AnimationType.DYING: gc.ZOMBIE_BASIC_ZOMBIE_ANIMATION_DYING_DURATION,
+                AnimationType.SPAWNING: gc.ZOMBIE_BASIC_ZOMBIE_ANIMATION_SPAWNING_DURATION,
             },
-            sprite_center_offset=(2, 8),
+            sprite_center_offset=(0, -8),
             synchronized_animations={
                 AnimationType.IDLE: True,
             }

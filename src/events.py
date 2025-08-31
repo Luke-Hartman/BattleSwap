@@ -133,6 +133,11 @@ class StateChangedEvent:
     new_state: State
 
 @dataclass
+class SpawningCompletedEvent:
+    """Event triggered when a unit's spawning animation completes."""
+    entity: int
+
+@dataclass
 class StopAllSoundsEvent:
     """Event triggered to stop all sounds."""
 
@@ -190,6 +195,7 @@ PLAY_SOUND = 'play_sound'
 PLAY_VOICE = 'play_voice'
 PROJECTILE_HIT = 'projectile_hit'
 STATE_CHANGED = 'state_changed'
+SPAWNING_COMPLETED = 'spawning_completed'
 STOP_ALL_SOUNDS = 'stop_all_sounds'
 VISUAL_AOE_HIT = 'visual_aoe_hit'
 MUTE_DRUMS = 'mute_drums'

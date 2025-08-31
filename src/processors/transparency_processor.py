@@ -12,10 +12,10 @@ class TransparencyProcessor(Processor):
 
     def process(self, dt: float) -> None:
         """Process the transparency of entities."""
-        for ent, (transparency, sprite_sheet) in esper.get_components(Transparency, SpriteSheet):
-            sprite_sheet.image.set_alpha(transparency.alpha)
         for ent, (status_effects, sprite_sheet) in esper.get_components(StatusEffects, SpriteSheet):
             if any(isinstance(effect, Invisible) for effect in status_effects.active_effects()):
                 sprite_sheet.image.set_alpha(128)
             else:
                 sprite_sheet.image.set_alpha(255)
+        for ent, (transparency, sprite_sheet) in esper.get_components(Transparency, SpriteSheet):
+            sprite_sheet.image.set_alpha(transparency.alpha)

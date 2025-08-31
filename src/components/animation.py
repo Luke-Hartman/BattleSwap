@@ -40,6 +40,9 @@ class AnimationType(Enum):
 
     DYING = auto()
     """The dying animation state."""
+    
+    SPAWNING = auto()
+    """The spawning animation state."""
 
 @dataclass
 class AnimationState:
