@@ -36,7 +36,8 @@ class GameConstants(BaseModel):
     MINIFOLKS_SCALE: float
     TINY_RPG_SCALE: float
     MAGE_FIREBALL_SCALE: float
-    
+    WILHELM_CHANCE: float
+
     # Colors
     TEAM1_COLOR: list[int]
     TEAM2_COLOR: list[int]
