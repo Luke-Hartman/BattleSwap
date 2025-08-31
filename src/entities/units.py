@@ -219,7 +219,7 @@ def load_sprite_sheets():
         UnitType.ZOMBIE_GRABBER: "ZombieBasicZombie.png",
         UnitType.ZOMBIE_JUMPER: "ZombieBasicZombie.png",
         UnitType.ZOMBIE_SPITTER: "ZombieBasicZombie.png",
-        UnitType.ZOMBIE_TANK: "ZombieBasicZombie.png",
+        UnitType.ZOMBIE_TANK: "ZombieTank.png",
     }
     for unit_type, filename in unit_filenames.items():
         if unit_type in sprite_sheets:
@@ -5036,7 +5036,7 @@ def create_zombie_tank(
         unit_type=UnitType.ZOMBIE_TANK,
         movement_speed=gc.ZOMBIE_TANK_MOVEMENT_SPEED,
         health=tank_health,
-        hitbox=Hitbox(width=32, height=64),
+        hitbox=Hitbox(width=40, height=44),
         corruption_powers=corruption_powers,
         tier=tier,
         play_spawning=play_spawning
@@ -6222,18 +6222,18 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
     if unit_type == UnitType.ZOMBIE_TANK:
         return SpriteSheet(
             surface=sprite_sheets[UnitType.ZOMBIE_TANK],
-            frame_width=100,
-            frame_height=100,
-            scale=2*gc.TINY_RPG_SCALE,
-            frames={AnimationType.IDLE: 3, AnimationType.WALKING: 4, AnimationType.ABILITY1: 5, AnimationType.DYING: 6},
-            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 2, AnimationType.DYING: 3},
+            frame_width=32,
+            frame_height=32,
+            scale=gc.MINIFOLKS_SCALE,
+            frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.ABILITY1: 7, AnimationType.DYING: 6},
+            rows={AnimationType.IDLE: 1, AnimationType.WALKING: 2, AnimationType.ABILITY1: 4, AnimationType.DYING: 8},
             animation_durations={
                 AnimationType.IDLE: gc.ZOMBIE_TANK_ANIMATION_IDLE_DURATION,
                 AnimationType.WALKING: gc.ZOMBIE_TANK_ANIMATION_WALKING_DURATION,
                 AnimationType.ABILITY1: gc.ZOMBIE_TANK_ANIMATION_ATTACK_DURATION,
                 AnimationType.DYING: gc.ZOMBIE_TANK_ANIMATION_DYING_DURATION,
             },
-            sprite_center_offset=(2, 8),
+            sprite_center_offset=(0, -6),
             synchronized_animations={
                 AnimationType.IDLE: True,
             }

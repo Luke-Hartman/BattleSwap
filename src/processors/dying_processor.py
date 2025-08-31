@@ -55,7 +55,7 @@ class DyingProcessor(esper.Processor):
                     unit_type=UnitType.ZOMBIE_BASIC_ZOMBIE,
                     corruption_powers=zombie_infection.corruption_powers,
                     tier=tier,
-                    play_spawning=True
+                    play_spawning=False # Changed my mind about this, not using the play_spawning flag for anything right now.
                 )
                 # This is a hack to hide the corpse of the unit
                 esper.remove_component(ent, SpriteSheet)
