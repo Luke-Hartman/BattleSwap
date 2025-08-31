@@ -217,7 +217,7 @@ def load_sprite_sheets():
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombieNew.png",
         UnitType.ZOMBIE_BRUTE: "ZombieBasicZombie.png",
         UnitType.ZOMBIE_GRABBER: "ZombieBasicZombie.png",
-        UnitType.ZOMBIE_JUMPER: "ZombieBasicZombie.png",
+        UnitType.ZOMBIE_JUMPER: "ZombieJumper.png",
         UnitType.ZOMBIE_SPITTER: "ZombieBasicZombie.png",
         UnitType.ZOMBIE_TANK: "ZombieTank.png",
     }
@@ -4855,7 +4855,7 @@ def create_zombie_jumper(
         unit_type=UnitType.ZOMBIE_JUMPER,
         movement_speed=jumper_movement_speed,
         health=jumper_health,
-        hitbox=Hitbox(width=16, height=32),
+        hitbox=Hitbox(width=32, height=28),
         corruption_powers=corruption_powers,
         tier=tier,
         play_spawning=play_spawning
@@ -4908,7 +4908,7 @@ def create_zombie_jumper(
                             ])
                         )
                     ],
-                    effects={3: [
+                    effects={2: [
                         Damages(damage=gc.ZOMBIE_JUMPER_ATTACK_DAMAGE, recipient=Recipient.TARGET),
                         AppliesStatusEffect(
                             status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers),
@@ -6265,7 +6265,7 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
                 AnimationType.DYING: gc.ZOMBIE_BASIC_ZOMBIE_ANIMATION_DYING_DURATION,
                 AnimationType.SPAWNING: gc.ZOMBIE_BASIC_ZOMBIE_ANIMATION_SPAWNING_DURATION,
             },
-            sprite_center_offset=(0, -8),
+            sprite_center_offset=(0, -9),
             synchronized_animations={
                 AnimationType.IDLE: True,
             }
@@ -6305,24 +6305,24 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
         
         return SpriteSheet(
             surface=sprite_sheets[UnitType.ZOMBIE_JUMPER],
-            frame_width=100,
-            frame_height=100,
-            scale=gc.TINY_RPG_SCALE,
+            frame_width=32,
+            frame_height=32,
+            scale=gc.MINIFOLKS_SCALE,
             frames={
-                AnimationType.IDLE: 3,
-                AnimationType.WALKING: 4,
-                AnimationType.ABILITY1: 5,
-                AnimationType.ABILITY2: 3,
-                AnimationType.DYING: 6,
+                AnimationType.IDLE: 4,
+                AnimationType.WALKING: 6,
+                AnimationType.ABILITY1: 6,
+                AnimationType.ABILITY2: 1,
+                AnimationType.DYING: 4,
                 AnimationType.AIRBORNE: 1,
             },
             rows={
                 AnimationType.IDLE: 0,
                 AnimationType.WALKING: 1,
-                AnimationType.ABILITY1: 2,
-                AnimationType.ABILITY2: 0,
-                AnimationType.DYING: 3,
-                AnimationType.AIRBORNE: 0,
+                AnimationType.ABILITY1: 4,
+                AnimationType.ABILITY2: 2,
+                AnimationType.DYING: 7,
+                AnimationType.AIRBORNE: 8,
             },
             animation_durations={
                 AnimationType.IDLE: idle_animation_duration,
@@ -6332,7 +6332,7 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
                 AnimationType.DYING: gc.ZOMBIE_JUMPER_ANIMATION_DYING_DURATION,
                 AnimationType.AIRBORNE: gc.ZOMBIE_JUMPER_ANIMATION_AIRBORNE_DURATION,
             },
-            sprite_center_offset=(2, 8),
+            sprite_center_offset=(1, -10),
             synchronized_animations={
                 AnimationType.IDLE: True,
             }
