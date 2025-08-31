@@ -1581,7 +1581,7 @@ def create_orc_goblin(
         health=gc.ORC_GOBLIN_HP,
         hitbox=Hitbox(
             width=16,
-            height=32,
+            height=28,
         ),
         corruption_powers=corruption_powers,
         tier=tier,
@@ -1701,8 +1701,8 @@ def create_orc_warg_rider(
         movement_speed=warg_rider_movement_speed,
         health=gc.ORC_WARG_RIDER_HP,
         hitbox=Hitbox(
-            width=16,
-            height=32,
+            width=32,
+            height=46,
         ),
         corruption_powers=corruption_powers,
         tier=tier,
@@ -4149,8 +4149,8 @@ def create_pirate_cannon(
         movement_speed=gc.PIRATE_CANNON_MOVEMENT_SPEED,
         health=gc.PIRATE_CANNON_HP,
         hitbox=Hitbox(
-            width=16,
-            height=32,
+            width=40,
+            height=20,
         ),
         corruption_powers=corruption_powers,
         tier=tier,
@@ -5705,7 +5705,7 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
                 AnimationType.ABILITY1: attack_animation_duration,
                 AnimationType.DYING: gc.ORC_GOBLIN_ANIMATION_DYING_DURATION,
             },
-            sprite_center_offset=(0, -8),
+            sprite_center_offset=(0, -10),
             synchronized_animations={
                 AnimationType.IDLE: True,
             }
@@ -5733,7 +5733,7 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
                 AnimationType.ABILITY1: attack_animation_duration,
                 AnimationType.DYING: gc.ORC_WARG_RIDER_ANIMATION_DYING_DURATION,
             },
-            sprite_center_offset=(0, -8),
+            sprite_center_offset=(1, -6),
             synchronized_animations={
                 AnimationType.IDLE: True,
             }
@@ -6453,7 +6453,7 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
                 AnimationType.ABILITY1: gc.PIRATE_CANNON_ANIMATION_ATTACK_DURATION,
                 AnimationType.DYING: gc.PIRATE_CANNON_ANIMATION_DYING_DURATION,
             },
-            sprite_center_offset=(0, -8),
+            sprite_center_offset=(0, -10),
             synchronized_animations={
                 AnimationType.IDLE: True,
             }
