@@ -485,6 +485,13 @@
             }
         }
     },
+    "#zombie_fighter_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/ZombieFighterIcon.png"
+            }
+        }
+    },
     "#zombie_grabber_icon": {
         "images": {
             "normal_image": {

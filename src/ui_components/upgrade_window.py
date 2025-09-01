@@ -427,6 +427,7 @@ class UpgradeWindow:
         zombie_units = {
             UnitType.ZOMBIE_BASIC_ZOMBIE,
             UnitType.ZOMBIE_BRUTE,
+            UnitType.ZOMBIE_FIGHTER,
             UnitType.ZOMBIE_GRABBER,
             UnitType.ZOMBIE_JUMPER,
             UnitType.ZOMBIE_SPITTER,

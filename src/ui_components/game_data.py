@@ -220,6 +220,10 @@ UPGRADE_DESCRIPTIONS = {
         UnitTier.ADVANCED: "25% increased health and damage",
         UnitTier.ELITE: "25% increased health and damage"
     },
+    UnitType.ZOMBIE_FIGHTER: {
+        UnitTier.ADVANCED: "30% increased health and damage",
+        UnitTier.ELITE: "30% increased health and damage"
+    },
     UnitType.ZOMBIE_GRABBER: {
         UnitTier.ADVANCED: "50% increased health and damage",
         UnitTier.ELITE: "50% increased health and damage"
@@ -1370,6 +1374,51 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             },
             modification_levels={
                 StatType.DEFENSE: 1 if unit_tier == UnitTier.ADVANCED else 2 if unit_tier == UnitTier.ELITE else 0
+            }
+        )
+    if unit_type == UnitType.ZOMBIE_FIGHTER:
+        # Calculate tier-specific values
+        zombie_fighter_health = gc.ZOMBIE_FIGHTER_HP
+        zombie_fighter_damage = gc.ZOMBIE_FIGHTER_ATTACK_DAMAGE
+        
+        # Advanced tier: 30% increased health and damage
+        if unit_tier == UnitTier.ADVANCED:
+            zombie_fighter_health = zombie_fighter_health * 1.3
+            zombie_fighter_damage = zombie_fighter_damage * 1.3
+        
+        # Elite tier: 60% increased health and damage total
+        elif unit_tier == UnitTier.ELITE:
+            zombie_fighter_health = zombie_fighter_health * 1.6
+            zombie_fighter_damage = zombie_fighter_damage * 1.6
+        
+        return UnitData(
+            name="Zombie Fighter",
+            description=f"Zombie Fighters are slow melee units with powerful attacks that <a href='{GlossaryEntryType.INFECTION.value}'>Infect</a> on hit.",
+            tier=unit_tier,
+            stats={
+                StatType.DEFENSE: defense_stat(zombie_fighter_health),
+                StatType.SPEED: speed_stat(gc.ZOMBIE_FIGHTER_MOVEMENT_SPEED),
+                StatType.DAMAGE: damage_stat(zombie_fighter_damage / gc.ZOMBIE_FIGHTER_ANIMATION_ATTACK_DURATION),
+                StatType.RANGE: range_stat(gc.ZOMBIE_FIGHTER_ATTACK_RANGE),
+                StatType.UTILITY: 2.5
+            },
+            tooltips={
+                StatType.DEFENSE: f"{zombie_fighter_health:.0f} maximum health",
+                StatType.SPEED: f"{gc.ZOMBIE_FIGHTER_MOVEMENT_SPEED} units per second",
+                StatType.DAMAGE: f"{zombie_fighter_damage:.0f} per hit ({zombie_fighter_damage / gc.ZOMBIE_FIGHTER_ANIMATION_ATTACK_DURATION:.1f} per second)",
+                StatType.RANGE: f"{gc.ZOMBIE_FIGHTER_ATTACK_RANGE} units",
+                StatType.UTILITY: f"Infects enemies on hit"
+            },
+            tips={
+                "Strong when": ["Against enemies that can be killed in one hit", "In a large group", "Tanking damage"],
+                "Weak when": ["Against ranged units", "Against units with high damage per second", f"Against <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a>"],
+            },
+            modification_levels={
+                StatType.DEFENSE: 1 if unit_tier == UnitTier.ADVANCED else 2 if unit_tier == UnitTier.ELITE else 0,
+                StatType.DAMAGE: 1 if unit_tier == UnitTier.ADVANCED else 2 if unit_tier == UnitTier.ELITE else 0,
+                StatType.SPEED: 0,
+                StatType.RANGE: 0,
+                StatType.UTILITY: 0
             }
         )
     if unit_type == UnitType.ZOMBIE_BRUTE:

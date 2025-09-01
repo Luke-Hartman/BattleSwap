@@ -92,6 +92,7 @@ unit_theme_ids: Dict[UnitType, str] = {
     UnitType.WEREBEAR: "#werebear_icon",
     UnitType.ZOMBIE_BASIC_ZOMBIE: "#zombie_basic_zombie_icon",
     UnitType.ZOMBIE_BRUTE: "#zombie_brute_icon",
+    UnitType.ZOMBIE_FIGHTER: "#zombie_fighter_icon",
     UnitType.ZOMBIE_GRABBER: "#zombie_grabber_icon",
     UnitType.ZOMBIE_JUMPER: "#zombie_jumper_icon",
     UnitType.ZOMBIE_SPITTER: "#zombie_spitter_icon",
@@ -174,6 +175,7 @@ _unit_to_faction = {
     UnitType.WEREBEAR: Faction.MISC,
     UnitType.ZOMBIE_BASIC_ZOMBIE: Faction.ZOMBIES,
     UnitType.ZOMBIE_BRUTE: Faction.ZOMBIES,
+    UnitType.ZOMBIE_FIGHTER: Faction.ZOMBIES,
     UnitType.ZOMBIE_GRABBER: Faction.ZOMBIES,
     UnitType.ZOMBIE_JUMPER: Faction.ZOMBIES,
     UnitType.ZOMBIE_SPITTER: Faction.ZOMBIES,
@@ -216,6 +218,7 @@ def load_sprite_sheets():
         UnitType.WEREBEAR: "Werebear.png",
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombieNew.png",
         UnitType.ZOMBIE_BRUTE: "ZombieBasicZombie.png",
+        UnitType.ZOMBIE_FIGHTER: "ZombieFighter.png",
         UnitType.ZOMBIE_GRABBER: "ZombieBasicZombie.png",
         UnitType.ZOMBIE_JUMPER: "ZombieJumper.png",
         UnitType.ZOMBIE_SPITTER: "ZombieSpitter.png",
@@ -262,6 +265,7 @@ def load_sprite_sheets():
         UnitType.WEREBEAR: "WerebearIcon.png",
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombieIcon.png",
         UnitType.ZOMBIE_BRUTE: "ZombieBruteIcon.png",
+        UnitType.ZOMBIE_FIGHTER: "ZombieFighterIcon.png",
         UnitType.ZOMBIE_GRABBER: "ZombieGrabberIcon.png",
         UnitType.ZOMBIE_JUMPER: "ZombieBasicZombieIcon.png",
         UnitType.ZOMBIE_SPITTER: "ZombieSpitterIcon.png",
@@ -389,6 +393,7 @@ def create_unit(
         UnitType.WEREBEAR: create_werebear,
         UnitType.ZOMBIE_BASIC_ZOMBIE: create_zombie_basic_zombie,
         UnitType.ZOMBIE_BRUTE: create_zombie_brute,
+        UnitType.ZOMBIE_FIGHTER: create_zombie_fighter,
         UnitType.ZOMBIE_GRABBER: create_zombie_grabber,
         UnitType.ZOMBIE_JUMPER: create_zombie_jumper,
         UnitType.ZOMBIE_SPITTER: create_zombie_spitter,
@@ -4663,6 +4668,109 @@ def create_zombie_basic_zombie(
     esper.add_component(entity, ZOMBIE_DEATH_SOUNDS)
     return entity
 
+def create_zombie_fighter(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+        play_spawning: bool = False,
+    ) -> int:
+    """Create a zombie fighter entity with all necessary components."""
+    # Calculate tier-specific health and damage
+    fighter_health = gc.ZOMBIE_FIGHTER_HP
+    fighter_damage = gc.ZOMBIE_FIGHTER_ATTACK_DAMAGE
+    
+    # Advanced tier: 30% increased health and damage
+    if tier == UnitTier.ADVANCED:
+        fighter_health = fighter_health * 1.3
+        fighter_damage = fighter_damage * 1.3
+    
+    # Elite tier: 60% increased health and damage total
+    elif tier == UnitTier.ELITE:
+        fighter_health = fighter_health * 1.6
+        fighter_damage = fighter_damage * 1.6
+    
+    entity = unit_base_entity(
+        x=x,
+        y=y,
+        team=team,
+        unit_type=UnitType.ZOMBIE_FIGHTER,
+        movement_speed=gc.ZOMBIE_FIGHTER_MOVEMENT_SPEED,
+        health=fighter_health,
+        hitbox=Hitbox(width=16, height=32),
+        corruption_powers=corruption_powers,
+        tier=tier,
+        play_spawning=play_spawning
+    )
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=2, ascending=True),
+        ],
+        unit_condition=None,
+        targetting_group=TargetingGroup.TEAM2_LIVING_VISIBLE if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING_VISIBLE
+    )
+    esper.add_component(
+        entity,
+        Destination(target_strategy=targetting_strategy, x_offset=gc.ZOMBIE_FIGHTER_ATTACK_RANGE*2/3)
+    )
+    esper.add_component(
+        entity,
+        Abilities(
+            abilities=[
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                Grounded(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.ZOMBIE_FIGHTER_ATTACK_RANGE,
+                                    y_bias=3
+                                ),
+                            ])
+                        )
+                    ],
+                    persistent_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.ZOMBIE_FIGHTER_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    y_bias=3
+                                ),
+                            ])
+                        )
+                    ],
+                    effects={3: [
+                        Damages(damage=fighter_damage, recipient=Recipient.TARGET),
+                        AppliesStatusEffect(
+                            status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers),
+                            recipient=Recipient.TARGET
+                        )
+                    ]},
+                )
+            ]
+        )
+    )
+    esper.add_component(entity, ImmuneToZombieInfection())
+    esper.add_component(
+        entity,
+        get_unit_sprite_sheet(UnitType.ZOMBIE_FIGHTER, tier)
+    )
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [1, 3]
+        },
+    }))
+    esper.add_component(entity, ZOMBIE_DEATH_SOUNDS)
+    return entity
+
 def create_zombie_brute(
         x: int,
         y: int,
@@ -6268,6 +6376,26 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
                 AnimationType.ABILITY1: gc.ZOMBIE_BASIC_ZOMBIE_ANIMATION_ATTACK_DURATION,
                 AnimationType.DYING: gc.ZOMBIE_BASIC_ZOMBIE_ANIMATION_DYING_DURATION,
                 AnimationType.SPAWNING: gc.ZOMBIE_BASIC_ZOMBIE_ANIMATION_SPAWNING_DURATION,
+            },
+            sprite_center_offset=(0, -9),
+            synchronized_animations={
+                AnimationType.IDLE: True,
+            }
+        )
+    if unit_type == UnitType.ZOMBIE_FIGHTER:
+        return SpriteSheet(
+            surface=sprite_sheets[UnitType.ZOMBIE_FIGHTER],
+            frame_width=32,
+            frame_height=32,
+            scale=gc.MINIFOLKS_SCALE,
+            frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.ABILITY1: 12, AnimationType.DYING: 4, AnimationType.SPAWNING: 9},
+            rows={AnimationType.IDLE: 1, AnimationType.WALKING: 2, AnimationType.ABILITY1: 7, AnimationType.DYING: 9, AnimationType.SPAWNING: 0},
+            animation_durations={
+                AnimationType.IDLE: gc.ZOMBIE_FIGHTER_ANIMATION_IDLE_DURATION,
+                AnimationType.WALKING: gc.ZOMBIE_FIGHTER_ANIMATION_WALKING_DURATION,
+                AnimationType.ABILITY1: gc.ZOMBIE_FIGHTER_ANIMATION_ATTACK_DURATION,
+                AnimationType.DYING: gc.ZOMBIE_FIGHTER_ANIMATION_DYING_DURATION,
+                AnimationType.SPAWNING: gc.ZOMBIE_FIGHTER_ANIMATION_SPAWNING_DURATION,
             },
             sprite_center_offset=(0, -9),
             synchronized_animations={

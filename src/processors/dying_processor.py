@@ -9,8 +9,9 @@ from components.team import Team, TeamType
 from components.unit_tier import UnitTier
 from components.unit_type import UnitType, UnitTypeComponent
 from components.transparent import Transparency
+from effects import PlaySound, SoundEffect
 from entities.units import create_unit
-from events import DEATH, DeathEvent, emit_event
+from events import DEATH, PLAY_SOUND, DeathEvent, emit_event
 from progress_manager import progress_manager
 from unit_condition import Infected
 from voice import play_death
@@ -59,5 +60,8 @@ class DyingProcessor(esper.Processor):
                 )
                 # This is a hack to hide the corpse of the unit
                 esper.remove_component(ent, SpriteSheet)
+                PlaySound([
+                    (SoundEffect(filename=f"zombie_grunt_{i+1}.wav", volume=0.5), 1.0) for i in range(3)
+                ]).apply(owner=None, parent=None, target=None)
             
             esper.remove_component(ent, Dying)
