@@ -218,7 +218,7 @@ def load_sprite_sheets():
         UnitType.ZOMBIE_BRUTE: "ZombieBasicZombie.png",
         UnitType.ZOMBIE_GRABBER: "ZombieBasicZombie.png",
         UnitType.ZOMBIE_JUMPER: "ZombieJumper.png",
-        UnitType.ZOMBIE_SPITTER: "ZombieBasicZombie.png",
+        UnitType.ZOMBIE_SPITTER: "ZombieSpitter.png",
         UnitType.ZOMBIE_TANK: "ZombieTank.png",
     }
     for unit_type, filename in unit_filenames.items():
@@ -4981,11 +4981,12 @@ def create_zombie_spitter(
         team: TeamType,
         corruption_powers: Optional[List[CorruptionPower]],
         tier: UnitTier,
+        play_spawning: bool = False,
     ) -> int:
     """Create a spitter entity with all necessary components."""
     # Calculate tier-specific damage values
-    spitter_damage = gc.ZOMBIE_SPITTER_ATTACK_DAMAGE
-    melee_damage = gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_DAMAGE
+    spitter_damage = gc.ZOMBIE_SPITTER_RANGED_ATTACK_DAMAGE
+    melee_damage = gc.ZOMBIE_SPITTER_MELEE_ATTACK_DAMAGE
     
     # Advanced tier: 50% increased damage
     if tier == UnitTier.ADVANCED:
@@ -5009,7 +5010,8 @@ def create_zombie_spitter(
             height=32,
         ),
         corruption_powers=corruption_powers,
-        tier=tier
+        tier=tier,
+        play_spawning=play_spawning
     )
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -5028,7 +5030,7 @@ def create_zombie_spitter(
         entity,
         Destination(target_strategy=targetting_strategy, x_offset=0)
     )
-    esper.add_component(entity, RangeIndicator(ranges=[gc.ZOMBIE_SPITTER_ATTACK_RANGE]))
+    esper.add_component(entity, RangeIndicator(ranges=[gc.ZOMBIE_SPITTER_RANGED_ATTACK_RANGE]))
     esper.add_component(entity, ImmuneToZombieInfection())
     esper.add_component(
         entity,
@@ -5045,7 +5047,7 @@ def create_zombie_spitter(
                                 Not(HasComponent(ImmuneToZombieInfection)),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=gc.ZOMBIE_SPITTER_ATTACK_RANGE,
+                                    distance=gc.ZOMBIE_SPITTER_RANGED_ATTACK_RANGE,
                                     y_bias=None
                                 )
                             ])
@@ -5060,14 +5062,14 @@ def create_zombie_spitter(
                                 Not(HasComponent(ImmuneToZombieInfection)),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=gc.ZOMBIE_SPITTER_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    distance=gc.ZOMBIE_SPITTER_RANGED_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
                                     y_bias=None
                                 )
                             ])
                         )
                     ],
                     effects={
-                        3: [
+                        2: [
                             CreatesProjectile(
                                 projectile_speed=gc.ZOMBIE_SPITTER_PROJECTILE_SPEED,
                                 effects=[
@@ -5083,16 +5085,17 @@ def create_zombie_spitter(
                                         recipient=Recipient.TARGET
                                     )
                                 ],
-                                visual=Visual.Arrow,
+                                visual=Visual.ZombieSpit,
                                 projectile_offset_x=5*gc.MINIFOLKS_SCALE,
                                 projectile_offset_y=0,
                                 unit_condition=All([OnTeam(team=team.other()), Alive(), Grounded(), Not(Infected())]),
                             ),
-                            PlaySound(SoundEffect(filename="zombie_spitter_attack.wav", volume=0.50)),
+                            PlaySound([
+                                (SoundEffect(filename=f"zombie_spitter_attack.wav", volume=0.20), 1.0) for i in range(3)
+                            ]),
                         ]
                     },
                 ),
-                # Uses basic zombie attack otherwise
                 Ability(
                     target_strategy=targetting_strategy,
                     trigger_conditions=[
@@ -5102,7 +5105,7 @@ def create_zombie_spitter(
                                 Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_RANGE,
+                                    distance=gc.ZOMBIE_SPITTER_MELEE_ATTACK_RANGE,
                                     y_bias=3
                                 ),
                             ])
@@ -5113,14 +5116,15 @@ def create_zombie_spitter(
                             unit_condition=All([
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    distance=gc.ZOMBIE_SPITTER_MELEE_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
                                     y_bias=3
                                 ),
                             ])
                         )
                     ],
-                    effects={3: [
-                        Damages(damage=melee_damage, recipient=Recipient.TARGET),
+                    effects={1: [
+                        Damages(damage=melee_damage/2, recipient=Recipient.TARGET),
+                        Damages(damage=melee_damage/2, recipient=Recipient.TARGET),
                         AppliesStatusEffect(
                             status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers),
                             recipient=Recipient.TARGET
@@ -6340,19 +6344,19 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
     if unit_type == UnitType.ZOMBIE_SPITTER:
         return SpriteSheet(
             surface=sprite_sheets[UnitType.ZOMBIE_SPITTER],
-            frame_width=100,
-            frame_height=100,
-            scale=gc.TINY_RPG_SCALE,
-            frames={AnimationType.IDLE: 3, AnimationType.WALKING: 4, AnimationType.ABILITY1: 5, AnimationType.ABILITY2: 5, AnimationType.DYING: 6},
-            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 2, AnimationType.ABILITY2: 2, AnimationType.DYING: 3},
+            frame_width=32,
+            frame_height=32,
+            scale=gc.MINIFOLKS_SCALE,
+            frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.ABILITY1: 6, AnimationType.ABILITY2: 4, AnimationType.DYING: 4},
+            rows={AnimationType.IDLE: 1, AnimationType.WALKING: 2, AnimationType.ABILITY1: 6, AnimationType.ABILITY2: 5, AnimationType.DYING: 8},
             animation_durations={
                 AnimationType.IDLE: gc.ZOMBIE_SPITTER_ANIMATION_IDLE_DURATION,
                 AnimationType.WALKING: gc.ZOMBIE_SPITTER_ANIMATION_WALKING_DURATION,
-                AnimationType.ABILITY1: gc.ZOMBIE_SPITTER_ANIMATION_ATTACK_DURATION,
-                AnimationType.ABILITY2: gc.ZOMBIE_BASIC_ZOMBIE_ANIMATION_ATTACK_DURATION,
+                AnimationType.ABILITY1: gc.ZOMBIE_SPITTER_ANIMATION_MELEE_ATTACK_DURATION,
+                AnimationType.ABILITY2: gc.ZOMBIE_SPITTER_ANIMATION_RANGED_ATTACK_DURATION,
                 AnimationType.DYING: gc.ZOMBIE_SPITTER_ANIMATION_DYING_DURATION,
             },
-            sprite_center_offset=(2, 8),
+            sprite_center_offset=(0, -8),
             synchronized_animations={
                 AnimationType.IDLE: True,
             }

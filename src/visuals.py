@@ -31,6 +31,7 @@ class Visual(Enum):
     Rope = auto()
     Tongue = auto()
     TongueTip = auto()
+    ZombieSpit = auto()
 
 visual_sheets: dict[Visual, pygame.Surface] = {}
 
@@ -56,6 +57,7 @@ def load_visual_sheets():
         Visual.Rope: os.path.join("assets", "effects", "rope.png"),
         Visual.Tongue: os.path.join("assets", "effects", "Tongue.png"),
         Visual.TongueTip: os.path.join("assets", "effects", "TongueTip.png"),
+        Visual.ZombieSpit: os.path.join("assets", "effects", "ZombieSpit.png"),
     }
     for visual, path in visual_paths.items():
         if visual in visual_sheets:
@@ -417,5 +419,23 @@ def create_visual_spritesheet(
             rows={AnimationType.IDLE: 0},
             animation_durations={AnimationType.IDLE: duration},
             sprite_center_offset=(0, 0),
+            layer=layer
+        )
+    elif visual == Visual.ZombieSpit:
+        if duration is None:
+            duration = 0.4
+        if scale is None:
+            scale = gc.MINIFOLKS_SCALE
+        if frames is not None:
+            raise NotImplementedError("ZombieSpit visual cannot specify frames")
+        return SpriteSheet(
+            surface=visual_sheets[visual],
+            frame_width=16,
+            frame_height=16,
+            scale=scale,
+            frames={AnimationType.IDLE: 2},
+            rows={AnimationType.IDLE: 0},
+            animation_durations={AnimationType.IDLE: duration},
+            sprite_center_offset=(-.5, -.5),
             layer=layer
         )

@@ -1567,8 +1567,8 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
     
     if unit_type == UnitType.ZOMBIE_SPITTER:
         # Calculate tier-specific values
-        spitter_damage = gc.ZOMBIE_SPITTER_ATTACK_DAMAGE
-        melee_damage = gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_DAMAGE
+        spitter_damage = gc.ZOMBIE_SPITTER_RANGED_ATTACK_DAMAGE
+        melee_damage = gc.ZOMBIE_SPITTER_MELEE_ATTACK_DAMAGE
         
         # Advanced tier: 50% increased damage
         if unit_tier == UnitTier.ADVANCED:
@@ -1587,15 +1587,15 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             stats={
                 StatType.DEFENSE: defense_stat(gc.ZOMBIE_SPITTER_HP),
                 StatType.SPEED: speed_stat(gc.ZOMBIE_SPITTER_MOVEMENT_SPEED),
-                StatType.DAMAGE: damage_stat(spitter_damage / gc.ZOMBIE_SPITTER_ANIMATION_ATTACK_DURATION, 2/3),
-                StatType.RANGE: range_stat(gc.ZOMBIE_SPITTER_ATTACK_RANGE),
+                StatType.DAMAGE: damage_stat(spitter_damage / gc.ZOMBIE_SPITTER_ANIMATION_RANGED_ATTACK_DURATION, 2/3),
+                StatType.RANGE: range_stat(gc.ZOMBIE_SPITTER_RANGED_ATTACK_RANGE),
                 StatType.UTILITY: 2.5
             },
             tooltips={
                 StatType.DEFENSE: f"{gc.ZOMBIE_SPITTER_HP:.0f} maximum health",
                 StatType.SPEED: f"{gc.ZOMBIE_SPITTER_MOVEMENT_SPEED} units per second",
-                StatType.DAMAGE: f"{spitter_damage:.0f} poison damage ({spitter_damage/gc.ZOMBIE_INFECTION_DURATION:.1f} damage per second per poison) ({spitter_damage / gc.ZOMBIE_SPITTER_ANIMATION_ATTACK_DURATION:.1f} per second if poisoning multiple enemies). Melee: {melee_damage:.0f} per hit",
-                StatType.RANGE: f"{gc.ZOMBIE_SPITTER_ATTACK_RANGE} units",
+                StatType.DAMAGE: f"{spitter_damage:.0f} poison damage ({spitter_damage/gc.ZOMBIE_INFECTION_DURATION:.1f} damage per second per poison) ({spitter_damage / gc.ZOMBIE_SPITTER_ANIMATION_RANGED_ATTACK_DURATION:.1f} per second if poisoning multiple enemies). Melee: {melee_damage/2:.0f} per hit (hits twice)",
+                StatType.RANGE: f"{gc.ZOMBIE_SPITTER_RANGED_ATTACK_RANGE} units",
                 StatType.UTILITY: f"Infects enemies on hit"
             },
             tips={
