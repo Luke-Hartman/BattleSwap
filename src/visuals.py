@@ -14,6 +14,7 @@ from game_constants import gc
 class Visual(Enum):
     Arrow = auto()
     CoreBarbarianAttack = auto()
+    LongbowArrow = auto()
     CrusaderBlackKnightFear = auto()
     CrusaderCatapultBall = auto()
     CrusaderCatapultBallExplosion = auto()
@@ -40,6 +41,7 @@ def load_visual_sheets():
     visual_paths = {
         Visual.Arrow: os.path.join("assets", "effects", "HumansProjectiles.png"),
         Visual.CoreBarbarianAttack: os.path.join("assets", "units", "CoreBarbarian.png"),
+        Visual.LongbowArrow: os.path.join("assets", "effects", "LongbowArrow.png"),
         Visual.CrusaderBlackKnightFear: os.path.join("assets", "effects", "Black_Knight_Fear.png"),
         Visual.CrusaderCatapultBall: os.path.join("assets", "effects", "CrusaderCatapultBall.png"),
         Visual.CrusaderCatapultBallExplosion: os.path.join("assets", "effects", "CrusaderCatapultBall.png"),
@@ -83,6 +85,24 @@ def create_visual_spritesheet(
             surface=visual_sheets[visual],
             frame_width=16,
             frame_height=16,
+            scale=scale,
+            frames={AnimationType.IDLE: 1},
+            rows={AnimationType.IDLE: 0},
+            animation_durations={AnimationType.IDLE: duration},
+            sprite_center_offset=(-.5, -.5),
+            layer=layer
+        )
+    elif visual == Visual.LongbowArrow:
+        if duration is None:
+            duration = 1.0 # Doesn't matter for single frame
+        if scale is None:
+            scale = gc.TINY_RPG_SCALE
+        if frames is not None:
+            raise NotImplementedError("LongbowArrow visual cannot specify frames")
+        return SpriteSheet(
+            surface=visual_sheets[visual],
+            frame_width=32,
+            frame_height=32,
             scale=scale,
             frames={AnimationType.IDLE: 1},
             rows={AnimationType.IDLE: 0},

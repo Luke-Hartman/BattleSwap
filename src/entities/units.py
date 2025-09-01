@@ -970,7 +970,7 @@ def create_core_longbowman(
                                 effects=[
                                     Damages(damage=longbowman_damage, recipient=Recipient.TARGET),
                                 ],
-                                visual=Visual.Arrow,
+                                visual=Visual.LongbowArrow,
                                 projectile_offset_x=5*gc.MINIFOLKS_SCALE,
                                 projectile_offset_y=0,
                                 unit_condition=All([OnTeam(team=team.other()), Alive(), Grounded()]),
