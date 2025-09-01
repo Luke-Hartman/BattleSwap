@@ -464,6 +464,13 @@
             }
         }
     },
+    "#skeleton_swordsman_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/SkeletonSwordsmanIcon.png"
+            }
+        }
+    },
     "#werebear_icon": {
         "images": {
             "normal_image": {

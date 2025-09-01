@@ -11,7 +11,7 @@ from components.ammo import Ammo
 from components.entity_memory import EntityMemory
 from components.health import Health
 from components.hitbox import Hitbox
-from components.immunity import ImmuneToZombieInfection
+from components.unusable_corpse import UnusableCorpse
 from components.orientation import Orientation
 from components.position import Position
 from components.stance import Stance
@@ -310,7 +310,7 @@ class Infected(UnitCondition):
     """The unit is infected with a zombie infection."""
 
     def get_active_zombie_infection(self, entity: int) -> Optional[ZombieInfection]:
-        if not esper.has_component(entity, ImmuneToZombieInfection):
+        if not esper.has_component(entity, UnusableCorpse):
             status_effects = esper.component_for_entity(entity, StatusEffects)
             for effect in status_effects.active_effects():
                 if isinstance(effect, ZombieInfection):

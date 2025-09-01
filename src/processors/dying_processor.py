@@ -9,6 +9,7 @@ from components.team import Team, TeamType
 from components.unit_tier import UnitTier
 from components.unit_type import UnitType, UnitTypeComponent
 from components.transparent import Transparency
+from components.unusable_corpse import UnusableCorpse
 from effects import PlaySound, SoundEffect
 from entities.units import create_unit
 from events import DEATH, PLAY_SOUND, DeathEvent, emit_event
@@ -35,7 +36,7 @@ class DyingProcessor(esper.Processor):
 
             # Handle zombie infection
             zombie_infection = Infected().get_active_zombie_infection(ent)
-            if zombie_infection:
+            if zombie_infection and not esper.has_component(ent, UnusableCorpse):
                 position = esper.component_for_entity(ent, Position)
                 team = esper.component_for_entity(ent, Team)
                 

@@ -60,6 +60,7 @@ class GlossaryEntryType(enum.Enum):
     SPREADER = "Spreader"
     UPGRADE = "Upgrade"
     INVISIBLE = "Invisible"
+    UNUSABLE_CORPSE = "Unusable Corpse"
 
 class StatType(enum.Enum):
     """Types of stats that units can have."""
@@ -107,7 +108,8 @@ GLOSSARY_ENTRIES = {
     GlossaryEntryType.POINTS: f"Points represent the value of a unit. When you have more than {gc.CORRUPTION_TRIGGER_POINTS} points of units in your <a href='{GlossaryEntryType.BARRACKS.value}'>Barracks</a>, <a href='{GlossaryEntryType.CORRUPTION.value}'>Corruption</a> will trigger.",
     GlossaryEntryType.SPREADER: f"While most units target the nearest enemy unit, Spreaders prioritize units that are not <a href='{GlossaryEntryType.INFECTION.value}'>Infected</a>.",
     GlossaryEntryType.UPGRADE: "Units come in three tiers: Basic, Advanced and Elite. All units start as Basic. You can find special upgrade hexes to promote your units from Basic to Advanced. To promote a unit to Elite, one of your upgrade hexes must be <a href='{GlossaryEntryType.CORRUPTION.value}'>Corrupted</a>. Enemy units start as Basic, but become Elite when they are <a href='{GlossaryEntryType.CORRUPTION.value}'>Corrupted</a>.",
-    GlossaryEntryType.INVISIBLE: "Invisible units cannot be targeted by enemies. They become visible when they attack or use abilities."
+    GlossaryEntryType.INVISIBLE: "Invisible units cannot be targeted by allies or enemies. They become visible when they attack or use abilities.",
+    GlossaryEntryType.UNUSABLE_CORPSE: "Units with Unusable Corpses cannot be turned into <a href='{GlossaryEntryType.INFECTION.value}'>Zombies</a> when they die."
 }
 
 # Upgrade descriptions for each unit type
@@ -221,6 +223,10 @@ UPGRADE_DESCRIPTIONS = {
         UnitTier.ELITE: "25% increased health and damage"
     },
     UnitType.ZOMBIE_FIGHTER: {
+        UnitTier.ADVANCED: "30% increased health and damage",
+        UnitTier.ELITE: "30% increased health and damage"
+    },
+    UnitType.SKELETON_SWORDSMAN: {
         UnitTier.ADVANCED: "30% increased health and damage",
         UnitTier.ELITE: "30% increased health and damage"
     },
@@ -554,6 +560,52 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             }
         )
     
+    if unit_type == UnitType.SKELETON_SWORDSMAN:
+        # Calculate tier-specific values
+        skeleton_swordsman_damage = gc.SKELETON_SWORDSMAN_ATTACK_DAMAGE
+        skeleton_swordsman_health = gc.SKELETON_SWORDSMAN_HP
+        
+        # Advanced tier: 30% more health and damage
+        if unit_tier == UnitTier.ADVANCED:
+            skeleton_swordsman_damage = skeleton_swordsman_damage * 1.3
+            skeleton_swordsman_health = skeleton_swordsman_health * 1.3
+        
+        # Elite tier: 60% more health and damage (total)
+        elif unit_tier == UnitTier.ELITE:
+            skeleton_swordsman_damage = skeleton_swordsman_damage * 1.6
+            skeleton_swordsman_health = skeleton_swordsman_health * 1.6
+        
+        return UnitData(
+            name="Skeleton Swordsman",
+            description="Skeleton Swordsmen are melee units with <a href='{GlossaryEntryType.UNUSABLE_CORPSE.value}'>Unusable Corpses</a> that deal moderate damage.",
+            tier=unit_tier,
+            stats={
+                StatType.DEFENSE: defense_stat(skeleton_swordsman_health),
+                StatType.SPEED: speed_stat(gc.SKELETON_SWORDSMAN_MOVEMENT_SPEED),
+                StatType.DAMAGE: damage_stat(skeleton_swordsman_damage / gc.SKELETON_SWORDSMAN_ANIMATION_ATTACK_DURATION),
+                StatType.RANGE: range_stat(gc.SKELETON_SWORDSMAN_ATTACK_RANGE),
+                StatType.UTILITY: None
+            },
+            tooltips={
+                StatType.DEFENSE: f"{int(skeleton_swordsman_health)} maximum health",
+                StatType.SPEED: f"{gc.SKELETON_SWORDSMAN_MOVEMENT_SPEED} units per second",
+                StatType.DAMAGE: f"{int(skeleton_swordsman_damage)} per hit ({skeleton_swordsman_damage / gc.SKELETON_SWORDSMAN_ANIMATION_ATTACK_DURATION:.1f} per second)",
+                StatType.RANGE: f"{gc.SKELETON_SWORDSMAN_ATTACK_RANGE} units",
+                StatType.UTILITY: None
+            },
+            tips={
+                "Strong when": ["In a large group", "In close combat"],
+                "Weak when": ["Against ranged units", "<a href='Against {GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a> units"],
+            },
+            modification_levels={
+                StatType.DAMAGE: 1 if unit_tier == UnitTier.ADVANCED else 2 if unit_tier == UnitTier.ELITE else 0,
+                StatType.DEFENSE: 1 if unit_tier == UnitTier.ADVANCED else 2 if unit_tier == UnitTier.ELITE else 0,
+                StatType.RANGE: 0,
+                StatType.SPEED: 0,
+                StatType.UTILITY: 0
+            }
+        )
+
     if unit_type == UnitType.ORC_BERSERKER:
         # Calculate tier-specific values
         orc_berserker_ranged_damage = gc.ORC_BERSERKER_RANGED_DAMAGE
@@ -1352,7 +1404,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         
         return UnitData(
             name="Zombie",
-            description=f"Zombies are slow, weak melee units that <a href='{GlossaryEntryType.INFECTION.value}'>Infect</a> on hit.",
+            description=f"Zombies are slow, weak melee units that <a href='{GlossaryEntryType.INFECTION.value}'>Infect</a> on hit. Some units have <a href='{GlossaryEntryType.UNUSABLE_CORPSE.value}'>Unusable Corpses</a> that cannot be infected.",
             tier=unit_tier,
             stats={
                 StatType.DEFENSE: defense_stat(zombie_basic_zombie_health),
@@ -1393,7 +1445,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         
         return UnitData(
             name="Zombie Fighter",
-            description=f"Zombie Fighters are slow melee units with powerful attacks that <a href='{GlossaryEntryType.INFECTION.value}'>Infect</a> on hit.",
+            description=f"Zombie Fighters are slow melee units with <a href='{GlossaryEntryType.UNUSABLE_CORPSE.value}'>Unusable Corpses</a> and powerful attacks that <a href='{GlossaryEntryType.INFECTION.value}'>Infect</a> on hit.",
             tier=unit_tier,
             stats={
                 StatType.DEFENSE: defense_stat(zombie_fighter_health),
@@ -1438,7 +1490,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         
         return UnitData(
             name="Brute",
-            description=f"Brutes are slow melee units that <a href='{GlossaryEntryType.INFECTION.value}'>Infect</a> on hit and carry two <a href='{UnitType.ZOMBIE_BASIC_ZOMBIE.value}'>Zombies</a> into battle.",
+            description=f"Brutes are slow melee units with <a href='{GlossaryEntryType.UNUSABLE_CORPSE.value}'>Unusable Corpses</a> that <a href='{GlossaryEntryType.INFECTION.value}'>Infect</a> on hit and carry two <a href='{UnitType.ZOMBIE_BASIC_ZOMBIE.value}'>Zombies</a> into battle.",
             tier=unit_tier,
             stats={
                 StatType.DEFENSE: defense_stat(zombie_brute_health),
@@ -1487,7 +1539,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         
         return UnitData(
             name="Grabber",
-            description=f"Grabbers are slow melee units with long reach that <a href='{GlossaryEntryType.INFECTION.value}'>Infect</a> on hit and can grab and pull enemies towards them.",
+            description=f"Grabbers are slow melee units with <a href='{GlossaryEntryType.UNUSABLE_CORPSE.value}'>Unusable Corpses</a> and long reach that <a href='{GlossaryEntryType.INFECTION.value}'>Infect</a> on hit and can grab and pull enemies towards them.",
             tier=unit_tier,
             stats={ 
                 StatType.DEFENSE: defense_stat(zombie_grabber_health),
@@ -1585,7 +1637,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         
         return UnitData(
             name="Jumper",
-            description=f"Jumpers are fast, high damage <a href='{GlossaryEntryType.HUNTER.value}'>Hunters</a> that <a href='{GlossaryEntryType.INFECTION.value}'>Infect</a> on hit and can jump to their target.",
+            description=f"Jumpers are fast, high damage <a href='{GlossaryEntryType.HUNTER.value}'>Hunters</a> with <a href='{GlossaryEntryType.UNUSABLE_CORPSE.value}'>Unusable Corpses</a> that <a href='{GlossaryEntryType.INFECTION.value}'>Infect</a> on hit and can jump to their target.",
             tier=unit_tier,
             stats={
                 StatType.DEFENSE: defense_stat(zombie_jumper_health),
@@ -1631,7 +1683,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         
         return UnitData(
             name="Spitter",
-            description=f"Spitters are slow, short-ranged <a href='{GlossaryEntryType.SPREADER.value}'>Spreaders</a> that <a href='{GlossaryEntryType.POISON.value}'>Poison</a> and <a href='{GlossaryEntryType.INFECTION.value}'>Infect</a> on hit.",
+            description=f"Spitters are slow, short-ranged <a href='{GlossaryEntryType.SPREADER.value}'>Spreaders</a> with <a href='{GlossaryEntryType.UNUSABLE_CORPSE.value}'>Unusable Corpses</a> that <a href='{GlossaryEntryType.POISON.value}'>Poison</a> and <a href='{GlossaryEntryType.INFECTION.value}'>Infect</a> on hit.",
             tier=unit_tier,
             stats={
                 StatType.DEFENSE: defense_stat(gc.ZOMBIE_SPITTER_HP),
@@ -1674,7 +1726,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         
         return UnitData(
             name="Tank",
-            description=f"Tanks are slow melee units with very high health that <a href='{GlossaryEntryType.INFECTION.value}'>Infect</a> on hit.",
+            description=f"Tanks are slow melee units with <a href='{GlossaryEntryType.UNUSABLE_CORPSE.value}'>Unusable Corpses</a> and very high health that <a href='{GlossaryEntryType.INFECTION.value}'>Infect</a> on hit.",
             tier=unit_tier,
             stats={
                 StatType.DEFENSE: defense_stat(zombie_tank_health),

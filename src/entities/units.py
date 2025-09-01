@@ -16,7 +16,6 @@ from components.entity_memory import EntityMemory
 from components.follower import Follower
 from components.forced_movement import ForcedMovement
 from components.hitbox import Hitbox
-from components.immunity import ImmuneToZombieInfection
 from components.instant_ability import InstantAbilities, InstantAbility
 from components.no_nudge import NoNudge
 from components.projectile import Projectile
@@ -26,6 +25,7 @@ from components.stance import Stance
 from components.visual_link import VisualLink
 from components.instant_ability import InstantAbilities, InstantAbility
 from components.animation_effects import AnimationEffects
+from components.unusable_corpse import UnusableCorpse
 from game_constants import gc
 from components.ability import Abilities, Ability, Cooldown, HasTarget, SatisfiesUnitCondition
 from components.armor import Armor
@@ -89,6 +89,7 @@ unit_theme_ids: Dict[UnitType, str] = {
     UnitType.PIRATE_CAPTAIN: "#pirate_captain_icon",
     UnitType.PIRATE_CANNON: "#pirate_cannon_icon",
     UnitType.PIRATE_HARPOONER: "#pirate_harpooner_icon",
+    UnitType.SKELETON_SWORDSMAN: "#skeleton_swordsman_icon",
     UnitType.WEREBEAR: "#werebear_icon",
     UnitType.ZOMBIE_BASIC_ZOMBIE: "#zombie_basic_zombie_icon",
     UnitType.ZOMBIE_BRUTE: "#zombie_brute_icon",
@@ -131,7 +132,8 @@ class Faction(Enum):
     ZOMBIES = 2
     ORC = 3
     PIRATE = 4
-    MISC = 5
+    SKELETON = 5
+    MISC = 6
     
     @staticmethod
     def faction_of(unit_type: UnitType) -> "Faction":
@@ -172,6 +174,7 @@ _unit_to_faction = {
     UnitType.PIRATE_CAPTAIN: Faction.PIRATE,
     UnitType.PIRATE_CANNON: Faction.PIRATE,
     UnitType.PIRATE_HARPOONER: Faction.PIRATE,
+    UnitType.SKELETON_SWORDSMAN: Faction.SKELETON,
     UnitType.WEREBEAR: Faction.MISC,
     UnitType.ZOMBIE_BASIC_ZOMBIE: Faction.ZOMBIES,
     UnitType.ZOMBIE_BRUTE: Faction.ZOMBIES,
@@ -215,6 +218,7 @@ def load_sprite_sheets():
         UnitType.PIRATE_CAPTAIN: "PirateCaptain.png",
         UnitType.PIRATE_CANNON: "PirateCannon.png",
         UnitType.PIRATE_HARPOONER: "PirateHarpooner.png",
+        UnitType.SKELETON_SWORDSMAN: "SkeletonSwordsman.png",
         UnitType.WEREBEAR: "Werebear.png",
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombieNew.png",
         UnitType.ZOMBIE_BRUTE: "ZombieBasicZombie.png",
@@ -262,6 +266,7 @@ def load_sprite_sheets():
         UnitType.PIRATE_CAPTAIN: "PirateCaptainIcon.png",
         UnitType.PIRATE_CANNON: "PirateCannonIcon.png",
         UnitType.PIRATE_HARPOONER: "PirateHarpoonerIcon.png",
+        UnitType.SKELETON_SWORDSMAN: "SkeletonSwordsmanIcon.png",
         UnitType.WEREBEAR: "WerebearIcon.png",
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombieIcon.png",
         UnitType.ZOMBIE_BRUTE: "ZombieBruteIcon.png",
@@ -339,6 +344,16 @@ ORC_DEATH_SOUNDS = OnDeathEffect(
     ]
 )
 
+SKELETON_DEATH_SOUNDS = OnDeathEffect(
+    [
+        PlaySound([
+            (SoundEffect(filename=f"skeleton_death_{i}.wav", volume=0.07), 1.0) for i in range(4)
+        ] + [
+            (SoundEffect(filename=f"wilhelm_scream.wav", volume=0.07), gc.WILHELM_CHANCE*4)
+        ]),
+    ]
+)
+
 ZOMBIE_DEATH_SOUNDS = OnDeathEffect(
     [
         PlaySound([
@@ -390,6 +405,7 @@ def create_unit(
         UnitType.PIRATE_CAPTAIN: create_pirate_captain,
         UnitType.PIRATE_CANNON: create_pirate_cannon,
         UnitType.PIRATE_HARPOONER: create_pirate_harpooner,
+        UnitType.SKELETON_SWORDSMAN: create_skeleton_swordsman,
         UnitType.WEREBEAR: create_werebear,
         UnitType.ZOMBIE_BASIC_ZOMBIE: create_zombie_basic_zombie,
         UnitType.ZOMBIE_BRUTE: create_zombie_brute,
@@ -1104,6 +1120,110 @@ def create_core_swordsman(
         },
     }))
     esper.add_component(entity, MALE_DEATH_SOUNDS)
+    return entity
+
+def create_skeleton_swordsman(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+        play_spawning: bool = False,
+    ) -> int:
+    """Create a skeleton swordsman entity with all necessary components."""
+    # Calculate tier-specific values
+    skeleton_swordsman_health = gc.SKELETON_SWORDSMAN_HP
+    skeleton_swordsman_damage = gc.SKELETON_SWORDSMAN_ATTACK_DAMAGE
+    
+    # Advanced tier: 30% more health and damage
+    if tier == UnitTier.ADVANCED:
+        skeleton_swordsman_health = skeleton_swordsman_health * 1.3
+        skeleton_swordsman_damage = skeleton_swordsman_damage * 1.3
+    
+    # Elite tier: 60% more health and damage (total)
+    elif tier == UnitTier.ELITE:
+        skeleton_swordsman_health = skeleton_swordsman_health * 1.6
+        skeleton_swordsman_damage = skeleton_swordsman_damage * 1.6
+    
+    entity = unit_base_entity(
+        x=x,
+        y=y,
+        team=team,
+        unit_type=UnitType.SKELETON_SWORDSMAN,
+        movement_speed=gc.SKELETON_SWORDSMAN_MOVEMENT_SPEED,
+        health=skeleton_swordsman_health,
+        hitbox=Hitbox(
+            width=16,
+            height=32,
+        ),
+        corruption_powers=corruption_powers,
+        tier=tier,
+        play_spawning=play_spawning
+    )
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=2, ascending=True),
+        ],
+        unit_condition=None,
+        targetting_group=TargetingGroup.TEAM2_LIVING_VISIBLE if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING_VISIBLE
+    )
+    esper.add_component(
+        entity,
+        Destination(target_strategy=targetting_strategy, x_offset=gc.SKELETON_SWORDSMAN_ATTACK_RANGE*2/3)
+    )
+    esper.add_component(
+        entity,
+        Abilities(
+            abilities=[
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                Grounded(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.SKELETON_SWORDSMAN_ATTACK_RANGE,
+                                    y_bias=3
+                                ),
+                            ])
+                        )
+                    ],
+                    persistent_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.SKELETON_SWORDSMAN_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    y_bias=3
+                                ),
+                            ])
+                        )
+                    ],
+                    effects={
+                        2: [
+                            Damages(damage=skeleton_swordsman_damage, recipient=Recipient.TARGET),
+                            PlaySound([
+                                (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
+                            ]),
+                        ]
+                    },
+                )
+            ]
+        )
+    )
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.SKELETON_SWORDSMAN, tier))
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [2, 5]
+        },
+    }))
+    esper.add_component(entity, SKELETON_DEATH_SOUNDS)
+    esper.add_component(entity, UnusableCorpse())
     return entity
 
 def create_orc_berserker(
@@ -4652,7 +4772,7 @@ def create_zombie_basic_zombie(
             ]
         )
     )
-    esper.add_component(entity, ImmuneToZombieInfection())
+    esper.add_component(entity, UnusableCorpse())
     esper.add_component(
         entity,
         get_unit_sprite_sheet(UnitType.ZOMBIE_BASIC_ZOMBIE, tier)
@@ -4755,7 +4875,7 @@ def create_zombie_fighter(
             ]
         )
     )
-    esper.add_component(entity, ImmuneToZombieInfection())
+    esper.add_component(entity, UnusableCorpse())
     esper.add_component(
         entity,
         get_unit_sprite_sheet(UnitType.ZOMBIE_FIGHTER, tier)
@@ -4921,7 +5041,7 @@ def create_zombie_brute(
             ]
         )
     )
-    esper.add_component(entity, ImmuneToZombieInfection())
+    esper.add_component(entity, UnusableCorpse())
     esper.add_component(entity, get_unit_sprite_sheet(UnitType.ZOMBIE_BRUTE, tier))
     esper.add_component(entity, AnimationEffects({
         AnimationType.WALKING: {
@@ -5070,7 +5190,7 @@ def create_zombie_jumper(
             ]
         )
     )
-    esper.add_component(entity, ImmuneToZombieInfection())
+    esper.add_component(entity, UnusableCorpse())
     esper.add_component(entity, get_unit_sprite_sheet(UnitType.ZOMBIE_JUMPER, tier))
     esper.add_component(entity, AnimationEffects({
         AnimationType.WALKING: {
@@ -5126,7 +5246,7 @@ def create_zombie_spitter(
             WeightedRanking(
                 rankings={
                     ByDistance(entity=entity, y_bias=2, ascending=True): 1,
-                    ConditionPenalty(condition_to_check=Any([Infected(), HasComponent(ImmuneToZombieInfection)]), value=300): 1,
+                    ConditionPenalty(condition_to_check=Any([Infected(), HasComponent(UnusableCorpse)]), value=300): 1,
                 },
                 ascending=True,
             ),
@@ -5139,7 +5259,7 @@ def create_zombie_spitter(
         Destination(target_strategy=targetting_strategy, x_offset=0)
     )
     esper.add_component(entity, RangeIndicator(ranges=[gc.ZOMBIE_SPITTER_RANGED_ATTACK_RANGE]))
-    esper.add_component(entity, ImmuneToZombieInfection())
+    esper.add_component(entity, UnusableCorpse())
     esper.add_component(
         entity,
         Abilities(
@@ -5152,7 +5272,7 @@ def create_zombie_spitter(
                                 Alive(),
                                 Grounded(),
                                 Not(Infected()),
-                                Not(HasComponent(ImmuneToZombieInfection)),
+                                Not(HasComponent(UnusableCorpse)),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=gc.ZOMBIE_SPITTER_RANGED_ATTACK_RANGE,
@@ -5167,7 +5287,7 @@ def create_zombie_spitter(
                                 Alive(),
                                 Grounded(),
                                 Not(Infected()),
-                                Not(HasComponent(ImmuneToZombieInfection)),
+                                Not(HasComponent(UnusableCorpse)),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=gc.ZOMBIE_SPITTER_RANGED_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
@@ -5341,7 +5461,7 @@ def create_zombie_tank(
             ]
         )
     )
-    esper.add_component(entity, ImmuneToZombieInfection())
+    esper.add_component(entity, UnusableCorpse())
     esper.add_component(entity, get_unit_sprite_sheet(UnitType.ZOMBIE_TANK, tier))
     esper.add_component(entity, AnimationEffects({
         AnimationType.WALKING: {
@@ -5411,7 +5531,7 @@ def create_zombie_grabber(
         Destination(target_strategy=targetting_strategy, x_offset=0)
     )
     esper.add_component(entity, RangeIndicator(ranges=[gc.ZOMBIE_GRABBER_GRAB_MINIMUM_RANGE, gc.ZOMBIE_GRABBER_GRAB_MAXIMUM_RANGE]))
-    esper.add_component(entity, ImmuneToZombieInfection())
+    esper.add_component(entity, UnusableCorpse())
     esper.add_component(
         entity,
         Abilities(
@@ -5886,6 +6006,25 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
             AnimationType.WALKING: gc.CORE_SWORDSMAN_ANIMATION_WALKING_DURATION,
             AnimationType.ABILITY1: gc.CORE_SWORDSMAN_ANIMATION_ATTACK_DURATION,
             AnimationType.DYING: gc.CORE_SWORDSMAN_ANIMATION_DYING_DURATION,
+        },
+        sprite_center_offset=(0, -8),
+        synchronized_animations={
+            AnimationType.IDLE: True,
+        }
+    )
+    if unit_type == UnitType.SKELETON_SWORDSMAN:
+        return SpriteSheet(
+        surface=sprite_sheets[UnitType.SKELETON_SWORDSMAN],
+        frame_width=32,
+        frame_height=32,
+        scale=gc.MINIFOLKS_SCALE,
+        frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.ABILITY1: 5, AnimationType.DYING: 6},
+        rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 3, AnimationType.DYING: 5},
+        animation_durations={
+            AnimationType.IDLE: gc.SKELETON_SWORDSMAN_ANIMATION_IDLE_DURATION,
+            AnimationType.WALKING: gc.SKELETON_SWORDSMAN_ANIMATION_WALKING_DURATION,
+            AnimationType.ABILITY1: gc.SKELETON_SWORDSMAN_ANIMATION_ATTACK_DURATION,
+            AnimationType.DYING: gc.SKELETON_SWORDSMAN_ANIMATION_DYING_DURATION,
         },
         sprite_center_offset=(0, -8),
         synchronized_animations={
