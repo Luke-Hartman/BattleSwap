@@ -129,10 +129,10 @@ sprite_sheets: Dict[UnitType, pygame.Surface] = {}
 class Faction(Enum):
     CORE = 0
     CRUSADERS = 1
-    ZOMBIES = 2
-    ORC = 3
-    PIRATE = 4
-    SKELETON = 5
+    ORC = 2
+    PIRATE = 3
+    SKELETON = 4
+    ZOMBIES = 5
     MISC = 6
     
     @staticmethod
