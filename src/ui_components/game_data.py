@@ -1026,14 +1026,14 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         crossbowman_reload_duration = gc.CRUSADER_CROSSBOWMAN_ANIMATION_RELOAD_DURATION
         crossbowman_armored = True
         crossbowman_heavily_armored = False
-        description = f"Crossbowmen are medium-ranged <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a> units that need to reload."
+        description = f"Crossbowmen are medium-ranged <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a> units that can fire multiple shots before needing to reload."
         defense_tooltip = f"{crossbowman_health} maximum health, armored"
         
         # Advanced tier (and Elite): Gains heavy armor
         if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE:
             crossbowman_heavily_armored = True
             crossbowman_armored = False
-            description = f"Crossbowmen are medium-ranged <a href='{GlossaryEntryType.HEAVILY_ARMORED.value}'>Heavily Armored</a> units that need to reload."
+            description = f"Crossbowmen are medium-ranged <a href='{GlossaryEntryType.HEAVILY_ARMORED.value}'>Heavily Armored</a> units that can fire multiple shots before needing to reload."
             defense_tooltip = f"{crossbowman_health} maximum health, heavily armored"
         
         # Elite tier: 25% increased damage and attack speed, and 25% faster reload

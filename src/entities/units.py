@@ -2839,6 +2839,7 @@ def create_crusader_crossbowman(
     crossbowman_attack_duration = gc.CRUSADER_CROSSBOWMAN_ANIMATION_ATTACK_DURATION
     crossbowman_reload_duration = gc.CRUSADER_CROSSBOWMAN_ANIMATION_RELOAD_DURATION
     
+    # Advanced tier (gains heavy armor)
     # Elite tier: 25% increased damage and attack speed
     if tier == UnitTier.ELITE:
         crossbowman_damage = crossbowman_damage * 1.25
@@ -2923,7 +2924,7 @@ def create_crusader_crossbowman(
                     )
                 ],
                 effects={
-                    4: [
+                    2: [
                         CreatesProjectile(
                             projectile_speed=gc.CRUSADER_CROSSBOWMAN_PROJECTILE_SPEED,
                             effects=[
@@ -2948,7 +2949,7 @@ def create_crusader_crossbowman(
                 ],
                 persistent_conditions=[],
                 effects={
-                    2: [
+                    3: [
                         IncreaseAmmo(amount=1),
                         PlaySound(SoundEffect(filename="crossbow_reloading.wav", volume=0.05)),
                     ]
@@ -2956,15 +2957,35 @@ def create_crusader_crossbowman(
             ),
         ]
     ))
+    target_in_range = HasTarget(
+        unit_condition=MaximumDistanceFromEntity(
+            entity=entity,
+            distance=gc.CRUSADER_CROSSBOWMAN_ATTACK_RANGE*1.1,
+            y_bias=None
+        )
+    )
+    target_not_in_range = HasTarget(
+        unit_condition=MinimumDistanceFromEntity(
+            entity=entity,
+            distance=gc.CRUSADER_CROSSBOWMAN_ATTACK_RANGE*1.1,
+            y_bias=None
+        )
+    )
+    ammo_full = AmmoEquals(gc.CRUSADER_CROSSBOWMAN_MAX_AMMO)
+    ammo_not_full = Not(AmmoEquals(gc.CRUSADER_CROSSBOWMAN_MAX_AMMO))
+    ammo_empty = AmmoEquals(0)
+    ammo_not_empty = Not(AmmoEquals(0))
     esper.add_component(entity, InstantAbilities(
         abilities=[
+            # Switch to firing if ammo is full, or ammo is not empty and target in range
+            # ammo is full
             InstantAbility(
                 target_strategy=no_target_strategy,
                 trigger_conditions=[
                     SatisfiesUnitCondition(
                         All([
                             InStance(RELOADING),
-                            AmmoEquals(gc.CRUSADER_CROSSBOWMAN_MAX_AMMO),
+                            ammo_full,
                         ])
                     ),
                 ],
@@ -2972,39 +2993,49 @@ def create_crusader_crossbowman(
                     StanceChange(stance=FIRING),
                 ],
             ),
-            InstantAbility(
-                target_strategy=no_target_strategy,
-                trigger_conditions=[
-                    SatisfiesUnitCondition(
-                        All([
-                            InStance(FIRING),
-                            AmmoEquals(0),
-                        ])
-                    ),
-                ],
-                effects=[StanceChange(stance=RELOADING)],
-            ),
-            # If the target is not in range, reload
+            # ammo is not empty, and target in range
             InstantAbility(
                 target_strategy=targetting_strategy,
                 trigger_conditions=[
-                    HasTarget(
-                        unit_condition=MinimumDistanceFromEntity(
-                            entity=entity,
-                            distance=gc.CRUSADER_CROSSBOWMAN_ATTACK_RANGE*1.1, # Not in range, so reload
-                            y_bias=None
-                        )
+                    SatisfiesUnitCondition(
+                        All([
+                            InStance(RELOADING),
+                            ammo_not_empty,
+                        ])
                     ),
+                    target_in_range,
+                ],
+                effects=[StanceChange(stance=FIRING)],
+            ),
+            # Switch to reloading if ammo is empty, or ammo is not full and target is not in range
+            # ammo is empty
+            InstantAbility(
+                target_strategy=targetting_strategy,
+                trigger_conditions=[
                     SatisfiesUnitCondition(
                         All([
                             InStance(FIRING),
-                            Not(AmmoEquals(gc.CRUSADER_CROSSBOWMAN_MAX_AMMO))
+                            ammo_empty,
                         ])
                     ),
                 ],
                 effects=[
                     StanceChange(stance=RELOADING),
                 ],
+            ),
+            # ammo is not full, and target is not in range
+            InstantAbility(
+                target_strategy=targetting_strategy,
+                trigger_conditions=[
+                    SatisfiesUnitCondition(
+                        All([
+                            InStance(FIRING),
+                            ammo_not_full,
+                        ])
+                    ),
+                    target_not_in_range,
+                ],
+                effects=[StanceChange(stance=RELOADING)],
             ),
         ]
     ))
@@ -6312,11 +6343,11 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
         
         return SpriteSheet(
             surface=sprite_sheets[UnitType.CRUSADER_CROSSBOWMAN],
-            frame_width=100,
-            frame_height=100,
-            scale=gc.TINY_RPG_SCALE,
-            frames={AnimationType.IDLE: 6, AnimationType.WALKING: 7, AnimationType.ABILITY1: 8, AnimationType.ABILITY2: 4, AnimationType.DYING: 4},
-            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 2, AnimationType.ABILITY2: 4, AnimationType.DYING: 5},
+            frame_width=32,
+            frame_height=32,
+            scale=gc.MINIFOLKS_SCALE,
+            frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.ABILITY1: 5, AnimationType.ABILITY2: 5, AnimationType.DYING: 4},
+            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 3, AnimationType.ABILITY2: 7, AnimationType.DYING: 6},
             animation_durations={
                 AnimationType.IDLE: idle_animation_duration,
                 AnimationType.WALKING: gc.CRUSADER_CROSSBOWMAN_ANIMATION_WALKING_DURATION,
@@ -6324,7 +6355,7 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
                 AnimationType.ABILITY2: reload_animation_duration,
                 AnimationType.DYING: gc.CRUSADER_CROSSBOWMAN_ANIMATION_DYING_DURATION,
             },
-            sprite_center_offset=(0, 2),
+            sprite_center_offset=(0, -8),
             synchronized_animations={
                 AnimationType.IDLE: True,
             }
