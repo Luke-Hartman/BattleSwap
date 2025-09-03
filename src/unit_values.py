@@ -4,7 +4,7 @@ from game_constants import gc
 
 unit_values: Dict[UnitType, int] = {
     UnitType.CORE_ARCHER: gc.CORE_ARCHER_POINTS,
-    UnitType.CORE_BARBARIAN: gc.CORE_BARBARIAN_POINTS,
+    UnitType.CORE_VETERAN: gc.CORE_VETERAN_POINTS,
     UnitType.CORE_CAVALRY: gc.CORE_CAVALRY_POINTS,
     UnitType.CORE_DUELIST: gc.CORE_DUELIST_POINTS,
     UnitType.CORE_LONGBOWMAN: gc.CORE_LONGBOWMAN_POINTS,

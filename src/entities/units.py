@@ -60,7 +60,7 @@ from corruption_powers import CorruptionPower, IncreasedAbilitySpeed, IncreasedD
 
 unit_theme_ids: Dict[UnitType, str] = {
     UnitType.CORE_ARCHER: "#core_archer_icon", 
-    UnitType.CORE_BARBARIAN: "#core_barbarian_icon",
+    UnitType.CORE_VETERAN: "#core_veteran_icon",
     UnitType.CORE_CAVALRY: "#core_cavalry_icon",
     UnitType.CORE_DUELIST: "#core_duelist_icon",
     UnitType.CORE_LONGBOWMAN: "#core_longbowman_icon",
@@ -145,7 +145,7 @@ class Faction(Enum):
 
 _unit_to_faction = {
     UnitType.CORE_ARCHER: Faction.CORE,
-    UnitType.CORE_BARBARIAN: Faction.CORE,
+    UnitType.CORE_VETERAN: Faction.CORE,
     UnitType.CORE_CAVALRY: Faction.CORE,
     UnitType.CORE_DUELIST: Faction.CORE,
     UnitType.CORE_LONGBOWMAN: Faction.CORE,
@@ -189,7 +189,7 @@ def load_sprite_sheets():
     """Load all sprite sheets and unit icons."""
     unit_filenames = {
         UnitType.CORE_ARCHER: "CoreArcher.png", 
-        UnitType.CORE_BARBARIAN: "CoreBarbarian.png",
+        UnitType.CORE_VETERAN: "CoreVeteran.png",
         UnitType.CORE_CAVALRY: "CoreCavalry.png",
         UnitType.CORE_DUELIST: "CoreDuelist.png",
         UnitType.CORE_LONGBOWMAN: "CoreLongbowman.png",
@@ -237,7 +237,7 @@ def load_sprite_sheets():
     # Load unit icons
     unit_icon_paths: Dict[UnitType, str] = {
         UnitType.CORE_ARCHER: "CoreArcherIcon.png",
-        UnitType.CORE_BARBARIAN: "CoreBarbarianIcon.png",
+        UnitType.CORE_VETERAN: "CoreVeteranIcon.png",
         UnitType.CORE_CAVALRY: "CoreCavalryIcon.png",
         UnitType.CORE_DUELIST: "CoreDuelistIcon.png",
         UnitType.CORE_LONGBOWMAN: "CoreLongbowmanIcon.png",
@@ -376,7 +376,7 @@ def create_unit(
     """Create a unit entity with all necessary components."""
     return {
         UnitType.CORE_ARCHER: create_core_archer,
-        UnitType.CORE_BARBARIAN: create_core_barbarian,
+        UnitType.CORE_VETERAN: create_core_veteran,
         UnitType.CORE_CAVALRY: create_core_cavalry,
         UnitType.CORE_DUELIST: create_core_duelist,
         UnitType.CORE_LONGBOWMAN: create_core_longbowman,
@@ -576,7 +576,7 @@ def create_core_archer(
     esper.add_component(entity, MALE_DEATH_SOUNDS)
     return entity
 
-def create_core_barbarian(
+def create_core_veteran(
         x: int,
         y: int,
         team: TeamType,
@@ -584,28 +584,28 @@ def create_core_barbarian(
         tier: UnitTier,
         play_spawning: bool = False,
     ) -> int:
-    """Create a barbarian entity with all necessary components."""
+    """Create a veteran entity with all necessary components."""
     # Calculate tier-specific values
-    barbarian_health = gc.CORE_BARBARIAN_HP
-    barbarian_damage = gc.CORE_BARBARIAN_ATTACK_DAMAGE
-    barbarian_movement_speed = gc.CORE_BARBARIAN_MOVEMENT_SPEED
+    veteran_health = gc.CORE_VETERAN_HP
+    veteran_damage = gc.CORE_VETERAN_ATTACK_DAMAGE
+    veteran_movement_speed = gc.CORE_VETERAN_MOVEMENT_SPEED
     
     # Advanced tier (and Elite): 25% more health and damage
     if tier == UnitTier.ADVANCED or tier == UnitTier.ELITE:
-        barbarian_health = barbarian_health * 1.25
-        barbarian_damage = barbarian_damage * 1.25
+        veteran_health = veteran_health * 1.25
+        veteran_damage = veteran_damage * 1.25
     
     # Elite tier: additional 25% faster movement speed 
     if tier == UnitTier.ELITE:
-        barbarian_movement_speed = barbarian_movement_speed * 1.25
+        veteran_movement_speed = veteran_movement_speed * 1.25
     
     entity = unit_base_entity(
         x=x,
         y=y,
         team=team,
-        unit_type=UnitType.CORE_BARBARIAN,
-        movement_speed=barbarian_movement_speed,
-        health=barbarian_health,
+        unit_type=UnitType.CORE_VETERAN,
+        movement_speed=veteran_movement_speed,
+        health=veteran_health,
         hitbox=Hitbox(
             width=20,
             height=38,
@@ -623,7 +623,7 @@ def create_core_barbarian(
     )
     esper.add_component(
         entity,
-        Destination(target_strategy=targetting_strategy, x_offset=gc.CORE_BARBARIAN_ATTACK_RANGE*2/3)
+        Destination(target_strategy=targetting_strategy, x_offset=gc.CORE_VETERAN_ATTACK_RANGE*2/3)
     )
     esper.add_component(
         entity,
@@ -638,7 +638,7 @@ def create_core_barbarian(
                                 Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=gc.CORE_BARBARIAN_ATTACK_RANGE,
+                                    distance=gc.CORE_VETERAN_ATTACK_RANGE,
                                     y_bias=2
                                 ),
                             ])
@@ -646,19 +646,19 @@ def create_core_barbarian(
                     ],
                     persistent_conditions=[],
                     effects={
-                        6: [
+                        5: [
                             CreatesVisualAoE(
                                 effects=[
-                                    Damages(damage=barbarian_damage, recipient=Recipient.TARGET),
+                                    Damages(damage=veteran_damage, recipient=Recipient.TARGET),
                                 ],
-                                duration=gc.CORE_BARBARIAN_ANIMATION_ATTACK_DURATION*4/12,
-                                scale=gc.TINY_RPG_SCALE,
+                                duration=gc.CORE_VETERAN_ANIMATION_ATTACK_DURATION*3/10,
+                                scale=gc.MINIFOLKS_SCALE,
                                 unit_condition=All([
                                     OnTeam(team=team.other()),
                                     Alive(),
                                     Grounded(),
                                 ]),
-                                visual=Visual.CoreBarbarianAttack,
+                                visual=Visual.CoreVeteranAttack,
                                 location=Recipient.PARENT,
                             ),
                             PlaySound(SoundEffect(filename="deep_swoosh.wav", volume=0.70)),
@@ -668,7 +668,7 @@ def create_core_barbarian(
             ]
         )
     )
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CORE_BARBARIAN, tier))
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CORE_VETERAN, tier))
     esper.add_component(entity, AnimationEffects({
         AnimationType.WALKING: {
             frame: [PlaySound(sound_effects=[
@@ -5941,28 +5941,28 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
                 AnimationType.IDLE: True,
             }
         )
-    if unit_type == UnitType.CORE_BARBARIAN:
+    if unit_type == UnitType.CORE_VETERAN:
         # Elite tier gets 25% faster attack speed and idle animation (25% faster)
-        attack_animation_duration = gc.CORE_BARBARIAN_ANIMATION_ATTACK_DURATION
-        idle_animation_duration = gc.CORE_BARBARIAN_ANIMATION_IDLE_DURATION
+        attack_animation_duration = gc.CORE_VETERAN_ANIMATION_ATTACK_DURATION
+        idle_animation_duration = gc.CORE_VETERAN_ANIMATION_IDLE_DURATION
         if tier == UnitTier.ELITE:
             attack_animation_duration = attack_animation_duration * 0.8  # 25% faster = 0.8x duration
             idle_animation_duration = idle_animation_duration * 0.8  # 25% faster = 0.8x duration
         
         return SpriteSheet(
-            surface=sprite_sheets[UnitType.CORE_BARBARIAN],
-            frame_width=100,
-            frame_height=100,
-            scale=gc.TINY_RPG_SCALE,
-            frames={AnimationType.IDLE: 6, AnimationType.WALKING: 9, AnimationType.ABILITY1: 12, AnimationType.DYING: 4},
-            rows={AnimationType.IDLE: 1, AnimationType.WALKING: 4, AnimationType.ABILITY1: 10, AnimationType.DYING: 19},
+            surface=sprite_sheets[UnitType.CORE_VETERAN],
+            frame_width=32,
+            frame_height=32,
+            scale=gc.MINIFOLKS_SCALE,
+            frames={AnimationType.IDLE:4, AnimationType.WALKING: 6, AnimationType.ABILITY1: 10, AnimationType.DYING: 7},
+            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 3, AnimationType.DYING: 6},
             animation_durations={
                 AnimationType.IDLE: idle_animation_duration,
-                AnimationType.WALKING: gc.CORE_BARBARIAN_ANIMATION_WALKING_DURATION,
+                AnimationType.WALKING: gc.CORE_VETERAN_ANIMATION_WALKING_DURATION,
                 AnimationType.ABILITY1: attack_animation_duration,
-                AnimationType.DYING: gc.CORE_BARBARIAN_ANIMATION_DYING_DURATION,
+                AnimationType.DYING: gc.CORE_VETERAN_ANIMATION_DYING_DURATION,
             },
-            sprite_center_offset=(-2, 2),
+            sprite_center_offset=(0, -8),
             synchronized_animations={
                 AnimationType.IDLE: True,
             }

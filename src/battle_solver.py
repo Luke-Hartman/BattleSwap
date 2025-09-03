@@ -40,7 +40,7 @@ import multiprocessing
 # ]
 ALLOWED_UNIT_TYPES = [
     UnitType.CORE_ARCHER,
-    # UnitType.CORE_BARBARIAN,
+    # UnitType.CORE_VETERAN,
     UnitType.CORE_CAVALRY,
     UnitType.CORE_DUELIST,
     UnitType.CORE_LONGBOWMAN,

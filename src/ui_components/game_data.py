@@ -118,7 +118,7 @@ UPGRADE_DESCRIPTIONS = {
         UnitTier.ADVANCED: "50% increased attack speed",
         UnitTier.ELITE: "50% increased range\n50% increased projectile speed"
     },
-    UnitType.CORE_BARBARIAN: {
+    UnitType.CORE_VETERAN: {
         UnitTier.ADVANCED: "25% increased health and damage",
         UnitTier.ELITE: "25% increased movement and attack speed"
     },
@@ -334,39 +334,39 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             }
         )
     
-    if unit_type == UnitType.CORE_BARBARIAN:
+    if unit_type == UnitType.CORE_VETERAN:
         # Calculate tier-specific values
-        barbarian_health = gc.CORE_BARBARIAN_HP
-        barbarian_damage = gc.CORE_BARBARIAN_ATTACK_DAMAGE
-        barbarian_movement_speed = gc.CORE_BARBARIAN_MOVEMENT_SPEED
-        attack_animation_duration = gc.CORE_BARBARIAN_ANIMATION_ATTACK_DURATION
+        veteran_health = gc.CORE_VETERAN_HP
+        veteran_damage = gc.CORE_VETERAN_ATTACK_DAMAGE
+        veteran_movement_speed = gc.CORE_VETERAN_MOVEMENT_SPEED
+        attack_animation_duration = gc.CORE_VETERAN_ANIMATION_ATTACK_DURATION
         
         # Advanced tier (and Elite): 25% more health and damage
         if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE:
-            barbarian_health = barbarian_health * 1.25
-            barbarian_damage = barbarian_damage * 1.25
+            veteran_health = veteran_health * 1.25
+            veteran_damage = veteran_damage * 1.25
         
         # Elite tier: additional 25% faster movement speed and attack speed
         if unit_tier == UnitTier.ELITE:
-            barbarian_movement_speed = barbarian_movement_speed * 1.25
+            veteran_movement_speed = veteran_movement_speed * 1.25
             attack_animation_duration = attack_animation_duration * 0.8  # 25% faster = 0.8x duration
         
         return UnitData(
-            name="Barbarian",
-            description=f"Barbarians are durable melee units that deal damage in an <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a>.",
+            name="Veteran",
+            description=f"Veterans are durable melee units that deal damage in an <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a>.",
             tier=unit_tier,
             stats={
-                StatType.DEFENSE: defense_stat(barbarian_health),
-                StatType.SPEED: speed_stat(barbarian_movement_speed),
-                StatType.DAMAGE: damage_stat(barbarian_damage / attack_animation_duration, 1.5),
-                StatType.RANGE: range_stat(gc.CORE_BARBARIAN_ATTACK_RANGE),
+                StatType.DEFENSE: defense_stat(veteran_health),
+                StatType.SPEED: speed_stat(veteran_movement_speed),
+                StatType.DAMAGE: damage_stat(veteran_damage / attack_animation_duration, 1.5),
+                StatType.RANGE: range_stat(gc.CORE_VETERAN_ATTACK_RANGE),
                 StatType.UTILITY: None
             },
             tooltips={
-                StatType.DEFENSE: f"{barbarian_health:.0f} maximum health",
-                StatType.SPEED: f"{barbarian_movement_speed:.0f} units per second",
-                StatType.DAMAGE: f"{barbarian_damage:.0f} per hit ({barbarian_damage / attack_animation_duration:.1f} per second) in a medium area",
-                StatType.RANGE: f"{gc.CORE_BARBARIAN_ATTACK_RANGE} units",
+                StatType.DEFENSE: f"{veteran_health:.0f} maximum health",
+                StatType.SPEED: f"{veteran_movement_speed:.0f} units per second",
+                StatType.DAMAGE: f"{veteran_damage:.0f} per hit ({veteran_damage / attack_animation_duration:.1f} per second) in a medium area",
+                StatType.RANGE: f"{gc.CORE_VETERAN_ATTACK_RANGE} units",
                 StatType.UTILITY: None
             },
             tips={

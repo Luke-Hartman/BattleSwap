@@ -261,10 +261,10 @@
             }
         }
     },
-    "#core_barbarian_icon": {
+    "#core_veteran_icon": {
         "images": {
             "normal_image": {
-                "path": "assets/icons/CoreBarbarianIcon.png"
+                "path": "assets/icons/CoreVeteranIcon.png"
             }
         }
     },
