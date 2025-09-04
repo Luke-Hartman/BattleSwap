@@ -33,6 +33,8 @@ class Visual(Enum):
     Tongue = auto()
     TongueTip = auto()
     ZombieSpit = auto()
+    SkeletonMageProjectile = auto()
+    SkeletonMageExplosion = auto()
 
 visual_sheets: dict[Visual, pygame.Surface] = {}
 
@@ -60,6 +62,8 @@ def load_visual_sheets():
         Visual.Tongue: os.path.join("assets", "effects", "Tongue.png"),
         Visual.TongueTip: os.path.join("assets", "effects", "TongueTip.png"),
         Visual.ZombieSpit: os.path.join("assets", "effects", "ZombieSpit.png"),
+        Visual.SkeletonMageProjectile: os.path.join("assets", "effects", "SkeletonSpells.png"),
+        Visual.SkeletonMageExplosion: os.path.join("assets", "effects", "SkeletonSpells.png"),
     }
     for visual, path in visual_paths.items():
         if visual in visual_sheets:
@@ -457,5 +461,41 @@ def create_visual_spritesheet(
             rows={AnimationType.IDLE: 0},
             animation_durations={AnimationType.IDLE: duration},
             sprite_center_offset=(-.5, -.5),
+            layer=layer
+        )
+    elif visual == Visual.SkeletonMageProjectile:
+        if duration is None:
+            duration = 0.5
+        if scale is None:
+            scale = gc.MINIFOLKS_SCALE
+        if frames is not None:
+            raise NotImplementedError("SkeletonMageProjectile visual cannot specify frames")
+        return SpriteSheet(
+            surface=visual_sheets[visual],
+            frame_width=16,
+            frame_height=16,
+            scale=scale,
+            frames={AnimationType.IDLE: 4},
+            rows={AnimationType.IDLE: 0},
+            animation_durations={AnimationType.IDLE: duration},
+            sprite_center_offset=(-0.5, -0.5),
+            layer=layer
+        )
+    elif visual == Visual.SkeletonMageExplosion:
+        if duration is None:
+            duration = 0.5
+        if scale is None:
+            scale = gc.MINIFOLKS_SCALE
+        if frames is not None:
+            raise NotImplementedError("SkeletonMageExplosion visual cannot specify frames")
+        return SpriteSheet(
+            surface=visual_sheets[visual],
+            frame_width=16,
+            frame_height=16,
+            scale=scale,
+            frames={AnimationType.IDLE: 4},
+            rows={AnimationType.IDLE: 3},
+            animation_durations={AnimationType.IDLE: duration},
+            sprite_center_offset=(-0.5, -0.5),
             layer=layer
         )

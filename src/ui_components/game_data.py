@@ -230,6 +230,10 @@ UPGRADE_DESCRIPTIONS = {
         UnitTier.ADVANCED: "50% increased attack speed",
         UnitTier.ELITE: "50% increased range\n50% increased projectile speed"
     },
+    UnitType.SKELETON_MAGE: {
+        UnitTier.ADVANCED: "50% increased damage",
+        UnitTier.ELITE: "50% increased damage"
+    },
     UnitType.SKELETON_SWORDSMAN: {
         UnitTier.ADVANCED: "30% increased health and damage",
         UnitTier.ELITE: "30% increased health and damage"
@@ -609,8 +613,51 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
                 StatType.SPEED: 0,
                 StatType.UTILITY: 0
             }
+                )
+    
+    if unit_type == UnitType.SKELETON_MAGE:
+        # Calculate tier-specific damage
+        skeleton_mage_damage = gc.SKELETON_MAGE_ATTACK_DAMAGE
+        
+        # Advanced tier: 50% more damage
+        if unit_tier == UnitTier.ADVANCED:
+            skeleton_mage_damage = skeleton_mage_damage * 1.5
+        
+        # Elite tier: 100% more damage total
+        elif unit_tier == UnitTier.ELITE:
+            skeleton_mage_damage = skeleton_mage_damage * 2.0
+        
+        return UnitData(
+            name="Skeleton Mage",
+            description="Skeleton Mages are ranged units with <a href='{GlossaryEntryType.UNUSABLE_CORPSE.value}'>Unusable Corpses</a> that deal area damage with fireball projectiles.",
+            tier=unit_tier,
+            stats={
+                StatType.DEFENSE: defense_stat(gc.SKELETON_MAGE_HP),
+                StatType.SPEED: speed_stat(gc.SKELETON_MAGE_MOVEMENT_SPEED),
+                StatType.DAMAGE: damage_stat(skeleton_mage_damage / gc.SKELETON_MAGE_ANIMATION_ATTACK_DURATION, 2),
+                StatType.RANGE: range_stat(gc.SKELETON_MAGE_ATTACK_RANGE),
+                StatType.UTILITY: None
+            },
+            tooltips={
+                StatType.DEFENSE: f"{gc.SKELETON_MAGE_HP} maximum health",
+                StatType.SPEED: f"{gc.SKELETON_MAGE_MOVEMENT_SPEED} units per second",
+                StatType.DAMAGE: f"{int(skeleton_mage_damage)} per hit ({skeleton_mage_damage / gc.SKELETON_MAGE_ANIMATION_ATTACK_DURATION:.1f} per second) in a small area",
+                StatType.RANGE: f"{gc.SKELETON_MAGE_ATTACK_RANGE} units",
+                StatType.UTILITY: None
+            },
+            tips={
+                "Strong when": ["Against tightly packed groups", "Against slow units"],
+                "Weak when": ["Against fast melee units", "Allies are in the way", "Against fast units"],
+            },
+            modification_levels={
+                StatType.DAMAGE: 1 if unit_tier == UnitTier.ADVANCED else 2 if unit_tier == UnitTier.ELITE else 0,
+                StatType.RANGE: 0,
+                StatType.DEFENSE: 0,
+                StatType.SPEED: 0,
+                StatType.UTILITY: 0
+            }
         )
-
+    
     if unit_type == UnitType.SKELETON_SWORDSMAN:
         # Calculate tier-specific values
         skeleton_swordsman_damage = gc.SKELETON_SWORDSMAN_ATTACK_DAMAGE

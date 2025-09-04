@@ -471,6 +471,13 @@
             }
         }
     },
+    "#skeleton_mage_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/SkeletonMageIcon.png"
+            }
+        }
+    },
     "#skeleton_swordsman_icon": {
         "images": {
             "normal_image": {
