@@ -226,6 +226,10 @@ UPGRADE_DESCRIPTIONS = {
         UnitTier.ADVANCED: "30% increased health and damage",
         UnitTier.ELITE: "30% increased health and damage"
     },
+    UnitType.SKELETON_ARCHER: {
+        UnitTier.ADVANCED: "50% increased attack speed",
+        UnitTier.ELITE: "50% increased range\n50% increased projectile speed"
+    },
     UnitType.SKELETON_SWORDSMAN: {
         UnitTier.ADVANCED: "30% increased health and damage",
         UnitTier.ELITE: "30% increased health and damage"
@@ -560,6 +564,53 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             }
         )
     
+    if unit_type == UnitType.SKELETON_ARCHER:
+        # Calculate tier-specific values
+        skeleton_archer_damage = gc.SKELETON_ARCHER_ATTACK_DAMAGE
+        attack_range = gc.SKELETON_ARCHER_ATTACK_RANGE
+        attack_animation_duration = gc.SKELETON_ARCHER_ANIMATION_ATTACK_DURATION
+        projectile_speed = gc.SKELETON_ARCHER_PROJECTILE_SPEED
+        
+        # Advanced tier: 50% faster rate of fire
+        if unit_tier == UnitTier.ADVANCED:
+            attack_animation_duration = attack_animation_duration * 2/3  # 50% faster = 2/3 duration
+        
+        # Elite tier: 50% more range and projectile speed
+        if unit_tier == UnitTier.ELITE:
+            attack_range = attack_range * 1.5
+            projectile_speed = projectile_speed * 1.5
+        
+        return UnitData(
+            name="Skeleton Archer",
+            description="Skeleton Archers are ranged units with <a href='{GlossaryEntryType.UNUSABLE_CORPSE.value}'>Unusable Corpses</a> that deal low damage.",
+            tier=unit_tier,
+            stats={
+                StatType.DEFENSE: defense_stat(gc.SKELETON_ARCHER_HP),
+                StatType.SPEED: speed_stat(gc.SKELETON_ARCHER_MOVEMENT_SPEED),
+                StatType.DAMAGE: damage_stat(skeleton_archer_damage / attack_animation_duration),
+                StatType.RANGE: range_stat(attack_range),
+                StatType.UTILITY: None
+            },
+            tooltips={
+                StatType.DEFENSE: f"{gc.SKELETON_ARCHER_HP} maximum health",
+                StatType.SPEED: f"{gc.SKELETON_ARCHER_MOVEMENT_SPEED:.1f} units per second",
+                StatType.DAMAGE: f"{skeleton_archer_damage:.0f} per hit ({skeleton_archer_damage / attack_animation_duration:.1f} per second)" + (f". Projectile speed: {projectile_speed:.0f}" if unit_tier == UnitTier.ELITE else ""),
+                StatType.RANGE: f"{attack_range:.0f} units",
+                StatType.UTILITY: None
+            },
+            tips={
+                "Strong when": ["At long range", "Against slow units", "In a large group"],
+                "Weak when": ["In close combat", "Against fast units", "Against armored units"],
+            },
+            modification_levels={
+                StatType.DAMAGE: 1 if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE else 0,
+                StatType.RANGE: 1 if unit_tier == UnitTier.ELITE else 0,
+                StatType.DEFENSE: 0,
+                StatType.SPEED: 0,
+                StatType.UTILITY: 0
+            }
+        )
+
     if unit_type == UnitType.SKELETON_SWORDSMAN:
         # Calculate tier-specific values
         skeleton_swordsman_damage = gc.SKELETON_SWORDSMAN_ATTACK_DAMAGE

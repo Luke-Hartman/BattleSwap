@@ -89,6 +89,7 @@ unit_theme_ids: Dict[UnitType, str] = {
     UnitType.PIRATE_CAPTAIN: "#pirate_captain_icon",
     UnitType.PIRATE_CANNON: "#pirate_cannon_icon",
     UnitType.PIRATE_HARPOONER: "#pirate_harpooner_icon",
+    UnitType.SKELETON_ARCHER: "#skeleton_archer_icon",
     UnitType.SKELETON_SWORDSMAN: "#skeleton_swordsman_icon",
     UnitType.WEREBEAR: "#werebear_icon",
     UnitType.ZOMBIE_BASIC_ZOMBIE: "#zombie_basic_zombie_icon",
@@ -174,6 +175,7 @@ _unit_to_faction = {
     UnitType.PIRATE_CAPTAIN: Faction.PIRATE,
     UnitType.PIRATE_CANNON: Faction.PIRATE,
     UnitType.PIRATE_HARPOONER: Faction.PIRATE,
+    UnitType.SKELETON_ARCHER: Faction.SKELETON,
     UnitType.SKELETON_SWORDSMAN: Faction.SKELETON,
     UnitType.WEREBEAR: Faction.MISC,
     UnitType.ZOMBIE_BASIC_ZOMBIE: Faction.ZOMBIES,
@@ -218,6 +220,7 @@ def load_sprite_sheets():
         UnitType.PIRATE_CAPTAIN: "PirateCaptain.png",
         UnitType.PIRATE_CANNON: "PirateCannon.png",
         UnitType.PIRATE_HARPOONER: "PirateHarpooner.png",
+        UnitType.SKELETON_ARCHER: "SkeletonArcher.png",
         UnitType.SKELETON_SWORDSMAN: "SkeletonSwordsman.png",
         UnitType.WEREBEAR: "Werebear.png",
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombieNew.png",
@@ -266,6 +269,7 @@ def load_sprite_sheets():
         UnitType.PIRATE_CAPTAIN: "PirateCaptainIcon.png",
         UnitType.PIRATE_CANNON: "PirateCannonIcon.png",
         UnitType.PIRATE_HARPOONER: "PirateHarpoonerIcon.png",
+        UnitType.SKELETON_ARCHER: "SkeletonArcherIcon.png",
         UnitType.SKELETON_SWORDSMAN: "SkeletonSwordsmanIcon.png",
         UnitType.WEREBEAR: "WerebearIcon.png",
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombieIcon.png",
@@ -405,6 +409,7 @@ def create_unit(
         UnitType.PIRATE_CAPTAIN: create_pirate_captain,
         UnitType.PIRATE_CANNON: create_pirate_cannon,
         UnitType.PIRATE_HARPOONER: create_pirate_harpooner,
+        UnitType.SKELETON_ARCHER: create_skeleton_archer,
         UnitType.SKELETON_SWORDSMAN: create_skeleton_swordsman,
         UnitType.WEREBEAR: create_werebear,
         UnitType.ZOMBIE_BASIC_ZOMBIE: create_zombie_basic_zombie,
@@ -1120,6 +1125,133 @@ def create_core_swordsman(
         },
     }))
     esper.add_component(entity, MALE_DEATH_SOUNDS)
+    return entity
+
+def create_skeleton_archer(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+        play_spawning: bool = False,
+    ) -> int:
+    """Create a skeleton archer entity with all necessary components."""
+    # Calculate tier-specific values
+    skeleton_archer_damage = gc.SKELETON_ARCHER_ATTACK_DAMAGE
+    attack_range = gc.SKELETON_ARCHER_ATTACK_RANGE
+    attack_animation_duration = gc.SKELETON_ARCHER_ANIMATION_ATTACK_DURATION
+    projectile_speed = gc.SKELETON_ARCHER_PROJECTILE_SPEED
+    
+    # Advanced tier: 50% faster rate of fire
+    if tier == UnitTier.ADVANCED:
+        attack_animation_duration = attack_animation_duration * 2/3  # 50% faster = 2/3 duration
+    
+    # Elite tier: 50% more range and projectile speed
+    if tier == UnitTier.ELITE:
+        attack_range = attack_range * 1.5
+        projectile_speed = projectile_speed * 1.5
+    
+    entity = unit_base_entity(
+        x=x,
+        y=y,
+        team=team,
+        unit_type=UnitType.SKELETON_ARCHER,
+        movement_speed=gc.SKELETON_ARCHER_MOVEMENT_SPEED,
+        health=gc.SKELETON_ARCHER_HP,
+        hitbox=Hitbox(
+            width=16,
+            height=32,
+        ),
+        corruption_powers=corruption_powers,
+        tier=tier,
+        play_spawning=play_spawning
+    )
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=2, ascending=True),
+        ],
+        unit_condition=None,
+        targetting_group=TargetingGroup.TEAM2_LIVING_VISIBLE if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING_VISIBLE
+    )
+    esper.add_component(
+        entity,
+        Destination(target_strategy=targetting_strategy, x_offset=0)
+    )
+    
+    esper.add_component(entity, RangeIndicator(ranges=[attack_range]))
+    esper.add_component(
+        entity,
+        Abilities(
+            abilities=[
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                Grounded(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=attack_range,
+                                    y_bias=None
+                                )
+                            ])
+                        )
+                    ],
+                    persistent_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                Grounded(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=attack_range + gc.TARGETTING_GRACE_DISTANCE,
+                                    y_bias=None
+                                )
+                            ])
+                        )
+                    ],
+                    effects={
+                        4: [
+                            PlaySound(
+                                sound_effects=[
+                                    (SoundEffect(filename="bow_loading.wav", volume=0.25), 1.0),
+                                ]
+                            )
+                        ],
+                        7: [  # Projectile created on frame 7
+                            CreatesProjectile(
+                                projectile_speed=projectile_speed,
+                                effects=[
+                                    Damages(damage=skeleton_archer_damage, recipient=Recipient.TARGET),
+                                ],
+                                visual=Visual.Arrow,
+                                projectile_offset_x=5*gc.MINIFOLKS_SCALE,
+                                projectile_offset_y=0,
+                                unit_condition=All([OnTeam(team=team.other()), Alive(), Grounded()]),
+                            ),
+                            PlaySound(
+                                sound_effects=[
+                                    (SoundEffect(filename="arrow_fired_from_bow.wav", volume=0.25), 1.0),
+                                ]
+                            )
+                        ]
+                    },
+                )
+            ]
+        )
+    )
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.SKELETON_ARCHER, tier))
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [1, 4]
+        },
+    }))
+    esper.add_component(entity, SKELETON_DEATH_SOUNDS)
+    esper.add_component(entity, UnusableCorpse())
     return entity
 
 def create_skeleton_swordsman(
@@ -6043,6 +6175,32 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
             AnimationType.IDLE: True,
         }
     )
+    if unit_type == UnitType.SKELETON_ARCHER:
+        # Advanced tier gets 50% faster rate of fire (attack animation 50% faster)
+        # Elite tier keeps this upgrade plus gets additional range
+        attack_animation_duration = gc.SKELETON_ARCHER_ANIMATION_ATTACK_DURATION
+        if tier == UnitTier.ADVANCED or tier == UnitTier.ELITE:
+            attack_animation_duration = attack_animation_duration * 2/3  # 50% faster = 2/3 duration
+        
+        return SpriteSheet(
+        surface=sprite_sheets[UnitType.SKELETON_ARCHER],
+        frame_width=32,
+        frame_height=32,
+        scale=gc.MINIFOLKS_SCALE,
+        frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.ABILITY1: 9, AnimationType.DYING: 6},
+        rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 3, AnimationType.DYING: 6},
+        animation_durations={
+            AnimationType.IDLE: gc.SKELETON_ARCHER_ANIMATION_IDLE_DURATION,
+            AnimationType.WALKING: gc.SKELETON_ARCHER_ANIMATION_WALKING_DURATION,
+            AnimationType.ABILITY1: attack_animation_duration,
+            AnimationType.DYING: gc.SKELETON_ARCHER_ANIMATION_DYING_DURATION,
+        },
+        sprite_center_offset=(0, -8),
+        synchronized_animations={
+            AnimationType.IDLE: True,
+        }
+    )
+    
     if unit_type == UnitType.SKELETON_SWORDSMAN:
         return SpriteSheet(
         surface=sprite_sheets[UnitType.SKELETON_SWORDSMAN],

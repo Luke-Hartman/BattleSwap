@@ -464,6 +464,13 @@
             }
         }
     },
+    "#skeleton_archer_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/SkeletonArcherIcon.png"
+            }
+        }
+    },
     "#skeleton_swordsman_icon": {
         "images": {
             "normal_image": {

@@ -139,6 +139,9 @@ class StatBar:
         
         # Round fraction to nearest quarter (0, 0.25, 0.5, 0.75, 1.0)
         quarter_level = round(fraction * 4) / 4
+
+        if not self.disabled and full_segments == 0 and quarter_level == 0:
+            quarter_level = 0.25
         
         # Get the stat color
         stat_color = self.STAT_COLORS[self.stat_type]
