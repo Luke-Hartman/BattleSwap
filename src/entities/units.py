@@ -5539,7 +5539,7 @@ def create_zombie_spitter(
             WeightedRanking(
                 rankings={
                     ByDistance(entity=entity, y_bias=2, ascending=True): 1,
-                    ConditionPenalty(condition_to_check=Any([Infected(), HasComponent(UnusableCorpse)]), value=300): 1,
+                    ConditionPenalty(condition_to_check=Infected(), value=300): 1,
                 },
                 ascending=True,
             ),
@@ -5565,7 +5565,6 @@ def create_zombie_spitter(
                                 Alive(),
                                 Grounded(),
                                 Not(Infected()),
-                                Not(HasComponent(UnusableCorpse)),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=gc.ZOMBIE_SPITTER_RANGED_ATTACK_RANGE,
@@ -5580,7 +5579,6 @@ def create_zombie_spitter(
                                 Alive(),
                                 Grounded(),
                                 Not(Infected()),
-                                Not(HasComponent(UnusableCorpse)),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
                                     distance=gc.ZOMBIE_SPITTER_RANGED_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,

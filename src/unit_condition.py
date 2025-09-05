@@ -310,11 +310,10 @@ class Infected(UnitCondition):
     """The unit is infected with a zombie infection."""
 
     def get_active_zombie_infection(self, entity: int) -> Optional[ZombieInfection]:
-        if not esper.has_component(entity, UnusableCorpse):
-            status_effects = esper.component_for_entity(entity, StatusEffects)
-            for effect in status_effects.active_effects():
-                if isinstance(effect, ZombieInfection):
-                    return effect
+        status_effects = esper.component_for_entity(entity, StatusEffects)
+        for effect in status_effects.active_effects():
+            if isinstance(effect, ZombieInfection):
+                return effect
         return None
 
     def check(self, entity: int) -> bool:
