@@ -16,6 +16,7 @@ from events import DEATH, PLAY_SOUND, DeathEvent, emit_event
 from progress_manager import progress_manager
 from unit_condition import Infected
 from voice import play_death
+from components.summoned import SummonedBy
 
 class DyingProcessor(esper.Processor):
     """Processor for units that are dying."""
@@ -33,6 +34,17 @@ class DyingProcessor(esper.Processor):
                 if on_death.condition is None or on_death.condition.check(ent):
                     for effect in on_death.effects:
                         effect.apply(owner=ent, parent=ent, target=None)
+
+            # If a necromancer dies, kill only their summons
+            if unit_type.type in (
+                UnitType.SKELETON_ARCHER_NECROMANCER,
+                UnitType.SKELETON_HORSEMAN_NECROMANCER,
+                UnitType.SKELETON_MAGE_NECROMANCER,
+                UnitType.SKELETON_SWORDSMAN_NECROMANCER,
+            ):
+                for summoned_ent, summoned in esper.get_component(SummonedBy):
+                    if summoned.summoner == ent and not esper.has_component(summoned_ent, Dying):
+                        esper.add_component(summoned_ent, Dying())
 
             # Handle zombie infection
             zombie_infection = Infected().get_active_zombie_infection(ent)

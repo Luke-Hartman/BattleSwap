@@ -230,13 +230,33 @@ UPGRADE_DESCRIPTIONS = {
         UnitTier.ADVANCED: "50% increased attack speed",
         UnitTier.ELITE: "50% increased range\n50% increased projectile speed"
     },
+    UnitType.SKELETON_ARCHER_NECROMANCER: {
+        UnitTier.ADVANCED: "Minions have 50% increased attack speed",
+        UnitTier.ELITE: "Minions have 50% increased range\nMinions have 50% increased projectile speed"
+    },
     UnitType.SKELETON_MAGE: {
         UnitTier.ADVANCED: "50% increased damage",
         UnitTier.ELITE: "50% increased damage"
     },
+    UnitType.SKELETON_MAGE_NECROMANCER: {
+        UnitTier.ADVANCED: "Minions have 50% increased damage",
+        UnitTier.ELITE: "Minions have 50% increased damage"
+    },
     UnitType.SKELETON_SWORDSMAN: {
         UnitTier.ADVANCED: "30% increased health and damage",
         UnitTier.ELITE: "30% increased health and damage"
+    },
+    UnitType.SKELETON_SWORDSMAN_NECROMANCER: {
+        UnitTier.ADVANCED: "Minions have 50% increased health and damage",
+        UnitTier.ELITE: "Minions have 50% increased health and damage"
+    },
+    UnitType.SKELETON_HORSEMAN: {
+        UnitTier.ADVANCED: "50% increased health",
+        UnitTier.ELITE: "50% increased health"
+    },
+    UnitType.SKELETON_HORSEMAN_NECROMANCER: {
+        UnitTier.ADVANCED: "Minions have 50% increased health",
+        UnitTier.ELITE: "Minions have 50% increased health"
     },
     UnitType.ZOMBIE_GRABBER: {
         UnitTier.ADVANCED: "50% increased health and damage",
@@ -476,6 +496,67 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
                 StatType.RANGE: 0,
                 StatType.UTILITY: 0
             }
+        )
+
+    if unit_type in (
+        UnitType.SKELETON_ARCHER_NECROMANCER,
+        UnitType.SKELETON_HORSEMAN_NECROMANCER,
+        UnitType.SKELETON_MAGE_NECROMANCER,
+        UnitType.SKELETON_SWORDSMAN_NECROMANCER,
+    ):
+        if unit_type == UnitType.SKELETON_ARCHER_NECROMANCER:
+            minion_type = UnitType.SKELETON_ARCHER
+            name = "Skeleton Archer Necromancer"
+            minion_name = "Skeleton Archers"
+            cooldown = gc.SKELETON_ARCHER_NECROMANCER_COOLDOWN
+        elif unit_type == UnitType.SKELETON_HORSEMAN_NECROMANCER:
+            minion_type = UnitType.SKELETON_HORSEMAN
+            name = "Skeleton Horseman Necromancer"
+            minion_name = "Skeleton Horsemen"
+            cooldown = gc.SKELETON_HORSEMAN_NECROMANCER_COOLDOWN
+        elif unit_type == UnitType.SKELETON_MAGE_NECROMANCER:
+            minion_type = UnitType.SKELETON_MAGE
+            name = "Skeleton Mage Necromancer"
+            minion_name = "Skeleton Mages"
+            cooldown = gc.SKELETON_MAGE_NECROMANCER_COOLDOWN
+        else:
+            minion_type = UnitType.SKELETON_SWORDSMAN
+            name = "Skeleton Swordsman Necromancer"
+            minion_name = "Skeleton Swordsmen"
+            cooldown = gc.SKELETON_SWORDSMAN_NECROMANCER_COOLDOWN
+
+        return UnitData(
+            name=name,
+            description=(
+                f"<a href='{GlossaryEntryType.FOLLOWER.value}'>Follower</a> that summons "
+                f"<a href='{minion_type.value}'>{minion_name}</a> continuously."
+            ),
+            tier=unit_tier,
+            stats={
+                StatType.DEFENSE: defense_stat(gc.SKELETON_NECROMANCER_HP),
+                StatType.SPEED: speed_stat(gc.SKELETON_NECROMANCER_MOVEMENT_SPEED),
+                StatType.DAMAGE: None,
+                StatType.RANGE: range_stat(gc.SKELETON_NECROMANCER_ATTACK_RANGE),
+                StatType.UTILITY: 12 if unit_tier == UnitTier.ADVANCED else 16 if unit_tier == UnitTier.ELITE else 8,
+            },
+            tooltips={
+                StatType.DEFENSE: f"{gc.SKELETON_NECROMANCER_HP} maximum health",
+                StatType.SPEED: f"{gc.SKELETON_NECROMANCER_MOVEMENT_SPEED} units per second",
+                StatType.RANGE: f"{gc.SKELETON_NECROMANCER_ATTACK_RANGE} units",
+                StatType.DAMAGE: None,
+                StatType.UTILITY: f"Summons every {cooldown:.1f}s",
+            },
+            tips={
+                "Strong when": ["Allies protect them", "Summons can distract", "Long battles"],
+                "Weak when": ["Targetted directly", "Against area of effect units"],
+            },
+            modification_levels={
+                StatType.DEFENSE: 0,
+                StatType.DAMAGE: 0,
+                StatType.SPEED: 0,
+                StatType.RANGE: 0,
+                StatType.UTILITY: 1 if unit_tier == UnitTier.ADVANCED else 2 if unit_tier == UnitTier.ELITE else 1,
+            },
         )
     
     if unit_type == UnitType.CORE_DUELIST:

@@ -93,6 +93,10 @@ unit_theme_ids: Dict[UnitType, str] = {
     UnitType.SKELETON_HORSEMAN: "#skeleton_horseman_icon",
     UnitType.SKELETON_MAGE: "#skeleton_mage_icon",
     UnitType.SKELETON_SWORDSMAN: "#skeleton_swordsman_icon",
+    UnitType.SKELETON_ARCHER_NECROMANCER: "#skeleton_mage_icon",
+    UnitType.SKELETON_HORSEMAN_NECROMANCER: "#skeleton_mage_icon",
+    UnitType.SKELETON_MAGE_NECROMANCER: "#skeleton_mage_icon",
+    UnitType.SKELETON_SWORDSMAN_NECROMANCER: "#skeleton_mage_icon",
     UnitType.WEREBEAR: "#werebear_icon",
     UnitType.ZOMBIE_BASIC_ZOMBIE: "#zombie_basic_zombie_icon",
     UnitType.ZOMBIE_BRUTE: "#zombie_brute_icon",
@@ -181,6 +185,10 @@ _unit_to_faction = {
     UnitType.SKELETON_MAGE: Faction.SKELETON,
     UnitType.SKELETON_SWORDSMAN: Faction.SKELETON,
     UnitType.SKELETON_HORSEMAN: Faction.SKELETON,
+    UnitType.SKELETON_ARCHER_NECROMANCER: Faction.SKELETON,
+    UnitType.SKELETON_HORSEMAN_NECROMANCER: Faction.SKELETON,
+    UnitType.SKELETON_MAGE_NECROMANCER: Faction.SKELETON,
+    UnitType.SKELETON_SWORDSMAN_NECROMANCER: Faction.SKELETON,
     UnitType.WEREBEAR: Faction.MISC,
     UnitType.ZOMBIE_BASIC_ZOMBIE: Faction.ZOMBIES,
     UnitType.ZOMBIE_BRUTE: Faction.ZOMBIES,
@@ -228,6 +236,10 @@ def load_sprite_sheets():
         UnitType.SKELETON_MAGE: "SkeletonMage.png",
         UnitType.SKELETON_SWORDSMAN: "SkeletonSwordsman.png",
         UnitType.SKELETON_HORSEMAN: "SkeletonHorseman.png",
+        UnitType.SKELETON_ARCHER_NECROMANCER: "SkeletonArcherNecromancer.png",
+        UnitType.SKELETON_HORSEMAN_NECROMANCER: "SkeletonHorsemanNecromancer.png",
+        UnitType.SKELETON_MAGE_NECROMANCER: "SkeletonMageNecromancer.png",
+        UnitType.SKELETON_SWORDSMAN_NECROMANCER: "SkeletonSwordsmanNecromancer.png",
         UnitType.WEREBEAR: "Werebear.png",
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombieNew.png",
         UnitType.ZOMBIE_BRUTE: "ZombieBasicZombie.png",
@@ -279,6 +291,10 @@ def load_sprite_sheets():
         UnitType.SKELETON_MAGE: "SkeletonMageIcon.png",
         UnitType.SKELETON_SWORDSMAN: "SkeletonSwordsmanIcon.png",
         UnitType.SKELETON_HORSEMAN: "SkeletonHorsemanIcon.png",
+        UnitType.SKELETON_ARCHER_NECROMANCER: "SkeletonArcherNecromancerIcon.png",
+        UnitType.SKELETON_HORSEMAN_NECROMANCER: "SkeletonHorsemanNecromancerIcon.png",
+        UnitType.SKELETON_MAGE_NECROMANCER: "SkeletonMageNecromancerIcon.png",
+        UnitType.SKELETON_SWORDSMAN_NECROMANCER: "SkeletonSwordsmanNecromancerIcon.png",
         UnitType.WEREBEAR: "WerebearIcon.png",
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombieIcon.png",
         UnitType.ZOMBIE_BRUTE: "ZombieBruteIcon.png",
@@ -421,6 +437,10 @@ def create_unit(
         UnitType.SKELETON_MAGE: create_skeleton_mage,
         UnitType.SKELETON_SWORDSMAN: create_skeleton_swordsman,
         UnitType.SKELETON_HORSEMAN: create_skeleton_horseman,
+        UnitType.SKELETON_ARCHER_NECROMANCER: create_skeleton_archer_necromancer,
+        UnitType.SKELETON_HORSEMAN_NECROMANCER: create_skeleton_horseman_necromancer,
+        UnitType.SKELETON_MAGE_NECROMANCER: create_skeleton_mage_necromancer,
+        UnitType.SKELETON_SWORDSMAN_NECROMANCER: create_skeleton_swordsman_necromancer,
         UnitType.WEREBEAR: create_werebear,
         UnitType.ZOMBIE_BASIC_ZOMBIE: create_zombie_basic_zombie,
         UnitType.ZOMBIE_BRUTE: create_zombie_brute,
@@ -2503,6 +2523,130 @@ def create_core_wizard(
     }))
     esper.add_component(entity, OLD_MALE_DEATH_SOUNDS)
     return entity
+
+def _create_skeleton_necromancer(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+        unit_type: UnitType,
+        summoned_type: UnitType,
+        play_spawning: bool = False,
+    ) -> int:
+    """Create a skeleton necromancer that summons a corresponding unit."""
+    entity = unit_base_entity(
+        x=x,
+        y=y,
+        team=team,
+        unit_type=unit_type,
+        movement_speed=gc.SKELETON_NECROMANCER_MOVEMENT_SPEED,
+        health=gc.SKELETON_NECROMANCER_HP,
+        hitbox=Hitbox(
+            width=16,
+            height=32,
+        ),
+        corruption_powers=corruption_powers,
+        tier=tier,
+        play_spawning=play_spawning
+    )
+    # Target isn't used, this just prevents constant summoning after all enemies are dead.
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=2, ascending=True),
+        ],
+        unit_condition=None,
+        targetting_group=TargetingGroup.TEAM2_LIVING_VISIBLE if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING_VISIBLE
+    )
+    # Make skeleton necromancers followers
+    esper.add_component(entity, Follower())
+    target_leader = TargetStrategy(
+        rankings=[
+            WeightedRanking(
+                rankings={
+                    ByDistance(entity=entity, y_bias=None, ascending=True): 1,
+                    ConditionPenalty(condition_to_check=RememberedBy(entity=entity), value=-10000): 1,
+                }
+            ),
+        ],
+        unit_condition=Not(HasComponent(component=Follower)),
+        targetting_group=TargetingGroup.TEAM1_LIVING_VISIBLE if team == TeamType.TEAM1 else TargetingGroup.TEAM2_LIVING_VISIBLE
+    )
+    esper.add_component(
+        entity,
+        Destination(
+            target_strategy=target_leader,
+            x_offset=gc.SKELETON_NECROMANCER_ATTACK_RANGE/3,
+            use_team_x_offset=True,
+        )
+    )
+    esper.add_component(entity, RangeIndicator(ranges=[gc.SKELETON_NECROMANCER_ATTACK_RANGE]))
+    # Cooldown from game constants
+    if unit_type == UnitType.SKELETON_ARCHER_NECROMANCER:
+        summon_cooldown = gc.SKELETON_ARCHER_NECROMANCER_COOLDOWN
+    elif unit_type == UnitType.SKELETON_HORSEMAN_NECROMANCER:
+        summon_cooldown = gc.SKELETON_HORSEMAN_NECROMANCER_COOLDOWN
+    elif unit_type == UnitType.SKELETON_MAGE_NECROMANCER:
+        summon_cooldown = gc.SKELETON_MAGE_NECROMANCER_COOLDOWN
+    else:
+        summon_cooldown = gc.SKELETON_SWORDSMAN_NECROMANCER_COOLDOWN
+    esper.add_component(
+        entity,
+        Abilities(
+            abilities=[
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        Cooldown(duration=summon_cooldown),
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(), # Just to prevent constant summoning after all enemies are dead.
+                            ])
+                        )
+                    ],
+                    persistent_conditions=[],
+                    effects={
+                        0: [
+                            PlaySound(SoundEffect(filename="skeleton_spawn.wav", volume=0.1)),
+                        ],
+                        5: [
+                            CreatesUnit(
+                                recipient=Recipient.OWNER,
+                                unit_type=summoned_type,
+                                team=team,
+                                offset=(gc.SKELETON_NECROMANCER_SUMMON_OFFSET_X, 0),
+                                corruption_powers=corruption_powers,
+                            ),
+                            PlaySound(SoundEffect(filename="necromancer_summon.wav", volume=0.1)),
+                        ],
+                    },
+                )
+            ]
+        )
+    )
+    esper.add_component(entity, get_unit_sprite_sheet(unit_type, tier))
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"grass_footstep{i+1}.wav", volume=0.15), 1.0) for i in range(3)
+            ])]
+            for frame in [1, 4]
+        },
+    }))
+    esper.add_component(entity, OLD_MALE_DEATH_SOUNDS)
+    return entity
+
+def create_skeleton_archer_necromancer(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]], tier: UnitTier, play_spawning: bool = False) -> int:
+    return _create_skeleton_necromancer(x, y, team, corruption_powers, tier, UnitType.SKELETON_ARCHER_NECROMANCER, UnitType.SKELETON_ARCHER, play_spawning)
+
+def create_skeleton_horseman_necromancer(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]], tier: UnitTier, play_spawning: bool = False) -> int:
+    return _create_skeleton_necromancer(x, y, team, corruption_powers, tier, UnitType.SKELETON_HORSEMAN_NECROMANCER, UnitType.SKELETON_HORSEMAN, play_spawning)
+
+def create_skeleton_mage_necromancer(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]], tier: UnitTier, play_spawning: bool = False) -> int:
+    return _create_skeleton_necromancer(x, y, team, corruption_powers, tier, UnitType.SKELETON_MAGE_NECROMANCER, UnitType.SKELETON_MAGE, play_spawning)
+
+def create_skeleton_swordsman_necromancer(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]], tier: UnitTier, play_spawning: bool = False) -> int:
+    return _create_skeleton_necromancer(x, y, team, corruption_powers, tier, UnitType.SKELETON_SWORDSMAN_NECROMANCER, UnitType.SKELETON_SWORDSMAN, play_spawning)
 
 def create_crusader_banner_bearer(
         x: int,
@@ -6638,6 +6782,31 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
             scale=gc.MINIFOLKS_SCALE,
             frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.ABILITY1: 11, AnimationType.DYING: 9},
             rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 3, AnimationType.DYING: 7},
+            animation_durations={
+                AnimationType.IDLE: gc.SKELETON_NECROMANCER_ANIMATION_IDLE_DURATION,
+                AnimationType.WALKING: gc.SKELETON_NECROMANCER_ANIMATION_WALKING_DURATION,
+                AnimationType.ABILITY1: gc.SKELETON_NECROMANCER_ANIMATION_ATTACK_DURATION,
+                AnimationType.DYING: gc.SKELETON_NECROMANCER_ANIMATION_DYING_DURATION,
+            },
+            sprite_center_offset=(0, -8),
+            synchronized_animations={
+                AnimationType.IDLE: True,
+            }
+        )
+    if unit_type in (
+        UnitType.SKELETON_ARCHER_NECROMANCER,
+        UnitType.SKELETON_HORSEMAN_NECROMANCER,
+        UnitType.SKELETON_MAGE_NECROMANCER,
+        UnitType.SKELETON_SWORDSMAN_NECROMANCER,
+    ):
+        # Necromancers use consistent frame/row layout per provided animation info
+        return SpriteSheet(
+            surface=sprite_sheets[unit_type],
+            frame_width=32,
+            frame_height=32,
+            scale=gc.MINIFOLKS_SCALE,
+            frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.ABILITY1: 7, AnimationType.DYING: 8},
+            rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 4, AnimationType.DYING: 6},
             animation_durations={
                 AnimationType.IDLE: gc.CORE_WIZARD_ANIMATION_IDLE_DURATION,
                 AnimationType.WALKING: gc.CORE_WIZARD_ANIMATION_WALKING_DURATION,

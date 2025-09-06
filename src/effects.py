@@ -47,6 +47,7 @@ from game_constants import gc
 from components.airborne import Airborne
 from components.status_effect import Invisible
 from components.repeat import Repeat
+from components.summoned import SummonedBy
 
 class Recipient(Enum):
     """The recipient of an effect."""
@@ -1123,6 +1124,9 @@ class CreatesUnit(Effect):
             tier=tier
         )
         esper.add_component(entity, Team(type=self.team))
+        # Tag the created unit with its summoner, if applicable
+        if owner is not None:
+            esper.add_component(entity, SummonedBy(summoner=owner))
 
 @dataclass
 class AddsForcedMovement(Effect):
