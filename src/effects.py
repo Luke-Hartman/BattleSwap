@@ -48,6 +48,7 @@ from components.airborne import Airborne
 from components.status_effect import Invisible
 from components.repeat import Repeat
 from components.summoned import SummonedBy
+from components.unit_state import State, UnitState
 
 class Recipient(Enum):
     """The recipient of an effect."""
@@ -93,6 +94,10 @@ class Damages(Effect):
             recipient = target
         else:
             raise ValueError(f"Invalid recipient: {self.recipient}")
+
+        recipient_unit_state = esper.component_for_entity(recipient, UnitState)
+        if recipient_unit_state.state == State.DEAD:
+            return
 
         # Apply buffs/debuffs from the owner to the damage
         damage = self.damage

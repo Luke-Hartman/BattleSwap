@@ -72,7 +72,8 @@ class DyingProcessor(esper.Processor):
                     play_spawning=False # Changed my mind about this, not using the play_spawning flag for anything right now.
                 )
                 # This is a hack to hide the corpse of the unit
-                esper.remove_component(ent, SpriteSheet)
+                if esper.has_component(ent, SpriteSheet):
+                    esper.remove_component(ent, SpriteSheet)
                 PlaySound([
                     (SoundEffect(filename=f"zombie_grunt_{i+1}.wav", volume=0.5), 1.0) for i in range(3)
                 ]).apply(owner=None, parent=None, target=None)

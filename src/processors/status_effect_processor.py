@@ -15,11 +15,12 @@ class StatusEffectProcessor(esper.Processor):
             status_effects.update(dt)
             for status_effect in status_effects.active_effects():
                 if isinstance(status_effect, DamageOverTime):
-                    damage = status_effect.dps * dt
-                    health = esper.component_for_entity(ent, Health)
-                    health.current = max(health.current - damage, 0)
-                    if health.current == 0 and not esper.component_for_entity(ent, UnitState).state == State.DEAD:
-                        esper.add_component(ent, Dying())
+                    if esper.component_for_entity(ent, UnitState).state != State.DEAD:
+                        damage = status_effect.dps * dt
+                        health = esper.component_for_entity(ent, Health)
+                        health.current = max(health.current - damage, 0)
+                        if health.current == 0:
+                            esper.add_component(ent, Dying())
                 elif isinstance(status_effect, CrusaderBannerBearerEmpowered):
                     # Handled in the damage effect
                     pass
