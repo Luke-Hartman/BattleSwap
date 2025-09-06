@@ -90,6 +90,7 @@ unit_theme_ids: Dict[UnitType, str] = {
     UnitType.PIRATE_CANNON: "#pirate_cannon_icon",
     UnitType.PIRATE_HARPOONER: "#pirate_harpooner_icon",
     UnitType.SKELETON_ARCHER: "#skeleton_archer_icon",
+    UnitType.SKELETON_HORSEMAN: "#skeleton_horseman_icon",
     UnitType.SKELETON_MAGE: "#skeleton_mage_icon",
     UnitType.SKELETON_SWORDSMAN: "#skeleton_swordsman_icon",
     UnitType.WEREBEAR: "#werebear_icon",
@@ -179,6 +180,7 @@ _unit_to_faction = {
     UnitType.SKELETON_ARCHER: Faction.SKELETON,
     UnitType.SKELETON_MAGE: Faction.SKELETON,
     UnitType.SKELETON_SWORDSMAN: Faction.SKELETON,
+    UnitType.SKELETON_HORSEMAN: Faction.SKELETON,
     UnitType.WEREBEAR: Faction.MISC,
     UnitType.ZOMBIE_BASIC_ZOMBIE: Faction.ZOMBIES,
     UnitType.ZOMBIE_BRUTE: Faction.ZOMBIES,
@@ -225,6 +227,7 @@ def load_sprite_sheets():
         UnitType.SKELETON_ARCHER: "SkeletonArcher.png",
         UnitType.SKELETON_MAGE: "SkeletonMage.png",
         UnitType.SKELETON_SWORDSMAN: "SkeletonSwordsman.png",
+        UnitType.SKELETON_HORSEMAN: "SkeletonHorseman.png",
         UnitType.WEREBEAR: "Werebear.png",
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombieNew.png",
         UnitType.ZOMBIE_BRUTE: "ZombieBasicZombie.png",
@@ -275,6 +278,7 @@ def load_sprite_sheets():
         UnitType.SKELETON_ARCHER: "SkeletonArcherIcon.png",
         UnitType.SKELETON_MAGE: "SkeletonMageIcon.png",
         UnitType.SKELETON_SWORDSMAN: "SkeletonSwordsmanIcon.png",
+        UnitType.SKELETON_HORSEMAN: "SkeletonHorsemanIcon.png",
         UnitType.WEREBEAR: "WerebearIcon.png",
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombieIcon.png",
         UnitType.ZOMBIE_BRUTE: "ZombieBruteIcon.png",
@@ -416,6 +420,7 @@ def create_unit(
         UnitType.SKELETON_ARCHER: create_skeleton_archer,
         UnitType.SKELETON_MAGE: create_skeleton_mage,
         UnitType.SKELETON_SWORDSMAN: create_skeleton_swordsman,
+        UnitType.SKELETON_HORSEMAN: create_skeleton_horseman,
         UnitType.WEREBEAR: create_werebear,
         UnitType.ZOMBIE_BASIC_ZOMBIE: create_zombie_basic_zombie,
         UnitType.ZOMBIE_BRUTE: create_zombie_brute,
@@ -1485,6 +1490,102 @@ def create_skeleton_swordsman(
         },
     }))
     esper.add_component(entity, SKELETON_DEATH_SOUNDS)
+    esper.add_component(entity, UnusableCorpse())
+    return entity
+
+def create_skeleton_horseman(
+        x: int,
+        y: int,
+        team: TeamType,
+        corruption_powers: Optional[List[CorruptionPower]],
+        tier: UnitTier,
+        play_spawning: bool = False,
+    ) -> int:
+    """Create a skeleton horseman entity with all necessary components."""
+    skeleton_horseman_health = gc.SKELETON_HORSEMAN_HP
+    skeleton_horseman_damage = gc.SKELETON_HORSEMAN_ATTACK_DAMAGE
+
+    if tier == UnitTier.ADVANCED:
+        skeleton_horseman_health = skeleton_horseman_health * 1.6
+    elif tier == UnitTier.ELITE:
+        skeleton_horseman_health = skeleton_horseman_health * 2.2
+
+    entity = unit_base_entity(
+        x=x,
+        y=y,
+        team=team,
+        unit_type=UnitType.SKELETON_HORSEMAN,
+        movement_speed=gc.SKELETON_HORSEMAN_MOVEMENT_SPEED,
+        health=skeleton_horseman_health,
+        hitbox=Hitbox(
+            width=32,
+            height=46,
+        ),
+        corruption_powers=corruption_powers,
+        tier=tier,
+        play_spawning=play_spawning
+    )
+    targetting_strategy = TargetStrategy(
+        rankings=[
+            ByDistance(entity=entity, y_bias=2, ascending=True),
+        ],
+        unit_condition=None,
+        targetting_group=TargetingGroup.TEAM2_LIVING_VISIBLE if team == TeamType.TEAM1 else TargetingGroup.TEAM1_LIVING_VISIBLE
+    )
+    esper.add_component(
+        entity,
+        Destination(target_strategy=targetting_strategy, x_offset=gc.SKELETON_HORSEMAN_ATTACK_RANGE*2/3)
+    )
+    esper.add_component(
+        entity,
+        Abilities(
+            abilities=[
+                Ability(
+                    target_strategy=targetting_strategy,
+                    trigger_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                Alive(),
+                                Grounded(),
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.SKELETON_HORSEMAN_ATTACK_RANGE,
+                                    y_bias=5
+                                ),
+                            ])
+                        )
+                    ],
+                    persistent_conditions=[
+                        HasTarget(
+                            unit_condition=All([
+                                MaximumDistanceFromEntity(
+                                    entity=entity,
+                                    distance=gc.SKELETON_HORSEMAN_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    y_bias=5
+                                ),
+                            ])
+                        )
+                    ],
+                    effects={4: [
+                        Damages(damage=skeleton_horseman_damage, recipient=Recipient.TARGET),
+                        PlaySound([
+                            (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
+                        ]),
+                    ]},
+                )
+            ]
+        )
+    )
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.SKELETON_HORSEMAN, tier))
+    esper.add_component(entity, AnimationEffects({
+        AnimationType.WALKING: {
+            frame: [PlaySound(sound_effects=[
+                (SoundEffect(filename=f"horse_footsteps_grass{i+1}.wav", volume=0.15), 1.0) for i in range(4)
+            ])]
+            for frame in [2]
+        },
+    }))
+    esper.add_component(entity, HORSE_DEATH_SOUNDS)
     esper.add_component(entity, UnusableCorpse())
     return entity
 
@@ -6364,6 +6465,25 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
             AnimationType.DYING: gc.SKELETON_SWORDSMAN_ANIMATION_DYING_DURATION,
         },
         sprite_center_offset=(0, -8),
+        synchronized_animations={
+            AnimationType.IDLE: True,
+        }
+    )
+    if unit_type == UnitType.SKELETON_HORSEMAN:
+        return SpriteSheet(
+        surface=sprite_sheets[UnitType.SKELETON_HORSEMAN],
+        frame_width=32,
+        frame_height=32,
+        scale=gc.MINIFOLKS_SCALE,
+        frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.ABILITY1: 9, AnimationType.DYING: 9},
+        rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 3, AnimationType.DYING: 5},
+        animation_durations={
+            AnimationType.IDLE: gc.SKELETON_HORSEMAN_ANIMATION_IDLE_DURATION,
+            AnimationType.WALKING: gc.SKELETON_HORSEMAN_ANIMATION_WALKING_DURATION,
+            AnimationType.ABILITY1: gc.SKELETON_HORSEMAN_ANIMATION_ATTACK_DURATION,
+            AnimationType.DYING: gc.SKELETON_HORSEMAN_ANIMATION_DYING_DURATION,
+        },
+        sprite_center_offset=(1, -6),
         synchronized_animations={
             AnimationType.IDLE: True,
         }

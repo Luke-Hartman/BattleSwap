@@ -434,6 +434,50 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             }
         )
     
+    if unit_type == UnitType.SKELETON_HORSEMAN:
+        # Calculate tier-specific values
+        skeleton_horseman_health = gc.SKELETON_HORSEMAN_HP
+        skeleton_horseman_damage = gc.SKELETON_HORSEMAN_ATTACK_DAMAGE
+        
+        # Advanced tier: 60% more health (cavalry-style upgrades)
+        if unit_tier == UnitTier.ADVANCED:
+            skeleton_horseman_health = skeleton_horseman_health * 1.6
+        
+        # Elite tier: another +60% HP (total 2.2x base health)
+        elif unit_tier == UnitTier.ELITE:
+            skeleton_horseman_health = skeleton_horseman_health * 2.2
+        
+        return UnitData(
+            name="Skeleton Horseman",
+            description="Fast undead melee units with <a href='{GlossaryEntryType.UNUSABLE_CORPSE.value}'>Unusable Corpses</a> that deal low damage.",
+            tier=unit_tier,
+            stats={
+                StatType.DEFENSE: defense_stat(skeleton_horseman_health),
+                StatType.SPEED: speed_stat(gc.SKELETON_HORSEMAN_MOVEMENT_SPEED),
+                StatType.DAMAGE: damage_stat(skeleton_horseman_damage / gc.SKELETON_HORSEMAN_ANIMATION_ATTACK_DURATION),
+                StatType.RANGE: range_stat(gc.SKELETON_HORSEMAN_ATTACK_RANGE),
+                StatType.UTILITY: None
+            },
+            tooltips={
+                StatType.DEFENSE: f"{skeleton_horseman_health:.0f} maximum health",
+                StatType.SPEED: f"{gc.SKELETON_HORSEMAN_MOVEMENT_SPEED} units per second",
+                StatType.DAMAGE: f"{skeleton_horseman_damage:.0f} per hit ({skeleton_horseman_damage / gc.SKELETON_HORSEMAN_ANIMATION_ATTACK_DURATION:.1f} per second)",
+                StatType.RANGE: f"{gc.SKELETON_HORSEMAN_ATTACK_RANGE} units",
+                StatType.UTILITY: None
+            },
+            tips={
+                "Strong when": ["Against ranged units", "With other fast units", "Tanking damage"],
+                "Weak when": ["Against stronger melee units", "Against area of effect"],
+            },
+            modification_levels={
+                StatType.DEFENSE: 1 if unit_tier == UnitTier.ADVANCED else 2 if unit_tier == UnitTier.ELITE else 0,
+                StatType.DAMAGE: 0,
+                StatType.SPEED: 0,
+                StatType.RANGE: 0,
+                StatType.UTILITY: 0
+            }
+        )
+    
     if unit_type == UnitType.CORE_DUELIST:
         duelist_damage = gc.CORE_DUELIST_ATTACK_DAMAGE
         if unit_tier == UnitTier.BASIC:
@@ -629,7 +673,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         
         return UnitData(
             name="Skeleton Mage",
-            description="Skeleton Mages are ranged units with <a href='{GlossaryEntryType.UNUSABLE_CORPSE.value}'>Unusable Corpses</a> that deal area damage with fireball projectiles.",
+            description="Skeleton Mages are ranged units with <a href='{GlossaryEntryType.UNUSABLE_CORPSE.value}'>Unusable Corpses</a> that deal area damage with exploding projectiles.",
             tier=unit_tier,
             stats={
                 StatType.DEFENSE: defense_stat(gc.SKELETON_MAGE_HP),

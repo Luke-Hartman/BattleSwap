@@ -485,6 +485,13 @@
             }
         }
     },
+    "#skeleton_horseman_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/SkeletonHorsemanIcon.png"
+            }
+        }
+    },
     "#werebear_icon": {
         "images": {
             "normal_image": {
