@@ -45,7 +45,7 @@ from components.health import Health
 from components.orientation import Orientation, FacingDirection
 from components.status_effect import Immobilized
 from effects import (
-    AddsForcedMovement, AppliesStatusEffect, CreatesRepeat, CreatesUnit, CreatesVisual, 
+    AddsForcedMovement, AppliesStatusEffect, CreatesRepeat, CreatesUnit, CreatesVisual, RemoveInvisible,
     CreatesAttachedVisual, CreatesLobbed, CreatesProjectile, CreatesVisualLink, Damages, 
     Heals, HealToFull, HealPercentageMax, IncreaseAmmo, IncreasesMaxHealthFromTarget, Jump, PlaySound, Recipient, 
     SoundEffect, StanceChange, RememberTarget, CreatesVisualAoE, CreatesCircleAoE
@@ -2162,10 +2162,6 @@ def create_orc_goblin(
     orc_goblin_movement_speed = gc.ORC_GOBLIN_MOVEMENT_SPEED
     orc_goblin_invisible_duration = gc.ORC_GOBLIN_INVISIBLE_DURATION
     
-    # Advanced tier: 150% increased invisibility duration
-    if tier == UnitTier.ADVANCED or tier == UnitTier.ELITE:
-        orc_goblin_invisible_duration = orc_goblin_invisible_duration * 2.5
-    
     # Elite tier: 25% increased movement speed and ability speed
     if tier == UnitTier.ELITE:
         orc_goblin_movement_speed = orc_goblin_movement_speed * 1.25
@@ -2236,6 +2232,9 @@ def create_orc_goblin(
                         )
                     ],
                     effects={
+                        0: [
+                            RemoveInvisible(recipient=Recipient.OWNER)
+                        ],
                         2: [
                             Damages(
                                 damage=gc.ORC_GOBLIN_ATTACK_DAMAGE, 
@@ -2257,6 +2256,29 @@ def create_orc_goblin(
             ]
         )
     )
+    
+    # Add instant ability for advanced tier goblins to go invisible at combat start
+    if tier == UnitTier.ADVANCED or tier == UnitTier.ELITE:
+        esper.add_component(
+            entity,
+            InstantAbilities(
+                abilities=[
+                    InstantAbility(
+                        target_strategy=targetting_strategy,
+                        trigger_conditions=[
+                            Cooldown(duration=float("inf")),
+                        ],
+                        effects=[
+                            AppliesStatusEffect(
+                                status_effect=Invisible(time_remaining=orc_goblin_invisible_duration),
+                                recipient=Recipient.OWNER
+                            ),
+                            PlaySound(SoundEffect(filename="orc_goblin_laugh.wav", volume=0.50))
+                        ]
+                    )
+                ]
+            )
+        )
     
     esper.add_component(entity, get_unit_sprite_sheet(UnitType.ORC_GOBLIN, tier))
     esper.add_component(entity, AnimationEffects({

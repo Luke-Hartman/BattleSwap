@@ -151,7 +151,7 @@ UPGRADE_DESCRIPTIONS = {
         UnitTier.ELITE: "50% increased damage"
     },
     UnitType.ORC_GOBLIN: {
-        UnitTier.ADVANCED: "150% increased invisibility duration",
+        UnitTier.ADVANCED: "goes invisible at the start of combat",
         UnitTier.ELITE: "25% increased movement and attack speed"
     },
     UnitType.ORC_WARG_RIDER: {
@@ -2018,18 +2018,20 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         orc_goblin_attack_duration = gc.ORC_GOBLIN_ANIMATION_ATTACK_DURATION
         orc_goblin_invisible_duration = gc.ORC_GOBLIN_INVISIBLE_DURATION
         
-        # Advanced tier: 150% increased invisibility duration
-        if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE:
-            orc_goblin_invisible_duration = orc_goblin_invisible_duration * 2.5
-        
         # Elite tier: 25% increased movement speed and ability speed
         if unit_tier == UnitTier.ELITE:
             orc_goblin_movement_speed = orc_goblin_movement_speed * 1.25
             orc_goblin_attack_duration = orc_goblin_attack_duration * 0.8  # 25% faster = 0.8x duration
 
+        # Create description based on tier
+        if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE:
+            description = f"Orc Goblins are fast <a href='{GlossaryEntryType.HUNTER.value}'>Hunters</a> that become <a href='{GlossaryEntryType.INVISIBLE.value}'>Invisible</a> at the start of combat or after getting a <a href='{GlossaryEntryType.KILLING_BLOW.value}'>Killing Blow</a>."
+        else:
+            description = f"Orc Goblins are fast <a href='{GlossaryEntryType.HUNTER.value}'>Hunters</a> that become <a href='{GlossaryEntryType.INVISIBLE.value}'>Invisible</a> after getting a <a href='{GlossaryEntryType.KILLING_BLOW.value}'>Killing Blow</a>."
+        
         return UnitData(
             name="Orc Goblin",
-            description=f"Orc Goblins are fast <a href='{GlossaryEntryType.HUNTER.value}'>Hunters</a> that become <a href='{GlossaryEntryType.INVISIBLE.value}'>Invisible</a> for {orc_goblin_invisible_duration:.1f} seconds after getting a <a href='{GlossaryEntryType.KILLING_BLOW.value}'>Killing Blow</a>.",
+            description=description,
             tier=unit_tier,
             stats={
                 StatType.DEFENSE: defense_stat(gc.ORC_GOBLIN_HP),
