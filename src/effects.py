@@ -1127,6 +1127,12 @@ class CreatesUnit(Effect):
     corruption_powers: Optional[List[CorruptionPower]]
     """The corruption powers to apply to the created unit."""
     
+    batch_size: int = 1
+    """The number of units to create in a batch. Defaults to 1 for single unit creation."""
+    
+    batch_spacing: int = 10
+    """The spacing between units in a batch. Defaults to 10 units."""
+    
     def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
         if self.recipient == Recipient.OWNER:
             assert owner is not None
@@ -1156,18 +1162,30 @@ class CreatesUnit(Effect):
             else:
                 tier = UnitTier.BASIC
         
-        entity = create_unit(
-            x=position.x + self.offset[0],
-            y=position.y + self.offset[1],
-            unit_type=self.unit_type,
-            team=self.team,
-            corruption_powers=self.corruption_powers,
-            tier=tier
-        )
-        esper.add_component(entity, Team(type=self.team))
-        # Tag the created unit with its summoner, if applicable
-        if owner is not None:
-            esper.add_component(entity, SummonedBy(summoner=owner))
+        # Calculate positions for batch creation
+        if self.batch_size == 1:
+            # Single unit creation (original behavior)
+            positions = [(self.offset[0], self.offset[1])]
+        else:
+            # Batch creation - center the units vertically with spacing
+            total_height = (self.batch_size - 1) * self.batch_spacing
+            start_y = -total_height // 2
+            positions = [(self.offset[0], start_y + i * self.batch_spacing) for i in range(self.batch_size)]
+        
+        # Create all units in the batch
+        for offset_x, offset_y in positions:
+            entity = create_unit(
+                x=position.x + offset_x,
+                y=position.y + offset_y,
+                unit_type=self.unit_type,
+                team=self.team,
+                corruption_powers=self.corruption_powers,
+                tier=tier
+            )
+            esper.add_component(entity, Team(type=self.team))
+            # Tag the created unit with its summoner, if applicable
+            if owner is not None:
+                esper.add_component(entity, SummonedBy(summoner=owner))
 
 @dataclass
 class AddsForcedMovement(Effect):

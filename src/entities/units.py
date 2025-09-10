@@ -2609,15 +2609,19 @@ def _create_skeleton_necromancer(
         )
     )
     esper.add_component(entity, RangeIndicator(ranges=[gc.SKELETON_NECROMANCER_ATTACK_RANGE]))
-    # Cooldown from game constants
+    # Cooldown and batch size from game constants
     if unit_type == UnitType.SKELETON_ARCHER_NECROMANCER:
         summon_cooldown = gc.SKELETON_ARCHER_NECROMANCER_COOLDOWN
+        batch_size = gc.SKELETON_ARCHER_NECROMANCER_BATCH_SIZE
     elif unit_type == UnitType.SKELETON_HORSEMAN_NECROMANCER:
         summon_cooldown = gc.SKELETON_HORSEMAN_NECROMANCER_COOLDOWN
+        batch_size = gc.SKELETON_HORSEMAN_NECROMANCER_BATCH_SIZE
     elif unit_type == UnitType.SKELETON_MAGE_NECROMANCER:
         summon_cooldown = gc.SKELETON_MAGE_NECROMANCER_COOLDOWN
+        batch_size = gc.SKELETON_MAGE_NECROMANCER_BATCH_SIZE
     else:
         summon_cooldown = gc.SKELETON_SWORDSMAN_NECROMANCER_COOLDOWN
+        batch_size = gc.SKELETON_SWORDSMAN_NECROMANCER_BATCH_SIZE
     esper.add_component(
         entity,
         Abilities(
@@ -2644,6 +2648,8 @@ def _create_skeleton_necromancer(
                                 team=team,
                                 offset=(gc.SKELETON_NECROMANCER_SUMMON_OFFSET_X, 0),
                                 corruption_powers=corruption_powers,
+                                batch_size=batch_size,
+                                batch_spacing=gc.UNIT_PLACEMENT_MINIMUM_DISTANCE,
                             ),
                             PlaySound(SoundEffect(filename="necromancer_summon.wav", volume=0.1)),
                         ],
