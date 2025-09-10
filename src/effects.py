@@ -208,6 +208,42 @@ class HealToFull(Effect):
 
 
 @dataclass
+class HealPercentageMax(Effect):
+    """Effect that creates a healing status effect equal to a percentage of maximum health over a duration."""
+
+    recipient: Recipient
+    """The recipient of the effect."""
+    
+    percentage: float
+    """The percentage of maximum health to heal (0.0 to 1.0)."""
+    
+    duration: float = 1.0
+    """The duration over which to heal in seconds."""
+
+    def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
+        if self.recipient == Recipient.OWNER:
+            assert owner is not None
+            recipient = owner
+        elif self.recipient == Recipient.PARENT:
+            assert parent is not None
+            recipient = parent
+        elif self.recipient == Recipient.TARGET:
+            assert target is not None
+            recipient = target
+        else:
+            raise ValueError(f"Invalid recipient: {self.recipient}")
+        
+        # Calculate percentage of maximum health
+        health_component = esper.component_for_entity(recipient, Health)
+        heal_amount = health_component.maximum * self.percentage
+
+        # Create a healing status effect that heals the percentage over the duration
+        healing_status = Healing(time_remaining=self.duration, dps=heal_amount / self.duration)
+        status_effects = esper.component_for_entity(recipient, StatusEffects)
+        status_effects.add(healing_status)
+
+
+@dataclass
 class CreatesVisualAoE(Effect):
     """Effect creates a VisualAoE at the location of the parent."""
 

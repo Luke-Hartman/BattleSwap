@@ -849,24 +849,24 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         
         return UnitData(
             name="Orc Berserker",
-            description="Orc Berserkers can throwing axes at short range and use melee attacks. They heal from <a href='{GlossaryEntryType.KILLING_BLOW.value}'>Killing Blows</a>.",
+            description="Orc Berserkers can throwing axes at short range and use melee attacks. They start at half health and heal for half of their maximum health from <a href='{GlossaryEntryType.KILLING_BLOW.value}'>Killing Blows</a>.",
             tier=unit_tier,
             stats={
-                StatType.DEFENSE: defense_stat(orc_berserker_health * 1.5),
+                StatType.DEFENSE: defense_stat(orc_berserker_health),
                 StatType.SPEED: speed_stat(orc_berserker_movement_speed),
                 StatType.DAMAGE: damage_stat(orc_berserker_melee_damage * 2 / orc_berserker_melee_animation_duration),
                 StatType.RANGE: range_stat(gc.ORC_BERSERKER_RANGED_RANGE),
                 StatType.UTILITY: None
             },
             tooltips={
-                StatType.DEFENSE: f"{int(orc_berserker_health)} maximum health. Recovers missing health over 1 second from Killing Blows.",
+                StatType.DEFENSE: f"{int(orc_berserker_health)} maximum health. Starts at half health. Recovers half of maximum health over 1 second from Killing Blows.",
                 StatType.SPEED: f"{orc_berserker_movement_speed:.1f} units per second",
                 StatType.DAMAGE: f"Ranged: {int(orc_berserker_ranged_damage)} per hit ({orc_berserker_ranged_damage / orc_berserker_throwing_animation_duration:.1f} per second), Melee: {int(orc_berserker_melee_damage)}x2 per hit ({orc_berserker_melee_damage * 2 / orc_berserker_melee_animation_duration:.1f} per second)",
                 StatType.RANGE: f"Melee: {gc.ORC_BERSERKER_MELEE_RANGE} units, Ranged: {gc.ORC_BERSERKER_RANGED_RANGE} units",
                 StatType.UTILITY: None
             },
             tips={
-                "Strong when": ["Able to damage slow melee units with ranged attacks", "Able to adapt to different ranges", "Able to kill multiple units quickly"],
+                "Strong when": ["Able to damage slow melee units with ranged attacks", "Able to adapt to different ranges", "Able to kill multiple units quickly", "Paired with healing units"],
                 "Weak when": ["Overwhelmed before killing any units", "Against high armor units", "Against powerful melee units", "Against very long ranged units"],
             },
             modification_levels={
@@ -897,24 +897,24 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         
         return UnitData(
             name="Orc Warrior",
-            description="Orc Warriors are balanced melee units that deal high damage and heal from Killing Blows.",
+            description="Orc Warriors are balanced melee units that deal high damage. They start at half health and heal for half of their maximum health from Killing Blows.",
             tier=unit_tier,
             stats={
-                StatType.DEFENSE: defense_stat(orc_warrior_health * 1.5),
+                StatType.DEFENSE: defense_stat(orc_warrior_health),
                 StatType.SPEED: speed_stat(orc_warrior_movement_speed),
                 StatType.DAMAGE: damage_stat(orc_warrior_damage / orc_warrior_attack_animation_duration),
                 StatType.RANGE: range_stat(gc.ORC_WARRIOR_ATTACK_RANGE),
                 StatType.UTILITY: None
             },
             tooltips={
-                StatType.DEFENSE: f"{int(orc_warrior_health)} maximum health. Recovers missing health over 1 second from Killing Blows.",
+                StatType.DEFENSE: f"{int(orc_warrior_health)} maximum health. Starts at half health. Recovers half of maximum health over 1 second from Killing Blows.",
                 StatType.SPEED: f"{orc_warrior_movement_speed:.1f} units per second",
                 StatType.DAMAGE: f"{int(orc_warrior_damage)} per hit ({orc_warrior_damage / orc_warrior_attack_animation_duration:.1f} per second)",
                 StatType.RANGE: f"{gc.ORC_WARRIOR_ATTACK_RANGE} units",
                 StatType.UTILITY: None
             },
             tips={
-                "Strong when": ["Against weaker melee units", "In a large group", "Able to kill multiple units quickly"],
+                "Strong when": ["Against weaker melee units", "In a large group", "Able to kill multiple units quickly", "Paired with healing units"],
                 "Weak when": ["Against ranged units", "Overwhelmed before killing any units", "Against powerful melee units"],
             },
             modification_levels={
@@ -941,7 +941,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         
         return UnitData(
             name="Orc Warchief",
-            description="Orc Warchiefs are powerful melee units with high health and damage that heal to full and gain additional maximum health from <a href='{GlossaryEntryType.KILLING_BLOW.value}'>Killing Blows</a>.",
+            description="Orc Warchiefs are powerful melee units with high health and damage. They start at half health and heal for half of their maximum health from <a href='{GlossaryEntryType.KILLING_BLOW.value}'>Killing Blows</a>, while also gaining additional maximum health equal to the target's maximum health.",
             tier=unit_tier,
             stats={
                 StatType.DEFENSE: defense_stat(orc_warchief_health + 2000),
@@ -951,14 +951,14 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
                 StatType.UTILITY: None
             },
             tooltips={
-                StatType.DEFENSE: f"{int(orc_warchief_health)} maximum health. Recovers missing health over 1 second and gains additional maximum health equal to the target's maximum health from Killing Blows.",
+                StatType.DEFENSE: f"{int(orc_warchief_health)} maximum health. Starts at half health. Recovers half of maximum health over 1 second and gains additional maximum health equal to the target's maximum health from Killing Blows.",
                 StatType.SPEED: f"{gc.ORC_WARCHIEF_MOVEMENT_SPEED} units per second",
                 StatType.DAMAGE: f"{int(orc_warchief_damage)} per hit ({orc_warchief_damage / gc.ORC_WARCHIEF_ANIMATION_ATTACK_DURATION:.1f} per second)",
                 StatType.RANGE: f"{gc.ORC_WARCHIEF_ATTACK_RANGE} units",
                 StatType.UTILITY: None
             },
             tips={
-                "Strong when": ["Able to gain a large amount of health from killing units", "Able to kill multiple units quickly", "Able to kill units with high health"],
+                "Strong when": ["Able to gain a large amount of health from killing units", "Able to kill multiple units quickly", "Able to kill units with high health", "Paired with healing units"],
                 "Weak when": ["Against ranged units", "Overwhelmed before killing any units", "Against even more powerful melee units"],
             },
             modification_levels={
@@ -2074,7 +2074,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
 
         return UnitData(
             name="Orc Warg Rider",
-            description=f"Orc Warg Riders are fast melee units that deal two strikes when attacking. They heal to full health after getting a <a href='{GlossaryEntryType.KILLING_BLOW.value}'>Killing Blow</a>.",
+            description=f"Orc Warg Riders are fast melee units that deal two strikes when attacking. They start at half health and heal for half of their maximum health after getting a <a href='{GlossaryEntryType.KILLING_BLOW.value}'>Killing Blow</a>.",
             tier=unit_tier,
             stats={
                 StatType.DEFENSE: defense_stat(gc.ORC_WARG_RIDER_HP * 1.5),
@@ -2084,14 +2084,14 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
                 StatType.UTILITY: None,
             },
             tooltips={
-                StatType.DEFENSE: f"{int(gc.ORC_WARG_RIDER_HP)} maximum health. Heals to full health after killing a unit",
+                StatType.DEFENSE: f"{int(gc.ORC_WARG_RIDER_HP)} maximum health. Starts at half health. Recovers half of maximum health over 1 second from Killing Blows.",
                 StatType.SPEED: f"{warg_rider_movement_speed:.1f} units per second",
                 StatType.DAMAGE: f"{warg_rider_attack_damage*2/3} + {warg_rider_attack_damage*1/3} per attack ({warg_rider_attack_damage / warg_rider_attack_duration:.1f} per second)",
                 StatType.RANGE: f"{gc.ORC_WARG_RIDER_ATTACK_RANGE} units",
                 StatType.UTILITY: None,
             },
             tips={
-                "Strong when": ["Able to kill units quickly", "Against isolated targets", "In a group with other fast units"],
+                "Strong when": ["Able to kill units quickly", "Against isolated targets", "In a group with other fast units", "Paired with healing units"],
                 "Weak when": ["Against armor", "Against more powerful units", "Surrounded by enemies"],
             },
             modification_levels={

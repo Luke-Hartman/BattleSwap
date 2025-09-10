@@ -47,7 +47,7 @@ from components.status_effect import Immobilized
 from effects import (
     AddsForcedMovement, AppliesStatusEffect, CreatesRepeat, CreatesUnit, CreatesVisual, 
     CreatesAttachedVisual, CreatesLobbed, CreatesProjectile, CreatesVisualLink, Damages, 
-    Heals, HealToFull, IncreaseAmmo, IncreasesMaxHealthFromTarget, Jump, PlaySound, Recipient, 
+    Heals, HealToFull, HealPercentageMax, IncreaseAmmo, IncreasesMaxHealthFromTarget, Jump, PlaySound, Recipient, 
     SoundEffect, StanceChange, RememberTarget, CreatesVisualAoE, CreatesCircleAoE
 )
 from unit_condition import (
@@ -1650,6 +1650,11 @@ def create_orc_berserker(
         tier=tier,
         play_spawning=play_spawning
     )
+    
+    # Orcs start at 50% life
+    health_component = esper.component_for_entity(entity, Health)
+    health_component.current = int(health_component.maximum * 0.5)
+    
     targetting_strategy = TargetStrategy(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
@@ -1691,8 +1696,10 @@ def create_orc_berserker(
         )
     )
     on_kill_effects = [
-        HealToFull(
-            recipient=Recipient.OWNER
+        HealPercentageMax(
+            recipient=Recipient.OWNER,
+            percentage=0.5,
+            duration=1.0
         ),
         PlaySound([
             (SoundEffect(filename=f"orc_berserker_kill_sound{i+1}.wav", volume=0.50), 1.0) for i in range(4)
@@ -1917,6 +1924,11 @@ def create_orc_warrior(
         tier=tier,
         play_spawning=play_spawning
     )
+    
+    # Orcs start at 50% life
+    health_component = esper.component_for_entity(entity, Health)
+    health_component.current = int(health_component.maximum * 0.5)
+    
     targetting_strategy = TargetStrategy(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
@@ -1964,8 +1976,10 @@ def create_orc_warrior(
                                 damage=orc_warrior_damage, 
                                 recipient=Recipient.TARGET,
                                 on_kill_effects=[
-                                    HealToFull(
-                                        recipient=Recipient.OWNER
+                                    HealPercentageMax(
+                                        recipient=Recipient.OWNER,
+                                        percentage=0.5,
+                                        duration=1.0
                                     ),  
                                     PlaySound([
                                         (SoundEffect(filename=f"orc_kill_sound{i+1}.wav", volume=0.50), 1.0) for i in range(4)
@@ -2039,6 +2053,11 @@ def create_orc_warchief(
         tier=tier,
         play_spawning=play_spawning
     )
+
+    # Orcs start at 50% life
+    health_component = esper.component_for_entity(entity, Health)
+    health_component.current = int(health_component.maximum * 0.5)
+    
     targetting_strategy = TargetStrategy(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
@@ -2089,8 +2108,10 @@ def create_orc_warchief(
                                     IncreasesMaxHealthFromTarget(
                                         recipient=Recipient.OWNER
                                     ),
-                                    HealToFull(
-                                        recipient=Recipient.OWNER
+                                    HealPercentageMax(
+                                        recipient=Recipient.OWNER,
+                                        percentage=0.5,
+                                        duration=1.0
                                     ),
                                     PlaySound([
                                         (SoundEffect(filename=f"orc_warchief_kill_sound{i+1}.wav", volume=0.50), 1.0) for i in range(4)
@@ -2295,6 +2316,11 @@ def create_orc_warg_rider(
         tier=tier,
         play_spawning=play_spawning
     )
+
+    # Orcs start at 50% life
+    health_component = esper.component_for_entity(entity, Health)
+    health_component.current = int(health_component.maximum * 0.5)
+    
     targetting_strategy = TargetStrategy(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
@@ -2307,8 +2333,10 @@ def create_orc_warg_rider(
         Destination(target_strategy=targetting_strategy, x_offset=gc.ORC_WARG_RIDER_ATTACK_RANGE*2/3)
     )
     on_kill_effects = [
-        HealToFull(
-            recipient=Recipient.OWNER
+        HealPercentageMax(
+            recipient=Recipient.OWNER,
+            percentage=0.5,
+            duration=1.0
         ),
         PlaySound([
             (SoundEffect(filename=f"orc_warg_rider_kill_sound{i+1}.wav", volume=0.50), 1.0) for i in range(4)
