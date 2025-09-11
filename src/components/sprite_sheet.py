@@ -41,6 +41,49 @@ class SpriteSheet(pygame.sprite.Sprite):
         self.layer = layer
         self._processed_frames = {}
         self.synchronized_animations = synchronized_animations if synchronized_animations is not None else {}
+        
+        # Store original frames to track which animations were provided
+        self._original_frames = set(frames.keys())
+        
+        # Create default spawn animation if not provided and death animation exists
+        if AnimationType.SPAWNING not in self.frames and AnimationType.DYING in self.frames:
+            # Create a new row for the spawn animation by copying and reversing death frames
+            self._create_spawn_animation_row()
+
+    def _create_spawn_animation_row(self):
+        """Create a new row in the sprite sheet for the spawn animation by copying and reversing death frames."""
+        death_row = self.rows[AnimationType.DYING]
+        death_frames = self.frames[AnimationType.DYING]
+        
+        # Find the next available row (after the highest existing row)
+        spawn_row = self.surface.get_height() // self.frame_height
+        
+        # Create a new surface with an additional row
+        new_height = self.surface.get_height() + self.frame_height
+        new_surface = pygame.Surface((self.surface.get_width(), new_height), pygame.SRCALPHA)
+        new_surface.blit(self.surface, (0, 0))
+        
+        # Copy death frames in reverse order to the new spawn row
+        for i in range(death_frames):
+            # Source: death frame i
+            source_rect = pygame.Rect(
+                i * self.frame_width,
+                death_row * self.frame_height,
+                self.frame_width,
+                self.frame_height
+            )
+            source_frame = self.surface.subsurface(source_rect)
+            
+            # Destination: spawn frame (death_frames - 1 - i)
+            dest_x = (death_frames - 1 - i) * self.frame_width
+            dest_y = spawn_row * self.frame_height
+            new_surface.blit(source_frame, (dest_x, dest_y))
+        
+        # Update the surface and animation data
+        self.surface = new_surface
+        self.frames[AnimationType.SPAWNING] = death_frames
+        self.rows[AnimationType.SPAWNING] = spawn_row
+        self.animation_durations[AnimationType.SPAWNING] = self.animation_durations[AnimationType.DYING]
 
     def update_frame(self, animation_type: AnimationType, frame: int):
         """Update the sprite's image to the specified frame of the animation."""
@@ -50,6 +93,7 @@ class SpriteSheet(pygame.sprite.Sprite):
         row = self.rows[animation_type]
         if self.start_frames is not None:
             frame = self.start_frames.get(animation_type, 0) + frame
+        
         col = frame
         rect = pygame.Rect(
             col * self.frame_width,

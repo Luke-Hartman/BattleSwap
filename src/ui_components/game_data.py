@@ -54,6 +54,7 @@ class GlossaryEntryType(enum.Enum):
     HEAVILY_ARMORED = "Heavily Armored"
     HUNTER = "Hunter"
     POISON = "Poison"
+    REVIVE = "Revive"
     INFECTION = "Infection"
     KILLING_BLOW = "Killing Blow"
     POINTS = "Points"
@@ -103,13 +104,14 @@ GLOSSARY_ENTRIES = {
     GlossaryEntryType.HEAVILY_ARMORED: f"Heavily Armored units take {gc.HEAVILY_ARMOR_FLAT_DAMAGE_REDUCTION} flat reduced damage, and have {gc.HEAVILY_ARMOR_PERCENT_DAMAGE_REDUCTION}% damage reduction (after flat reduction). Maximum damage reduction is capped at {gc.MAX_HEAVILY_ARMOR_DAMAGE_REDUCTION}%. Also see <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a>.",
     GlossaryEntryType.HUNTER: "While most units target the nearest enemy unit, Hunters prioritize units with low current health.",
     GlossaryEntryType.POISON: "Poison damage is dealt over 2 seconds, and is not blocked by armor. Projectiles that poison pass through units that are already poisoned.",
+    GlossaryEntryType.REVIVE: "Units that are being revived gain progress towards reviving. Units worth more points take proportionally longer to revive. All progress only lasts for 15 seconds. If progress towards reviving is added by multiple sources from the same team, they are added together. If they are from different teams, they cancel each other out. Revived units are fresh instances of the original unit, and do not inherit any effects which may linger on the corpse. Corruption powers affect revived units based on which team they are revived onto, not their original team.",
     GlossaryEntryType.INFECTION: f"Infected units turn into <a href='{UnitType.ZOMBIE_BASIC_ZOMBIE.value}'>Zombies</a> when they die. Infection lasts for 2 seconds. Some units have <a href='{GlossaryEntryType.UNUSABLE_CORPSE.value}'>Unusable Corpses</a> and do not turn into zombies.",
     GlossaryEntryType.KILLING_BLOW: "A killing blow is when an instance of damage is enough to kill a unit. Some units have special abilities that trigger when they deal a killing blow.",
     GlossaryEntryType.POINTS: f"Points represent the value of a unit. When you have more than {gc.CORRUPTION_TRIGGER_POINTS} points of units in your <a href='{GlossaryEntryType.BARRACKS.value}'>Barracks</a>, <a href='{GlossaryEntryType.CORRUPTION.value}'>Corruption</a> will trigger.",
     GlossaryEntryType.SPREADER: f"While most units target the nearest enemy unit, Spreaders prioritize units that are not <a href='{GlossaryEntryType.INFECTION.value}'>Infected</a>.",
     GlossaryEntryType.UPGRADE: "Units come in three tiers: Basic, Advanced and Elite. All units start as Basic. You can find special upgrade hexes to promote your units from Basic to Advanced. To promote a unit to Elite, one of your upgrade hexes must be <a href='{GlossaryEntryType.CORRUPTION.value}'>Corrupted</a>. Enemy units start as Basic, but become Elite when they are <a href='{GlossaryEntryType.CORRUPTION.value}'>Corrupted</a>.",
     GlossaryEntryType.INVISIBLE: "Invisible units cannot be targeted by allies or enemies. They become visible when they attack or use abilities.",
-    GlossaryEntryType.UNUSABLE_CORPSE: "Units with Unusable Corpses cannot be turned into <a href='{GlossaryEntryType.INFECTION.value}'>Zombies</a> when they die."
+    GlossaryEntryType.UNUSABLE_CORPSE: "Units with Unusable Corpses cannot be <a href='{GlossaryEntryType.REVIVE.value}'>Revived</a> or turned into <a href='{GlossaryEntryType.INFECTION.value}'>Zombies</a> when they die."
 }
 
 # Upgrade descriptions for each unit type
@@ -249,6 +251,10 @@ UPGRADE_DESCRIPTIONS = {
     UnitType.SKELETON_SWORDSMAN_NECROMANCER: {
         UnitTier.ADVANCED: "Minions have 50% increased health and damage",
         UnitTier.ELITE: "Minions have 50% increased health and damage"
+    },
+    UnitType.SKELETON_LICH: {
+        UnitTier.ADVANCED: "Revives units at Advanced tier",
+        UnitTier.ELITE: "Revives units at Elite tier"
     },
     UnitType.SKELETON_HORSEMAN: {
         UnitTier.ADVANCED: "50% increased health",
@@ -2283,6 +2289,40 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
                 StatType.DAMAGE: 2 if unit_tier == UnitTier.ELITE else 1 if unit_tier == UnitTier.ADVANCED else 0,
                 StatType.RANGE: 0,
                 StatType.UTILITY: 0,
+            }
+        )
+    
+    if unit_type == UnitType.SKELETON_LICH:
+        return UnitData(
+            name="Skeleton Lich",
+            description=(
+                f"<a href='{GlossaryEntryType.REVIVE.value}'>Revives</a> dead units from either team at a distance. Units worth more points take longer to revive."
+            ),
+            tier=unit_tier,
+            stats={
+                StatType.DEFENSE: defense_stat(gc.SKELETON_LICH_HP),
+                StatType.SPEED: speed_stat(gc.SKELETON_LICH_MOVEMENT_SPEED),
+                StatType.DAMAGE: None,
+                StatType.RANGE: range_stat(gc.SKELETON_LICH_ABILITY_RANGE),
+                StatType.UTILITY: 22.5 if unit_tier == UnitTier.ADVANCED else 30 if unit_tier == UnitTier.ELITE else 15,
+            },
+            tooltips={
+                StatType.DEFENSE: f"{gc.SKELETON_LICH_HP} maximum health",
+                StatType.SPEED: f"{gc.SKELETON_LICH_MOVEMENT_SPEED:.1f} units per second",
+                StatType.DAMAGE: None,
+                StatType.RANGE: f"{gc.SKELETON_LICH_ABILITY_RANGE:.0f} units",
+                StatType.UTILITY: f"Revives units at a rate of {50/gc.SKELETON_LICH_ANIMATION_ABILITY_DURATION:.1f} points/second",
+            },
+            tips={
+                "Strong when": ["Near many corpses", "In long battles", "Protected by allies", "Revived corpses are useful"],
+                "Weak when": ["No usable corpses nearby", "Allies or enemies have Unusable Corpses", "Against fast-moving enemies", "Overwhelmed quickly"],
+            },
+            modification_levels={
+                StatType.DEFENSE: 0,
+                StatType.SPEED: 0,
+                StatType.DAMAGE: 0,
+                StatType.RANGE: 0,
+                StatType.UTILITY: 2 if unit_tier == UnitTier.ELITE else 1 if unit_tier == UnitTier.ADVANCED else 0,
             }
         )
     

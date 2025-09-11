@@ -6,11 +6,12 @@ import esper
 from components.ability import Abilities
 from components.destination import Destination
 from components.instant_ability import InstantAbilities
-from components.position import Position
 from components.team import Team, TeamType
 from components.unit_state import State, UnitState
 from components.status_effect import Invisible, StatusEffects
+from components.unusable_corpse import UnusableCorpse
 from target_strategy import TargetingGroup
+from components.sprite_sheet import SpriteSheet
 
 
 class TargettingProcessor(esper.Processor):
@@ -20,9 +21,6 @@ class TargettingProcessor(esper.Processor):
         targetting_groups = defaultdict(set)
 
         for ent, (unit_state, team) in esper.get_components(UnitState, Team):
-            if unit_state.state == State.DEAD:
-                continue
-            
             # Check if unit is invisible
             is_invisible = False
             if esper.has_component(ent, StatusEffects):
@@ -33,8 +31,14 @@ class TargettingProcessor(esper.Processor):
                 )
             if is_invisible:
                 continue
-            
-            if team.type == TeamType.TEAM1:
+
+            if unit_state.state == State.DEAD:
+                # This is a hack which means the corpse should be deleted.
+                if not esper.has_component(ent, SpriteSheet):
+                    continue
+                if not esper.has_component(ent, UnusableCorpse):
+                    targetting_groups[TargetingGroup.USABLE_CORPSES].add(ent)
+            elif team.type == TeamType.TEAM1:
                 targetting_groups[TargetingGroup.TEAM1_LIVING_VISIBLE].add(ent)
             else:
                 targetting_groups[TargetingGroup.TEAM2_LIVING_VISIBLE].add(ent)

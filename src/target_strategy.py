@@ -16,6 +16,7 @@ class TargetingGroup(Enum):
 
     TEAM1_LIVING_VISIBLE = auto()
     TEAM2_LIVING_VISIBLE = auto()
+    USABLE_CORPSES = auto()
     EMPTY = auto()
 
 

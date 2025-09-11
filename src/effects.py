@@ -34,9 +34,11 @@ from components.position import Position
 from components.projectile import Projectile
 from components.stance import Stance
 from components.status_effect import CrusaderBannerBearerEmpowered, Healing, StatusEffect, StatusEffects
+from components.sprite_sheet import SpriteSheet
 from components.team import Team, TeamType
+from components.unit_tier import UnitTier
 from components.unique import Unique
-from components.unit_type import UnitType
+from components.unit_type import UnitType, UnitTypeComponent
 from components.velocity import Velocity
 from components.visual_link import VisualLink
 from corruption_powers import CorruptionPower
@@ -1318,3 +1320,45 @@ class CreatesRepeat(Effect):
             parent=parent,
             target=target,
         ))
+
+
+@dataclass
+class Revive(Effect):
+    """Effect that revives a dead unit."""
+    
+    team: TeamType
+    """The team to revive the unit on."""
+    
+    corruption_powers: Optional[List[CorruptionPower]]
+    """The corruption powers to apply to the revived unit."""
+    
+    tier: UnitTier
+    """The tier to revive the unit at."""
+    
+    def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
+        if target is None:
+            return
+            
+        # Get the dead unit's components
+        unit_type = esper.component_for_entity(target, UnitTypeComponent).type
+        position = esper.component_for_entity(target, Position)
+        orientation = esper.component_for_entity(target, Orientation)
+        
+        # Hide the corpse (similar to zombie infection)
+        if esper.has_component(target, SpriteSheet):
+            esper.remove_component(target, SpriteSheet)
+        
+        # Create the revived unit
+        from entities.units import create_unit
+        
+        # Create the unit with the same position and orientation
+        revived_unit = create_unit(
+            x=position.x,
+            y=position.y,
+            unit_type=unit_type,
+            team=self.team,
+            corruption_powers=self.corruption_powers,
+            tier=self.tier,
+            play_spawning=True,
+            orientation=orientation.facing
+        )

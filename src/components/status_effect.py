@@ -5,6 +5,7 @@ from typing import List, Optional
 import copy
 
 from components.team import TeamType
+from components.unit_tier import UnitTier
 from corruption_powers import CorruptionPower
 from game_constants import gc
 
@@ -93,6 +94,22 @@ class WontPursue(StatusEffect):
     """
     # No additional fields needed beyond the base time_remaining
 
+@dataclass
+class ReviveProgress(StatusEffect):
+    """Status effect that tracks progress towards reviving a dead unit."""
+    
+    stacks: int
+    """The number of revive progress stacks."""
+    
+    team: TeamType
+    """The team that applied this revive progress."""
+    
+    tier: UnitTier
+    """The tier of the lich that applied this revive progress."""
+    
+    corruption_powers: Optional[List[CorruptionPower]]
+    """The corruption powers of the lich that applied this revive progress."""
+
 class StatusEffects:
     """Component that stores the status effects of a unit."""
     # TODO: This not really a following ECS best practice
@@ -109,6 +126,7 @@ class StatusEffects:
             Invisible: [],
             Immobilized: [],
             WontPursue: [],
+            ReviveProgress: [],
         }
 
     def add(self, status_effect: StatusEffect) -> None:
@@ -155,6 +173,7 @@ class StatusEffects:
             longest_wont_pursue = max(self._status_by_type[WontPursue], key=lambda e: e.time_remaining)
             active_effects.append(longest_wont_pursue)
         active_effects.extend(self._status_by_type[Healing])
+        active_effects.extend(self._status_by_type[ReviveProgress])
         return active_effects
 
 
