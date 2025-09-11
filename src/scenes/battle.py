@@ -290,6 +290,17 @@ class BattleScene(Scene):
             blocking=True
         )
 
+    def show_defeat_exit_confirmation(self) -> None:
+        """Show confirmation dialog for exiting from defeat panel."""
+        self.confirmation_dialog = pygame_gui.windows.UIConfirmationDialog(
+            rect=pygame.Rect((pygame.display.Info().current_w/2 - 150, pygame.display.Info().current_h/2 - 100), (300, 200)),
+            manager=self.manager,
+            window_title="Exit Battle",
+            action_long_desc="Are you sure you want to exit?",
+            action_short_name=format_button_text("Exit", KeyboardShortcuts.ENTER),
+            blocking=True
+        )
+
     def render_paused_text(self) -> None:
         """Render giant PAUSED text across the screen when the game is paused."""
         if timing.is_paused():
@@ -380,16 +391,12 @@ class BattleScene(Scene):
                             ))
                             return super().update(time_delta, events)
                     elif hasattr(self, 'defeat_panel') and self.defeat_panel is not None:
-                        # In defeat panel, trigger leave button
-                        if hasattr(self, 'leave_button'):
-                            pygame.event.post(pygame.event.Event(
-                                pygame.USEREVENT,
-                                {'user_type': pygame_gui.UI_BUTTON_PRESSED, 'ui_element': self.leave_button}
-                            ))
-                            emit_event(PLAY_SOUND, event=PlaySoundEvent(
-                                filename="ui_click.wav",
-                                volume=0.5
-                            ))
+                        # In defeat panel, show confirmation dialog
+                        self.show_defeat_exit_confirmation()
+                        emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                            filename="ui_click.wav",
+                            volume=0.5
+                        ))
                     else:
                         # Not in victory or defeat panel, use default escape behavior (return button)
                         self.handle_escape(event)
@@ -428,8 +435,7 @@ class BattleScene(Scene):
                         pygame.event.post(PreviousSceneEvent(current_scene_id=id(self)).to_event())
                         return super().update(time_delta, events)
                     elif hasattr(self, 'leave_button') and event.ui_element == self.leave_button:
-                        self.world_map_view.rebuild(progress_manager.get_battles_including_solutions())
-                        self.handle_return(n=2)
+                        self.show_defeat_exit_confirmation()
                         return super().update(time_delta, events)
 
                 elif event.user_type == pygame_gui.UI_CONFIRMATION_DIALOG_CONFIRMED:
