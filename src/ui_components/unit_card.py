@@ -318,8 +318,8 @@ class UnitCard:
         
     def update(self, time_delta: float):
         """Update all stat bars and animations."""
-        # Always update at 60fps
-        time_delta = 1/60
+        # Always update at 30fps
+        time_delta = 1/30
         for stat_bar in self.stat_bars:
             stat_bar.update(time_delta)
 

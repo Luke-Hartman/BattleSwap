@@ -139,8 +139,8 @@ def simulate_battle(
     outcome = None
     auto_battle = AutoBattle(max_duration, hex_coords=(0, 0))
     while outcome is None:
-        esper.process(1/60)
-        outcome = auto_battle.update(1/60)
+        esper.process(1/30)
+        outcome = auto_battle.update(1/30)
     
     if post_battle_callback is not None:
         post_battle_callback_result = post_battle_callback(outcome)

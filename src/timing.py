@@ -102,12 +102,12 @@ def get_dt() -> float:
     """Get delta time for combat simulation.
     
     This controls how much time passes for combat each frame.
-    This is either 1/60 or 0, depending on whether the game is paused.
-    Keeping this at 1/60 is critical for deterministic gameplay.
+    This is either 1/30 or 0, depending on whether the game is paused.
+    Keeping this at 1/30 is critical for deterministic gameplay.
     """
     if _in_battle and _is_paused:
         return 0.0
-    return 1.0 / 60.0
+    return 1.0 / 30.0
 
 
 def get_max_fps() -> float:
@@ -116,8 +116,8 @@ def get_max_fps() -> float:
     This indirectly controls the rate of the game through the max FPS.
     """
     if _is_paused or not _in_battle:
-        return 60.0
-    return 60.0 * float(get_current_speed())
+        return 30.0
+    return 30.0 * float(get_current_speed())
 
 
 def get_global_clock() -> float:

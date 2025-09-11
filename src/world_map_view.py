@@ -220,7 +220,7 @@ class WorldMapView:
                 continue
             
             esper.switch_world(battle.id)
-            # dt should be either 1/60 or 0. This makes sure the game is deterministic.
+            # dt should be either 1/30 or 0. This makes sure the game is deterministic.
             esper.process(timing.get_dt())
 
     def get_hex_states(self) -> Dict[Tuple[int, int], HexState]:

@@ -7035,10 +7035,10 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
             frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.ABILITY1: 11, AnimationType.DYING: 9},
             rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 3, AnimationType.DYING: 7},
             animation_durations={
-                AnimationType.IDLE: gc.SKELETON_NECROMANCER_ANIMATION_IDLE_DURATION,
-                AnimationType.WALKING: gc.SKELETON_NECROMANCER_ANIMATION_WALKING_DURATION,
-                AnimationType.ABILITY1: gc.SKELETON_NECROMANCER_ANIMATION_ATTACK_DURATION,
-                AnimationType.DYING: gc.SKELETON_NECROMANCER_ANIMATION_DYING_DURATION,
+                AnimationType.IDLE: gc.CORE_WIZARD_ANIMATION_IDLE_DURATION,
+                AnimationType.WALKING: gc.CORE_WIZARD_ANIMATION_WALKING_DURATION,
+                AnimationType.ABILITY1: gc.CORE_WIZARD_ANIMATION_ATTACK_DURATION,
+                AnimationType.DYING: gc.CORE_WIZARD_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(0, -8),
             synchronized_animations={

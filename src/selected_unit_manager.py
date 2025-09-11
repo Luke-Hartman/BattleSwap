@@ -92,7 +92,7 @@ class SelectedUnitManager:
         else:
             if self.unit_card is not None:
                 # Set time_delta to a fixed value to prevent animation issues
-                fixed_time_delta = 1/60  # 60 FPS equivalent
+                fixed_time_delta = 1/30  # 30 FPS equivalent
                 self.unit_card.update(fixed_time_delta)
             # Also update glossary entries in normal mode (for tips)
             for entry in self.glossary_entries:
