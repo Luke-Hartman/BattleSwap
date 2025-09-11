@@ -126,7 +126,7 @@ UPGRADE_DESCRIPTIONS = {
     },
     UnitType.CORE_CAVALRY: {
         UnitTier.ADVANCED: "60% increased health",
-        UnitTier.ELITE: "60% increased damage"
+        UnitTier.ELITE: "60% increased health"
     },
     UnitType.CORE_DUELIST: {
         UnitTier.ADVANCED: "50% increased hits per combo",
