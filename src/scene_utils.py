@@ -350,6 +350,7 @@ def has_unsaved_changes(battle: Battle, unit_placements: List[Tuple[UnitType, Tu
     
     Args:
         battle: The battle to check
+        unit_placements: Current unit placements
         
     Returns:
         True if there are unsaved changes, False otherwise
@@ -359,6 +360,11 @@ def has_unsaved_changes(battle: Battle, unit_placements: List[Tuple[UnitType, Tu
     
     if saved_solution is None:
         return len(current_set) > 0
+    
+    # Check if the corruption state matches
+    current_is_corrupted = progress_manager.get_hex_state(battle.hex_coords) in [HexLifecycleState.CORRUPTED, HexLifecycleState.RECLAIMED]
+    if saved_solution.solved_corrupted != current_is_corrupted:
+        return True
         
     saved_set = set(saved_solution.unit_placements)
     return current_set != saved_set

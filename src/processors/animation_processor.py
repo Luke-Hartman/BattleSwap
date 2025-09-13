@@ -49,6 +49,7 @@ class AnimationProcessor(esper.Processor):
             dt (float): Delta time since last frame, in seconds.
         """
         for ent, (anim_state, sprite_sheet) in esper.get_components(AnimationState, SpriteSheet):
+            new_animation = False
             if esper.has_component(ent, UnitState):
                 unit_state = esper.component_for_entity(ent, UnitState)
             else:
@@ -91,40 +92,19 @@ class AnimationProcessor(esper.Processor):
                 anim_state.time_elapsed = self._get_start_time(sprite_sheet, new_anim_type)
 
             if anim_state.type != new_anim_type:
+                new_animation = True
                 anim_state.type = new_anim_type
                 anim_state.current_frame = 0
                 anim_state.time_elapsed = self._get_start_time(sprite_sheet, new_anim_type)
-            else:
-                if anim_state.type == AnimationType.WALKING and not esper.has_component(ent, SmoothMovement):
-                    # If the unit is moving faster/slower than it's normal movement speed, scale the animation speed
-                    velocity = esper.component_for_entity(ent, Velocity)
-                    movement = esper.component_for_entity(ent, Movement)
-                    if movement.speed != 0:
-                        scale = (velocity.x**2 + velocity.y**2)**0.5 / movement.speed
-                    else:
-                        scale = 1
-                    anim_state.time_elapsed += dt * scale
-                else:
-                    # Check for ability speed increases from corruption powers or status effects
-                    speed_multiplier = 1.0
-                    
-                    if esper.has_component(ent, IncreasedAbilitySpeedComponent):
-                        speed_multiplier *= (1 + esper.component_for_entity(ent, IncreasedAbilitySpeedComponent).increase_percent / 100)
-                    
-                    if esper.has_component(ent, StatusEffects):
-                        status_effects = esper.component_for_entity(ent, StatusEffects)
-                        for status_effect in status_effects.active_effects():
-                            if isinstance(status_effect, CrusaderBannerBearerAbilitySpeedBuff):
-                                speed_multiplier *= (1 + status_effect.ability_speed_increase_percent / 100)
-                    
-                    anim_state.time_elapsed += dt * speed_multiplier
 
             # Update the animation frame based on the current time
             total_duration = sprite_sheet.animation_durations[anim_state.type]
             frame_count = sprite_sheet.frames[anim_state.type]
             frame_duration = total_duration / frame_count
 
-            new_frame = min(frame_count, int(anim_state.time_elapsed // frame_duration))
+            # The third condition is to prevent skipping frames when the animation is too fast
+            new_frame = min(frame_count, int(anim_state.time_elapsed // frame_duration), anim_state.current_frame + 1)
+
             if new_frame != anim_state.current_frame or anim_state.time_elapsed == 0:
                 if anim_state.type == AnimationType.DYING and anim_state.current_frame == frame_count - 1:
                     # Stop the animation at the last frame for death animation
@@ -164,4 +144,32 @@ class AnimationProcessor(esper.Processor):
                     anim_state.current_frame = frame_count - 1
                     # Reset the time so if the animation is supposed to loop it will start over.
                     anim_state.time_elapsed = 0
+                    new_animation = True
             sprite_sheet.update_frame(anim_state.type, anim_state.current_frame)
+
+            if new_animation:
+                # Don't update dt, instead just sit for a frame at 0 time elapsed.
+                continue
+            if anim_state.type == AnimationType.WALKING and not esper.has_component(ent, SmoothMovement):
+                # If the unit is moving faster/slower than it's normal movement speed, scale the animation speed
+                velocity = esper.component_for_entity(ent, Velocity)
+                movement = esper.component_for_entity(ent, Movement)
+                if movement.speed != 0:
+                    scale = (velocity.x**2 + velocity.y**2)**0.5 / movement.speed
+                else:
+                    scale = 1
+                anim_state.time_elapsed += dt * scale
+            else:
+                # Check for ability speed increases from corruption powers or status effects
+                speed_multiplier = 1.0
+                
+                if esper.has_component(ent, IncreasedAbilitySpeedComponent):
+                    speed_multiplier *= (1 + esper.component_for_entity(ent, IncreasedAbilitySpeedComponent).increase_percent / 100)
+                
+                if esper.has_component(ent, StatusEffects):
+                    status_effects = esper.component_for_entity(ent, StatusEffects)
+                    for status_effect in status_effects.active_effects():
+                        if isinstance(status_effect, CrusaderBannerBearerAbilitySpeedBuff):
+                            speed_multiplier *= (1 + status_effect.ability_speed_increase_percent / 100)
+                
+                anim_state.time_elapsed += dt * speed_multiplier
