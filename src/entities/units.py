@@ -33,7 +33,7 @@ from components.aura import Aura
 from components.position import Position
 from components.animation import AnimationState, AnimationType
 from components.sprite_sheet import SpriteSheet
-from components.status_effect import CrusaderBannerBearerEmpowered, Fleeing, Healing, DamageOverTime, Invisible, StatusEffects, WontPursue, ZombieInfection, CrusaderBannerBearerMovementSpeedBuff, CrusaderBannerBearerAbilitySpeedBuff, ReviveProgress
+from components.status_effect import InfantryBannerBearerEmpowered, Fleeing, Healing, DamageOverTime, Invisible, StatusEffects, WontPursue, ZombieInfection, InfantryBannerBearerMovementSpeedBuff, InfantryBannerBearerAbilitySpeedBuff, ReviveProgress
 from target_strategy import ByCurrentHealth, ByDistance, ByMissingHealth, ConditionPenalty, TargetStrategy, TargetingGroup, WeightedRanking
 from components.destination import Destination
 from components.team import Team, TeamType
@@ -66,19 +66,19 @@ unit_theme_ids: Dict[UnitType, str] = {
     UnitType.CORE_LONGBOWMAN: "#core_longbowman_icon",
     UnitType.CORE_SWORDSMAN: "#core_swordsman_icon",
     UnitType.CORE_WIZARD: "#core_wizard_icon",
-    UnitType.CRUSADER_BANNER_BEARER: "#crusader_banner_bearer_icon",
+    UnitType.INFANTRY_BANNER_BEARER: "#infantry_infantry_banner_bearer_icon",
     UnitType.CRUSADER_BLACK_KNIGHT: "#crusader_black_knight_icon",
-    UnitType.CRUSADER_CATAPULT: "#crusader_catapult_icon",
+    UnitType.INFANTRY_CATAPULT: "#infantry_catapult_icon",
     UnitType.CRUSADER_CLERIC: "#crusader_cleric_icon",
-    UnitType.CRUSADER_COMMANDER: "#crusader_commander_icon",
-    UnitType.CRUSADER_CROSSBOWMAN: "#crusader_crossbowman_icon",
-    UnitType.CRUSADER_DEFENDER: "#crusader_defender_icon",
+    UnitType.MISC_COMMANDER: "#misc_commander_icon",
+    UnitType.INFANTRY_CROSSBOWMAN: "#infantry_crossbowman_icon",
+    UnitType.CORE_DEFENDER: "#core_defender_icon",
     UnitType.CRUSADER_GOLD_KNIGHT: "#crusader_gold_knight_icon",
     UnitType.CRUSADER_GUARDIAN_ANGEL: "#crusader_guardian_angel_icon",
     UnitType.CRUSADER_PALADIN: "#crusader_paladin_icon",
-    UnitType.CRUSADER_PIKEMAN: "#crusader_pikeman_icon",
-    UnitType.CRUSADER_RED_KNIGHT: "#crusader_red_knight_icon",
-    UnitType.CRUSADER_SOLDIER: "#crusader_soldier_icon",
+    UnitType.INFANTRY_PIKEMAN: "#infantry_pikeman_icon",
+    UnitType.MISC_RED_KNIGHT: "#misc_red_knight_icon",
+    UnitType.INFANTRY_SOLDIER: "#infantry_soldier_icon",
     UnitType.ORC_BERSERKER: "#orc_berserker_icon",
     UnitType.ORC_WARRIOR: "#orc_warrior_icon",
     UnitType.ORC_WARCHIEF: "#orc_warchief_icon",
@@ -100,9 +100,9 @@ unit_theme_ids: Dict[UnitType, str] = {
     UnitType.SKELETON_LICH: "#skeleton_mage_icon",
     UnitType.WEREBEAR: "#werebear_icon",
     UnitType.ZOMBIE_BASIC_ZOMBIE: "#zombie_basic_zombie_icon",
-    UnitType.ZOMBIE_BRUTE: "#zombie_brute_icon",
+    UnitType.MISC_BRUTE: "#misc_brute_icon",
     UnitType.ZOMBIE_FIGHTER: "#zombie_fighter_icon",
-    UnitType.ZOMBIE_GRABBER: "#zombie_grabber_icon",
+    UnitType.MISC_GRABBER: "#misc_grabber_icon",
     UnitType.ZOMBIE_JUMPER: "#zombie_jumper_icon",
     UnitType.ZOMBIE_SPITTER: "#zombie_spitter_icon",
     UnitType.ZOMBIE_TANK: "#zombie_tank_icon",
@@ -142,6 +142,7 @@ class Faction(Enum):
     SKELETON = 4
     ZOMBIES = 5
     MISC = 6
+    INFANTRY = 7
     
     @staticmethod
     def faction_of(unit_type: UnitType) -> "Faction":
@@ -159,19 +160,19 @@ _unit_to_faction = {
     UnitType.CORE_LONGBOWMAN: Faction.CORE,
     UnitType.CORE_SWORDSMAN: Faction.CORE,
     UnitType.CORE_WIZARD: Faction.CORE,
-    UnitType.CRUSADER_BANNER_BEARER: Faction.CRUSADERS,
+    UnitType.INFANTRY_BANNER_BEARER: Faction.INFANTRY,
     UnitType.CRUSADER_BLACK_KNIGHT: Faction.CRUSADERS,
-    UnitType.CRUSADER_CATAPULT: Faction.CRUSADERS,
+    UnitType.INFANTRY_CATAPULT: Faction.INFANTRY,
     UnitType.CRUSADER_CLERIC: Faction.CRUSADERS,
-    UnitType.CRUSADER_COMMANDER: Faction.CRUSADERS,
-    UnitType.CRUSADER_CROSSBOWMAN: Faction.CRUSADERS,
-    UnitType.CRUSADER_DEFENDER: Faction.CRUSADERS,
+    UnitType.MISC_COMMANDER: Faction.MISC,
+    UnitType.INFANTRY_CROSSBOWMAN: Faction.INFANTRY,
+    UnitType.CORE_DEFENDER: Faction.CORE,
     UnitType.CRUSADER_GOLD_KNIGHT: Faction.CRUSADERS,
     UnitType.CRUSADER_GUARDIAN_ANGEL: Faction.CRUSADERS,
     UnitType.CRUSADER_PALADIN: Faction.CRUSADERS,
-    UnitType.CRUSADER_PIKEMAN: Faction.CRUSADERS,
-    UnitType.CRUSADER_RED_KNIGHT: Faction.CRUSADERS,
-    UnitType.CRUSADER_SOLDIER: Faction.CRUSADERS,
+    UnitType.INFANTRY_PIKEMAN: Faction.INFANTRY,
+    UnitType.MISC_RED_KNIGHT: Faction.MISC,
+    UnitType.INFANTRY_SOLDIER: Faction.INFANTRY,
     UnitType.ORC_BERSERKER: Faction.ORC,
     UnitType.ORC_WARRIOR: Faction.ORC,
     UnitType.ORC_WARCHIEF: Faction.ORC,
@@ -193,9 +194,9 @@ _unit_to_faction = {
     UnitType.SKELETON_LICH: Faction.SKELETON,
     UnitType.WEREBEAR: Faction.MISC,
     UnitType.ZOMBIE_BASIC_ZOMBIE: Faction.ZOMBIES,
-    UnitType.ZOMBIE_BRUTE: Faction.ZOMBIES,
+    UnitType.MISC_BRUTE: Faction.MISC,
     UnitType.ZOMBIE_FIGHTER: Faction.ZOMBIES,
-    UnitType.ZOMBIE_GRABBER: Faction.ZOMBIES,
+    UnitType.MISC_GRABBER: Faction.MISC,
     UnitType.ZOMBIE_JUMPER: Faction.ZOMBIES,
     UnitType.ZOMBIE_SPITTER: Faction.ZOMBIES,
     UnitType.ZOMBIE_TANK: Faction.ZOMBIES,
@@ -211,19 +212,19 @@ def load_sprite_sheets():
         UnitType.CORE_LONGBOWMAN: "CoreLongbowman.png",
         UnitType.CORE_SWORDSMAN: "CoreSwordsman.png", 
         UnitType.CORE_WIZARD: "CoreWizard.png",
-        UnitType.CRUSADER_BANNER_BEARER: "CrusaderBannerBearer.png",
+        UnitType.INFANTRY_BANNER_BEARER: "InfantryBannerBearer.png",
         UnitType.CRUSADER_BLACK_KNIGHT: "CrusaderBlackKnight.png",
-        UnitType.CRUSADER_CATAPULT: "CrusaderCatapult.png",
+        UnitType.INFANTRY_CATAPULT: "InfantryCatapult.png",
         UnitType.CRUSADER_CLERIC: "CrusaderCleric.png",
-        UnitType.CRUSADER_COMMANDER: "CrusaderCommander.png",
-        UnitType.CRUSADER_CROSSBOWMAN: "CrusaderCrossbowman.png",
-        UnitType.CRUSADER_DEFENDER: "CrusaderDefender.png",
+        UnitType.MISC_COMMANDER: "MiscCommander.png",
+        UnitType.INFANTRY_CROSSBOWMAN: "InfantryCrossbowman.png",
+        UnitType.CORE_DEFENDER: "CoreDefender.png",
         UnitType.CRUSADER_GOLD_KNIGHT: "CrusaderGoldKnight.png",
         UnitType.CRUSADER_GUARDIAN_ANGEL: "CrusaderGuardianAngel.png",
         UnitType.CRUSADER_PALADIN: "CrusaderPaladin.png",
-        UnitType.CRUSADER_PIKEMAN: "CrusaderPikeman.png",
-        UnitType.CRUSADER_RED_KNIGHT: "CrusaderRedKnight.png",
-        UnitType.CRUSADER_SOLDIER: "CrusaderSoldier.png",
+        UnitType.INFANTRY_PIKEMAN: "InfantryPikeman.png",
+        UnitType.MISC_RED_KNIGHT: "MiscRedKnight.png",
+        UnitType.INFANTRY_SOLDIER: "InfantrySoldier.png",
         UnitType.ORC_BERSERKER: "OrcBerserker.png",
         UnitType.ORC_WARRIOR: "OrcWarrior.png",
         UnitType.ORC_WARCHIEF: "OrcWarchief.png",
@@ -245,9 +246,9 @@ def load_sprite_sheets():
         UnitType.SKELETON_LICH: "SkeletonLich.png",
         UnitType.WEREBEAR: "Werebear.png",
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombieNew.png",
-        UnitType.ZOMBIE_BRUTE: "ZombieBasicZombie.png",
+        UnitType.MISC_BRUTE: "ZombieBasicZombie.png",
         UnitType.ZOMBIE_FIGHTER: "ZombieFighter.png",
-        UnitType.ZOMBIE_GRABBER: "ZombieBasicZombie.png",
+        UnitType.MISC_GRABBER: "ZombieBasicZombie.png",
         UnitType.ZOMBIE_JUMPER: "ZombieJumper.png",
         UnitType.ZOMBIE_SPITTER: "ZombieSpitter.png",
         UnitType.ZOMBIE_TANK: "ZombieTank.png",
@@ -267,19 +268,19 @@ def load_sprite_sheets():
         UnitType.CORE_LONGBOWMAN: "CoreLongbowmanIcon.png",
         UnitType.CORE_SWORDSMAN: "CoreSwordsmanIcon.png",
         UnitType.CORE_WIZARD: "CoreWizardIcon.png",
-        UnitType.CRUSADER_BANNER_BEARER: "CrusaderBannerBearerIcon.png",
+        UnitType.INFANTRY_BANNER_BEARER: "InfantryBannerBearerIcon.png",
         UnitType.CRUSADER_BLACK_KNIGHT: "CrusaderBlackKnightIcon.png",
-        UnitType.CRUSADER_CATAPULT: "CrusaderCatapultIcon.png",
+        UnitType.INFANTRY_CATAPULT: "InfantryCatapultIcon.png",
         UnitType.CRUSADER_CLERIC: "CrusaderClericIcon.png",
-        UnitType.CRUSADER_COMMANDER: "CrusaderCommanderIcon.png",
-        UnitType.CRUSADER_CROSSBOWMAN: "CrusaderCrossbowmanIcon.png",
-        UnitType.CRUSADER_DEFENDER: "CrusaderDefenderIcon.png",
+        UnitType.MISC_COMMANDER: "MiscCommanderIcon.png",
+        UnitType.INFANTRY_CROSSBOWMAN: "InfantryCrossbowmanIcon.png",
+        UnitType.CORE_DEFENDER: "CoreDefenderIcon.png",
         UnitType.CRUSADER_GOLD_KNIGHT: "CrusaderGoldKnightIcon.png",
         UnitType.CRUSADER_GUARDIAN_ANGEL: "CrusaderGuardianAngelIcon.png",
         UnitType.CRUSADER_PALADIN: "CrusaderPaladinIcon.png",
-        UnitType.CRUSADER_PIKEMAN: "CrusaderPikemanIcon.png",
-        UnitType.CRUSADER_RED_KNIGHT: "CrusaderRedKnightIcon.png",
-        UnitType.CRUSADER_SOLDIER: "CrusaderSoldierIcon.png",
+        UnitType.INFANTRY_PIKEMAN: "InfantryPikemanIcon.png",
+        UnitType.MISC_RED_KNIGHT: "MiscRedKnightIcon.png",
+        UnitType.INFANTRY_SOLDIER: "InfantrySoldierIcon.png",
         UnitType.ORC_BERSERKER: "OrcBerserkerIcon.png",
         UnitType.ORC_WARRIOR: "OrcWarriorIcon.png",
         UnitType.ORC_WARCHIEF: "OrcWarchiefIcon.png",
@@ -300,9 +301,9 @@ def load_sprite_sheets():
         UnitType.SKELETON_SWORDSMAN_NECROMANCER: "SkeletonSwordsmanNecromancerIcon.png",
         UnitType.WEREBEAR: "WerebearIcon.png",
         UnitType.ZOMBIE_BASIC_ZOMBIE: "ZombieBasicZombieIcon.png",
-        UnitType.ZOMBIE_BRUTE: "ZombieBruteIcon.png",
+        UnitType.MISC_BRUTE: "MiscBruteIcon.png",
         UnitType.ZOMBIE_FIGHTER: "ZombieFighterIcon.png",
-        UnitType.ZOMBIE_GRABBER: "ZombieGrabberIcon.png",
+        UnitType.MISC_GRABBER: "MiscGrabberIcon.png",
         UnitType.ZOMBIE_JUMPER: "ZombieBasicZombieIcon.png",
         UnitType.ZOMBIE_SPITTER: "ZombieSpitterIcon.png",
         UnitType.ZOMBIE_TANK: "ZombieTankIcon.png",
@@ -414,19 +415,19 @@ def create_unit(
         UnitType.CORE_LONGBOWMAN: create_core_longbowman,
         UnitType.CORE_SWORDSMAN: create_core_swordsman,
         UnitType.CORE_WIZARD: create_core_wizard,
-        UnitType.CRUSADER_BANNER_BEARER: create_crusader_banner_bearer,
+        UnitType.INFANTRY_BANNER_BEARER: create_infantry_banner_bearer,
         UnitType.CRUSADER_BLACK_KNIGHT: create_crusader_black_knight,
-        UnitType.CRUSADER_CATAPULT: create_crusader_catapult,
+        UnitType.INFANTRY_CATAPULT: create_infantry_catapult,
         UnitType.CRUSADER_CLERIC: create_crusader_cleric,
-        UnitType.CRUSADER_COMMANDER: create_crusader_commander,
-        UnitType.CRUSADER_CROSSBOWMAN: create_crusader_crossbowman,
-        UnitType.CRUSADER_DEFENDER: create_crusader_defender,
+        UnitType.MISC_COMMANDER: create_misc_commander,
+        UnitType.INFANTRY_CROSSBOWMAN: create_infantry_crossbowman,
+        UnitType.CORE_DEFENDER: create_core_defender,
         UnitType.CRUSADER_GOLD_KNIGHT: create_crusader_gold_knight,
         UnitType.CRUSADER_GUARDIAN_ANGEL: create_crusader_guardian_angel,
         UnitType.CRUSADER_PALADIN: create_crusader_paladin,
-        UnitType.CRUSADER_PIKEMAN: create_crusader_pikeman,
-        UnitType.CRUSADER_RED_KNIGHT: create_crusader_red_knight,
-        UnitType.CRUSADER_SOLDIER: create_crusader_soldier,
+        UnitType.INFANTRY_PIKEMAN: create_infantry_pikeman,
+        UnitType.MISC_RED_KNIGHT: create_misc_red_knight,
+        UnitType.INFANTRY_SOLDIER: create_infantry_soldier,
         UnitType.ORC_BERSERKER: create_orc_berserker,
         UnitType.ORC_WARRIOR: create_orc_warrior,
         UnitType.ORC_WARCHIEF: create_orc_warchief,
@@ -448,9 +449,9 @@ def create_unit(
         UnitType.SKELETON_LICH: create_skeleton_lich,
         UnitType.WEREBEAR: create_werebear,
         UnitType.ZOMBIE_BASIC_ZOMBIE: create_zombie_basic_zombie,
-        UnitType.ZOMBIE_BRUTE: create_zombie_brute,
+        UnitType.MISC_BRUTE: create_misc_brute,
         UnitType.ZOMBIE_FIGHTER: create_zombie_fighter,
-        UnitType.ZOMBIE_GRABBER: create_zombie_grabber,
+        UnitType.MISC_GRABBER: create_misc_grabber,
         UnitType.ZOMBIE_JUMPER: create_zombie_jumper,
         UnitType.ZOMBIE_SPITTER: create_zombie_spitter,
         UnitType.ZOMBIE_TANK: create_zombie_tank,
@@ -2847,7 +2848,7 @@ def create_skeleton_lich(
     esper.add_component(entity, UnusableCorpse())
     return entity
 
-def create_crusader_banner_bearer(
+def create_infantry_banner_bearer(
         x: int,
         y: int,
         team: TeamType,
@@ -2858,23 +2859,23 @@ def create_crusader_banner_bearer(
     ) -> int:
     """Create a banner bearer entity with all necessary components."""
     # Calculate tier-specific health
-    banner_bearer_health = gc.CRUSADER_BANNER_BEARER_HP
+    infantry_banner_bearer_health = gc.INFANTRY_BANNER_BEARER_HP
     
     # Advanced tier: 50% more health
     if tier == UnitTier.ADVANCED:
-        banner_bearer_health = banner_bearer_health * 1.5
+        infantry_banner_bearer_health = infantry_banner_bearer_health * 1.5
     
     # Elite tier: 100% more health total
     elif tier == UnitTier.ELITE:
-        banner_bearer_health = banner_bearer_health * 2.0
+        infantry_banner_bearer_health = infantry_banner_bearer_health * 2.0
     
     entity = unit_base_entity(
         x=x,
         y=y,
         team=team,
-        unit_type=UnitType.CRUSADER_BANNER_BEARER,
-        movement_speed=gc.CRUSADER_BANNER_BEARER_AURA_MOVEMENT_SPEED,
-        health=banner_bearer_health,
+        unit_type=UnitType.INFANTRY_BANNER_BEARER,
+        movement_speed=gc.INFANTRY_BANNER_BEARER_AURA_MOVEMENT_SPEED,
+        health=infantry_banner_bearer_health,
         hitbox=Hitbox(
             width=16,
             height=36,
@@ -2901,7 +2902,7 @@ def create_crusader_banner_bearer(
         entity,
         Destination(
             target_strategy=targetting_strategy,
-            x_offset=gc.CRUSADER_BANNER_BEARER_AURA_RADIUS/3,
+            x_offset=gc.INFANTRY_BANNER_BEARER_AURA_RADIUS/3,
             use_team_x_offset=True,
         )
     )
@@ -2939,7 +2940,7 @@ def create_crusader_banner_bearer(
     aura_effects = [
         # All tiers get movement speed buff
         AppliesStatusEffect(
-            status_effect=CrusaderBannerBearerMovementSpeedBuff(time_remaining=gc.DEFAULT_AURA_PERIOD),
+            status_effect=InfantryBannerBearerMovementSpeedBuff(time_remaining=gc.DEFAULT_AURA_PERIOD),
             recipient=Recipient.TARGET
         )
     ]
@@ -2948,7 +2949,7 @@ def create_crusader_banner_bearer(
     if tier == UnitTier.ADVANCED or tier == UnitTier.ELITE:
         aura_effects.append(
             AppliesStatusEffect(
-                status_effect=CrusaderBannerBearerEmpowered(time_remaining=gc.DEFAULT_AURA_PERIOD),
+                status_effect=InfantryBannerBearerEmpowered(time_remaining=gc.DEFAULT_AURA_PERIOD),
                 recipient=Recipient.TARGET
             )
         )
@@ -2957,7 +2958,7 @@ def create_crusader_banner_bearer(
     if tier == UnitTier.ELITE:
         aura_effects.append(
             AppliesStatusEffect(
-                status_effect=CrusaderBannerBearerAbilitySpeedBuff(time_remaining=gc.DEFAULT_AURA_PERIOD),
+                status_effect=InfantryBannerBearerAbilitySpeedBuff(time_remaining=gc.DEFAULT_AURA_PERIOD),
                 recipient=Recipient.TARGET
             )
         )
@@ -2966,7 +2967,7 @@ def create_crusader_banner_bearer(
         entity,
         Aura(
             owner=entity,
-            radius=gc.CRUSADER_BANNER_BEARER_AURA_RADIUS,
+            radius=gc.INFANTRY_BANNER_BEARER_AURA_RADIUS,
             effects=aura_effects,
             period=gc.DEFAULT_AURA_PERIOD,
             owner_condition=Alive(),
@@ -2978,7 +2979,7 @@ def create_crusader_banner_bearer(
         )
     )
     esper.add_component(entity, SmoothMovement())
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_BANNER_BEARER, tier))
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.INFANTRY_BANNER_BEARER, tier))
     esper.add_component(entity, AnimationEffects({
         AnimationType.WALKING: {
             0: [PlaySound(SoundEffect("bannerbearer_drum_1.wav", volume=0.5, channel="drum"))],
@@ -3134,7 +3135,7 @@ def create_crusader_black_knight(
     esper.add_component(entity, HORSE_DEATH_SOUNDS)
     return entity
 
-def create_crusader_catapult(
+def create_infantry_catapult(
         x: int,
         y: int,
         team: TeamType,
@@ -3145,10 +3146,10 @@ def create_crusader_catapult(
     ) -> int:
     """Create a catapult entity with all necessary components."""
     # Calculate tier-specific values
-    catapult_health = gc.CRUSADER_CATAPULT_HP
-    catapult_damage = gc.CRUSADER_CATAPULT_DAMAGE
-    catapult_min_range = gc.CRUSADER_CATAPULT_MINIMUM_RANGE
-    catapult_max_range = gc.CRUSADER_CATAPULT_MAXIMUM_RANGE
+    catapult_health = gc.INFANTRY_CATAPULT_HP
+    catapult_damage = gc.INFANTRY_CATAPULT_DAMAGE
+    catapult_min_range = gc.INFANTRY_CATAPULT_MINIMUM_RANGE
+    catapult_max_range = gc.INFANTRY_CATAPULT_MAXIMUM_RANGE
     
     # Advanced tier (and Elite): 25% more health and damage
     if tier == UnitTier.ADVANCED or tier == UnitTier.ELITE:
@@ -3163,7 +3164,7 @@ def create_crusader_catapult(
         x=x,
         y=y,
         team=team,
-        unit_type=UnitType.CRUSADER_CATAPULT,
+        unit_type=UnitType.INFANTRY_CATAPULT,
         movement_speed=0,
         health=catapult_health,
         hitbox=Hitbox(
@@ -3209,7 +3210,7 @@ def create_crusader_catapult(
                     target_strategy=targetting_strategy,
                     trigger_conditions=[
                         HasTarget(unit_condition=Always()),
-                        Cooldown(gc.CRUSADER_CATAPULT_COOLDOWN),
+                        Cooldown(gc.INFANTRY_CATAPULT_COOLDOWN),
                     ],
                     persistent_conditions=[
                         HasTarget(unit_condition=All([Alive(), Grounded()]))
@@ -3225,21 +3226,21 @@ def create_crusader_catapult(
                                         effects=[
                                             Damages(damage=catapult_damage, recipient=Recipient.TARGET)
                                         ],
-                                        radius=10 * gc.CRUSADER_CATAPULT_AOE_SCALE,
+                                        radius=10 * gc.INFANTRY_CATAPULT_AOE_SCALE,
                                         unit_condition=All([Alive(), Grounded()]),
                                         location=Recipient.PARENT,
                                     ),
                                     CreatesVisual(
                                         recipient=Recipient.PARENT,
-                                        visual=Visual.CrusaderCatapultBallExplosion,
-                                        animation_duration=gc.CRUSADER_CATAPULT_AOE_DURATION,
+                                        visual=Visual.InfantryCatapultBallExplosion,
+                                        animation_duration=gc.INFANTRY_CATAPULT_AOE_DURATION,
                                         scale=gc.TINY_RPG_SCALE,
-                                        duration=gc.CRUSADER_CATAPULT_AOE_DURATION,
+                                        duration=gc.INFANTRY_CATAPULT_AOE_DURATION,
                                         layer=2,
                                     ),
                                     CreatesVisual(
                                         recipient=Recipient.PARENT,
-                                        visual=Visual.CrusaderCatapultBallRemains,
+                                        visual=Visual.InfantryCatapultBallRemains,
                                         scale=gc.TINY_RPG_SCALE,
                                         layer=0,
                                         animation_duration=1,
@@ -3248,7 +3249,7 @@ def create_crusader_catapult(
                                 ],
                                 max_range=catapult_max_range,
                                 min_range=catapult_min_range,
-                                visual=Visual.CrusaderCatapultBall,
+                                visual=Visual.InfantryCatapultBall,
                                 offset=(-50, -65),
                                 angular_velocity=3,
                             ),
@@ -3261,7 +3262,7 @@ def create_crusader_catapult(
             ]
         )
     )
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_CATAPULT, tier))
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.INFANTRY_CATAPULT, tier))
     esper.add_component(entity, OnDeathEffect(
         [
             PlaySound([
@@ -3432,7 +3433,7 @@ def create_crusader_cleric(
     esper.add_component(entity, FEMALE_DEATH_SOUNDS)
     return entity
 
-def create_crusader_commander(
+def create_misc_commander(
         x: int,
         y: int,
         team: TeamType,
@@ -3446,9 +3447,9 @@ def create_crusader_commander(
         x=x,
         y=y,
         team=team,
-        unit_type=UnitType.CRUSADER_COMMANDER,
-        movement_speed=gc.CRUSADER_COMMANDER_MOVEMENT_SPEED,
-        health=gc.CRUSADER_COMMANDER_HP,
+        unit_type=UnitType.MISC_COMMANDER,
+        movement_speed=gc.MISC_COMMANDER_MOVEMENT_SPEED,
+        health=gc.MISC_COMMANDER_HP,
         hitbox=Hitbox(
             width=16,
             height=36,
@@ -3467,7 +3468,7 @@ def create_crusader_commander(
     )
     esper.add_component(
         entity,
-        Destination(target_strategy=targetting_strategy, x_offset=gc.CRUSADER_COMMANDER_ATTACK_RANGE*2/3)
+        Destination(target_strategy=targetting_strategy, x_offset=gc.MISC_COMMANDER_ATTACK_RANGE*2/3)
     )
     esper.add_component(
         entity,
@@ -3482,7 +3483,7 @@ def create_crusader_commander(
                                 Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=gc.CRUSADER_COMMANDER_ATTACK_RANGE,
+                                    distance=gc.MISC_COMMANDER_ATTACK_RANGE,
                                     y_bias=5
                                 ),
                             ])
@@ -3493,14 +3494,14 @@ def create_crusader_commander(
                             unit_condition=All([
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=gc.CRUSADER_COMMANDER_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    distance=gc.MISC_COMMANDER_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
                                     y_bias=5
                                 ),
                             ])
                         )
                     ],
                     effects={4: [
-                        Damages(damage=gc.CRUSADER_COMMANDER_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                        Damages(damage=gc.MISC_COMMANDER_ATTACK_DAMAGE, recipient=Recipient.TARGET),
                         PlaySound([
                             (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
                         ]),
@@ -3513,10 +3514,10 @@ def create_crusader_commander(
         entity,
         Aura(
             owner=entity,
-            radius=gc.CRUSADER_COMMANDER_AURA_RADIUS,
+            radius=gc.MISC_COMMANDER_AURA_RADIUS,
             effects=[
                 AppliesStatusEffect(
-                    status_effect=CrusaderBannerBearerEmpowered(time_remaining=gc.DEFAULT_AURA_PERIOD),
+                    status_effect=InfantryBannerBearerEmpowered(time_remaining=gc.DEFAULT_AURA_PERIOD),
                     recipient=Recipient.TARGET
                 ),
             ],
@@ -3530,7 +3531,7 @@ def create_crusader_commander(
             color=(255, 215, 0),
         )
     )
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_COMMANDER, tier))
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.MISC_COMMANDER, tier))
     esper.add_component(entity, AnimationEffects({
         AnimationType.WALKING: {
             frame: [PlaySound(sound_effects=[
@@ -3542,7 +3543,7 @@ def create_crusader_commander(
     esper.add_component(entity, MALE_DEATH_SOUNDS)
     return entity
 
-def create_crusader_crossbowman(
+def create_infantry_crossbowman(
         x: int,
         y: int,
         team: TeamType,
@@ -3553,9 +3554,9 @@ def create_crusader_crossbowman(
     ) -> int:
     """Create a crossbowman entity with all necessary components."""
     # Calculate tier-specific values
-    crossbowman_damage = gc.CRUSADER_CROSSBOWMAN_ATTACK_DAMAGE
-    crossbowman_attack_duration = gc.CRUSADER_CROSSBOWMAN_ANIMATION_ATTACK_DURATION
-    crossbowman_reload_duration = gc.CRUSADER_CROSSBOWMAN_ANIMATION_RELOAD_DURATION
+    crossbowman_damage = gc.INFANTRY_CROSSBOWMAN_ATTACK_DAMAGE
+    crossbowman_attack_duration = gc.INFANTRY_CROSSBOWMAN_ANIMATION_ATTACK_DURATION
+    crossbowman_reload_duration = gc.INFANTRY_CROSSBOWMAN_ANIMATION_RELOAD_DURATION
     
     # Advanced tier (gains heavy armor)
     # Elite tier: 25% increased damage and attack speed
@@ -3568,9 +3569,9 @@ def create_crusader_crossbowman(
         x=x,
         y=y,
         team=team,
-        unit_type=UnitType.CRUSADER_CROSSBOWMAN,
-        movement_speed=gc.CRUSADER_CROSSBOWMAN_MOVEMENT_SPEED,
-        health=gc.CRUSADER_CROSSBOWMAN_HP,
+        unit_type=UnitType.INFANTRY_CROSSBOWMAN,
+        movement_speed=gc.INFANTRY_CROSSBOWMAN_MOVEMENT_SPEED,
+        health=gc.INFANTRY_CROSSBOWMAN_HP,
         hitbox=Hitbox(
             width=16,
             height=36,
@@ -3596,8 +3597,8 @@ def create_crusader_crossbowman(
     esper.add_component(
         entity,
         Ammo(
-            gc.CRUSADER_CROSSBOWMAN_STARTING_AMMO,
-            max=gc.CRUSADER_CROSSBOWMAN_MAX_AMMO
+            gc.INFANTRY_CROSSBOWMAN_STARTING_AMMO,
+            max=gc.INFANTRY_CROSSBOWMAN_MAX_AMMO
         )
     )
     # Add armor based on tier
@@ -3605,7 +3606,7 @@ def create_crusader_crossbowman(
         esper.add_component(entity, Armor(flat_reduction=gc.HEAVILY_ARMOR_FLAT_DAMAGE_REDUCTION, percent_reduction=gc.HEAVILY_ARMOR_PERCENT_DAMAGE_REDUCTION))
     else:
         esper.add_component(entity, Armor(flat_reduction=gc.ARMOR_FLAT_DAMAGE_REDUCTION, percent_reduction=gc.ARMOR_PERCENT_DAMAGE_REDUCTION))
-    esper.add_component(entity, RangeIndicator(ranges=[gc.CRUSADER_CROSSBOWMAN_ATTACK_RANGE]))
+    esper.add_component(entity, RangeIndicator(ranges=[gc.INFANTRY_CROSSBOWMAN_ATTACK_RANGE]))
     RELOADING = 0
     FIRING = 1
     esper.add_component(entity, Stance(stance=RELOADING))
@@ -3620,7 +3621,7 @@ def create_crusader_crossbowman(
                             Grounded(),
                             MaximumDistanceFromEntity(
                                 entity=entity,
-                                distance=gc.CRUSADER_CROSSBOWMAN_ATTACK_RANGE,
+                                distance=gc.INFANTRY_CROSSBOWMAN_ATTACK_RANGE,
                                 y_bias=None
                             )
                         ])
@@ -3636,7 +3637,7 @@ def create_crusader_crossbowman(
                             Grounded(),
                             MaximumDistanceFromEntity(
                                 entity=entity,
-                                distance=gc.CRUSADER_CROSSBOWMAN_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                distance=gc.INFANTRY_CROSSBOWMAN_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
                                 y_bias=None
                             )
                         ])
@@ -3645,7 +3646,7 @@ def create_crusader_crossbowman(
                 effects={
                     2: [
                         CreatesProjectile(
-                            projectile_speed=gc.CRUSADER_CROSSBOWMAN_PROJECTILE_SPEED,
+                            projectile_speed=gc.INFANTRY_CROSSBOWMAN_PROJECTILE_SPEED,
                             effects=[
                                 Damages(damage=crossbowman_damage, recipient=Recipient.TARGET),        
                             ],
@@ -3679,19 +3680,19 @@ def create_crusader_crossbowman(
     target_in_range = HasTarget(
         unit_condition=MaximumDistanceFromEntity(
             entity=entity,
-            distance=gc.CRUSADER_CROSSBOWMAN_ATTACK_RANGE*1.1,
+            distance=gc.INFANTRY_CROSSBOWMAN_ATTACK_RANGE*1.1,
             y_bias=None
         )
     )
     target_not_in_range = HasTarget(
         unit_condition=MinimumDistanceFromEntity(
             entity=entity,
-            distance=gc.CRUSADER_CROSSBOWMAN_ATTACK_RANGE*1.1,
+            distance=gc.INFANTRY_CROSSBOWMAN_ATTACK_RANGE*1.1,
             y_bias=None
         )
     )
-    ammo_full = AmmoEquals(gc.CRUSADER_CROSSBOWMAN_MAX_AMMO)
-    ammo_not_full = Not(AmmoEquals(gc.CRUSADER_CROSSBOWMAN_MAX_AMMO))
+    ammo_full = AmmoEquals(gc.INFANTRY_CROSSBOWMAN_MAX_AMMO)
+    ammo_not_full = Not(AmmoEquals(gc.INFANTRY_CROSSBOWMAN_MAX_AMMO))
     ammo_empty = AmmoEquals(0)
     ammo_not_empty = Not(AmmoEquals(0))
     esper.add_component(entity, InstantAbilities(
@@ -3760,7 +3761,7 @@ def create_crusader_crossbowman(
     ))
     esper.add_component(
         entity,
-        get_unit_sprite_sheet(UnitType.CRUSADER_CROSSBOWMAN, tier)
+        get_unit_sprite_sheet(UnitType.INFANTRY_CROSSBOWMAN, tier)
     )
     esper.add_component(entity, AnimationEffects({
         AnimationType.WALKING: {
@@ -3773,7 +3774,7 @@ def create_crusader_crossbowman(
     esper.add_component(entity, MALE_DEATH_SOUNDS)
     return entity
 
-def create_crusader_defender(
+def create_core_defender(
         x: int,
         y: int,
         team: TeamType,
@@ -3784,7 +3785,7 @@ def create_crusader_defender(
     ) -> int:
     """Create a defender entity with all necessary components."""
     # Calculate tier-specific values
-    defender_health = gc.CRUSADER_DEFENDER_HP
+    defender_health = gc.CORE_DEFENDER_HP
     
     # Advanced tier: 25% more health
     if tier == UnitTier.ADVANCED:
@@ -3803,8 +3804,8 @@ def create_crusader_defender(
         x=x,
         y=y,
         team=team,
-        unit_type=UnitType.CRUSADER_DEFENDER,
-        movement_speed=gc.CRUSADER_DEFENDER_MOVEMENT_SPEED,
+        unit_type=UnitType.CORE_DEFENDER,
+        movement_speed=gc.CORE_DEFENDER_MOVEMENT_SPEED,
         health=defender_health,
         hitbox=Hitbox(
             width=16,
@@ -3824,7 +3825,7 @@ def create_crusader_defender(
     )
     esper.add_component(
         entity,
-        Destination(target_strategy=targetting_strategy, x_offset=gc.CRUSADER_DEFENDER_ATTACK_RANGE*2/3)
+        Destination(target_strategy=targetting_strategy, x_offset=gc.CORE_DEFENDER_ATTACK_RANGE*2/3)
     )
     esper.add_component(entity, armor_component)
     esper.add_component(
@@ -3840,7 +3841,7 @@ def create_crusader_defender(
                                 Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=gc.CRUSADER_DEFENDER_ATTACK_RANGE,
+                                    distance=gc.CORE_DEFENDER_ATTACK_RANGE,
                                     y_bias=3
                                 ),
                             ])
@@ -3851,14 +3852,14 @@ def create_crusader_defender(
                             unit_condition=All([
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=gc.CRUSADER_DEFENDER_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    distance=gc.CORE_DEFENDER_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
                                     y_bias=3
                                 ),
                             ])
                         )
                     ],
                     effects={4: [
-                        Damages(damage=gc.CRUSADER_DEFENDER_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                        Damages(damage=gc.CORE_DEFENDER_ATTACK_DAMAGE, recipient=Recipient.TARGET),
                         PlaySound([
                             (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
                         ]),
@@ -3867,7 +3868,7 @@ def create_crusader_defender(
             ]
         )
     )
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_DEFENDER, tier))
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CORE_DEFENDER, tier))
     esper.add_component(entity, AnimationEffects({
         AnimationType.WALKING: {
             frame: [PlaySound(sound_effects=[
@@ -4263,7 +4264,7 @@ def create_crusader_paladin(
     esper.add_component(entity, HORSE_DEATH_SOUNDS)
     return entity
 
-def create_crusader_pikeman(
+def create_infantry_pikeman(
         x: int,
         y: int,
         team: TeamType,
@@ -4274,8 +4275,8 @@ def create_crusader_pikeman(
     ) -> int:
     """Create a pikeman entity with all necessary components."""
     # Calculate tier-specific values
-    pikeman_health = gc.CRUSADER_PIKEMAN_HP
-    pikeman_damage = gc.CRUSADER_PIKEMAN_ATTACK_DAMAGE
+    pikeman_health = gc.INFANTRY_PIKEMAN_HP
+    pikeman_damage = gc.INFANTRY_PIKEMAN_ATTACK_DAMAGE
     
     # Advanced tier: 30% increased damage, 15% increased health
     if tier == UnitTier.ADVANCED:
@@ -4291,8 +4292,8 @@ def create_crusader_pikeman(
         x=x,
         y=y,
         team=team,
-        unit_type=UnitType.CRUSADER_PIKEMAN,
-        movement_speed=gc.CRUSADER_PIKEMAN_MOVEMENT_SPEED,
+        unit_type=UnitType.INFANTRY_PIKEMAN,
+        movement_speed=gc.INFANTRY_PIKEMAN_MOVEMENT_SPEED,
         health=pikeman_health,
         hitbox=Hitbox(
             width=16,
@@ -4312,7 +4313,7 @@ def create_crusader_pikeman(
     )
     esper.add_component(
         entity,
-        Destination(target_strategy=targetting_strategy, x_offset=gc.CRUSADER_PIKEMAN_ATTACK_RANGE*4/5)
+        Destination(target_strategy=targetting_strategy, x_offset=gc.INFANTRY_PIKEMAN_ATTACK_RANGE*4/5)
     )
     PIKE_UP = 0
     PIKE_DOWN = 1
@@ -4330,7 +4331,7 @@ def create_crusader_pikeman(
                                 Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=gc.CRUSADER_PIKEMAN_ATTACK_RANGE,
+                                    distance=gc.INFANTRY_PIKEMAN_ATTACK_RANGE,
                                     y_bias=10,
                                 ),
                             ])
@@ -4353,7 +4354,7 @@ def create_crusader_pikeman(
                                 Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=gc.CRUSADER_PIKEMAN_ATTACK_RANGE,
+                                    distance=gc.INFANTRY_PIKEMAN_ATTACK_RANGE,
                                     y_bias=10
                                 ),
                             ])
@@ -4365,7 +4366,7 @@ def create_crusader_pikeman(
                             unit_condition=All([
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=gc.CRUSADER_PIKEMAN_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE*3,
+                                    distance=gc.INFANTRY_PIKEMAN_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE*3,
                                     y_bias=10
                                 ),
                             ])
@@ -4395,7 +4396,7 @@ def create_crusader_pikeman(
             ]
         )
     )
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_PIKEMAN, tier))
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.INFANTRY_PIKEMAN, tier))
     esper.add_component(entity, AnimationEffects({
         AnimationType.WALKING: {
             frame: [PlaySound(sound_effects=[
@@ -4407,7 +4408,7 @@ def create_crusader_pikeman(
     esper.add_component(entity, MALE_DEATH_SOUNDS)
     return entity
 
-def create_crusader_red_knight(
+def create_misc_red_knight(
         x: int,
         y: int,
         team: TeamType,
@@ -4421,9 +4422,9 @@ def create_crusader_red_knight(
         x=x,
         y=y,
         team=team,
-        unit_type=UnitType.CRUSADER_RED_KNIGHT,
-        movement_speed=gc.CRUSADER_RED_KNIGHT_MOVEMENT_SPEED,
-        health=gc.CRUSADER_RED_KNIGHT_HP,
+        unit_type=UnitType.MISC_RED_KNIGHT,
+        movement_speed=gc.MISC_RED_KNIGHT_MOVEMENT_SPEED,
+        health=gc.MISC_RED_KNIGHT_HP,
         hitbox=Hitbox(
             width=16,
             height=34,
@@ -4442,7 +4443,7 @@ def create_crusader_red_knight(
     )
     esper.add_component(
         entity,
-        Destination(target_strategy=targetting_strategy, x_offset=gc.CRUSADER_RED_KNIGHT_ATTACK_RANGE*2/3)
+        Destination(target_strategy=targetting_strategy, x_offset=gc.MISC_RED_KNIGHT_ATTACK_RANGE*2/3)
     )
     esper.add_component(
         entity,
@@ -4457,29 +4458,29 @@ def create_crusader_red_knight(
                                 Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=gc.CRUSADER_RED_KNIGHT_SKILL_RANGE,
+                                    distance=gc.MISC_RED_KNIGHT_SKILL_RANGE,
                                     y_bias=2
                                 ),
                             ])
                         ),
-                        Cooldown(duration=gc.CRUSADER_RED_KNIGHT_SKILL_COOLDOWN)
+                        Cooldown(duration=gc.MISC_RED_KNIGHT_SKILL_COOLDOWN)
                     ],
                     persistent_conditions=[],
                     effects={7: [
                         CreatesVisualAoE(
                             effects=[
-                                Damages(damage=gc.CRUSADER_RED_KNIGHT_SKILL_DAMAGE, recipient=Recipient.TARGET),
+                                Damages(damage=gc.MISC_RED_KNIGHT_SKILL_DAMAGE, recipient=Recipient.TARGET),
                                 AppliesStatusEffect(
                                     status_effect=DamageOverTime(
-                                        dps=gc.CRUSADER_RED_KNIGHT_SKILL_IGNITE_DAMAGE/gc.CRUSADER_RED_KNIGHT_SKILL_IGNITED_DURATION,
-                                        time_remaining=gc.CRUSADER_RED_KNIGHT_SKILL_IGNITED_DURATION
+                                        dps=gc.MISC_RED_KNIGHT_SKILL_IGNITE_DAMAGE/gc.MISC_RED_KNIGHT_SKILL_IGNITED_DURATION,
+                                        time_remaining=gc.MISC_RED_KNIGHT_SKILL_IGNITED_DURATION
                                     ),
                                     recipient=Recipient.TARGET
                                 )
                             ],
-                            visual=Visual.CrusaderRedKnightFireSlash,
-                            duration=gc.CRUSADER_RED_KNIGHT_SKILL_AOE_DURATION,
-                            scale=gc.CRUSADER_RED_KNIGHT_SKILL_AOE_SCALE,
+                            visual=Visual.MiscRedKnightFireSlash,
+                            duration=gc.MISC_RED_KNIGHT_SKILL_AOE_DURATION,
+                            scale=gc.MISC_RED_KNIGHT_SKILL_AOE_SCALE,
                             unit_condition=All([
                                 OnTeam(team=team.other()),
                                 Alive(),
@@ -4498,7 +4499,7 @@ def create_crusader_red_knight(
                                 Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=gc.CRUSADER_RED_KNIGHT_ATTACK_RANGE,
+                                    distance=gc.MISC_RED_KNIGHT_ATTACK_RANGE,
                                     y_bias=3
                                 )
                             ])
@@ -4509,7 +4510,7 @@ def create_crusader_red_knight(
                             unit_condition=All([
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=gc.CRUSADER_RED_KNIGHT_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    distance=gc.MISC_RED_KNIGHT_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
                                     y_bias=3
                                 )
                             ])
@@ -4517,13 +4518,13 @@ def create_crusader_red_knight(
                     ],
                     effects={
                         3: [
-                            Damages(damage=gc.CRUSADER_RED_KNIGHT_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                            Damages(damage=gc.MISC_RED_KNIGHT_ATTACK_DAMAGE, recipient=Recipient.TARGET),
                             PlaySound([
                                 (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
                             ]),
                         ],
                         7: [
-                            Damages(damage=gc.CRUSADER_RED_KNIGHT_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                            Damages(damage=gc.MISC_RED_KNIGHT_ATTACK_DAMAGE, recipient=Recipient.TARGET),
                             PlaySound([
                                 (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
                             ]),
@@ -4533,7 +4534,7 @@ def create_crusader_red_knight(
             ]
         )
     )
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_RED_KNIGHT, tier))
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.MISC_RED_KNIGHT, tier))
     esper.add_component(entity, AnimationEffects({
         AnimationType.WALKING: {
             frame: [PlaySound(sound_effects=[
@@ -4545,7 +4546,7 @@ def create_crusader_red_knight(
     esper.add_component(entity, MALE_DEATH_SOUNDS)
     return entity
 
-def create_crusader_soldier(
+def create_infantry_soldier(
         x: int,
         y: int,
         team: TeamType,
@@ -4556,10 +4557,10 @@ def create_crusader_soldier(
     ) -> int:
     """Create a soldier entity with all necessary components."""
     # Calculate tier-specific values
-    soldier_health = gc.CRUSADER_SOLDIER_HP
-    soldier_melee_damage = gc.CRUSADER_SOLDIER_MELEE_DAMAGE
+    soldier_health = gc.INFANTRY_SOLDIER_HP
+    soldier_melee_damage = gc.INFANTRY_SOLDIER_MELEE_DAMAGE
     soldier_ranged_damage = gc.CORE_ARCHER_ATTACK_DAMAGE
-    soldier_ranged_range = gc.CRUSADER_SOLDIER_RANGED_RANGE
+    soldier_ranged_range = gc.INFANTRY_SOLDIER_RANGED_RANGE
     
     # Advanced tier: 20% increased health, damage, and range (bow only)
     if tier == UnitTier.ADVANCED:
@@ -4581,8 +4582,8 @@ def create_crusader_soldier(
         x=x,
         y=y,
         team=team,
-        unit_type=UnitType.CRUSADER_SOLDIER,
-        movement_speed=gc.CRUSADER_SOLDIER_MOVEMENT_SPEED,
+        unit_type=UnitType.INFANTRY_SOLDIER,
+        movement_speed=gc.INFANTRY_SOLDIER_MOVEMENT_SPEED,
         health=soldier_health,
         hitbox=Hitbox(
             width=16,
@@ -4602,7 +4603,7 @@ def create_crusader_soldier(
     )
     esper.add_component(
         entity,
-        Destination(target_strategy=targetting_strategy, x_offset=gc.CRUSADER_SOLDIER_MELEE_RANGE*2/3)
+        Destination(target_strategy=targetting_strategy, x_offset=gc.INFANTRY_SOLDIER_MELEE_RANGE*2/3)
     )
     esper.add_component(
         entity,
@@ -4623,7 +4624,7 @@ def create_crusader_soldier(
                                 Alive(),
                                 MinimumDistanceFromEntity(
                                     entity=entity,
-                                    distance=gc.CRUSADER_SOLDIER_SWITCH_STANCE_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    distance=gc.INFANTRY_SOLDIER_SWITCH_STANCE_RANGE + gc.TARGETTING_GRACE_DISTANCE,
                                     y_bias=None,
                                 ),
                             ])
@@ -4648,7 +4649,7 @@ def create_crusader_soldier(
                                 Alive(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=gc.CRUSADER_SOLDIER_SWITCH_STANCE_RANGE,
+                                    distance=gc.INFANTRY_SOLDIER_SWITCH_STANCE_RANGE,
                                     y_bias=None,
                                 ),
                             ])
@@ -4673,7 +4674,7 @@ def create_crusader_soldier(
                                 Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=gc.CRUSADER_SOLDIER_MELEE_RANGE,
+                                    distance=gc.INFANTRY_SOLDIER_MELEE_RANGE,
                                     y_bias=3
                                 ),
                             ])
@@ -4684,7 +4685,7 @@ def create_crusader_soldier(
                             unit_condition=All([
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=gc.CRUSADER_SOLDIER_MELEE_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    distance=gc.INFANTRY_SOLDIER_MELEE_RANGE + gc.TARGETTING_GRACE_DISTANCE,
                                     y_bias=3
                                 ),
                             ])
@@ -4728,7 +4729,7 @@ def create_crusader_soldier(
                                 ),
                                 MinimumDistanceFromEntity(
                                     entity=entity,
-                                    distance=gc.CRUSADER_SOLDIER_SWITCH_STANCE_RANGE,
+                                    distance=gc.INFANTRY_SOLDIER_SWITCH_STANCE_RANGE,
                                     y_bias=None
                                 )
                             ])
@@ -4760,7 +4761,7 @@ def create_crusader_soldier(
             ]
         )
     )
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.CRUSADER_SOLDIER, tier))
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.INFANTRY_SOLDIER, tier))
     esper.add_component(entity, AnimationEffects({
         AnimationType.WALKING: {
             frame: [PlaySound(sound_effects=[
@@ -5669,7 +5670,7 @@ def create_zombie_fighter(
     esper.add_component(entity, ZOMBIE_DEATH_SOUNDS)
     return entity
 
-def create_zombie_brute(
+def create_misc_brute(
         x: int,
         y: int,
         team: TeamType,
@@ -5678,10 +5679,10 @@ def create_zombie_brute(
         play_spawning: bool = False,
         orientation: Optional[FacingDirection] = None,
     ) -> int:
-    """Create a brute zombie entity with all necessary components."""
+    """Create a misc brute entity with all necessary components."""
     # Calculate tier-specific values
-    brute_health = gc.ZOMBIE_BRUTE_HP
-    brute_damage = gc.ZOMBIE_BRUTE_ATTACK_DAMAGE
+    brute_health = gc.MISC_BRUTE_HP
+    brute_damage = gc.MISC_BRUTE_ATTACK_DAMAGE
     
     # Advanced tier: 25% increased health and damage
     if tier == UnitTier.ADVANCED:
@@ -5697,8 +5698,8 @@ def create_zombie_brute(
         x=x,
         y=y,
         team=team,
-        unit_type=UnitType.ZOMBIE_BRUTE,
-        movement_speed=gc.ZOMBIE_BRUTE_MOVEMENT_SPEED,
+        unit_type=UnitType.MISC_BRUTE,
+        movement_speed=gc.MISC_BRUTE_MOVEMENT_SPEED,
         health=brute_health,
         hitbox=Hitbox(width=24, height=48),
         corruption_powers=corruption_powers,
@@ -5715,7 +5716,7 @@ def create_zombie_brute(
     )
     esper.add_component(
         entity,
-        Destination(target_strategy=targetting_strategy, x_offset=gc.ZOMBIE_BRUTE_ATTACK_RANGE*2/3)
+        Destination(target_strategy=targetting_strategy, x_offset=gc.MISC_BRUTE_ATTACK_RANGE*2/3)
     )
     esper.add_component(entity, Ammo(1, 1))
     
@@ -5757,7 +5758,7 @@ def create_zombie_brute(
                                 Alive(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=gc.ZOMBIE_BRUTE_ZOMBIE_DROP_RANGE,
+                                    distance=gc.MISC_BRUTE_ZOMBIE_DROP_RANGE,
                                     y_bias=None,
                                 ),
                             ])
@@ -5793,7 +5794,7 @@ def create_zombie_brute(
                                 Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=gc.ZOMBIE_BRUTE_ATTACK_RANGE,
+                                    distance=gc.MISC_BRUTE_ATTACK_RANGE,
                                     y_bias=3
                                 ),
                             ])
@@ -5804,7 +5805,7 @@ def create_zombie_brute(
                             unit_condition=All([
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=gc.ZOMBIE_BRUTE_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    distance=gc.MISC_BRUTE_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
                                     y_bias=3
                                 ),
                             ])
@@ -5822,7 +5823,7 @@ def create_zombie_brute(
         )
     )
     esper.add_component(entity, UnusableCorpse())
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.ZOMBIE_BRUTE, tier))
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.MISC_BRUTE, tier))
     esper.add_component(entity, AnimationEffects({
         AnimationType.WALKING: {
             frame: [PlaySound(sound_effects=[
@@ -6257,7 +6258,7 @@ def create_zombie_tank(
     }))
     return entity
 
-def create_zombie_grabber(
+def create_misc_grabber(
         x: int,
         y: int,
         team: TeamType,
@@ -6268,8 +6269,8 @@ def create_zombie_grabber(
     ) -> int:
     """Create a grabber entity with all necessary components."""
     # Calculate tier-specific values
-    grabber_health = gc.ZOMBIE_GRABBER_HP
-    grab_damage = gc.ZOMBIE_GRABBER_GRAB_DAMAGE
+    grabber_health = gc.MISC_GRABBER_HP
+    grab_damage = gc.MISC_GRABBER_GRAB_DAMAGE
     melee_damage = gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_DAMAGE
     
     # Advanced tier: 50% increased health and damage
@@ -6288,8 +6289,8 @@ def create_zombie_grabber(
         x=x,
         y=y,
         team=team,
-        unit_type=UnitType.ZOMBIE_GRABBER,
-        movement_speed=gc.ZOMBIE_GRABBER_MOVEMENT_SPEED,
+        unit_type=UnitType.MISC_GRABBER,
+        movement_speed=gc.MISC_GRABBER_MOVEMENT_SPEED,
         health=grabber_health,
         hitbox=Hitbox(
             width=16,
@@ -6316,7 +6317,7 @@ def create_zombie_grabber(
         entity,
         Destination(target_strategy=targetting_strategy, x_offset=0)
     )
-    esper.add_component(entity, RangeIndicator(ranges=[gc.ZOMBIE_GRABBER_GRAB_MINIMUM_RANGE, gc.ZOMBIE_GRABBER_GRAB_MAXIMUM_RANGE]))
+    esper.add_component(entity, RangeIndicator(ranges=[gc.MISC_GRABBER_GRAB_MINIMUM_RANGE, gc.MISC_GRABBER_GRAB_MAXIMUM_RANGE]))
     esper.add_component(entity, UnusableCorpse())
     esper.add_component(
         entity,
@@ -6355,23 +6356,23 @@ def create_zombie_grabber(
                                 Grounded(), 
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=gc.ZOMBIE_GRABBER_GRAB_MAXIMUM_RANGE,
+                                    distance=gc.MISC_GRABBER_GRAB_MAXIMUM_RANGE,
                                     y_bias=None
                                 ),
                                 MinimumDistanceFromEntity(
                                     entity=entity,
-                                    distance=gc.ZOMBIE_GRABBER_GRAB_MINIMUM_RANGE,
+                                    distance=gc.MISC_GRABBER_GRAB_MINIMUM_RANGE,
                                     y_bias=None
                                 )
                             ])
                         ),
-                        Cooldown(duration=gc.ZOMBIE_GRABBER_GRAB_COOLDOWN),
+                        Cooldown(duration=gc.MISC_GRABBER_GRAB_COOLDOWN),
                     ],
                     persistent_conditions=[],
                     effects={
                         3: [
                             CreatesProjectile(
-                                projectile_speed=gc.ZOMBIE_GRABBER_GRAB_PROJECTILE_SPEED,
+                                projectile_speed=gc.MISC_GRABBER_GRAB_PROJECTILE_SPEED,
                                 effects=[
                                     RememberTarget(recipient=Recipient.OWNER),
                                     Damages(damage=grab_damage, recipient=Recipient.TARGET),
@@ -6382,7 +6383,7 @@ def create_zombie_grabber(
                                     AddsForcedMovement(
                                         recipient=Recipient.TARGET,
                                         destination=Recipient.OWNER,
-                                        speed=gc.ZOMBIE_GRABBER_GRAB_FORCED_MOVEMENT_SPEED,
+                                        speed=gc.MISC_GRABBER_GRAB_FORCED_MOVEMENT_SPEED,
                                         offset_x=30,
                                         offset_y=0,
                                     ),
@@ -6398,7 +6399,7 @@ def create_zombie_grabber(
                                 projectile_offset_x=5*gc.MINIFOLKS_SCALE,
                                 projectile_offset_y=0,
                                 unit_condition=All([OnTeam(team=team.other()), Alive(), Grounded()]),
-                                max_distance=gc.ZOMBIE_GRABBER_GRAB_MAXIMUM_RANGE,
+                                max_distance=gc.MISC_GRABBER_GRAB_MAXIMUM_RANGE,
                                 on_create=lambda projectile: (
                                     esper.add_component(entity, EntityMemory(projectile)),
                                     esper.add_component(entity, VisualLink(
@@ -6451,7 +6452,7 @@ def create_zombie_grabber(
         )
     )
     esper.add_component(entity, ZOMBIE_DEATH_SOUNDS)
-    esper.add_component(entity, get_unit_sprite_sheet(UnitType.ZOMBIE_GRABBER, tier))
+    esper.add_component(entity, get_unit_sprite_sheet(UnitType.MISC_GRABBER, tier))
     return entity
 
 def create_pirate_harpooner(
@@ -7070,18 +7071,18 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
                 AnimationType.IDLE: True,
             }
         )
-    if unit_type == UnitType.CRUSADER_BANNER_BEARER:
+    if unit_type == UnitType.INFANTRY_BANNER_BEARER:
         return SpriteSheet(
-            surface=sprite_sheets[UnitType.CRUSADER_BANNER_BEARER],
+            surface=sprite_sheets[UnitType.INFANTRY_BANNER_BEARER],
             frame_width=100,
             frame_height=100,
             scale=gc.TINY_RPG_SCALE,
             frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.DYING: 4},
             rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.DYING: 2},
             animation_durations={
-                AnimationType.IDLE: gc.CRUSADER_BANNER_BEARER_ANIMATION_IDLE_DURATION,
-                AnimationType.WALKING: gc.CRUSADER_BANNER_BEARER_ANIMATION_WALKING_DURATION,
-                AnimationType.DYING: gc.CRUSADER_BANNER_BEARER_ANIMATION_DYING_DURATION,
+                AnimationType.IDLE: gc.INFANTRY_BANNER_BEARER_ANIMATION_IDLE_DURATION,
+                AnimationType.WALKING: gc.INFANTRY_BANNER_BEARER_ANIMATION_WALKING_DURATION,
+                AnimationType.DYING: gc.INFANTRY_BANNER_BEARER_ANIMATION_DYING_DURATION,
             },
             synchronized_animations={
                 AnimationType.WALKING: True,
@@ -7108,9 +7109,9 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
             },
             sprite_center_offset=(0, 7),
         )
-    if unit_type == UnitType.CRUSADER_CATAPULT:
+    if unit_type == UnitType.INFANTRY_CATAPULT:
         return SpriteSheet(
-            surface=sprite_sheets[UnitType.CRUSADER_CATAPULT],
+            surface=sprite_sheets[UnitType.INFANTRY_CATAPULT],
             frame_width=128,
             frame_height=288//3,
             scale=gc.TINY_RPG_SCALE,
@@ -7123,10 +7124,10 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
                 AnimationType.ABILITY1: 0, 
                 AnimationType.DYING: 2},
             animation_durations={
-                AnimationType.IDLE: gc.CRUSADER_CATAPULT_ANIMATION_IDLE_DURATION,
-                AnimationType.WALKING: gc.CRUSADER_CATAPULT_ANIMATION_IDLE_DURATION,
-                AnimationType.ABILITY1: gc.CRUSADER_CATAPULT_ANIMATION_ATTACK_DURATION,
-                AnimationType.DYING: gc.CRUSADER_CATAPULT_ANIMATION_DYING_DURATION,
+                AnimationType.IDLE: gc.INFANTRY_CATAPULT_ANIMATION_IDLE_DURATION,
+                AnimationType.WALKING: gc.INFANTRY_CATAPULT_ANIMATION_IDLE_DURATION,
+                AnimationType.ABILITY1: gc.INFANTRY_CATAPULT_ANIMATION_ATTACK_DURATION,
+                AnimationType.DYING: gc.INFANTRY_CATAPULT_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(-10, -7),
             flip_frames=True,   
@@ -7158,30 +7159,30 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
                 AnimationType.IDLE: True,
             }
         )
-    if unit_type == UnitType.CRUSADER_COMMANDER:
+    if unit_type == UnitType.MISC_COMMANDER:
         return SpriteSheet(
-            surface=sprite_sheets[UnitType.CRUSADER_COMMANDER],
+            surface=sprite_sheets[UnitType.MISC_COMMANDER],
             frame_width=100,
             frame_height=100,
             scale=gc.TINY_RPG_SCALE,
             frames={AnimationType.IDLE: 6, AnimationType.WALKING: 8, AnimationType.ABILITY1: 7, AnimationType.DYING: 4},
             rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 4, AnimationType.DYING: 8},
             animation_durations={
-                AnimationType.IDLE: gc.CRUSADER_COMMANDER_ANIMATION_IDLE_DURATION,
-                AnimationType.WALKING: gc.CRUSADER_COMMANDER_ANIMATION_WALKING_DURATION,
-                AnimationType.ABILITY1: gc.CRUSADER_COMMANDER_ANIMATION_ATTACK_DURATION,
-                AnimationType.DYING: gc.CRUSADER_COMMANDER_ANIMATION_DYING_DURATION,
+                AnimationType.IDLE: gc.MISC_COMMANDER_ANIMATION_IDLE_DURATION,
+                AnimationType.WALKING: gc.MISC_COMMANDER_ANIMATION_WALKING_DURATION,
+                AnimationType.ABILITY1: gc.MISC_COMMANDER_ANIMATION_ATTACK_DURATION,
+                AnimationType.DYING: gc.MISC_COMMANDER_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(0, 2),
             synchronized_animations={
                 AnimationType.IDLE: True,
             }
         )
-    if unit_type == UnitType.CRUSADER_CROSSBOWMAN:
+    if unit_type == UnitType.INFANTRY_CROSSBOWMAN:
         # Elite tier: 25% faster attack, reload, and idle animations
-        attack_animation_duration = gc.CRUSADER_CROSSBOWMAN_ANIMATION_ATTACK_DURATION
-        reload_animation_duration = gc.CRUSADER_CROSSBOWMAN_ANIMATION_RELOAD_DURATION
-        idle_animation_duration = gc.CRUSADER_CROSSBOWMAN_ANIMATION_IDLE_DURATION
+        attack_animation_duration = gc.INFANTRY_CROSSBOWMAN_ANIMATION_ATTACK_DURATION
+        reload_animation_duration = gc.INFANTRY_CROSSBOWMAN_ANIMATION_RELOAD_DURATION
+        idle_animation_duration = gc.INFANTRY_CROSSBOWMAN_ANIMATION_IDLE_DURATION
         
         if tier == UnitTier.ELITE:
             attack_animation_duration = attack_animation_duration * 0.8  # 25% faster = 0.8x duration
@@ -7189,7 +7190,7 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
             idle_animation_duration = idle_animation_duration * 0.8  # 25% faster = 0.8x duration
         
         return SpriteSheet(
-            surface=sprite_sheets[UnitType.CRUSADER_CROSSBOWMAN],
+            surface=sprite_sheets[UnitType.INFANTRY_CROSSBOWMAN],
             frame_width=32,
             frame_height=32,
             scale=gc.MINIFOLKS_SCALE,
@@ -7197,34 +7198,34 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
             rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 3, AnimationType.ABILITY2: 7, AnimationType.DYING: 6},
             animation_durations={
                 AnimationType.IDLE: idle_animation_duration,
-                AnimationType.WALKING: gc.CRUSADER_CROSSBOWMAN_ANIMATION_WALKING_DURATION,
+                AnimationType.WALKING: gc.INFANTRY_CROSSBOWMAN_ANIMATION_WALKING_DURATION,
                 AnimationType.ABILITY1: attack_animation_duration,
                 AnimationType.ABILITY2: reload_animation_duration,
-                AnimationType.DYING: gc.CRUSADER_CROSSBOWMAN_ANIMATION_DYING_DURATION,
+                AnimationType.DYING: gc.INFANTRY_CROSSBOWMAN_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(0, -8),
             synchronized_animations={
                 AnimationType.IDLE: True,
             }
         )
-    if unit_type == UnitType.CRUSADER_DEFENDER:
+    if unit_type == UnitType.CORE_DEFENDER:
         # Advanced tier (and Elite): 35% increased ability speed
-        attack_animation_duration = gc.CRUSADER_DEFENDER_ANIMATION_ATTACK_DURATION
+        attack_animation_duration = gc.CORE_DEFENDER_ANIMATION_ATTACK_DURATION
         if tier == UnitTier.ADVANCED or tier == UnitTier.ELITE:
             attack_animation_duration = attack_animation_duration / 1.35  # 35% faster
         
         return SpriteSheet(
-            surface=sprite_sheets[UnitType.CRUSADER_DEFENDER],
+            surface=sprite_sheets[UnitType.CORE_DEFENDER],
             frame_width=32,
             frame_height=32,
             scale=gc.MINIFOLKS_SCALE,
             frames={AnimationType.IDLE: 4, AnimationType.WALKING: 6, AnimationType.ABILITY1: 6, AnimationType.DYING: 4},
             rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 3, AnimationType.DYING: 6},
             animation_durations={
-                AnimationType.IDLE: gc.CRUSADER_DEFENDER_ANIMATION_IDLE_DURATION,
-                AnimationType.WALKING: gc.CRUSADER_DEFENDER_ANIMATION_WALKING_DURATION,
+                AnimationType.IDLE: gc.CORE_DEFENDER_ANIMATION_IDLE_DURATION,
+                AnimationType.WALKING: gc.CORE_DEFENDER_ANIMATION_WALKING_DURATION,
                 AnimationType.ABILITY1: attack_animation_duration,
-                AnimationType.DYING: gc.CRUSADER_DEFENDER_ANIMATION_DYING_DURATION,
+                AnimationType.DYING: gc.CORE_DEFENDER_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(0, -8),
             synchronized_animations={
@@ -7298,62 +7299,62 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
                 AnimationType.IDLE: True,
             }
         )
-    if unit_type == UnitType.CRUSADER_PIKEMAN:
+    if unit_type == UnitType.INFANTRY_PIKEMAN:
         return SpriteSheet(
-            surface=sprite_sheets[UnitType.CRUSADER_PIKEMAN],
+            surface=sprite_sheets[UnitType.INFANTRY_PIKEMAN],
             frame_width=120,
             frame_height=120,
             scale=gc.TINY_RPG_SCALE,
             frames={AnimationType.IDLE: 6, AnimationType.WALKING: 7, AnimationType.ABILITY1: 2, AnimationType.ABILITY2: 6, AnimationType.ABILITY3: 2, AnimationType.DYING: 3},
             rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 2, AnimationType.ABILITY2: 3, AnimationType.ABILITY3: 4, AnimationType.DYING: 5},
             animation_durations={
-                AnimationType.IDLE: gc.CRUSADER_PIKEMAN_ANIMATION_IDLE_DURATION,
-                AnimationType.WALKING: gc.CRUSADER_PIKEMAN_ANIMATION_WALKING_DURATION,
-                AnimationType.ABILITY1: gc.CRUSADER_PIKEMAN_ANIMATION_STANCE_CHANGE_DURATION,
-                AnimationType.ABILITY2: gc.CRUSADER_PIKEMAN_ANIMATION_ATTACK_DURATION,
-                AnimationType.ABILITY3: gc.CRUSADER_PIKEMAN_ANIMATION_STANCE_CHANGE_DURATION,
-                AnimationType.DYING: gc.CRUSADER_PIKEMAN_ANIMATION_DYING_DURATION,
+                AnimationType.IDLE: gc.INFANTRY_PIKEMAN_ANIMATION_IDLE_DURATION,
+                AnimationType.WALKING: gc.INFANTRY_PIKEMAN_ANIMATION_WALKING_DURATION,
+                AnimationType.ABILITY1: gc.INFANTRY_PIKEMAN_ANIMATION_STANCE_CHANGE_DURATION,
+                AnimationType.ABILITY2: gc.INFANTRY_PIKEMAN_ANIMATION_ATTACK_DURATION,
+                AnimationType.ABILITY3: gc.INFANTRY_PIKEMAN_ANIMATION_STANCE_CHANGE_DURATION,
+                AnimationType.DYING: gc.INFANTRY_PIKEMAN_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(25, -30),
             synchronized_animations={
                 AnimationType.IDLE: True,
             }
         )
-    if unit_type == UnitType.CRUSADER_RED_KNIGHT:
+    if unit_type == UnitType.MISC_RED_KNIGHT:
         return SpriteSheet(
-            surface=sprite_sheets[UnitType.CRUSADER_RED_KNIGHT],
+            surface=sprite_sheets[UnitType.MISC_RED_KNIGHT],
             frame_width=100,
             frame_height=100,
             scale=gc.TINY_RPG_SCALE,
             frames={AnimationType.IDLE: 6, AnimationType.WALKING: 8, AnimationType.ABILITY1: 11, AnimationType.ABILITY2: 10, AnimationType.DYING: 4},
             rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 4, AnimationType.ABILITY2: 3, AnimationType.DYING: 7},
             animation_durations={
-                AnimationType.IDLE: gc.CRUSADER_RED_KNIGHT_ANIMATION_IDLE_DURATION,
-                AnimationType.WALKING: gc.CRUSADER_RED_KNIGHT_ANIMATION_WALKING_DURATION,
-                AnimationType.ABILITY1: gc.CRUSADER_RED_KNIGHT_ANIMATION_SKILL_DURATION,
-                AnimationType.ABILITY2: gc.CRUSADER_RED_KNIGHT_ANIMATION_ATTACK_DURATION,
-                AnimationType.DYING: gc.CRUSADER_RED_KNIGHT_ANIMATION_DYING_DURATION,
+                AnimationType.IDLE: gc.MISC_RED_KNIGHT_ANIMATION_IDLE_DURATION,
+                AnimationType.WALKING: gc.MISC_RED_KNIGHT_ANIMATION_WALKING_DURATION,
+                AnimationType.ABILITY1: gc.MISC_RED_KNIGHT_ANIMATION_SKILL_DURATION,
+                AnimationType.ABILITY2: gc.MISC_RED_KNIGHT_ANIMATION_ATTACK_DURATION,
+                AnimationType.DYING: gc.MISC_RED_KNIGHT_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(0, 1),
             synchronized_animations={
                 AnimationType.IDLE: True,
             }
         )
-    if unit_type == UnitType.CRUSADER_SOLDIER:
+    if unit_type == UnitType.INFANTRY_SOLDIER:
         return SpriteSheet(
-            surface=sprite_sheets[UnitType.CRUSADER_SOLDIER],
+            surface=sprite_sheets[UnitType.INFANTRY_SOLDIER],
             frame_width=100,
             frame_height=100,
             scale=gc.TINY_RPG_SCALE,
             frames={AnimationType.IDLE: 6, AnimationType.WALKING: 8, AnimationType.ABILITY1: 3, AnimationType.ABILITY2: 6, AnimationType.ABILITY3: 9, AnimationType.DYING: 4},
             rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 7, AnimationType.ABILITY2: 2, AnimationType.ABILITY3: 4, AnimationType.DYING: 6},
             animation_durations={
-                AnimationType.IDLE: gc.CRUSADER_SOLDIER_ANIMATION_IDLE_DURATION,
-                AnimationType.WALKING: gc.CRUSADER_SOLDIER_ANIMATION_WALKING_DURATION,
-                AnimationType.ABILITY1: gc.CRUSADER_SOLDIER_ANIMATION_SWITCH_STANCE_DURATION,
-                AnimationType.ABILITY2: gc.CRUSADER_SOLDIER_ANIMATION_MELEE_ATTACK_DURATION,
-                AnimationType.ABILITY3: gc.CRUSADER_SOLDIER_ANIMATION_RANGED_ATTACK_DURATION,
-                AnimationType.DYING: gc.CRUSADER_SOLDIER_ANIMATION_DYING_DURATION,
+                AnimationType.IDLE: gc.INFANTRY_SOLDIER_ANIMATION_IDLE_DURATION,
+                AnimationType.WALKING: gc.INFANTRY_SOLDIER_ANIMATION_WALKING_DURATION,
+                AnimationType.ABILITY1: gc.INFANTRY_SOLDIER_ANIMATION_SWITCH_STANCE_DURATION,
+                AnimationType.ABILITY2: gc.INFANTRY_SOLDIER_ANIMATION_MELEE_ATTACK_DURATION,
+                AnimationType.ABILITY3: gc.INFANTRY_SOLDIER_ANIMATION_RANGED_ATTACK_DURATION,
+                AnimationType.DYING: gc.INFANTRY_SOLDIER_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(0, 1),
             synchronized_animations={
@@ -7419,20 +7420,20 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
                 AnimationType.IDLE: True,
             }
         )
-    if unit_type == UnitType.ZOMBIE_BRUTE:
+    if unit_type == UnitType.MISC_BRUTE:
         return SpriteSheet(
-            surface=sprite_sheets[UnitType.ZOMBIE_BRUTE],
+            surface=sprite_sheets[UnitType.MISC_BRUTE],
             frame_width=100,
             frame_height=100,
             scale=1.5*gc.TINY_RPG_SCALE,
             frames={AnimationType.IDLE: 3, AnimationType.WALKING: 4, AnimationType.ABILITY1: 5, AnimationType.ABILITY2: 5, AnimationType.DYING: 6},
             rows={AnimationType.IDLE: 0, AnimationType.WALKING: 1, AnimationType.ABILITY1: 2, AnimationType.ABILITY2: 2, AnimationType.DYING: 3},
             animation_durations={
-                AnimationType.IDLE: gc.ZOMBIE_BRUTE_ANIMATION_IDLE_DURATION,
-                AnimationType.WALKING: gc.ZOMBIE_BRUTE_ANIMATION_WALKING_DURATION,
-                AnimationType.ABILITY1: gc.ZOMBIE_BRUTE_ANIMATION_ATTACK_DURATION,
-                AnimationType.ABILITY2: gc.ZOMBIE_BRUTE_ANIMATION_ATTACK_DURATION,
-                AnimationType.DYING: gc.ZOMBIE_BRUTE_ANIMATION_DYING_DURATION,
+                AnimationType.IDLE: gc.MISC_BRUTE_ANIMATION_IDLE_DURATION,
+                AnimationType.WALKING: gc.MISC_BRUTE_ANIMATION_WALKING_DURATION,
+                AnimationType.ABILITY1: gc.MISC_BRUTE_ANIMATION_ATTACK_DURATION,
+                AnimationType.ABILITY2: gc.MISC_BRUTE_ANIMATION_ATTACK_DURATION,
+                AnimationType.DYING: gc.MISC_BRUTE_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(2, 8),
             synchronized_animations={
@@ -7525,9 +7526,9 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
                 AnimationType.IDLE: True,
             }
         )
-    if unit_type == UnitType.ZOMBIE_GRABBER:
+    if unit_type == UnitType.MISC_GRABBER:
         return SpriteSheet(
-            surface=sprite_sheets[UnitType.ZOMBIE_GRABBER],
+            surface=sprite_sheets[UnitType.MISC_GRABBER],
             frame_width=100,
             frame_height=100,
             scale=gc.TINY_RPG_SCALE,
@@ -7548,12 +7549,12 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
                 AnimationType.DYING: 3,
             },
             animation_durations={
-                AnimationType.IDLE: gc.ZOMBIE_GRABBER_ANIMATION_IDLE_DURATION,
-                AnimationType.WALKING: gc.ZOMBIE_GRABBER_ANIMATION_WALKING_DURATION,
-                AnimationType.ABILITY1: gc.ZOMBIE_GRABBER_ANIMATION_CHANNELING_DURATION,
-                AnimationType.ABILITY2: gc.ZOMBIE_GRABBER_ANIMATION_GRAB_DURATION,
-                AnimationType.ABILITY3: gc.ZOMBIE_GRABBER_ANIMATION_ATTACK_DURATION,
-                AnimationType.DYING: gc.ZOMBIE_GRABBER_ANIMATION_DYING_DURATION,
+                AnimationType.IDLE: gc.MISC_GRABBER_ANIMATION_IDLE_DURATION,
+                AnimationType.WALKING: gc.MISC_GRABBER_ANIMATION_WALKING_DURATION,
+                AnimationType.ABILITY1: gc.MISC_GRABBER_ANIMATION_CHANNELING_DURATION,
+                AnimationType.ABILITY2: gc.MISC_GRABBER_ANIMATION_GRAB_DURATION,
+                AnimationType.ABILITY3: gc.MISC_GRABBER_ANIMATION_ATTACK_DURATION,
+                AnimationType.DYING: gc.MISC_GRABBER_ANIMATION_DYING_DURATION,
             },
             sprite_center_offset=(2, 8),
             synchronized_animations={

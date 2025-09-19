@@ -2,7 +2,7 @@
 
 from components.dying import Dying
 from components.health import Health
-from components.status_effect import CrusaderBannerBearerEmpowered, CrusaderBannerBearerMovementSpeedBuff, CrusaderBannerBearerAbilitySpeedBuff, Fleeing, Healing, DamageOverTime, StatusEffects, WontPursue, ZombieInfection, Invisible, Immobilized, ReviveProgress
+from components.status_effect import InfantryBannerBearerEmpowered, InfantryBannerBearerMovementSpeedBuff, InfantryBannerBearerAbilitySpeedBuff, Fleeing, Healing, DamageOverTime, StatusEffects, WontPursue, ZombieInfection, Invisible, Immobilized, ReviveProgress
 from components.unit_type import UnitTypeComponent
 from effects import Revive
 from game_constants import gc
@@ -26,13 +26,13 @@ class StatusEffectProcessor(esper.Processor):
                         health.current = max(health.current - damage, 0)
                         if health.current == 0:
                             esper.add_component(ent, Dying())
-                elif isinstance(status_effect, CrusaderBannerBearerEmpowered):
+                elif isinstance(status_effect, InfantryBannerBearerEmpowered):
                     # Handled in the damage effect
                     pass
-                elif isinstance(status_effect, CrusaderBannerBearerMovementSpeedBuff):
+                elif isinstance(status_effect, InfantryBannerBearerMovementSpeedBuff):
                     # Handled in the pursuing processor
                     pass
-                elif isinstance(status_effect, CrusaderBannerBearerAbilitySpeedBuff):
+                elif isinstance(status_effect, InfantryBannerBearerAbilitySpeedBuff):
                     # Handled in the animation processor
                     pass
                 elif isinstance(status_effect, Fleeing):

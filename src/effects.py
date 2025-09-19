@@ -33,7 +33,7 @@ from components.orientation import FacingDirection, Orientation
 from components.position import Position
 from components.projectile import Projectile
 from components.stance import Stance
-from components.status_effect import CrusaderBannerBearerEmpowered, Healing, StatusEffect, StatusEffects
+from components.status_effect import InfantryBannerBearerEmpowered, Healing, StatusEffect, StatusEffects
 from components.sprite_sheet import SpriteSheet
 from components.team import Team, TeamType
 from components.unit_tier import UnitTier
@@ -107,7 +107,7 @@ class Damages(Effect):
         if owner:
             status_effects = esper.component_for_entity(owner, StatusEffects)
             for status_effect in status_effects.active_effects():
-                if isinstance(status_effect, CrusaderBannerBearerEmpowered) and not applied_gold_knight_empowered:
+                if isinstance(status_effect, InfantryBannerBearerEmpowered) and not applied_gold_knight_empowered:
                     damage *= 1 + status_effect.damage_percentage
                     applied_gold_knight_empowered = True
             damage_component = esper.try_component(owner, IncreasedDamageComponent)

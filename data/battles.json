@@ -280,7 +280,7 @@
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           -309.10161513775483,
           98.0
@@ -807,21 +807,21 @@
     "id": "Defenders and Rangers",
     "enemies": [
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           350.0,
           100.0
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           350.0,
           0.0
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           350.0,
           -100.0
@@ -865,7 +865,7 @@
         ]
       ],
       [
-        "CRUSADER_SOLDIER",
+        "INFANTRY_SOLDIER",
         [
           -166.30484541326405,
           8.0
@@ -888,14 +888,14 @@
         ]
       ],
       [
-        "CRUSADER_PIKEMAN",
+        "INFANTRY_PIKEMAN",
         [
           -201.30484541326405,
           25.0
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           -152.88825780032312,
           13.630691076828498
@@ -914,21 +914,21 @@
     "id": "Pikemen and Healers",
     "enemies": [
       [
-        "CRUSADER_PIKEMAN",
+        "INFANTRY_PIKEMAN",
         [
           325.0,
           100.0
         ]
       ],
       [
-        "CRUSADER_PIKEMAN",
+        "INFANTRY_PIKEMAN",
         [
           325.0,
           0.0
         ]
       ],
       [
-        "CRUSADER_PIKEMAN",
+        "INFANTRY_PIKEMAN",
         [
           325.0,
           -100.0
@@ -1051,7 +1051,7 @@
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           -555.6641993581616,
           27.0
@@ -1082,28 +1082,28 @@
     "id": "Defeat the Banner Bearer",
     "enemies": [
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           325.0,
           0.0
         ]
       ],
       [
-        "CRUSADER_BANNER_BEARER",
+        "INFANTRY_BANNER_BEARER",
         [
           375.0,
           0.0
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           322.4138624765328,
           -33.0
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           324.4138624765328,
           34.0
@@ -1119,7 +1119,7 @@
     "tip_voice_filename": null,
     "best_solution": [
       [
-        "CRUSADER_CATAPULT",
+        "INFANTRY_CATAPULT",
         [
           -583.5861375234672,
           28.0
@@ -1128,7 +1128,7 @@
     ],
     "best_corrupted_solution": [
       [
-        "CRUSADER_CATAPULT",
+        "INFANTRY_CATAPULT",
         [
           -583.5861375234672,
           28.0
@@ -1226,7 +1226,7 @@
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           -43.26073710134551,
           327.5921829126047
@@ -1250,35 +1250,35 @@
     "id": "Shield and Spear",
     "enemies": [
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           325.0,
           100.0
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           325.0,
           0.0
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           325.0,
           -100.0
         ]
       ],
       [
-        "CRUSADER_PIKEMAN",
+        "INFANTRY_PIKEMAN",
         [
           375.0,
           50.0
         ]
       ],
       [
-        "CRUSADER_PIKEMAN",
+        "INFANTRY_PIKEMAN",
         [
           375.0,
           -50.0
@@ -1359,7 +1359,7 @@
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           -94.12516844081438,
           -66.0
@@ -1457,14 +1457,14 @@
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           50.0,
           -325.0
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           50.0,
           -275.0
@@ -1501,7 +1501,7 @@
         ]
       ],
       [
-        "CRUSADER_SOLDIER",
+        "INFANTRY_SOLDIER",
         [
           -250.4845223857119,
           557.0
@@ -1664,7 +1664,7 @@
         ]
       ],
       [
-        "CRUSADER_COMMANDER",
+        "MISC_COMMANDER",
         [
           -86.76581449591504,
           -6.0
@@ -1685,14 +1685,14 @@
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           -52.76581449591504,
           -5.0
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           -61.11283116659615,
           18.533536030917666
@@ -1711,14 +1711,14 @@
     "id": "Strong Leadership",
     "enemies": [
       [
-        "CRUSADER_BANNER_BEARER",
+        "INFANTRY_BANNER_BEARER",
         [
           325.0,
           -50.0
         ]
       ],
       [
-        "CRUSADER_BANNER_BEARER",
+        "INFANTRY_BANNER_BEARER",
         [
           325.0,
           50.0
@@ -1760,7 +1760,7 @@
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           225.0,
           0.0
@@ -1783,14 +1783,14 @@
         ]
       ],
       [
-        "CRUSADER_SOLDIER",
+        "INFANTRY_SOLDIER",
         [
           -25.0,
           294.0
         ]
       ],
       [
-        "CRUSADER_PIKEMAN",
+        "INFANTRY_PIKEMAN",
         [
           -273.226783578566,
           12.0
@@ -1799,7 +1799,7 @@
     ],
     "best_corrupted_solution": [
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           -101.94549146836471,
           -8.0
@@ -1862,21 +1862,21 @@
     "tip_voice_filename": null,
     "best_solution": [
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           -26.304845413264047,
           31.0
         ]
       ],
       [
-        "CRUSADER_PIKEMAN",
+        "INFANTRY_PIKEMAN",
         [
           -76.30484541326405,
           49.0
         ]
       ],
       [
-        "CRUSADER_PIKEMAN",
+        "INFANTRY_PIKEMAN",
         [
           -75.47169972046322,
           73.95907017671357
@@ -1892,7 +1892,7 @@
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           -37.94549146836471,
           -7.0
@@ -1906,7 +1906,7 @@
         ]
       ],
       [
-        "CRUSADER_PIKEMAN",
+        "INFANTRY_PIKEMAN",
         [
           -92.94549146836471,
           2.0
@@ -2084,14 +2084,14 @@
     ],
     "allies": [
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           -235.0,
           11.0
         ]
       ],
       [
-        "CRUSADER_PIKEMAN",
+        "INFANTRY_PIKEMAN",
         [
           -259.0,
           10.0
@@ -2437,7 +2437,7 @@
     ],
     "best_corrupted_solution": [
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           -174.74226119285595,
           -61.0
@@ -2544,7 +2544,7 @@
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           -25.0,
           -231.9999999999999
@@ -2714,7 +2714,7 @@
     ],
     "best_corrupted_solution": [
       [
-        "CRUSADER_CATAPULT",
+        "INFANTRY_CATAPULT",
         [
           -142.5625842204072,
           382.0
@@ -2733,14 +2733,14 @@
     "id": "Guardian Angels",
     "enemies": [
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           25.0,
           -384.0
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           25.0,
           375.0
@@ -2770,14 +2770,14 @@
     "tip_voice_filename": null,
     "best_solution": [
       [
-        "CRUSADER_PIKEMAN",
+        "INFANTRY_PIKEMAN",
         [
           -190.4845223857119,
           -384.0
         ]
       ],
       [
-        "CRUSADER_PIKEMAN",
+        "INFANTRY_PIKEMAN",
         [
           -186.352688359455,
           -408.63020521883755
@@ -2786,7 +2786,7 @@
     ],
     "best_corrupted_solution": [
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           -28.484522385711898,
           -381.0
@@ -2817,28 +2817,28 @@
     "id": "Soldiers",
     "enemies": [
       [
-        "CRUSADER_SOLDIER",
+        "INFANTRY_SOLDIER",
         [
           525.0,
           -25.0
         ]
       ],
       [
-        "CRUSADER_SOLDIER",
+        "INFANTRY_SOLDIER",
         [
           525.0,
           -75.0
         ]
       ],
       [
-        "CRUSADER_SOLDIER",
+        "INFANTRY_SOLDIER",
         [
           525.0,
           25.0
         ]
       ],
       [
-        "CRUSADER_SOLDIER",
+        "INFANTRY_SOLDIER",
         [
           525.0,
           75.0
@@ -2861,7 +2861,7 @@
         ]
       ],
       [
-        "CRUSADER_SOLDIER",
+        "INFANTRY_SOLDIER",
         [
           -249.5414896768798,
           82.05619044201558
@@ -2870,7 +2870,7 @@
     ],
     "best_corrupted_solution": [
       [
-        "CRUSADER_SOLDIER",
+        "INFANTRY_SOLDIER",
         [
           -25.0,
           -4.0
@@ -2950,35 +2950,35 @@
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           180.23418550408496,
           -337.0
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           124.23418550408496,
           -65.0
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           626.234185504085,
           -61.0
         ]
       ],
       [
-        "CRUSADER_SOLDIER",
+        "INFANTRY_SOLDIER",
         [
           254.23418550408496,
           19.0
         ]
       ],
       [
-        "CRUSADER_SOLDIER",
+        "INFANTRY_SOLDIER",
         [
           183.23418550408496,
           -186.0
@@ -3001,70 +3001,70 @@
     "tip_voice_filename": null,
     "best_solution": [
       [
-        "CRUSADER_COMMANDER",
+        "MISC_COMMANDER",
         [
           -662.765814495915,
           383.0
         ]
       ],
       [
-        "CRUSADER_SOLDIER",
+        "INFANTRY_SOLDIER",
         [
           -658.765814495915,
           324.0
         ]
       ],
       [
-        "CRUSADER_SOLDIER",
+        "INFANTRY_SOLDIER",
         [
           -641.765814495915,
           344.0
         ]
       ],
       [
-        "CRUSADER_SOLDIER",
+        "INFANTRY_SOLDIER",
         [
           -624.6205805262871,
           362.1602409921861
         ]
       ],
       [
-        "CRUSADER_COMMANDER",
+        "MISC_COMMANDER",
         [
           -601.765814495915,
           252.0
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           -551.765814495915,
           298.0
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           -631.765814495915,
           224.0
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           -523.765814495915,
           396.0
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           -453.76581449591504,
           353.0
         ]
       ],
       [
-        "CRUSADER_CATAPULT",
+        "INFANTRY_CATAPULT",
         [
           -582.765814495915,
           185.0
@@ -3080,63 +3080,63 @@
     ],
     "best_corrupted_solution": [
       [
-        "CRUSADER_SOLDIER",
+        "INFANTRY_SOLDIER",
         [
           -658.765814495915,
           324.0
         ]
       ],
       [
-        "CRUSADER_SOLDIER",
+        "INFANTRY_SOLDIER",
         [
           -641.765814495915,
           344.0
         ]
       ],
       [
-        "CRUSADER_SOLDIER",
+        "INFANTRY_SOLDIER",
         [
           -624.6205805262871,
           362.1602409921861
         ]
       ],
       [
-        "CRUSADER_COMMANDER",
+        "MISC_COMMANDER",
         [
           -601.765814495915,
           252.0
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           -551.765814495915,
           298.0
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           -631.765814495915,
           224.0
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           -523.765814495915,
           396.0
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           -453.76581449591504,
           353.0
         ]
       ],
       [
-        "CRUSADER_CATAPULT",
+        "INFANTRY_CATAPULT",
         [
           -582.765814495915,
           185.0
@@ -3181,28 +3181,28 @@
     "id": "Catapult",
     "enemies": [
       [
-        "CRUSADER_CATAPULT",
+        "INFANTRY_CATAPULT",
         [
           525.0,
           0.0
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           150.0,
           0.0
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           200.0,
           -75.0
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           200.0,
           75.0
@@ -3255,35 +3255,35 @@
     ],
     "best_corrupted_solution": [
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           -28.765814495915038,
           -83.0
         ]
       ],
       [
-        "CRUSADER_CATAPULT",
+        "INFANTRY_CATAPULT",
         [
           -215.76581449591504,
           103.0
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           -47.76581449591504,
           -230.0
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           -174.76581449591504,
           -233.0
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           -106.76581449591504,
           -351.0
@@ -3307,49 +3307,49 @@
     "id": "More Catapults",
     "enemies": [
       [
-        "CRUSADER_CATAPULT",
+        "INFANTRY_CATAPULT",
         [
           625.0,
           0.0
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           75.0,
           125.0
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           75.0,
           -125.0
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           200.0,
           -375.0
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           200.0,
           375.0
         ]
       ],
       [
-        "CRUSADER_CATAPULT",
+        "INFANTRY_CATAPULT",
         [
           125.0,
           0.0
         ]
       ],
       [
-        "CRUSADER_CATAPULT",
+        "INFANTRY_CATAPULT",
         [
           375.0,
           0.0
@@ -3379,7 +3379,7 @@
         ]
       ],
       [
-        "CRUSADER_CATAPULT",
+        "INFANTRY_CATAPULT",
         [
           -135.76581449591504,
           -15.0
@@ -3416,7 +3416,7 @@
         ]
       ],
       [
-        "CRUSADER_CATAPULT",
+        "INFANTRY_CATAPULT",
         [
           -25.0,
           -324.0
@@ -3449,77 +3449,77 @@
     "id": "Phalanx",
     "enemies": [
       [
-        "CRUSADER_SOLDIER",
+        "INFANTRY_SOLDIER",
         [
           100.0,
           125.0
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           25.0,
           0.0
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           25.0,
           -100.0
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           25.0,
           100.0
         ]
       ],
       [
-        "CRUSADER_PIKEMAN",
+        "INFANTRY_PIKEMAN",
         [
           50.0,
           -75.0
         ]
       ],
       [
-        "CRUSADER_PIKEMAN",
+        "INFANTRY_PIKEMAN",
         [
           50.0,
           -25.0
         ]
       ],
       [
-        "CRUSADER_PIKEMAN",
+        "INFANTRY_PIKEMAN",
         [
           50.0,
           25.0
         ]
       ],
       [
-        "CRUSADER_PIKEMAN",
+        "INFANTRY_PIKEMAN",
         [
           50.0,
           75.0
         ]
       ],
       [
-        "CRUSADER_SOLDIER",
+        "INFANTRY_SOLDIER",
         [
           100.0,
           -125.0
         ]
       ],
       [
-        "CRUSADER_SOLDIER",
+        "INFANTRY_SOLDIER",
         [
           100.0,
           175.0
         ]
       ],
       [
-        "CRUSADER_SOLDIER",
+        "INFANTRY_SOLDIER",
         [
           100.0,
           -175.0
@@ -3654,21 +3654,21 @@
         ]
       ],
       [
-        "CRUSADER_SOLDIER",
+        "INFANTRY_SOLDIER",
         [
           -401.22678357856967,
           -241.0
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           -371.22678357856967,
           103.0
         ]
       ],
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           -523.2267835785697,
           159.0
@@ -3677,14 +3677,14 @@
     ],
     "best_corrupted_solution": [
       [
-        "CRUSADER_DEFENDER",
+        "CORE_DEFENDER",
         [
           -28.226783578569666,
           -371.0
         ]
       ],
       [
-        "CRUSADER_BANNER_BEARER",
+        "INFANTRY_BANNER_BEARER",
         [
           -162.22678357856967,
           515.0

@@ -16,11 +16,11 @@ class Visual(Enum):
     CoreVeteranAttack = auto()
     LongbowArrow = auto()
     CrusaderBlackKnightFear = auto()
-    CrusaderCatapultBall = auto()
-    CrusaderCatapultBallExplosion = auto()
-    CrusaderCatapultBallRemains = auto()
+    InfantryCatapultBall = auto()
+    InfantryCatapultBallExplosion = auto()
+    InfantryCatapultBallRemains = auto()
     CrusaderGoldKnightAttack = auto()
-    CrusaderRedKnightFireSlash = auto()
+    MiscRedKnightFireSlash = auto()
     Explosion = auto()
     Fear = auto()
     Fireball = auto()
@@ -45,11 +45,11 @@ def load_visual_sheets():
         Visual.CoreVeteranAttack: os.path.join("assets", "effects", "CoreVeteranAttack.png"),
         Visual.LongbowArrow: os.path.join("assets", "effects", "LongbowArrow.png"),
         Visual.CrusaderBlackKnightFear: os.path.join("assets", "effects", "Black_Knight_Fear.png"),
-        Visual.CrusaderCatapultBall: os.path.join("assets", "effects", "CrusaderCatapultBall.png"),
-        Visual.CrusaderCatapultBallExplosion: os.path.join("assets", "effects", "CrusaderCatapultBall.png"),
-        Visual.CrusaderCatapultBallRemains: os.path.join("assets", "effects", "CrusaderCatapultBall.png"),
+        Visual.InfantryCatapultBall: os.path.join("assets", "effects", "InfantryCatapultBall.png"),
+        Visual.InfantryCatapultBallExplosion: os.path.join("assets", "effects", "InfantryCatapultBall.png"),
+        Visual.InfantryCatapultBallRemains: os.path.join("assets", "effects", "InfantryCatapultBall.png"),
         Visual.CrusaderGoldKnightAttack: os.path.join("assets", "effects", "CrusaderGoldKnightAttackEffect.png"),
-        Visual.CrusaderRedKnightFireSlash: os.path.join("assets", "effects", "Knight-Attack03_Effect.png"),
+        Visual.MiscRedKnightFireSlash: os.path.join("assets", "effects", "Knight-Attack03_Effect.png"),
         Visual.Explosion: os.path.join("assets", "effects", "explosiontip1_32x32.png"),
         Visual.Fear: os.path.join("assets", "effects", "Fear.png"),
         Visual.Fireball: os.path.join("assets", "effects", "Wizard.png"),
@@ -152,7 +152,7 @@ def create_visual_spritesheet(
             start_frames={AnimationType.IDLE: frames[0]},
             layer=layer
         )
-    elif visual == Visual.CrusaderCatapultBall:
+    elif visual == Visual.InfantryCatapultBall:
         if duration is None:
             duration = 0.2
         if scale is None:
@@ -171,7 +171,7 @@ def create_visual_spritesheet(
             start_frames={AnimationType.IDLE: frames[0]},
             layer=layer
         )
-    elif visual == Visual.CrusaderCatapultBallExplosion:
+    elif visual == Visual.InfantryCatapultBallExplosion:
         if duration is None:
             duration = 0.5
         if scale is None:
@@ -190,7 +190,7 @@ def create_visual_spritesheet(
             start_frames={AnimationType.IDLE: frames[0]},
             layer=layer
         )
-    elif visual == Visual.CrusaderCatapultBallRemains:
+    elif visual == Visual.InfantryCatapultBallRemains:
         if duration is None:
             duration = 0.5
         if scale is None:
@@ -228,13 +228,13 @@ def create_visual_spritesheet(
             start_frames={AnimationType.IDLE: frames[0]},
             layer=layer
         )
-    elif visual == Visual.CrusaderRedKnightFireSlash:
+    elif visual == Visual.MiscRedKnightFireSlash:
         if duration is None:
             duration = 0.2
         if scale is None:
             scale = gc.TINY_RPG_SCALE
         if frames is not None:
-            raise NotImplementedError("CrusaderRedKnightFireSlash visual cannot specify frames")
+            raise NotImplementedError("MiscRedKnightFireSlash visual cannot specify frames")
         return SpriteSheet(
             surface=visual_sheets[visual],
             frame_width=100,

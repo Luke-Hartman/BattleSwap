@@ -17,19 +17,19 @@ class StatusEffect:
     """The time remaining for the status effect."""
 
 @dataclass
-class CrusaderBannerBearerEmpowered(StatusEffect):
+class InfantryBannerBearerEmpowered(StatusEffect):
     """Status effect buffs damage."""
 
-    damage_percentage = gc.CRUSADER_BANNER_BEARER_AURA_DAMAGE_PERCENTAGE
+    damage_percentage = gc.INFANTRY_BANNER_BEARER_AURA_DAMAGE_PERCENTAGE
 
 @dataclass
-class CrusaderBannerBearerMovementSpeedBuff(StatusEffect):
+class InfantryBannerBearerMovementSpeedBuff(StatusEffect):
     """Status effect that sets movement speed."""
 
-    movement_speed = gc.CRUSADER_BANNER_BEARER_AURA_MOVEMENT_SPEED
+    movement_speed = gc.INFANTRY_BANNER_BEARER_AURA_MOVEMENT_SPEED
 
 @dataclass
-class CrusaderBannerBearerAbilitySpeedBuff(StatusEffect):
+class InfantryBannerBearerAbilitySpeedBuff(StatusEffect):
     """Status effect that increases ability speed."""
 
     ability_speed_increase_percent: float = 25.0
@@ -117,9 +117,9 @@ class StatusEffects:
     def __init__(self):
         self._status_by_type = {
             DamageOverTime: [],
-            CrusaderBannerBearerEmpowered: [],
-            CrusaderBannerBearerMovementSpeedBuff: [],
-            CrusaderBannerBearerAbilitySpeedBuff: [],
+            InfantryBannerBearerEmpowered: [],
+            InfantryBannerBearerMovementSpeedBuff: [],
+            InfantryBannerBearerAbilitySpeedBuff: [],
             Fleeing: [],
             Healing: [],
             ZombieInfection: [],
@@ -151,12 +151,12 @@ class StatusEffects:
         if self._status_by_type[DamageOverTime]:
             strongest_ignited = max(self._status_by_type[DamageOverTime], key=lambda e: e.dps)
             active_effects.append(strongest_ignited)
-        if self._status_by_type[CrusaderBannerBearerEmpowered]:
-            active_effects.append(self._status_by_type[CrusaderBannerBearerEmpowered][0])
-        if self._status_by_type[CrusaderBannerBearerMovementSpeedBuff]:
-            active_effects.append(self._status_by_type[CrusaderBannerBearerMovementSpeedBuff][0])
-        if self._status_by_type[CrusaderBannerBearerAbilitySpeedBuff]:
-            active_effects.append(self._status_by_type[CrusaderBannerBearerAbilitySpeedBuff][0])
+        if self._status_by_type[InfantryBannerBearerEmpowered]:
+            active_effects.append(self._status_by_type[InfantryBannerBearerEmpowered][0])
+        if self._status_by_type[InfantryBannerBearerMovementSpeedBuff]:
+            active_effects.append(self._status_by_type[InfantryBannerBearerMovementSpeedBuff][0])
+        if self._status_by_type[InfantryBannerBearerAbilitySpeedBuff]:
+            active_effects.append(self._status_by_type[InfantryBannerBearerAbilitySpeedBuff][0])
         if self._status_by_type[Fleeing]:
             longest_fleeing = max(self._status_by_type[Fleeing], key=lambda e: e.time_remaining)
             active_effects.append(longest_fleeing)

@@ -13,7 +13,7 @@ def taper(value: float) -> float:
 
 def damage_stat(dps: float, multiplier: float = 1) -> float:
     """Maps damage to a stat value between 1 and 10."""
-    stat = (dps * multiplier) / (gc.CRUSADER_PIKEMAN_ATTACK_DAMAGE / gc.CRUSADER_PIKEMAN_ANIMATION_ATTACK_DURATION) * 5
+    stat = (dps * multiplier) / (gc.INFANTRY_PIKEMAN_ATTACK_DAMAGE / gc.INFANTRY_PIKEMAN_ANIMATION_ATTACK_DURATION) * 5
     return taper(stat)
 
 def healing_stat(healing_dps: float) -> float:
@@ -38,7 +38,7 @@ def speed_stat(movement_speed: float) -> float:
 
 def range_stat(range: float) -> float:
     """Maps range to a stat value between 1 and 10."""
-    stat = (range / gc.CRUSADER_CATAPULT_MAXIMUM_RANGE) * 24
+    stat = (range / gc.INFANTRY_CATAPULT_MAXIMUM_RANGE) * 24
     return taper(stat)
 
 class GlossaryEntryType(enum.Enum):
@@ -164,7 +164,7 @@ UPGRADE_DESCRIPTIONS = {
         UnitTier.ADVANCED: "50% increased damage",
         UnitTier.ELITE: "50% increased damage"
     },
-    UnitType.CRUSADER_BANNER_BEARER: {
+    UnitType.INFANTRY_BANNER_BEARER: {
         UnitTier.ADVANCED: "50% increased health\nAura grants 25% increased damage",
         UnitTier.ELITE: "50% increased health\nAura grants 25% increased attack speed"
     },
@@ -172,7 +172,7 @@ UPGRADE_DESCRIPTIONS = {
         UnitTier.ADVANCED: "30% increased health and movement speed",
         UnitTier.ELITE: "60% increased damage"
     },
-    UnitType.CRUSADER_CATAPULT: {
+    UnitType.INFANTRY_CATAPULT: {
         UnitTier.ADVANCED: "25% increased health and damage",
         UnitTier.ELITE: "25% reduced minimum range"
     },
@@ -180,15 +180,15 @@ UPGRADE_DESCRIPTIONS = {
         UnitTier.ADVANCED: "100% increased range",
         UnitTier.ELITE: "50% increased attack speed"
     },
-    UnitType.CRUSADER_COMMANDER: {
+    UnitType.MISC_COMMANDER: {
         UnitTier.ADVANCED: "50% increased health",
         UnitTier.ELITE: "50% increased health"
     },
-    UnitType.CRUSADER_CROSSBOWMAN: {
+    UnitType.INFANTRY_CROSSBOWMAN: {
         UnitTier.ADVANCED: "Gains Heavily Armored",
         UnitTier.ELITE: "25% increased damage and attack speed"
     },
-    UnitType.CRUSADER_DEFENDER: {
+    UnitType.CORE_DEFENDER: {
         UnitTier.ADVANCED: "Gains Heavily Armored\n25% increased health",
         UnitTier.ELITE: "50% increased health"
     },
@@ -204,15 +204,15 @@ UPGRADE_DESCRIPTIONS = {
         UnitTier.ADVANCED: "100% increased damage",
         UnitTier.ELITE: "25% increased movement and attack speed"
     },
-    UnitType.CRUSADER_PIKEMAN: {
+    UnitType.INFANTRY_PIKEMAN: {
         UnitTier.ADVANCED: "30% increased damage\n15% increased health",
         UnitTier.ELITE: "30% increased damage\n15% increased health"
     },
-    UnitType.CRUSADER_RED_KNIGHT: {
+    UnitType.MISC_RED_KNIGHT: {
         UnitTier.ADVANCED: "50% increased health",
         UnitTier.ELITE: "50% increased health"
     },
-    UnitType.CRUSADER_SOLDIER: {
+    UnitType.INFANTRY_SOLDIER: {
         UnitTier.ADVANCED: "20% increased health, damage, and range",
         UnitTier.ELITE: "20% increased health, damage, and range"
     },
@@ -220,7 +220,7 @@ UPGRADE_DESCRIPTIONS = {
         UnitTier.ADVANCED: "50% increased health",
         UnitTier.ELITE: "50% increased health"
     },
-    UnitType.ZOMBIE_BRUTE: {
+    UnitType.MISC_BRUTE: {
         UnitTier.ADVANCED: "25% increased health and damage",
         UnitTier.ELITE: "25% increased health and damage"
     },
@@ -264,7 +264,7 @@ UPGRADE_DESCRIPTIONS = {
         UnitTier.ADVANCED: "Minions have 50% increased health",
         UnitTier.ELITE: "Minions have 50% increased health"
     },
-    UnitType.ZOMBIE_GRABBER: {
+    UnitType.MISC_GRABBER: {
         UnitTier.ADVANCED: "50% increased health and damage",
         UnitTier.ELITE: "50% increased health and damage"
     },
@@ -1019,23 +1019,23 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             }
         )
     
-    if unit_type == UnitType.CRUSADER_BANNER_BEARER:
-        banner_bearer_health = gc.CRUSADER_BANNER_BEARER_HP
+    if unit_type == UnitType.INFANTRY_BANNER_BEARER:
+        infantry_banner_bearer_health = gc.INFANTRY_BANNER_BEARER_HP
         if unit_tier == UnitTier.ADVANCED:
-            banner_bearer_health = gc.CRUSADER_BANNER_BEARER_HP * 1.5
+            infantry_banner_bearer_health = gc.INFANTRY_BANNER_BEARER_HP * 1.5
         elif unit_tier == UnitTier.ELITE:
-            banner_bearer_health = gc.CRUSADER_BANNER_BEARER_HP * 2.0
+            infantry_banner_bearer_health = gc.INFANTRY_BANNER_BEARER_HP * 2.0
         
         # Generate tier-specific utility tooltip
-        utility_description = f"Aura sets ally movement speed to {gc.CRUSADER_BANNER_BEARER_AURA_MOVEMENT_SPEED} units per second"
+        utility_description = f"Aura sets ally movement speed to {gc.INFANTRY_BANNER_BEARER_AURA_MOVEMENT_SPEED} units per second"
         
         if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE:
-            utility_description += f" and grants +{int(gc.CRUSADER_BANNER_BEARER_AURA_DAMAGE_PERCENTAGE * 100)}% damage"
+            utility_description += f" and grants +{int(gc.INFANTRY_BANNER_BEARER_AURA_DAMAGE_PERCENTAGE * 100)}% damage"
         
         if unit_tier == UnitTier.ELITE:
             utility_description += " and +25% attack speed"
         
-        utility_description += f" in a radius of {gc.CRUSADER_BANNER_BEARER_AURA_RADIUS}"
+        utility_description += f" in a radius of {gc.INFANTRY_BANNER_BEARER_AURA_RADIUS}"
         
         # Generate tier-specific description
         if unit_tier == UnitTier.BASIC:
@@ -1050,15 +1050,15 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             description=description,
             tier=unit_tier,
             stats={
-                StatType.DEFENSE: defense_stat(banner_bearer_health),
-                StatType.SPEED: speed_stat(gc.CRUSADER_BANNER_BEARER_AURA_MOVEMENT_SPEED),
+                StatType.DEFENSE: defense_stat(infantry_banner_bearer_health),
+                StatType.SPEED: speed_stat(gc.INFANTRY_BANNER_BEARER_AURA_MOVEMENT_SPEED),
                 StatType.UTILITY: 6 if unit_tier == UnitTier.BASIC else 12 if unit_tier == UnitTier.ADVANCED else 18,
                 StatType.DAMAGE: None,
                 StatType.RANGE: None
             },
             tooltips={
-                StatType.DEFENSE: f"{int(banner_bearer_health)} maximum health",
-                StatType.SPEED: f"{gc.CRUSADER_BANNER_BEARER_AURA_MOVEMENT_SPEED} units per second",
+                StatType.DEFENSE: f"{int(infantry_banner_bearer_health)} maximum health",
+                StatType.SPEED: f"{gc.INFANTRY_BANNER_BEARER_AURA_MOVEMENT_SPEED} units per second",
                 StatType.UTILITY: utility_description,
                 StatType.DAMAGE: None,
                 StatType.RANGE: None
@@ -1122,12 +1122,12 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             }
         )
     
-    if unit_type == UnitType.CRUSADER_CATAPULT:
+    if unit_type == UnitType.INFANTRY_CATAPULT:
         # Calculate tier-specific values
-        catapult_health = gc.CRUSADER_CATAPULT_HP
-        catapult_damage = gc.CRUSADER_CATAPULT_DAMAGE
-        catapult_min_range = gc.CRUSADER_CATAPULT_MINIMUM_RANGE
-        catapult_max_range = gc.CRUSADER_CATAPULT_MAXIMUM_RANGE
+        catapult_health = gc.INFANTRY_CATAPULT_HP
+        catapult_damage = gc.INFANTRY_CATAPULT_DAMAGE
+        catapult_min_range = gc.INFANTRY_CATAPULT_MINIMUM_RANGE
+        catapult_max_range = gc.INFANTRY_CATAPULT_MAXIMUM_RANGE
         
         # Advanced tier (and Elite): 25% more health and damage
         if unit_tier == UnitTier.ADVANCED or unit_tier == UnitTier.ELITE:
@@ -1144,14 +1144,14 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             tier=unit_tier,
             stats={
                 StatType.DEFENSE: defense_stat(catapult_health),
-                StatType.DAMAGE: damage_stat(catapult_damage / gc.CRUSADER_CATAPULT_COOLDOWN, 3),
+                StatType.DAMAGE: damage_stat(catapult_damage / gc.INFANTRY_CATAPULT_COOLDOWN, 3),
                 StatType.RANGE: range_stat(catapult_max_range),
                 StatType.SPEED: None,
                 StatType.UTILITY: None
             },
             tooltips={
                 StatType.DEFENSE: f"{int(catapult_health)} maximum health",
-                StatType.DAMAGE: f"{int(catapult_damage)} per hit ({catapult_damage / gc.CRUSADER_CATAPULT_COOLDOWN:.1f} per second) in a medium area",
+                StatType.DAMAGE: f"{int(catapult_damage)} per hit ({catapult_damage / gc.INFANTRY_CATAPULT_COOLDOWN:.1f} per second) in a medium area",
                 StatType.RANGE: f"Between {int(catapult_min_range)} and {int(catapult_max_range)} units",
                 StatType.SPEED: None,
                 StatType.UTILITY: None
@@ -1213,12 +1213,12 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             }
         )
     
-    if unit_type == UnitType.CRUSADER_COMMANDER:
-        commander_health = gc.CRUSADER_COMMANDER_HP
+    if unit_type == UnitType.MISC_COMMANDER:
+        commander_health = gc.MISC_COMMANDER_HP
         if unit_tier == UnitTier.ADVANCED:
-            commander_health = gc.CRUSADER_COMMANDER_HP * 1.5
+            commander_health = gc.MISC_COMMANDER_HP * 1.5
         elif unit_tier == UnitTier.ELITE:
-            commander_health = gc.CRUSADER_COMMANDER_HP * 2.0
+            commander_health = gc.MISC_COMMANDER_HP * 2.0
         
         return UnitData(
             name="Commander",
@@ -1226,17 +1226,17 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             tier=unit_tier,
             stats={
                 StatType.DEFENSE: defense_stat(commander_health),
-                StatType.SPEED: speed_stat(gc.CRUSADER_COMMANDER_MOVEMENT_SPEED),
-                StatType.DAMAGE: damage_stat(gc.CRUSADER_COMMANDER_ATTACK_DAMAGE / gc.CRUSADER_COMMANDER_ANIMATION_ATTACK_DURATION),
+                StatType.SPEED: speed_stat(gc.MISC_COMMANDER_MOVEMENT_SPEED),
+                StatType.DAMAGE: damage_stat(gc.MISC_COMMANDER_ATTACK_DAMAGE / gc.MISC_COMMANDER_ANIMATION_ATTACK_DURATION),
                 StatType.UTILITY: 6,
-                StatType.RANGE: range_stat(gc.CRUSADER_COMMANDER_ATTACK_RANGE)
+                StatType.RANGE: range_stat(gc.MISC_COMMANDER_ATTACK_RANGE)
             },
             tooltips={
                 StatType.DEFENSE: f"{commander_health} maximum health",
-                StatType.SPEED: f"{gc.CRUSADER_COMMANDER_MOVEMENT_SPEED} units per second",
-                StatType.DAMAGE: f"{gc.CRUSADER_COMMANDER_ATTACK_DAMAGE} per hit ({gc.CRUSADER_COMMANDER_ATTACK_DAMAGE / gc.CRUSADER_COMMANDER_ANIMATION_ATTACK_DURATION:.1f} per second)",
-                StatType.UTILITY: f"Aura grants +{int(gc.CRUSADER_COMMANDER_EMPOWERED_DAMAGE_PERCENTAGE * 100)}% damage to allies in a radius of {gc.CRUSADER_COMMANDER_AURA_RADIUS}",
-                StatType.RANGE: f"{gc.CRUSADER_COMMANDER_ATTACK_RANGE} units"
+                StatType.SPEED: f"{gc.MISC_COMMANDER_MOVEMENT_SPEED} units per second",
+                StatType.DAMAGE: f"{gc.MISC_COMMANDER_ATTACK_DAMAGE} per hit ({gc.MISC_COMMANDER_ATTACK_DAMAGE / gc.MISC_COMMANDER_ANIMATION_ATTACK_DURATION:.1f} per second)",
+                StatType.UTILITY: f"Aura grants +{int(gc.MISC_COMMANDER_EMPOWERED_DAMAGE_PERCENTAGE * 100)}% damage to allies in a radius of {gc.MISC_COMMANDER_AURA_RADIUS}",
+                StatType.RANGE: f"{gc.MISC_COMMANDER_ATTACK_RANGE} units"
             },
             tips={
                 "Strong when": ["In a large group", f"Against <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a> units"],
@@ -1247,12 +1247,12 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             }
         )
     
-    if unit_type == UnitType.CRUSADER_CROSSBOWMAN:
+    if unit_type == UnitType.INFANTRY_CROSSBOWMAN:
         # Calculate tier-specific values
-        crossbowman_health = gc.CRUSADER_CROSSBOWMAN_HP
-        crossbowman_damage = gc.CRUSADER_CROSSBOWMAN_ATTACK_DAMAGE
-        crossbowman_attack_duration = gc.CRUSADER_CROSSBOWMAN_ANIMATION_ATTACK_DURATION
-        crossbowman_reload_duration = gc.CRUSADER_CROSSBOWMAN_ANIMATION_RELOAD_DURATION
+        crossbowman_health = gc.INFANTRY_CROSSBOWMAN_HP
+        crossbowman_damage = gc.INFANTRY_CROSSBOWMAN_ATTACK_DAMAGE
+        crossbowman_attack_duration = gc.INFANTRY_CROSSBOWMAN_ANIMATION_ATTACK_DURATION
+        crossbowman_reload_duration = gc.INFANTRY_CROSSBOWMAN_ANIMATION_RELOAD_DURATION
         crossbowman_armored = True
         crossbowman_heavily_armored = False
         description = f"Crossbowmen are medium-ranged <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a> units that can fire multiple shots before needing to reload."
@@ -1278,15 +1278,15 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             stats={
                 StatType.DEFENSE: defense_stat(crossbowman_health, armored=crossbowman_armored, heavily_armored=crossbowman_heavily_armored),
                 StatType.DAMAGE: damage_stat(crossbowman_damage / (crossbowman_attack_duration + crossbowman_reload_duration/2)),
-                StatType.RANGE: range_stat(gc.CRUSADER_CROSSBOWMAN_ATTACK_RANGE),
-                StatType.SPEED: speed_stat(gc.CRUSADER_CROSSBOWMAN_MOVEMENT_SPEED),
+                StatType.RANGE: range_stat(gc.INFANTRY_CROSSBOWMAN_ATTACK_RANGE),
+                StatType.SPEED: speed_stat(gc.INFANTRY_CROSSBOWMAN_MOVEMENT_SPEED),
                 StatType.UTILITY: None
             },
             tooltips={
                 StatType.DEFENSE: defense_tooltip,
-                StatType.DAMAGE: f"{crossbowman_damage} per hit ({crossbowman_damage / crossbowman_attack_duration:.1f} per second while attacking, {crossbowman_damage / (crossbowman_attack_duration + crossbowman_reload_duration/2):.1f} per second including reloading). Starts with {gc.CRUSADER_CROSSBOWMAN_STARTING_AMMO} ammo, and can reload to regain ammo, up to {gc.CRUSADER_CROSSBOWMAN_MAX_AMMO}.",
-                StatType.RANGE: f"{gc.CRUSADER_CROSSBOWMAN_ATTACK_RANGE} units",
-                StatType.SPEED: f"{gc.CRUSADER_CROSSBOWMAN_MOVEMENT_SPEED} units per second",
+                StatType.DAMAGE: f"{crossbowman_damage} per hit ({crossbowman_damage / crossbowman_attack_duration:.1f} per second while attacking, {crossbowman_damage / (crossbowman_attack_duration + crossbowman_reload_duration/2):.1f} per second including reloading). Starts with {gc.INFANTRY_CROSSBOWMAN_STARTING_AMMO} ammo, and can reload to regain ammo, up to {gc.INFANTRY_CROSSBOWMAN_MAX_AMMO}.",
+                StatType.RANGE: f"{gc.INFANTRY_CROSSBOWMAN_ATTACK_RANGE} units",
+                StatType.SPEED: f"{gc.INFANTRY_CROSSBOWMAN_MOVEMENT_SPEED} units per second",
                 StatType.UTILITY: None
             },
             tips={
@@ -1302,9 +1302,9 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             }
         )
     
-    if unit_type == UnitType.CRUSADER_DEFENDER:
+    if unit_type == UnitType.CORE_DEFENDER:
         # Calculate tier-specific values
-        defender_health = gc.CRUSADER_DEFENDER_HP
+        defender_health = gc.CORE_DEFENDER_HP
         defender_armored = True
         defender_heavily_armored = False
         description = f"Defenders are <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a> units with high health and low damage."
@@ -1330,16 +1330,16 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             tier=unit_tier,
             stats={
                 StatType.DEFENSE: defense_stat(defender_health, armored=defender_armored, heavily_armored=defender_heavily_armored),
-                StatType.DAMAGE: damage_stat(gc.CRUSADER_DEFENDER_ATTACK_DAMAGE / gc.CRUSADER_DEFENDER_ANIMATION_ATTACK_DURATION),
-                StatType.RANGE: range_stat(gc.CRUSADER_DEFENDER_ATTACK_RANGE),
-                StatType.SPEED: speed_stat(gc.CRUSADER_DEFENDER_MOVEMENT_SPEED),
+                StatType.DAMAGE: damage_stat(gc.CORE_DEFENDER_ATTACK_DAMAGE / gc.CORE_DEFENDER_ANIMATION_ATTACK_DURATION),
+                StatType.RANGE: range_stat(gc.CORE_DEFENDER_ATTACK_RANGE),
+                StatType.SPEED: speed_stat(gc.CORE_DEFENDER_MOVEMENT_SPEED),
                 StatType.UTILITY: None
             },
             tooltips={
                 StatType.DEFENSE: defense_tooltip,
-                StatType.DAMAGE: f"{gc.CRUSADER_DEFENDER_ATTACK_DAMAGE} per hit ({gc.CRUSADER_DEFENDER_ATTACK_DAMAGE / gc.CRUSADER_DEFENDER_ANIMATION_ATTACK_DURATION:.1f} per second)",
-                StatType.RANGE: f"{gc.CRUSADER_DEFENDER_ATTACK_RANGE} units",
-                StatType.SPEED: f"{gc.CRUSADER_DEFENDER_MOVEMENT_SPEED} units per second",
+                StatType.DAMAGE: f"{gc.CORE_DEFENDER_ATTACK_DAMAGE} per hit ({gc.CORE_DEFENDER_ATTACK_DAMAGE / gc.CORE_DEFENDER_ANIMATION_ATTACK_DURATION:.1f} per second)",
+                StatType.RANGE: f"{gc.CORE_DEFENDER_ATTACK_RANGE} units",
+                StatType.SPEED: f"{gc.CORE_DEFENDER_MOVEMENT_SPEED} units per second",
                 StatType.UTILITY: None
             },
             tips={
@@ -1493,10 +1493,10 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             }
         )
     
-    if unit_type == UnitType.CRUSADER_PIKEMAN:
+    if unit_type == UnitType.INFANTRY_PIKEMAN:
         # Calculate tier-specific values
-        pikeman_health = gc.CRUSADER_PIKEMAN_HP
-        pikeman_damage = gc.CRUSADER_PIKEMAN_ATTACK_DAMAGE
+        pikeman_health = gc.INFANTRY_PIKEMAN_HP
+        pikeman_damage = gc.INFANTRY_PIKEMAN_ATTACK_DAMAGE
         
         # Advanced tier: 30% increased damage, 15% increased health
         if unit_tier == UnitTier.ADVANCED:
@@ -1514,16 +1514,16 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             tier=unit_tier,
             stats={
                 StatType.DEFENSE: defense_stat(pikeman_health),
-                StatType.DAMAGE: damage_stat(pikeman_damage / gc.CRUSADER_PIKEMAN_ANIMATION_ATTACK_DURATION),
-                StatType.RANGE: range_stat(gc.CRUSADER_PIKEMAN_ATTACK_RANGE),
-                StatType.SPEED: speed_stat(gc.CRUSADER_PIKEMAN_MOVEMENT_SPEED),
+                StatType.DAMAGE: damage_stat(pikeman_damage / gc.INFANTRY_PIKEMAN_ANIMATION_ATTACK_DURATION),
+                StatType.RANGE: range_stat(gc.INFANTRY_PIKEMAN_ATTACK_RANGE),
+                StatType.SPEED: speed_stat(gc.INFANTRY_PIKEMAN_MOVEMENT_SPEED),
                 StatType.UTILITY: None
             },
             tooltips={
                 StatType.DEFENSE: f"{pikeman_health:.0f} maximum health",
-                StatType.DAMAGE: f"{pikeman_damage:.0f} per hit ({pikeman_damage / gc.CRUSADER_PIKEMAN_ANIMATION_ATTACK_DURATION:.1f} per second)",
-                StatType.RANGE: f"{gc.CRUSADER_PIKEMAN_ATTACK_RANGE} units",
-                StatType.SPEED: f"{gc.CRUSADER_PIKEMAN_MOVEMENT_SPEED} units per second",
+                StatType.DAMAGE: f"{pikeman_damage:.0f} per hit ({pikeman_damage / gc.INFANTRY_PIKEMAN_ANIMATION_ATTACK_DURATION:.1f} per second)",
+                StatType.RANGE: f"{gc.INFANTRY_PIKEMAN_ATTACK_RANGE} units",
+                StatType.SPEED: f"{gc.INFANTRY_PIKEMAN_MOVEMENT_SPEED} units per second",
                 StatType.UTILITY: None
             },
             tips={
@@ -1539,12 +1539,12 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             }
         )
     
-    if unit_type == UnitType.CRUSADER_RED_KNIGHT:
-        red_knight_health = gc.CRUSADER_RED_KNIGHT_HP
+    if unit_type == UnitType.MISC_RED_KNIGHT:
+        red_knight_health = gc.MISC_RED_KNIGHT_HP
         if unit_tier == UnitTier.ADVANCED:
-            red_knight_health = gc.CRUSADER_RED_KNIGHT_HP * 1.5
+            red_knight_health = gc.MISC_RED_KNIGHT_HP * 1.5
         elif unit_tier == UnitTier.ELITE:
-            red_knight_health = gc.CRUSADER_RED_KNIGHT_HP * 2.0
+            red_knight_health = gc.MISC_RED_KNIGHT_HP * 2.0
         
         return UnitData(
             name="Red Knight",
@@ -1552,16 +1552,16 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             tier=unit_tier,
             stats={
                 StatType.DEFENSE: defense_stat(red_knight_health, armored=True),
-                StatType.DAMAGE: damage_stat(gc.CRUSADER_RED_KNIGHT_ATTACK_DAMAGE / gc.CRUSADER_RED_KNIGHT_ANIMATION_ATTACK_DURATION),
-                StatType.RANGE: range_stat(gc.CRUSADER_RED_KNIGHT_ATTACK_RANGE),    
-                StatType.SPEED: speed_stat(gc.CRUSADER_RED_KNIGHT_MOVEMENT_SPEED),
+                StatType.DAMAGE: damage_stat(gc.MISC_RED_KNIGHT_ATTACK_DAMAGE / gc.MISC_RED_KNIGHT_ANIMATION_ATTACK_DURATION),
+                StatType.RANGE: range_stat(gc.MISC_RED_KNIGHT_ATTACK_RANGE),    
+                StatType.SPEED: speed_stat(gc.MISC_RED_KNIGHT_MOVEMENT_SPEED),
                 StatType.UTILITY: None
             },
             tooltips={
                 StatType.DEFENSE: f"{red_knight_health} maximum health, armored",
-                StatType.DAMAGE: f"{gc.CRUSADER_RED_KNIGHT_ATTACK_DAMAGE} per hit ({gc.CRUSADER_RED_KNIGHT_ATTACK_DAMAGE / gc.CRUSADER_RED_KNIGHT_ANIMATION_ATTACK_DURATION:.1f} per second)",
-                StatType.RANGE: f"{gc.CRUSADER_RED_KNIGHT_ATTACK_RANGE} units",
-                StatType.SPEED: f"{gc.CRUSADER_RED_KNIGHT_MOVEMENT_SPEED} units per second",
+                StatType.DAMAGE: f"{gc.MISC_RED_KNIGHT_ATTACK_DAMAGE} per hit ({gc.MISC_RED_KNIGHT_ATTACK_DAMAGE / gc.MISC_RED_KNIGHT_ANIMATION_ATTACK_DURATION:.1f} per second)",
+                StatType.RANGE: f"{gc.MISC_RED_KNIGHT_ATTACK_RANGE} units",
+                StatType.SPEED: f"{gc.MISC_RED_KNIGHT_MOVEMENT_SPEED} units per second",
                 StatType.UTILITY: None
             },
             tips={
@@ -1573,12 +1573,12 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             }
         )
     
-    if unit_type == UnitType.CRUSADER_SOLDIER:
+    if unit_type == UnitType.INFANTRY_SOLDIER:
         # Calculate tier-specific values
-        soldier_health = gc.CRUSADER_SOLDIER_HP
-        soldier_melee_damage = gc.CRUSADER_SOLDIER_MELEE_DAMAGE
+        soldier_health = gc.INFANTRY_SOLDIER_HP
+        soldier_melee_damage = gc.INFANTRY_SOLDIER_MELEE_DAMAGE
         soldier_ranged_damage = gc.CORE_ARCHER_ATTACK_DAMAGE
-        soldier_ranged_range = gc.CRUSADER_SOLDIER_RANGED_RANGE
+        soldier_ranged_range = gc.INFANTRY_SOLDIER_RANGED_RANGE
         
         # Advanced tier: 20% increased health, damage, and range (bow only)
         if unit_tier == UnitTier.ADVANCED:
@@ -1600,16 +1600,16 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             tier=unit_tier,
             stats={
                 StatType.DEFENSE: defense_stat(soldier_health, armored=True),
-                StatType.DAMAGE: damage_stat(soldier_melee_damage / gc.CRUSADER_SOLDIER_ANIMATION_MELEE_ATTACK_DURATION),
+                StatType.DAMAGE: damage_stat(soldier_melee_damage / gc.INFANTRY_SOLDIER_ANIMATION_MELEE_ATTACK_DURATION),
                 StatType.RANGE: range_stat(soldier_ranged_range),
-                StatType.SPEED: speed_stat(gc.CRUSADER_SOLDIER_MOVEMENT_SPEED),
+                StatType.SPEED: speed_stat(gc.INFANTRY_SOLDIER_MOVEMENT_SPEED),
                 StatType.UTILITY: None
             },
             tooltips={
                 StatType.DEFENSE: f"{soldier_health:.0f} maximum health, armored",
-                StatType.DAMAGE: f"Melee: {soldier_melee_damage:.0f} per hit ({soldier_melee_damage / gc.CRUSADER_SOLDIER_ANIMATION_MELEE_ATTACK_DURATION:.1f} per second), Ranged: {soldier_ranged_damage:.0f} per hit ({soldier_ranged_damage / gc.CRUSADER_SOLDIER_ANIMATION_RANGED_ATTACK_DURATION:.1f} per second)",
-                StatType.RANGE: f"Melee: {gc.CRUSADER_SOLDIER_MELEE_RANGE} units, Ranged: {soldier_ranged_range:.0f} units",
-                StatType.SPEED: f"{gc.CRUSADER_SOLDIER_MOVEMENT_SPEED} units per second",
+                StatType.DAMAGE: f"Melee: {soldier_melee_damage:.0f} per hit ({soldier_melee_damage / gc.INFANTRY_SOLDIER_ANIMATION_MELEE_ATTACK_DURATION:.1f} per second), Ranged: {soldier_ranged_damage:.0f} per hit ({soldier_ranged_damage / gc.INFANTRY_SOLDIER_ANIMATION_RANGED_ATTACK_DURATION:.1f} per second)",
+                StatType.RANGE: f"Melee: {gc.INFANTRY_SOLDIER_MELEE_RANGE} units, Ranged: {soldier_ranged_range:.0f} units",
+                StatType.SPEED: f"{gc.INFANTRY_SOLDIER_MOVEMENT_SPEED} units per second",
                 StatType.UTILITY: None
             },
             tips={
@@ -1702,37 +1702,37 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
                 StatType.UTILITY: 0
             }
         )
-    if unit_type == UnitType.ZOMBIE_BRUTE:
+    if unit_type == UnitType.MISC_BRUTE:
         # Calculate tier-specific values
-        zombie_brute_health = gc.ZOMBIE_BRUTE_HP
-        zombie_brute_damage = gc.ZOMBIE_BRUTE_ATTACK_DAMAGE
+        misc_brute_health = gc.MISC_BRUTE_HP
+        misc_brute_damage = gc.MISC_BRUTE_ATTACK_DAMAGE
         
         # Advanced tier: 25% increased health and damage
         if unit_tier == UnitTier.ADVANCED:
-            zombie_brute_health = zombie_brute_health * 1.25
-            zombie_brute_damage = zombie_brute_damage * 1.25
+            misc_brute_health = misc_brute_health * 1.25
+            misc_brute_damage = misc_brute_damage * 1.25
         
         # Elite tier: 50% increased health and damage total
         elif unit_tier == UnitTier.ELITE:
-            zombie_brute_health = zombie_brute_health * 1.5
-            zombie_brute_damage = zombie_brute_damage * 1.5
+            misc_brute_health = misc_brute_health * 1.5
+            misc_brute_damage = misc_brute_damage * 1.5
         
         return UnitData(
             name="Brute",
             description=f"Brutes are slow melee units with <a href='{GlossaryEntryType.UNUSABLE_CORPSE.value}'>Unusable Corpses</a> that <a href='{GlossaryEntryType.INFECTION.value}'>Infect</a> on hit and carry two <a href='{UnitType.ZOMBIE_BASIC_ZOMBIE.value}'>Zombies</a> into battle.",
             tier=unit_tier,
             stats={
-                StatType.DEFENSE: defense_stat(zombie_brute_health),
-                StatType.SPEED: speed_stat(gc.ZOMBIE_BRUTE_MOVEMENT_SPEED),
-                StatType.DAMAGE: damage_stat(zombie_brute_damage / gc.ZOMBIE_BRUTE_ANIMATION_ATTACK_DURATION),
-                StatType.RANGE: range_stat(gc.ZOMBIE_BRUTE_ATTACK_RANGE),
+                StatType.DEFENSE: defense_stat(misc_brute_health),
+                StatType.SPEED: speed_stat(gc.MISC_BRUTE_MOVEMENT_SPEED),
+                StatType.DAMAGE: damage_stat(misc_brute_damage / gc.MISC_BRUTE_ANIMATION_ATTACK_DURATION),
+                StatType.RANGE: range_stat(gc.MISC_BRUTE_ATTACK_RANGE),
                 StatType.UTILITY: 7.5
             },
             tooltips={
-                StatType.DEFENSE: f"{zombie_brute_health:.0f} maximum health",
-                StatType.SPEED: f"{gc.ZOMBIE_BRUTE_MOVEMENT_SPEED} units per second",
-                StatType.DAMAGE: f"{zombie_brute_damage:.0f} per hit ({zombie_brute_damage / gc.ZOMBIE_BRUTE_ANIMATION_ATTACK_DURATION:.1f} per second)",
-                StatType.RANGE: f"{gc.ZOMBIE_BRUTE_ATTACK_RANGE} units",
+                StatType.DEFENSE: f"{misc_brute_health:.0f} maximum health",
+                StatType.SPEED: f"{gc.MISC_BRUTE_MOVEMENT_SPEED} units per second",
+                StatType.DAMAGE: f"{misc_brute_damage:.0f} per hit ({misc_brute_damage / gc.MISC_BRUTE_ANIMATION_ATTACK_DURATION:.1f} per second)",
+                StatType.RANGE: f"{gc.MISC_BRUTE_ATTACK_RANGE} units",
                 StatType.UTILITY: "Infects enemies on hit, carries two Zombies into battle"
             },
             tips={
@@ -1748,21 +1748,21 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             }
         )
     
-    if unit_type == UnitType.ZOMBIE_GRABBER:
+    if unit_type == UnitType.MISC_GRABBER:
         # Calculate tier-specific values
-        zombie_grabber_health = gc.ZOMBIE_GRABBER_HP
-        grab_damage = gc.ZOMBIE_GRABBER_GRAB_DAMAGE
+        misc_grabber_health = gc.MISC_GRABBER_HP
+        grab_damage = gc.MISC_GRABBER_GRAB_DAMAGE
         melee_damage = gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_DAMAGE
         
         # Advanced tier: 50% increased health and damage
         if unit_tier == UnitTier.ADVANCED:
-            zombie_grabber_health = zombie_grabber_health * 1.5
+            misc_grabber_health = misc_grabber_health * 1.5
             grab_damage = grab_damage * 1.5
             melee_damage = melee_damage * 1.5
         
         # Elite tier: 100% increased health and damage total
         elif unit_tier == UnitTier.ELITE:
-            zombie_grabber_health = zombie_grabber_health * 2.0
+            misc_grabber_health = misc_grabber_health * 2.0
             grab_damage = grab_damage * 2.0
             melee_damage = melee_damage * 2.0
         
@@ -1771,17 +1771,17 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             description=f"Grabbers are slow melee units with <a href='{GlossaryEntryType.UNUSABLE_CORPSE.value}'>Unusable Corpses</a> and long reach that <a href='{GlossaryEntryType.INFECTION.value}'>Infect</a> on hit and can grab and pull enemies towards them.",
             tier=unit_tier,
             stats={ 
-                StatType.DEFENSE: defense_stat(zombie_grabber_health),
-                StatType.SPEED: speed_stat(gc.ZOMBIE_GRABBER_MOVEMENT_SPEED),
-                StatType.DAMAGE: damage_stat(melee_damage / gc.ZOMBIE_GRABBER_ANIMATION_ATTACK_DURATION),
-                StatType.RANGE: range_stat(gc.ZOMBIE_GRABBER_GRAB_MAXIMUM_RANGE),
+                StatType.DEFENSE: defense_stat(misc_grabber_health),
+                StatType.SPEED: speed_stat(gc.MISC_GRABBER_MOVEMENT_SPEED),
+                StatType.DAMAGE: damage_stat(melee_damage / gc.MISC_GRABBER_ANIMATION_ATTACK_DURATION),
+                StatType.RANGE: range_stat(gc.MISC_GRABBER_GRAB_MAXIMUM_RANGE),
                 StatType.UTILITY: 7.5
             },
             tooltips={
-                StatType.DEFENSE: f"{zombie_grabber_health:.0f} maximum health",
-                StatType.SPEED: f"{gc.ZOMBIE_GRABBER_MOVEMENT_SPEED} units per second",
-                StatType.DAMAGE: f"{melee_damage:.0f} per hit ({melee_damage / gc.ZOMBIE_GRABBER_ANIMATION_ATTACK_DURATION:.1f} per second), Grab deals {grab_damage:.0f} per hit with a {gc.ZOMBIE_GRABBER_GRAB_COOLDOWN} second cooldown",
-                StatType.RANGE: f"Melee: {gc.ZOMBIE_GRABBER_ATTACK_RANGE} units, Grab: {gc.ZOMBIE_GRABBER_GRAB_MINIMUM_RANGE} to {gc.ZOMBIE_GRABBER_GRAB_MAXIMUM_RANGE} units",
+                StatType.DEFENSE: f"{misc_grabber_health:.0f} maximum health",
+                StatType.SPEED: f"{gc.MISC_GRABBER_MOVEMENT_SPEED} units per second",
+                StatType.DAMAGE: f"{melee_damage:.0f} per hit ({melee_damage / gc.MISC_GRABBER_ANIMATION_ATTACK_DURATION:.1f} per second), Grab deals {grab_damage:.0f} per hit with a {gc.MISC_GRABBER_GRAB_COOLDOWN} second cooldown",
+                StatType.RANGE: f"Melee: {gc.MISC_GRABBER_ATTACK_RANGE} units, Grab: {gc.MISC_GRABBER_GRAB_MINIMUM_RANGE} to {gc.MISC_GRABBER_GRAB_MAXIMUM_RANGE} units",
                 StatType.UTILITY: f"Infects enemies on hit, can grab and pull enemies towards them"
             },
             tips={

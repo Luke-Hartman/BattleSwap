@@ -426,9 +426,9 @@ class UpgradeWindow:
         # Auto-unlock basic zombies for upgrading when any zombie unit is available
         zombie_units = {
             UnitType.ZOMBIE_BASIC_ZOMBIE,
-            UnitType.ZOMBIE_BRUTE,
+            UnitType.MISC_BRUTE,
             UnitType.ZOMBIE_FIGHTER,
-            UnitType.ZOMBIE_GRABBER,
+            UnitType.MISC_GRABBER,
             UnitType.ZOMBIE_JUMPER,
             UnitType.ZOMBIE_SPITTER,
             UnitType.ZOMBIE_TANK

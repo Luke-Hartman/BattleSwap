@@ -303,10 +303,10 @@
             }
         }
     },
-    "#crusader_banner_bearer_icon": {
+    "#infantry_banner_bearer_icon": {
         "images": {
             "normal_image": {
-                "path": "assets/icons/CrusaderBannerBearerIcon.png"
+                "path": "assets/icons/InfantryBannerBearerIcon.png"
             }
         }
     },
@@ -317,10 +317,10 @@
             }
         }
     },
-    "#crusader_catapult_icon": {
+    "#infantry_catapult_icon": {
         "images": {
             "normal_image": {
-                "path": "assets/icons/CrusaderCatapultIcon.png"
+                "path": "assets/icons/InfantryCatapultIcon.png"
             }
         }
     },
@@ -331,17 +331,17 @@
             }
         }
     },
-    "#crusader_commander_icon": {
+    "#misc_commander_icon": {
         "images": {
             "normal_image": {
-                "path": "assets/icons/CrusaderCommanderIcon.png"
+                "path": "assets/icons/MiscCommanderIcon.png"
             }
         }
     },
-    "#crusader_crossbowman_icon": {
+    "#infantry_crossbowman_icon": {
         "images": {
             "normal_image": {
-                "path": "assets/icons/CrusaderCrossbowmanIcon.png"
+                "path": "assets/icons/InfantryCrossbowmanIcon.png"
             }
         }
     },
@@ -373,24 +373,24 @@
             }
         }
     },
-    "#crusader_pikeman_icon": {
+    "#infantry_pikeman_icon": {
         "images": {
             "normal_image": {
-                "path": "assets/icons/CrusaderPikemanIcon.png"
+                "path": "assets/icons/InfantryPikemanIcon.png"
             }
         }
     },
-    "#crusader_red_knight_icon": {
+    "#misc_red_knight_icon": {
         "images": {
             "normal_image": {
-                "path": "assets/icons/CrusaderRedKnightIcon.png"
+                "path": "assets/icons/MiscRedKnightIcon.png"
             }
         }
     },
-    "#crusader_soldier_icon": {
+    "#infantry_soldier_icon": {
         "images": {
             "normal_image": {
-                "path": "assets/icons/CrusaderSoldierIcon.png"
+                "path": "assets/icons/InfantrySoldierIcon.png"
             }
         }
     },
@@ -506,10 +506,10 @@
             }
         }
     },
-    "#zombie_brute_icon": {
+    "#misc_brute_icon": {
         "images": {
             "normal_image": {
-                "path": "assets/icons/ZombieBruteIcon.png"
+                "path": "assets/icons/MiscBruteIcon.png"
             }
         }
     },
@@ -520,10 +520,10 @@
             }
         }
     },
-    "#zombie_grabber_icon": {
+    "#misc_grabber_icon": {
         "images": {
             "normal_image": {
-                "path": "assets/icons/ZombieGrabberIcon.png"
+                "path": "assets/icons/MiscGrabberIcon.png"
             }
         }
     },

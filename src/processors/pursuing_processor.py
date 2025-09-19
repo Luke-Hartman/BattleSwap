@@ -11,7 +11,7 @@ from components.corruption import IncreasedMovementSpeedComponent
 from components.destination import Destination
 from components.forced_movement import ForcedMovement
 from components.position import Position
-from components.status_effect import CrusaderBannerBearerMovementSpeedBuff, StatusEffects
+from components.status_effect import InfantryBannerBearerMovementSpeedBuff, StatusEffects
 from components.team import Team, TeamType
 from components.unit_state import UnitState, State
 from components.movement import Movement
@@ -48,7 +48,7 @@ class PursuingProcessor(esper.Processor):
                         status_effects = esper.try_component(ent, StatusEffects)
                         speed = movement.speed
                         for effect in status_effects.active_effects():
-                            if isinstance(effect, CrusaderBannerBearerMovementSpeedBuff):
+                            if isinstance(effect, InfantryBannerBearerMovementSpeedBuff):
                                 speed = effect.movement_speed
                         movement_speed_component = esper.try_component(ent, IncreasedMovementSpeedComponent)
                         if movement_speed_component is not None:
