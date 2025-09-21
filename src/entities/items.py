@@ -41,6 +41,11 @@ class HealthPotion(Item):
             health.current -= gc.ITEM_HEALTH_POTION_HEALTH_BONUS
             health.maximum -= gc.ITEM_HEALTH_POTION_HEALTH_BONUS
 
+# Item theme IDs for UI styling
+item_theme_ids: Dict[ItemType, str] = {
+    ItemType.HEALTH_POTION: "#health_potion_icon"
+}
+
 # Item registry
 item_registry: Dict[ItemType, Item] = {
     ItemType.HEALTH_POTION: HealthPotion()
