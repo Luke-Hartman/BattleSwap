@@ -357,8 +357,9 @@ class SetupBattleScene(Scene):
                 if unit_team == TeamType.TEAM1:
                     # Place the item on the unit
                     self.place_item_on_unit(hovered_unit, self.selected_item_type)
-                    # Clear item selection after placing
-                    self.set_selected_item_type(None)
+                    # Keep item selected if there are more copies in the barracks
+                    if not self.barracks.has_item_available(self.selected_item_type):
+                        self.set_selected_item_type(None)
                 else:
                     # Can't place items on enemy units
                     emit_event(PLAY_SOUND, event=PlaySoundEvent(
@@ -408,13 +409,15 @@ class SetupBattleScene(Scene):
         self.barracks.remove_item(item_type)
         
         # Recreate the unit with the updated items list
-        self.world_map_view.add_unit(
+        entity = self.world_map_view.add_unit(
             self.battle_id,
             unit_type_comp.type,
             (pos.x, pos.y),
             team.type,
             items=current_items
         )
+        if self.barracks.has_item_available(item_type):
+            esper.add_component(entity, CanHaveItem())
         
         # Play success sound
         emit_event(PLAY_SOUND, event=PlaySoundEvent(

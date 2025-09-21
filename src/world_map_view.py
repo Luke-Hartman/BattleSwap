@@ -257,7 +257,7 @@ class WorldMapView:
     
 
     
-    def add_unit(self, battle_id: str, unit_type: UnitType, position: Tuple[float, float], team: TeamType, items: Optional[List[ItemType]] = None) -> None:
+    def add_unit(self, battle_id: str, unit_type: UnitType, position: Tuple[float, float], team: TeamType, items: Optional[List[ItemType]] = None) -> int:
         """
         Add a unit to the specified battle and play a sound effect.
 
@@ -287,7 +287,7 @@ class WorldMapView:
             else:
                 tier = UnitTier.BASIC
         
-        create_unit(
+        entity = create_unit(
             position[0],
             position[1],
             unit_type,
@@ -306,6 +306,7 @@ class WorldMapView:
             filename="unit_placed.wav",
             volume=0.5
         ))
+        return entity
     
     def remove_unit(self, battle_id: str, unit_id: int, required_team: Optional[TeamType] = None) -> bool:
         """
