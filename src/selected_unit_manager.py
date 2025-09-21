@@ -24,14 +24,11 @@ class SelectedUnitManager:
 
     def __init__(self):
         """Initialize the stats card manager."""
-        self.unit_card: Optional[UnitCard] = None  # For normal mode
-        self.unit_cards: List[UnitCard] = []  # For info mode (multiple cards)
-        self.item_card: Optional[ItemCard] = None  # For normal mode
-        self.item_cards: List[ItemCard] = []  # For info mode (multiple cards)
-        self.glossary_entries: List[GlossaryEntry] = []  # For info mode glossary entries
+        self.cards: List[Union[UnitCard, ItemCard, GlossaryEntry]] = []  # Unified list for all cards
         self._selected_unit_type: Optional[UnitType] = None
         self._selected_unit_tier: Optional[UnitTier] = None
         self._selected_item_type: Optional[ItemType] = None
+        self._selected_items: List[ItemType] = []
         self.manager: Optional[pygame_gui.UIManager] = None
         self.screen: Optional[pygame.Surface] = None
 
@@ -90,34 +87,20 @@ class SelectedUnitManager:
 
     def update(self, time_delta: float) -> None:
         """Update the unit card animations and flash effects."""
+        # Set time_delta to a fixed value to prevent animation issues
+        fixed_time_delta = 1/30  # 30 FPS equivalent
+        
         if info_mode_manager.info_mode:
-            for card in self.unit_cards:
+            for card in self.cards:
                 card.update(time_delta)
-            for card in self.item_cards:
-                card.update(time_delta)
-            for entry in self.glossary_entries:
-                entry.update(time_delta)
         else:
-            if self.unit_card is not None:
-                # Set time_delta to a fixed value to prevent animation issues
-                fixed_time_delta = 1/30  # 30 FPS equivalent
-                self.unit_card.update(fixed_time_delta)
-            if self.item_card is not None:
-                # Set time_delta to a fixed value to prevent animation issues
-                fixed_time_delta = 1/30  # 30 FPS equivalent
-                self.item_card.update(fixed_time_delta)
-            # Also update glossary entries in normal mode (for tips)
-            for entry in self.glossary_entries:
-                entry.update(time_delta)
+            for card in self.cards:
+                card.update(fixed_time_delta)
 
     def process_events(self, event: pygame.event.Event) -> bool:
         """Process UI events for unit cards (Tips button, link clicks, etc.)."""
-        if info_mode_manager.info_mode:
-            for card in self.unit_cards:
-                if card.process_event(event):
-                    return True
-        else:
-            if self.unit_card is not None and self.unit_card.process_event(event):
+        for card in self.cards:
+            if hasattr(card, 'process_event') and card.process_event(event):
                 return True
         
         if event.type == pygame_gui.UI_TEXT_BOX_LINK_CLICKED:
@@ -176,14 +159,8 @@ class SelectedUnitManager:
         
         new_card = self._create_unit_card(target_unit_type, position, unit_tier)
         
-        if info_mode_manager.info_mode:
-            new_card.creation_index = card_index
-            self.unit_cards.append(new_card)
-        else:
-            if self.unit_card is not None:
-                self.unit_card.kill()
-            self.unit_card = new_card
-            new_card.creation_index = card_index
+        new_card.creation_index = card_index
+        self.cards.append(new_card)
             
         return True
 
@@ -223,7 +200,7 @@ class SelectedUnitManager:
             content=entry_data
         )
         new_entry.creation_index = card_index
-        self.glossary_entries.append(new_entry)
+        self.cards.append(new_entry)
             
         return True
 
@@ -274,28 +251,40 @@ class SelectedUnitManager:
         return (card_x <= mouse_x <= card_x + self.CARD_WIDTH and 
                 card_y <= mouse_y <= card_y + self.CARD_HEIGHT)
 
+    def _create_or_focus_item_card(self, item_type: ItemType) -> bool:
+        """Create a new item card or bring existing one to front."""
+        self._cleanup_dead_cards()
+        
+        existing_card = self._find_existing_item_card(item_type)
+        if existing_card is not None:
+            if info_mode_manager.info_mode:
+                self.bring_card_to_front_by_index(existing_card.creation_index)
+            else:
+                self.bring_card_to_front(existing_card)
+            return True
+        
+        # Create new card
+        position = self.get_next_card_position()
+        new_card = self._create_item_card(item_type, position)
+        
+        card_index = self._get_next_card_index()
+        new_card.creation_index = card_index
+        self.cards.append(new_card)
+            
+        return True
+
     def _cleanup_dead_cards(self) -> None:
-        """Remove any dead cards from the unit_cards, item_cards and glossary_entries lists."""
-        self.unit_cards = [card for card in self.unit_cards if card.window.alive()]
-        self.item_cards = [card for card in self.item_cards if card.window.alive()]
-        self.glossary_entries = [entry for entry in self.glossary_entries if entry.window.alive()]
+        """Remove any dead cards from the cards list."""
+        self.cards = [card for card in self.cards if card.window.alive()]
 
     def _get_next_card_index(self) -> int:
         """Get the next available index that doesn't overlap existing cards or mouse."""
         existing_indices = set()
         
-        # Collect indices from unit cards, item cards, and glossary entries
-        for card in self.unit_cards:
+        # Collect indices from all cards
+        for card in self.cards:
             if hasattr(card, 'creation_index'):
                 existing_indices.add(card.creation_index)
-        
-        for card in self.item_cards:
-            if hasattr(card, 'creation_index'):
-                existing_indices.add(card.creation_index)
-        
-        for entry in self.glossary_entries:
-            if hasattr(entry, 'creation_index'):
-                existing_indices.add(entry.creation_index)
         
         max_index = max(existing_indices) if existing_indices else -1
         
@@ -320,22 +309,22 @@ class SelectedUnitManager:
 
     def _find_existing_unit_card(self, unit_type: UnitType, unit_tier: UnitTier) -> Optional[UnitCard]:
         """Find an existing unit card of the given type and tier."""
-        for card in self.unit_cards:
-            if card.unit_type == unit_type and card.unit_tier == unit_tier:
+        for card in self.cards:
+            if isinstance(card, UnitCard) and card.unit_type == unit_type and card.unit_tier == unit_tier:
                 return card
         return None
 
     def _find_existing_glossary_entry(self, entry_title: str) -> Optional[GlossaryEntry]:
         """Find an existing glossary entry with the given title."""
-        for entry in self.glossary_entries:
-            if entry.title == entry_title:
-                return entry
+        for card in self.cards:
+            if isinstance(card, GlossaryEntry) and card.title == entry_title:
+                return card
         return None
 
     def _find_existing_item_card(self, item_type: ItemType) -> Optional[ItemCard]:
         """Find an existing item card of the given type."""
-        for card in self.item_cards:
-            if card.item_type == item_type:
+        for card in self.cards:
+            if isinstance(card, ItemCard) and card.item_type == item_type:
                 return card
         return None
 
@@ -365,13 +354,14 @@ class SelectedUnitManager:
             self._selected_unit_tier = value
             self._show_stats()
 
-    def set_selected_unit_with_tier(self, unit_type: Optional[UnitType], unit_tier: Optional[UnitTier] = None) -> None:
-        """Set both the selected unit type and tier at once."""
-        if self._selected_unit_type != unit_type or self._selected_unit_tier != unit_tier:
+    def set_selected_unit(self, unit_type: Optional[UnitType], unit_tier: Optional[UnitTier] = None, items: Optional[List[ItemType]] = None) -> None:
+        """Set the selected unit type, tier, and items at once."""
+        if self._selected_unit_type != unit_type or self._selected_unit_tier != unit_tier or self._selected_items != (items or []):
             if not info_mode_manager.info_mode:
                 self._hide_stats()
             self._selected_unit_type = unit_type
             self._selected_unit_tier = unit_tier
+            self._selected_items = items or []
             self._show_stats()
 
     def _show_stats(self) -> None:
@@ -390,15 +380,22 @@ class SelectedUnitManager:
             unit_tier = progress_manager.get_unit_tier(self._selected_unit_type)
         
         self._create_or_focus_unit_card(self._selected_unit_type.value, unit_tier)
+        
+        # Also create item cards for unique item types
+        unique_item_types = sorted(list(set(self._selected_items)), key=lambda x: self._selected_items.index(x))
+        for item_type in unique_item_types:
+            self._create_or_focus_item_card(item_type)
 
     def _hide_stats(self) -> None:
-        """Hide the unit card(s) if they exist."""
+        """Hide all cards if they exist."""
         if info_mode_manager.info_mode:
             pass
         else:
-            if self.unit_card is not None:
-                self.unit_card.kill()
-                self.unit_card = None
+            # Kill all cards
+            for card in self.cards:
+                if card.window.alive():
+                    card.kill()
+            self.cards.clear()
 
     def bring_card_to_front(self, card: Union[UnitCard, ItemCard, GlossaryEntry]) -> None:
         """Bring a specific unit card, item card, or glossary entry to the front."""
@@ -406,33 +403,16 @@ class SelectedUnitManager:
             card.bring_to_front()
 
     def bring_card_to_front_by_index(self, index: int) -> None:
-        """Bring a unit card to the front by its index in the info mode list."""
-        if info_mode_manager.info_mode:
-            all_cards = self.unit_cards + self.item_cards + self.glossary_entries
-            if 0 <= index < len(all_cards):
-                self.bring_card_to_front(all_cards[index])
-        elif not info_mode_manager.info_mode and index == 0 and self.unit_card:
-            self.bring_card_to_front(self.unit_card)
+        """Bring a card to the front by its index in the cards list."""
+        if 0 <= index < len(self.cards):
+            self.bring_card_to_front(self.cards[index])
 
     def clear_all_cards(self) -> None:
-        """Clear all cards and glossary entries."""
-        if self.unit_card is not None:
-            self.unit_card.kill()
-            self.unit_card = None
-        
-        for card in self.unit_cards:
+        """Clear all cards."""
+        for card in self.cards:
             card.kill()
-        self.unit_cards.clear()
-        
-        if self.item_card is not None:
-            self.item_card.kill()
-            self.item_card = None
-        
-        for card in self.item_cards:
-            card.kill()
-        self.item_cards.clear()
+        self.cards.clear()
 
-        self.glossary_entries.clear()
     def _create_unit_card(self, unit_type: UnitType, position: Tuple[float, float], unit_tier: UnitTier) -> UnitCard:
         """Create a unit card with all stats populated."""
         unit_data = get_unit_data(unit_type, unit_tier)
@@ -470,11 +450,12 @@ class SelectedUnitManager:
         self._selected_item_type = item_type
         
         if item_type is None:
-            # Clear the item card
+            # Clear item cards
             if not info_mode_manager.info_mode:
-                if self.item_card is not None:
-                    self.item_card.kill()
-                    self.item_card = None
+                item_cards_to_remove = [card for card in self.cards if isinstance(card, ItemCard)]
+                for card in item_cards_to_remove:
+                    card.kill()
+                    self.cards.remove(card)
         else:
             # Create or update the item card
             self._cleanup_dead_cards()
@@ -490,14 +471,8 @@ class SelectedUnitManager:
             
             new_card = self._create_item_card(item_type, position)
             
-            if info_mode_manager.info_mode:
-                new_card.creation_index = card_index
-                self.item_cards.append(new_card)
-            else:
-                if self.item_card is not None:
-                    self.item_card.kill()
-                self.item_card = new_card
-                new_card.creation_index = card_index
+            new_card.creation_index = card_index
+            self.cards.append(new_card)
 
     def _create_item_card(self, item_type: ItemType, position: Tuple[float, float]) -> ItemCard:
         """Create an item card with all information populated."""

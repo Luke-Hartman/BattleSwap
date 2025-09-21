@@ -44,30 +44,13 @@ class Scene(ABC):
         
         windows_closed = False
         
-        # Handle unit cards that are common across scenes
-        if selected_unit_manager.unit_cards and info_mode_manager.info_mode:
-            # Close all unit cards at once
-            for card in selected_unit_manager.unit_cards:
+        # Handle cards that are common across scenes
+        if selected_unit_manager.cards and info_mode_manager.info_mode:
+            # Close all cards at once
+            for card in selected_unit_manager.cards:
                 card.kill()
-            selected_unit_manager.unit_cards.clear()
-            windows_closed = True
-            
-        # Handle item cards that are common across scenes
-        if selected_unit_manager.item_cards and info_mode_manager.info_mode:
-            # Close all item cards at once
-            for card in selected_unit_manager.item_cards:
-                card.kill()
-            selected_unit_manager.item_cards.clear()
-            windows_closed = True
-            
-        # Handle glossary entries that are common across scenes
-        if selected_unit_manager.glossary_entries:
-            # Close all glossary entries at once
-            for entry in selected_unit_manager.glossary_entries:
-                entry.kill()
-            selected_unit_manager.glossary_entries.clear()
-            windows_closed = True
-        
+            selected_unit_manager.cards.clear()
+            windows_closed = True        
         return windows_closed
 
     def handle_confirmation_dialog_keys(self, event: pygame.event.Event) -> bool:

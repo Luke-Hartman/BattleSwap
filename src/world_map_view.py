@@ -9,6 +9,7 @@ from shapely import Polygon
 from game_constants import gc, reload_game_constants
 from auto_battle import AutoBattle
 from battles import Battle
+from components.item import ItemComponent
 from components.position import Position
 from components.team import Team, TeamType
 from components.unit_type import UnitType, UnitTypeComponent
@@ -166,9 +167,16 @@ class WorldMapView:
                     unit_type = esper.component_for_entity(hovered_unit, UnitTypeComponent).type
                     # Get the unit tier from the entity
                     unit_tier = esper.component_for_entity(hovered_unit, UnitTierComponent).tier
-                    selected_unit_manager.set_selected_unit_with_tier(unit_type, unit_tier)
+                    
+                    # Get items from the unit if it has any
+                    items = []
+                    if esper.has_component(hovered_unit, ItemComponent):
+                        item_component = esper.component_for_entity(hovered_unit, ItemComponent)
+                        items = item_component.items
+                    
+                    selected_unit_manager.set_selected_unit(unit_type, unit_tier, items)
                 else:
-                    selected_unit_manager.set_selected_unit_with_tier(None, None)
+                    selected_unit_manager.set_selected_unit(None, None, None)
 
     # ------------------------------
     # Public API

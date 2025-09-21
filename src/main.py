@@ -86,10 +86,8 @@ while running:
                     # Exiting info mode - clear all cards
                     selected_unit_manager.clear_all_cards()
                 elif not old_info_mode and info_mode_manager.info_mode:
-                    # Entering info mode - if there's a current card, move it to info mode collection
-                    if selected_unit_manager.unit_card is not None:
-                        selected_unit_manager.unit_cards.append(selected_unit_manager.unit_card)
-                        selected_unit_manager.unit_card = None
+                    # Entering info mode - no special handling needed with unified cards list
+                    pass
                 
         # Process selected unit manager events (for future interactive features)
         selected_unit_manager.process_events(event)

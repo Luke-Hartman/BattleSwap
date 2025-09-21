@@ -64,9 +64,9 @@ class UnitCount(BaseCountButton):
     def handle_event(self, event: pygame.event.Event) -> bool:
         """Handle UI events for the unit button."""
         if event.type == pygame_gui.UI_BUTTON_ON_HOVERED and event.ui_element == self.button:
-            selected_unit_manager.set_selected_unit_with_tier(self.unit_type, None)
+            selected_unit_manager.set_selected_unit(self.unit_type, None, None)
             return True
         elif event.type == pygame_gui.UI_BUTTON_ON_UNHOVERED and event.ui_element == self.button:
-            selected_unit_manager.set_selected_unit_with_tier(None, None)
+            selected_unit_manager.set_selected_unit(None, None, None)
             return True
         return False
