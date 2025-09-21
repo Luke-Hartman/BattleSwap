@@ -11,6 +11,7 @@ from components.hitbox import Hitbox
 from components.position import Position
 from components.team import Team, TeamType
 from components.unit_type import UnitTypeComponent
+from entities.items import ItemType
 from components.unit_tier import UnitTier
 from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event, PLAY_SOUND, PlaySoundEvent
 from progress_manager import progress_manager, HexLifecycleState
@@ -81,6 +82,7 @@ class CampaignScene(Scene):
             self.barracks = BarracksUI(
                 self.manager,
                 progress_manager.available_units(None),
+                progress_manager.available_items(None),
                 interactive=True,
                 sandbox_mode=False,
                 current_battle=None,

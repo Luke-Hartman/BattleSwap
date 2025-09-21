@@ -119,6 +119,10 @@ class GameConstants(BaseModel):
     ZOMBIE_SPITTER_POINTS: int
     ZOMBIE_TANK_POINTS: int
     
+    # Item Point Values
+    ITEM_HEALTH_POTION_POINTS: int
+    ITEM_HEALTH_POTION_HEALTH_BONUS: int
+    
     # Core Units
     # Archer
     CORE_ARCHER_HP: float

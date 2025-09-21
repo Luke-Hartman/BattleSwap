@@ -13,6 +13,8 @@ from components.placing import Placing
 from components.position import Position
 from components.sprite_sheet import SpriteSheet
 from components.unit_type import UnitType, UnitTypeComponent
+from components.item import ItemComponent
+from entities.items import ItemType
 from game_constants import gc
 from hex_grid import get_hex_vertices, axial_to_world
 from components.team import Team, TeamType
@@ -333,19 +335,19 @@ def use_world(world_id: str) -> Generator[None, None, None]:
     finally:
         esper.switch_world(starting_world)
 
-def get_unit_placements(team_type: TeamType, battle: Battle) -> List[Tuple[UnitType, Tuple[float, float]]]:
+def get_unit_placements(team_type: TeamType, battle: Battle) -> List[Tuple[UnitType, Tuple[float, float], List[ItemType]]]:
     world_x, world_y = axial_to_world(*battle.hex_coords)
     with use_world(battle.id):
         return [
-        (unit_type.type, (pos.x - world_x, pos.y - world_y))
-        for ent, (unit_type, team, pos) in esper.get_components(UnitTypeComponent, Team, Position)
-        if team.type == team_type and ent not in esper._dead_entities and not esper.has_component(ent, Placing)
-    ]
+            (unit_type.type, (pos.x - world_x, pos.y - world_y), esper.component_for_entity(ent, ItemComponent).items)
+            for ent, (unit_type, team, pos) in esper.get_components(UnitTypeComponent, Team, Position)
+            if team.type == team_type and ent not in esper._dead_entities and not esper.has_component(ent, Placing)
+        ]
 
 def mouse_over_ui(manager: pygame_gui.UIManager) -> bool:
     return manager.get_hovering_any_element()
 
-def has_unsaved_changes(battle: Battle, unit_placements: List[Tuple[UnitType, Tuple[float, float]]]) -> bool:
+def has_unsaved_changes(battle: Battle, unit_placements: List[Tuple[UnitType, Tuple[float, float], List[ItemType]]]) -> bool:
     """Check if current unit placements differ from saved solution.
     
     Args:
@@ -356,7 +358,8 @@ def has_unsaved_changes(battle: Battle, unit_placements: List[Tuple[UnitType, Tu
         True if there are unsaved changes, False otherwise
     """
     saved_solution = progress_manager.solutions.get(battle.hex_coords)
-    current_set = set(unit_placements)
+    # Convert items lists to tuples for hashing
+    current_set = set((unit_type, position, tuple(items)) for unit_type, position, items in unit_placements)
     
     if saved_solution is None:
         return len(current_set) > 0
@@ -366,7 +369,8 @@ def has_unsaved_changes(battle: Battle, unit_placements: List[Tuple[UnitType, Tu
     if saved_solution.solved_corrupted != current_is_corrupted:
         return True
         
-    saved_set = set(saved_solution.unit_placements)
+    # Convert saved solution items lists to tuples for hashing
+    saved_set = set((unit_type, position, tuple(items)) for unit_type, position, items in saved_solution.unit_placements)
     return current_set != saved_set
 
 def calculate_group_placement_positions(

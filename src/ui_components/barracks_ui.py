@@ -1,6 +1,6 @@
 """Provides the BarracksUI component for managing available units."""
 import time
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union, Tuple
 import pygame
 import pygame_gui
 from pygame_gui.core import ObjectID
@@ -9,111 +9,16 @@ from pygame_gui.elements import UIPanel, UIScrollingContainer, UIButton, UILabel
 import battles
 from components.unit_type import UnitType
 from entities.units import unit_theme_ids, Faction
+from entities.items import ItemType
 from selected_unit_manager import selected_unit_manager
 from progress_manager import progress_manager
-from unit_values import unit_values
+from point_values import unit_values, item_values
 from events import PLAY_SOUND, PlaySoundEvent, emit_event
 from keyboard_shortcuts import format_button_text
+from ui_components.unit_count import UnitCount
+from ui_components.item_count import ItemCount
 
 
-class UnitCount(UIPanel):
-    """A custom UI button that displays a unit icon and its count."""
-    
-    size = 80
-    
-    def __init__(self, 
-        x_pos: int,
-        y_pos: int,
-        unit_type: UnitType,
-        count: int,
-        interactive: bool,
-        manager: pygame_gui.UIManager,
-        infinite: bool,
-        container: Optional[pygame_gui.core.UIContainer] = None,
-    ):
-        self.unit_type = unit_type
-        self.count = count
-        self.interactive = interactive
-        self.infinite = infinite
-        self.manager = manager
-        super().__init__(
-            relative_rect=pygame.Rect((x_pos, y_pos), (self.size, self.size)),
-            manager=manager,
-            container=container,
-            margins={'left': 0, 'right': 0, 'top': 0, 'bottom': 0}
-        )
-        # Get tier-specific theme class for the unit icon
-        from progress_manager import progress_manager
-        from entities.units import get_unit_icon_theme_class
-        unit_tier = progress_manager.get_unit_tier(unit_type)
-        tier_theme_class = get_unit_icon_theme_class(unit_tier)
-        
-        self.button = UIButton(
-            relative_rect=pygame.Rect((0, 0), (self.size, self.size)),
-            manager=manager,
-            text="",
-            container=self,
-            object_id=ObjectID(class_id=tier_theme_class, object_id=unit_theme_ids[unit_type]),
-        )
-        self.button.can_hover = lambda: True
-        self.count_label = UILabel(
-            relative_rect=pygame.Rect((0, self.size - 25), (self.size, 25)),
-            text="inf" if infinite else str(count),
-            manager=manager,
-            container=self,
-            object_id=ObjectID(class_id="@unit_count_text"),
-        )
-        self.value_label = UILabel(
-            relative_rect=pygame.Rect((0, 0), (self.size, 25)),
-            text=str(unit_values[unit_type]),
-            manager=manager,
-            container=self,
-            object_id=ObjectID(class_id="@unit_count_text"),
-        )
-        if not interactive:
-            self.button.disable()
-            
-    def update_count(self, count: int) -> None:
-        """Update the count without recreating the entire UI element."""
-        if self.count == count:
-            return
-            
-        self.count = count
-        if self.count_label:
-            self.count_label.set_text("inf" if self.infinite else str(count))
-        
-    def set_interactive(self, interactive: bool) -> None:
-        """Update the interactive state without recreating the element."""
-        if self.interactive == interactive:
-            return
-            
-        self.interactive = interactive
-        if interactive:
-            self.button.enable()
-        else:
-            self.button.disable()
-
-    def refresh_tier_styling(self) -> None:
-        """Update the tier-specific styling for this unit icon."""
-        from progress_manager import progress_manager
-        from entities.units import get_unit_icon_theme_class
-        unit_tier = progress_manager.get_unit_tier(self.unit_type)
-        tier_theme_class = get_unit_icon_theme_class(unit_tier)
-        if tier_theme_class in self.button.class_ids:
-            return
-        # Update the button's object ID with the new tier theme class
-        from pygame_gui.core import ObjectID
-        new_object_id = ObjectID(class_id=tier_theme_class, object_id=unit_theme_ids[self.unit_type])
-        self.button.change_object_id(new_object_id)
-
-    def handle_event(self, event: pygame.event.Event) -> bool:
-        if event.type == pygame_gui.UI_BUTTON_ON_HOVERED and event.ui_element == self.button:
-            selected_unit_manager.set_selected_unit_with_tier(self.unit_type, None)
-            return True
-        elif event.type == pygame_gui.UI_BUTTON_ON_UNHOVERED and event.ui_element == self.button:
-            selected_unit_manager.set_selected_unit_with_tier(None, None)
-            return True
-        return False
 
 
 class BarracksUI(UITabContainer):
@@ -123,16 +28,19 @@ class BarracksUI(UITabContainer):
             self,
             manager: pygame_gui.UIManager,
             starting_units: Dict[UnitType, int],
+            starting_items: Dict[ItemType, int],
             interactive: bool,
             sandbox_mode: bool,
             current_battle: Optional[battles.Battle] = None,
     ):
         self.manager = manager
         self._units = starting_units.copy()
+        self._items = starting_items.copy()
         self.interactive = interactive
         self.sandbox_mode = sandbox_mode
         self.current_battle = current_battle
         self.selected_unit_type: Optional[UnitType] = None
+        self.selected_item_type: Optional[ItemType] = None
         
         if sandbox_mode:
             self._units = {unit_type: float('inf') for unit_type in UnitType}
@@ -141,7 +49,7 @@ class BarracksUI(UITabContainer):
             encountered_units = set(starting_units.keys())
             for hex_coords in progress_manager.solutions:
                 battle = battles.get_battle_coords(hex_coords)
-                for enemy_type, _ in battle.enemies:
+                for enemy_type, _, _ in battle.enemies:
                     encountered_units.add(enemy_type)
 
             for unit_type in encountered_units:
@@ -175,10 +83,18 @@ class BarracksUI(UITabContainer):
             tab_index = self.add_tab(faction.name, "faction_tab")
             self.faction_to_tab_index[faction] = tab_index
         
+        # Add items tab at the end
+        items_tab_index = self.add_tab("ITEMS", "items_tab")
+        self.items_tab_index = items_tab_index
+        
         self.unit_containers: Dict[str, UIScrollingContainer] = {}
         self.unit_list_items_by_faction: Dict[str, List[UnitCount]] = {
             "ALL": []
         }
+        
+        # Item containers and lists
+        self.item_containers: Dict[str, UIScrollingContainer] = {}
+        self.item_list_items: List[ItemCount] = []
 
         for faction in self.available_factions:
             self.unit_list_items_by_faction[faction.name] = []
@@ -213,7 +129,22 @@ class BarracksUI(UITabContainer):
             )
             self.unit_containers[faction.name] = container
         
+        # Create items tab container
+        items_tab_panel = self.get_tab_container(items_tab_index)
+        items_container_rect = pygame.Rect(
+            (padding, padding),
+            (panel_width - 2 * padding, content_height - 2 * padding)
+        )
+        items_container = UIScrollingContainer(
+            relative_rect=items_container_rect,
+            manager=self.manager,
+            container=items_tab_panel,
+            allow_scroll_y=False,
+        )
+        self.item_containers["ITEMS"] = items_container
+        
         self._populate_units(padding, needs_scrollbar)
+        self._populate_items(padding, needs_scrollbar)
 
         # Set "ALL" tab as default
         self.switch_current_container(all_tab_index)
@@ -222,9 +153,24 @@ class BarracksUI(UITabContainer):
         padding = 10
         
         if tab_name == "ALL":
-            # Calculate units for "ALL" tab - only units with count > 0
+            # Calculate units and items for "ALL" tab - only those with count > 0
             units_count = len([unit_type for unit_type, count in self._units.items() 
                               if count > 0 or self.sandbox_mode])
+            if self.sandbox_mode:
+                items_count = len(ItemType)
+            else:
+                available_items = progress_manager.available_items(self.current_battle)
+                items_count = len([item_type for item_type, count in available_items.items() 
+                                 if count > 0])
+            total_count = units_count + items_count
+        elif tab_name == "ITEMS":
+            # Calculate items for "ITEMS" tab
+            if self.sandbox_mode:
+                items_count = len(ItemType)
+            else:
+                available_items = progress_manager.available_items(self.current_battle)
+                items_count = len([item_type for item_type, count in available_items.items() 
+                                 if count > 0])
         else:
             # Calculate units for specific faction tab
             faction = next((f for f in self.available_factions if f.name == tab_name), None)
@@ -233,14 +179,24 @@ class BarracksUI(UITabContainer):
             else:
                 units_count = 0
         
-        total_width = units_count * (UnitCount.size + padding // 2) - padding // 2 if units_count > 0 else 0
-        needs_scrollbar = total_width > panel_width - 2 * padding
-        panel_height = UnitCount.size + 45 if needs_scrollbar else UnitCount.size + 20
+        if tab_name == "ITEMS":
+            total_width = items_count * (ItemCount.size + padding // 2) - padding // 2 if items_count > 0 else 0
+            needs_scrollbar = total_width > panel_width - 2 * padding
+            panel_height = ItemCount.size + 45 if needs_scrollbar else ItemCount.size + 20
+        elif tab_name == "ALL":
+            # Use UnitCount.size for both units and items in "ALL" tab (they're the same size)
+            total_width = total_count * (UnitCount.size + padding // 2) - padding // 2 if total_count > 0 else 0
+            needs_scrollbar = total_width > panel_width - 2 * padding
+            panel_height = UnitCount.size + 45 if needs_scrollbar else UnitCount.size + 20
+        else:
+            total_width = units_count * (UnitCount.size + padding // 2) - padding // 2 if units_count > 0 else 0
+            needs_scrollbar = total_width > panel_width - 2 * padding
+            panel_height = UnitCount.size + 45 if needs_scrollbar else UnitCount.size + 20
 
         return needs_scrollbar, panel_height
 
     def _populate_units(self, padding: int, needs_scrollbar: bool) -> None:
-        # Populate "ALL" tab first - only units with count > 0
+        # Populate "ALL" tab first - units and items with count > 0
         all_container = self.unit_containers["ALL"]
         container_height = all_container.rect.height
         y_offset = (container_height - UnitCount.size) // 2 if not needs_scrollbar else 0
@@ -275,6 +231,30 @@ class BarracksUI(UITabContainer):
             
             self.unit_list_items_by_faction["ALL"].append(item)
             x_position += item.size + padding // 2
+        
+        # Add items to the "ALL" tab after units
+        # Get available items
+        if self.sandbox_mode:
+            available_items = {item_type: float('inf') for item_type in ItemType}
+        else:
+            available_items = progress_manager.available_items(self.current_battle)
+        
+        for item_type in ItemType:
+            count = available_items.get(item_type, 0)
+            if count > 0 or self.sandbox_mode:
+                item_count = ItemCount(
+                    x_pos=x_position,
+                    y_pos=y_offset,
+                    item_type=item_type,
+                    count=count,
+                    interactive=self.interactive and count > 0,
+                    manager=self.manager,
+                    container=all_container
+                )
+                
+                # Add to the same list as units for the "ALL" tab
+                self.unit_list_items_by_faction["ALL"].append(item_count)
+                x_position += item_count.size + padding // 2
 
         # Populate faction tabs - show all units for that faction (including count 0)
         for faction in self.available_factions:
@@ -373,7 +353,7 @@ class BarracksUI(UITabContainer):
                 unit_type for unit_type, count in current_units.items() 
                 if count > 0 or self.sandbox_mode
             )
-            existing_all_units = set(item.unit_type for item in self.unit_list_items_by_faction["ALL"])
+            existing_all_units = set(item.unit_type for item in self.unit_list_items_by_faction["ALL"] if isinstance(item, UnitCount))
             
             if current_available_units != existing_all_units:
                 # Unit availability changed, need full rebuild
@@ -383,10 +363,11 @@ class BarracksUI(UITabContainer):
             else:
                 # Just update counts for "ALL" tab
                 for item in self.unit_list_items_by_faction["ALL"]:
-                    unit_type = item.unit_type
-                    count = current_units[unit_type]
-                    item.update_count(count)
-                    item.set_interactive(self.interactive and count > 0)
+                    if isinstance(item, UnitCount):
+                        unit_type = item.unit_type
+                        count = current_units[unit_type]
+                        item.update_count(count)
+                        item.set_interactive(self.interactive and count > 0)
             
             # Update faction tabs
             for faction in self.available_factions:
@@ -396,11 +377,12 @@ class BarracksUI(UITabContainer):
                 }
                 
                 for item in self.unit_list_items_by_faction[faction.name]:
-                    unit_type = item.unit_type
-                    if unit_type in faction_units:
-                        count = faction_units[unit_type]
-                        item.update_count(count)
-                        item.set_interactive(self.interactive and count > 0)
+                    if isinstance(item, UnitCount):
+                        unit_type = item.unit_type
+                        if unit_type in faction_units:
+                            count = faction_units[unit_type]
+                            item.update_count(count)
+                            item.set_interactive(self.interactive and count > 0)
 
 
     def add_unit(self, unit_type: UnitType) -> None:
@@ -410,7 +392,7 @@ class BarracksUI(UITabContainer):
         # Update "ALL" tab
         found_in_all = False
         for item in self.unit_list_items_by_faction["ALL"]:
-            if item.unit_type == unit_type:
+            if isinstance(item, UnitCount) and item.unit_type == unit_type:
                 item.update_count(self._units[unit_type])
                 item.set_interactive(self.interactive and self._units[unit_type] > 0)
                 found_in_all = True
@@ -420,7 +402,7 @@ class BarracksUI(UITabContainer):
         faction = Faction.faction_of(unit_type)
         found_in_faction = False
         for item in self.unit_list_items_by_faction[faction.name]:
-            if item.unit_type == unit_type:
+            if isinstance(item, UnitCount) and item.unit_type == unit_type:
                 item.update_count(self._units[unit_type])
                 item.set_interactive(self.interactive and self._units[unit_type] > 0)
                 found_in_faction = True
@@ -442,7 +424,7 @@ class BarracksUI(UITabContainer):
         
         # Update "ALL" tab
         for item in self.unit_list_items_by_faction["ALL"]:
-            if item.unit_type == unit_type:
+            if isinstance(item, UnitCount) and item.unit_type == unit_type:
                 item.update_count(self._units[unit_type])
                 item.set_interactive(self.interactive and self._units[unit_type] > 0)
                 break
@@ -450,7 +432,7 @@ class BarracksUI(UITabContainer):
         # Update faction tab
         faction = Faction.faction_of(unit_type)
         for item in self.unit_list_items_by_faction[faction.name]:
-            if item.unit_type == unit_type:
+            if isinstance(item, UnitCount) and item.unit_type == unit_type:
                 item.update_count(self._units[unit_type])
                 item.set_interactive(self.interactive and self._units[unit_type] > 0)
                 break
@@ -458,7 +440,7 @@ class BarracksUI(UITabContainer):
     def select_unit_type(self, unit_type: Optional[UnitType]) -> None:
         for faction_items in self.unit_list_items_by_faction.values():
             for item in faction_items:
-                if item.unit_type == unit_type:
+                if isinstance(item, UnitCount) and item.unit_type == unit_type:
                     item.button.select()
                 elif item.button.is_selected:
                     item.button.unselect()
@@ -469,12 +451,13 @@ class BarracksUI(UITabContainer):
 
     @property
     def unit_list_items(self) -> List[UnitCount]:
-        return [item for items in self.unit_list_items_by_faction.values() for item in items]
+        return [item for items in self.unit_list_items_by_faction.values() for item in items if isinstance(item, UnitCount)]
 
     def refresh_all_tier_styling(self) -> None:
         """Refresh tier-specific styling for all unit icons."""
         for item in self.unit_list_items:
-            item.refresh_tier_styling()
+            if hasattr(item, 'refresh_tier_styling'):
+                item.refresh_tier_styling()
 
     def _resize_for_current_tab(self) -> None:
         """Resize the panel based on the current tab's content."""
@@ -504,6 +487,11 @@ class BarracksUI(UITabContainer):
             for container in self.unit_containers.values():
                 container.set_relative_position(container_rect.topleft)
                 container.set_dimensions(container_rect.size)
+            
+            # Update item container sizes
+            for container in self.item_containers.values():
+                container.set_relative_position(container_rect.topleft)
+                container.set_dimensions(container_rect.size)
 
     def switch_current_container(self, container_index: int) -> None:
         """Override to handle dynamic resizing when switching tabs."""
@@ -512,12 +500,12 @@ class BarracksUI(UITabContainer):
 
     def cycle_to_next_faction(self) -> None:
         """Cycle to the next faction tab."""
-        # Total tabs = 1 ("ALL") + number of faction tabs
-        total_tabs = 1 + len(self.available_factions)
+        # Total tabs = 1 ("ALL") + number of faction tabs + 1 ("ITEMS")
+        total_tabs = 1 + len(self.available_factions) + 1
         if total_tabs == 0:
             return
         
-        # Since tabs are added in order: "ALL" (index 0), then factions (indices 1, 2, 3, ...)
+        # Since tabs are added in order: "ALL" (index 0), then factions (indices 1, 2, 3, ...), then "ITEMS" (last)
         next_tab_index = (self.current_container_index + 1) % total_tabs
         
         # Switch the container (this will automatically trigger resizing)
@@ -554,6 +542,11 @@ class BarracksUI(UITabContainer):
             for item in self.unit_list_items_by_faction["ALL"]:
                 if item.handle_event(event):
                     return True
+        elif tab_text == "ITEMS":
+            # Handle events for items tab
+            for item in self.item_list_items:
+                if item.handle_event(event):
+                    return True
         else:
             # Handle events for faction tabs
             tab_id = tab_text.lower() + "_tab"
@@ -564,3 +557,174 @@ class BarracksUI(UITabContainer):
                     return True
                 
         return False
+
+    def _populate_items(self, padding: int, needs_scrollbar: bool) -> None:
+        """Populate the items tab with available items."""
+        container = self.item_containers["ITEMS"]
+        container_height = container.rect.height
+        y_offset = (container_height - ItemCount.size) // 2 if not needs_scrollbar else 0
+        
+        # Clear existing items
+        for item in self.item_list_items:
+            item.kill()
+        self.item_list_items.clear()
+        
+        # Get available items
+        if self.sandbox_mode:
+            available_items = {item_type: float('inf') for item_type in ItemType}
+        else:
+            available_items = progress_manager.available_items(self.current_battle)
+        
+        # Create item buttons
+        x_position = 0
+        
+        for item_type in ItemType:
+            count = available_items.get(item_type, 0)
+            if count > 0 or self.sandbox_mode:
+                item_count = ItemCount(
+                    x_pos=x_position,
+                    y_pos=y_offset,
+                    item_type=item_type,
+                    count=count,
+                    interactive=self.interactive and count > 0,
+                    manager=self.manager,
+                    container=container
+                )
+                self.item_list_items.append(item_count)
+                x_position += ItemCount.size + padding // 2
+
+    def add_item(self, item_type: ItemType) -> None:
+        """Add an item of the specified type to the barracks."""
+        self._items[item_type] += 1
+        
+        # Update "ALL" tab
+        found_in_all = False
+        for item in self.unit_list_items_by_faction["ALL"]:
+            if isinstance(item, ItemCount) and item.item_type == item_type:
+                item.update_count(self._items[item_type])
+                item.set_interactive(self.interactive and self._items[item_type] > 0)
+                found_in_all = True
+                break
+        
+        # Update ITEMS tab
+        found_in_items = False
+        for item in self.item_list_items:
+            if item.item_type == item_type:
+                item.update_count(self._items[item_type])
+                item.set_interactive(self.interactive and self._items[item_type] > 0)
+                found_in_items = True
+                break
+        
+        # If item wasn't found in tabs (was count 0 before), rebuild to add it
+        if not found_in_all or not found_in_items:
+            self._rebuild()
+
+    def remove_item(self, item_type: ItemType) -> None:
+        """Remove an item of the specified type from the barracks."""
+        assert self._items[item_type] > 0
+        self._items[item_type] -= 1
+        
+        # If count becomes 0, need to rebuild to remove from tabs
+        if self._items[item_type] == 0 and not self.sandbox_mode:
+            self._rebuild()
+            return
+        
+        # Update "ALL" tab
+        for item in self.unit_list_items_by_faction["ALL"]:
+            if isinstance(item, ItemCount) and item.item_type == item_type:
+                item.update_count(self._items[item_type])
+                item.set_interactive(self.interactive and self._items[item_type] > 0)
+                break
+        
+        # Update ITEMS tab
+        for item in self.item_list_items:
+            if item.item_type == item_type:
+                item.update_count(self._items[item_type])
+                item.set_interactive(self.interactive and self._items[item_type] > 0)
+                break
+
+    def select_item_type(self, item_type: Optional[ItemType]) -> None:
+        """Select an item type for placement."""
+        self.selected_item_type = item_type
+        for item in self.item_list_items:
+            if item.item_type == item_type:
+                item.button.select()
+            elif item.button.is_selected:
+                item.button.unselect()
+
+    @property
+    def items(self) -> Dict[ItemType, int]:
+        """Get the current item counts."""
+        return self._items.copy()
+    
+    def get_item_count(self, item_type: ItemType) -> int:
+        """Get the count of a specific item type."""
+        return self._items.get(item_type, 0)
+    
+    def has_item_available(self, item_type: ItemType) -> bool:
+        """Check if an item type is available (count > 0)."""
+        return self.get_item_count(item_type) > 0
+    
+    def get_unit_count(self, unit_type: UnitType) -> int:
+        """Get the count of a specific unit type."""
+        return self.units.get(unit_type, 0)
+    
+    def has_unit_available(self, unit_type: UnitType) -> bool:
+        """Check if a unit type is available (count > 0)."""
+        return self.get_unit_count(unit_type) > 0
+    
+    def handle_button_press(self, ui_element) -> Optional[Union[UnitType, ItemType]]:
+        """
+        Handle button press events and return the UnitType or ItemType if handled.
+        Returns None if not handled.
+        """
+        # Check unit buttons
+        for unit_count in self.unit_list_items:
+            if ui_element == unit_count.button:
+                return unit_count.unit_type
+        
+        # Check item buttons
+        for item_count in self.item_list_items:
+            if ui_element == item_count.button:
+                return item_count.item_type
+        
+        return None
+    
+    def get_current_tab_items(self) -> List[Union[UnitCount, ItemCount]]:
+        """Get the items currently visible in the active tab."""
+        if self.current_container_index == self.all_tab_index:
+            # ALL tab includes both units and items
+            all_items = []
+            all_items.extend(self.unit_list_items_by_faction["ALL"])
+            all_items.extend(self.item_list_items)
+            return all_items
+        else:
+            # Check if we're on a faction tab
+            for faction, tab_index in self.faction_to_tab_index.items():
+                if tab_index == self.current_container_index:
+                    return self.unit_list_items_by_faction[faction.name]
+            return []
+    
+    def get_item_at_index(self, index: int) -> Optional[Union[UnitType, ItemType]]:
+        """
+        Get the item at the specified index in the current tab.
+        Returns the UnitType or ItemType directly, or None if index is out of bounds or item is not interactive.
+        """
+        current_tab_items = self.get_current_tab_items()
+        
+        if index < 0 or index >= len(current_tab_items):
+            return None
+        
+        item = current_tab_items[index]
+        
+        # Only return interactive items (items that are available)
+        if not item.interactive:
+            return None
+        
+        # Return the appropriate type directly
+        if hasattr(item, 'unit_type'):  # UnitCount
+            return item.unit_type
+        elif hasattr(item, 'item_type'):  # ItemCount
+            return item.item_type
+        
+        return None

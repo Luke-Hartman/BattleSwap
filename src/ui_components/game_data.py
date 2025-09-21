@@ -1,6 +1,7 @@
 import enum
 from components.unit_tier import UnitTier
 from components.unit_type import UnitType
+from entities.items import ItemType
 from game_constants import gc
 from typing import Dict, List, Optional
 from dataclasses import dataclass
@@ -90,6 +91,13 @@ class UnitData:
                 raise ValueError(f"Stat type {stat_type} not found in stats")
             if stat_type not in self.tooltips:
                 raise ValueError(f"Stat type {stat_type} not found in tooltips")
+
+@dataclass
+class ItemData:
+    """Data class representing item information including description and tips."""
+    name: str
+    description: str
+    tips: Dict[str, List[str]]
 
 # Glossary entry content
 GLOSSARY_ENTRIES = {
@@ -2327,3 +2335,18 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         )
     
     raise ValueError(f"Unknown unit type: {unit_type}")
+
+def get_item_data(item_type: ItemType) -> ItemData:
+    """Get item data for the specified item type."""
+    
+    if item_type == ItemType.HEALTH_POTION:
+        return ItemData(
+            name="Health Potion",
+            description=f"Grants the equipped unit +{gc.ITEM_HEALTH_POTION_HEALTH_BONUS} HP.",
+            tips={
+                "Strong when": ["Unit has low health", "Unit is a tank", "Unit needs survivability", "Long battles"],
+                "Weak when": ["Unit already has high health", "Unit dies quickly anyway", "Unit is ranged and safe"],
+            }
+        )
+    
+    raise ValueError(f"Unknown item type: {item_type}")

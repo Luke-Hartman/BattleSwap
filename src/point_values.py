@@ -1,4 +1,5 @@
 from components.unit_type import UnitType
+from entities.items import ItemType
 from typing import Dict
 from game_constants import gc
 
@@ -50,4 +51,9 @@ unit_values: Dict[UnitType, int] = {
     UnitType.ZOMBIE_JUMPER: gc.ZOMBIE_JUMPER_POINTS,
     UnitType.ZOMBIE_SPITTER: gc.ZOMBIE_SPITTER_POINTS,
     UnitType.ZOMBIE_TANK: gc.ZOMBIE_TANK_POINTS,
+}
+
+# Item point values
+item_values: Dict[ItemType, int] = {
+    ItemType.HEALTH_POTION: gc.ITEM_HEALTH_POTION_POINTS,
 }

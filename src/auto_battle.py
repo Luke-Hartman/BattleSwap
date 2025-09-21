@@ -130,9 +130,9 @@ def simulate_battle(
     # TODO: THIS IS A HACK - I HAVE HARDCODED THE ALLY AND ENEMY TIERS.
 
     # Create units for both teams
-    for unit_type, position in ally_placements:
+    for unit_type, position, items in ally_placements:
         create_unit(x=position[0], y=position[1], unit_type=unit_type, team=TeamType.TEAM1, corruption_powers=corruption_powers, tier=UnitTier.ELITE)
-    for unit_type, position in enemy_placements:
+    for unit_type, position, items in enemy_placements:
         create_unit(x=position[0], y=position[1], unit_type=unit_type, team=TeamType.TEAM2, corruption_powers=corruption_powers, tier=UnitTier.ELITE)
     
     # Run the battle simulation

@@ -52,6 +52,14 @@ class Scene(ABC):
             selected_unit_manager.unit_cards.clear()
             windows_closed = True
             
+        # Handle item cards that are common across scenes
+        if selected_unit_manager.item_cards and info_mode_manager.info_mode:
+            # Close all item cards at once
+            for card in selected_unit_manager.item_cards:
+                card.kill()
+            selected_unit_manager.item_cards.clear()
+            windows_closed = True
+            
         # Handle glossary entries that are common across scenes
         if selected_unit_manager.glossary_entries:
             # Close all glossary entries at once

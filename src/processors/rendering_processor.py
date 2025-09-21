@@ -8,10 +8,13 @@ rendering entities with Position, AnimationState, SpriteSheet, and Team componen
 import math
 import esper
 import pygame
+from typing import Optional, Tuple
 import pygame.gfxdraw
 import pygame_gui
 from components.animation import AnimationType
 from components.aura import Aura
+from components.can_have_item import CanHaveItem
+from components.item import ItemComponent
 from components.destination import Destination
 from components.focus import Focus
 from components.hitbox import Hitbox
@@ -61,8 +64,8 @@ class RenderingProcessor(esper.Processor):
         center_x: float,
         center_y: float,
         radius: float,
-        fill_color: tuple[int, int, int, int] | None = None,
-        outline_color: tuple[int, int, int, int] | None = None
+        fill_color: Optional[tuple[int, int, int, int]] = None,
+        outline_color: Optional[tuple[int, int, int, int]] = None
     ) -> None:
         """
         Draw a circle with optional fill and outline colors.
@@ -220,6 +223,16 @@ class RenderingProcessor(esper.Processor):
                 # )
                 if unit_state.state != State.DEAD and health.current < health.maximum:
                     self.draw_health_bar(pos, health, team, hitbox)
+                
+                # Draw item placement indicators if unit can have items
+                if esper.has_component(ent, CanHaveItem):
+                    self.draw_item_placement_indicator(pos, hitbox, team, ent)
+                
+                # Draw item indicators if unit has items
+                if esper.has_component(ent, ItemComponent):
+                    item_component = esper.component_for_entity(ent, ItemComponent)
+                    if item_component.items:  # If unit has any items
+                        self.draw_item_indicators(pos, item_component, hitbox, team, health)
 
         def draw_dashed_line(surface, color, start_pos, end_pos, width=1, dash_length=10, gap_length=5, t=0):
             start = pygame.Vector2(start_pos)
@@ -345,3 +358,72 @@ class RenderingProcessor(esper.Processor):
 
         # Draw the border of the health bar
         pygame.draw.rect(self.screen, (192, 192, 192), bar_pos, 1)
+
+    def draw_item_indicators(self, pos: Position, item_component: 'ItemComponent', hitbox: 'Hitbox', team: 'Team', health: 'Health') -> None:
+        """Draw small indicators showing that a unit has items equipped."""
+        screen_pos = self.camera.world_to_screen(pos.x, pos.y)
+        
+        # Calculate position for item indicators (above the unit)
+        indicator_size = 8
+        indicator_spacing = 2
+        total_width = len(item_component.items) * (indicator_size + indicator_spacing) - indicator_spacing
+        start_x = screen_pos[0] - total_width // 2
+        
+        # Calculate health bar position
+        bar_height = 5 * self.camera.scale
+        bar_y_offset = 8 * self.camera.scale
+        health_bar_y = screen_pos[1] - (hitbox.height * self.camera.scale)/2 - bar_height - bar_y_offset
+        
+        # Check if health bar is being displayed (unit is not at full health)
+        health_bar_displayed = health.current < health.maximum
+        
+        if health_bar_displayed:
+            # Position above the health bar
+            start_y = health_bar_y - indicator_size - 3  # Above the health bar
+        else:
+            # Position exactly where the health bar would be (replace health bar position)
+            start_y = health_bar_y  # Same Y position as health bar
+        
+        # Draw a small square for each item
+        for i, item_type in enumerate(item_component.items):
+            x = start_x + i * (indicator_size + indicator_spacing)
+            y = start_y
+            
+            # Use team color for item indicators
+            color = tuple(gc.TEAM1_COLOR) if team.type == TeamType.TEAM1 else tuple(gc.TEAM2_COLOR)
+            
+            # Draw filled square
+            pygame.draw.rect(self.screen, color, (x, y, indicator_size, indicator_size))
+            # Draw border
+            pygame.draw.rect(self.screen, (0, 0, 0), (x, y, indicator_size, indicator_size), 1)
+
+    def draw_item_placement_indicator(self, pos: Position, hitbox: Hitbox, team: Team, entity_id: int) -> None:
+        """Draw visual indicator for item placement on a unit."""
+        screen_pos = self.camera.world_to_screen(pos.x, pos.y)
+        radius = (hitbox.width ** 2 + hitbox.height ** 2) ** 0.5
+        
+        # Check if this unit is being hovered (simplified check)
+        # We'll use a basic mouse position check since we don't have access to the hover logic here
+        mouse_pos = pygame.mouse.get_pos()
+        mouse_world_pos = self.camera.screen_to_world(*mouse_pos)
+        distance = ((pos.x - mouse_world_pos[0]) ** 2 + (pos.y - mouse_world_pos[1]) ** 2) ** 0.5
+        is_hovered = distance < radius * 0.8  # Rough hover detection
+        
+        # Choose color based on hover state
+        if is_hovered:
+            color = (255, 255, 0)  # Bright yellow for hovered unit
+            width = 3
+        else:
+            color = (0, 255, 0)  # Green for valid targets
+            width = 2
+        
+        # Draw a single circle to indicate valid target
+        pygame.draw.circle(
+            self.screen, 
+            color, 
+            screen_pos, 
+            (radius * self.camera.scale) * 0.7, 
+            width=width
+        )
+        
+

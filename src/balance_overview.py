@@ -8,7 +8,7 @@ from battle_solver import (
     ALLOWED_UNIT_TYPES, EvolutionStrategy, AddRandomUnit, MoveNextToAlly, PlotGroup, Plotter, Population, RemoveRandomUnit, 
     PerturbPosition, RandomizeUnitPosition, RandomizeUnitType, ReplaceSubarmy, TournamentSelection, UniformSelection, UnitCountsPlotter, UnitValuesPlotter, random_population
 )
-from unit_values import unit_values
+from point_values import unit_values
 
 class AllBattlesPlotter:
 

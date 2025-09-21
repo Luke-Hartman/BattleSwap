@@ -37,6 +37,8 @@ from components.status_effect import InfantryBannerBearerEmpowered, Fleeing, Hea
 from target_strategy import ByCurrentHealth, ByDistance, ByMissingHealth, ConditionPenalty, TargetStrategy, TargetingGroup, WeightedRanking
 from components.destination import Destination
 from components.team import Team, TeamType
+from components.item import ItemComponent
+from entities.items import ItemType
 from components.unit_state import State, UnitState
 from components.movement import Movement
 from components.unit_type import UnitType, UnitTypeComponent
@@ -405,9 +407,10 @@ def create_unit(
     tier: UnitTier = UnitTier.BASIC,
     play_spawning: bool = False,
     orientation: Optional[FacingDirection] = None,
+    items: Optional[List[ItemType]] = None,
 ) -> int:
     """Create a unit entity with all necessary components."""
-    return {
+    entity = {
         UnitType.CORE_ARCHER: create_core_archer,
         UnitType.CORE_VETERAN: create_core_veteran,
         UnitType.CORE_CAVALRY: create_core_cavalry,
@@ -456,6 +459,16 @@ def create_unit(
         UnitType.ZOMBIE_SPITTER: create_zombie_spitter,
         UnitType.ZOMBIE_TANK: create_zombie_tank,
     }[unit_type](x, y, team, corruption_powers, tier, play_spawning, orientation)
+
+    # Add ItemComponent and apply item effects
+    esper.add_component(entity, ItemComponent(items or []))
+    if items:
+        from entities.items import item_registry
+        for item_type in items:
+            item = item_registry[item_type]
+            item.apply(entity)
+    
+    return entity
 
 def unit_base_entity(
         x: int,

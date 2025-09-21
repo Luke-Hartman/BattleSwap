@@ -8,7 +8,7 @@ from entities.units import load_sprite_sheets
 from handlers.combat_handler import CombatHandler
 from handlers.state_machine import StateMachine
 from visuals import load_visual_sheets
-from unit_values import unit_values
+from point_values import unit_values
 
 def run_tests() -> bool:
     """Run all test battles and return True if all tests pass."""

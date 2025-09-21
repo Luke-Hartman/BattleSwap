@@ -11,6 +11,9 @@ from components.position import Position
 from components.team import Team, TeamType
 from components.transparent import Transparency
 from components.unit_type import UnitType, UnitTypeComponent
+from components.item import ItemComponent
+from components.can_have_item import CanHaveItem
+from entities.items import ItemType
 from entities.units import create_unit
 from events import CHANGE_MUSIC, PLAY_SOUND, ChangeMusicEvent, PlaySoundEvent, emit_event, UNMUTE_DRUMS, UnmuteDrumsEvent
 from hex_grid import axial_to_world
@@ -75,6 +78,7 @@ class SetupBattleScene(Scene):
         self.screen = screen
         self.manager = manager
         self._selected_unit_type: Optional[UnitType] = None
+        self._selected_item_type: Optional[ItemType] = None
         if world_map_view is None:
             battle = battles.Battle(
                 id="sandbox",
@@ -114,6 +118,7 @@ class SetupBattleScene(Scene):
         self.selected_group_partial_units: List[int] = []  # List of partial unit entity IDs
         self.group_unit_offsets: List[Tuple[float, float]] = []  # Relative offsets from mouse
         self.group_unit_types: List[UnitType] = []  # Unit types for each partial unit
+        self.group_unit_items: List[List[ItemType]] = []  # Items for each partial unit
         self.group_placement_team: Optional[TeamType] = None  # Team for the group
         
         if self.sandbox_mode:
@@ -171,6 +176,7 @@ class SetupBattleScene(Scene):
         self.barracks = BarracksUI(
             self.manager,
             starting_units={} if self.sandbox_mode else progress_manager.available_units(battle),
+            starting_items={} if self.sandbox_mode else progress_manager.available_items(battle),
             interactive=True,
             sandbox_mode=self.sandbox_mode,
             current_battle=battle,
@@ -261,6 +267,11 @@ class SetupBattleScene(Scene):
     def selected_unit_type(self) -> Optional[UnitType]:
         """Get the currently selected unit type."""
         return self._selected_unit_type
+    
+    @property
+    def selected_item_type(self) -> Optional[ItemType]:
+        """Get the currently selected item type."""
+        return self._selected_item_type
 
     def set_selected_unit_type(
         self,
@@ -290,6 +301,34 @@ class SetupBattleScene(Scene):
         # esper.remove_component(self.selected_partial_unit, UnitTypeComponent)
         esper.add_component(self.selected_partial_unit, Transparency(alpha=128))
     
+    def set_selected_item_type(self, value: Optional[ItemType]) -> None:
+        """Set the currently selected item type."""
+        self._selected_item_type = value
+        self.barracks.select_item_type(value)
+        # Clear unit selection when selecting an item
+        if value is not None:
+            self.set_selected_unit_type(None, TeamType.TEAM1)
+            # Change cursor to indicate item placement mode
+            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_CROSSHAIR)
+            # Add CanHaveItem component to all player units
+            self._add_can_have_item_to_units()
+        else:
+            # Reset cursor to default
+            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
+            # Remove CanHaveItem component from all units
+            self._remove_can_have_item_from_units()
+    
+    def _add_can_have_item_to_units(self) -> None:
+        """Add CanHaveItem component to all player units."""
+        for ent, (team,) in esper.get_components(Team):
+            if team.type == TeamType.TEAM1 and not esper.has_component(ent, CanHaveItem):
+                esper.add_component(ent, CanHaveItem())
+    
+    def _remove_can_have_item_from_units(self) -> None:
+        """Remove CanHaveItem component from all units."""
+        for ent, _ in esper.get_components(CanHaveItem):
+            esper.remove_component(ent, CanHaveItem)
+    
     def create_unit_of_selected_type(self, placement_pos: Tuple[float, float], team: TeamType) -> None:
         """Create a unit of the selected type (as a group of size 1)."""
         assert self.sandbox_mode or team == TeamType.TEAM1
@@ -301,20 +340,113 @@ class SetupBattleScene(Scene):
         )
         self.barracks.remove_unit(self.selected_unit_type)
         # Keep unit selected if there are more copies in the barracks
-        if self.barracks.units[self.selected_unit_type] == 0:
+        if not self.barracks.has_unit_available(self.selected_unit_type):
             self.set_selected_unit_type(None, TeamType.TEAM1)
+        if self.progress_panel is not None:
+            self.progress_panel.update_battle(self.battle)
+    
+    def try_place_item_on_unit(self, mouse_pos: Tuple[int, int]) -> None:
+        """Try to place the selected item on a unit at the mouse position."""
+        # Get the unit at the mouse position
+        hovered_unit = get_hovered_unit(self.camera)
+        
+        if hovered_unit is not None:
+            # Check if the unit is on the player's team (only allow placing items on player units)
+            if esper.has_component(hovered_unit, Team):
+                unit_team = esper.component_for_entity(hovered_unit, Team).type
+                if unit_team == TeamType.TEAM1:
+                    # Place the item on the unit
+                    self.place_item_on_unit(hovered_unit, self.selected_item_type)
+                    # Clear item selection after placing
+                    self.set_selected_item_type(None)
+                else:
+                    # Can't place items on enemy units
+                    emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                        filename="ui_click.wav",
+                        volume=0.3
+                    ))
+            else:
+                # Unit has no team component, play error sound
+                emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                    filename="ui_click.wav",
+                    volume=0.5
+                ))
+        else:
+            # No unit found at mouse position, play error sound
+            emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                filename="ui_click.wav",
+                volume=0.5
+            ))
+    
+    def place_item_on_unit(self, unit_id: int, item_type: ItemType) -> None:
+        """Place an item on a specific unit."""
+        # Check if we have any items of this type available
+        if not self.barracks.has_item_available(item_type):
+            # No items available, play error sound
+            emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                filename="ui_click.wav",
+                volume=0.3
+            ))
+            return
+        
+        # Get unit data before removing it
+        pos = esper.component_for_entity(unit_id, Position)
+        unit_type_comp = esper.component_for_entity(unit_id, UnitTypeComponent)
+        team = esper.component_for_entity(unit_id, Team)
+        
+        # Get current items and add the new item
+        current_items = []
+        if esper.has_component(unit_id, ItemComponent):
+            item_component = esper.component_for_entity(unit_id, ItemComponent)
+            current_items = item_component.items.copy()
+        current_items.append(item_type)
+        
+        # Remove the unit from the battlefield
+        self.world_map_view.remove_unit(self.battle_id, unit_id)
+        
+        # Remove the item from the barracks
+        self.barracks.remove_item(item_type)
+        
+        # Recreate the unit with the updated items list
+        self.world_map_view.add_unit(
+            self.battle_id,
+            unit_type_comp.type,
+            (pos.x, pos.y),
+            team.type,
+            items=current_items
+        )
+        
+        # Play success sound
+        emit_event(PLAY_SOUND, event=PlaySoundEvent(
+            filename="unit_placed.wav",
+            volume=0.5
+        ))
+        
+        # Update progress panel if it exists
         if self.progress_panel is not None:
             self.progress_panel.update_battle(self.battle)
     
     def remove_unit(self, unit_id: int) -> None:
         """Delete a unit of the selected type."""
         assert self.sandbox_mode or esper.component_for_entity(unit_id, Team).type == TeamType.TEAM1
+        
+        # Get unit's items before removing the unit
+        unit_items = []
+        if esper.has_component(unit_id, ItemComponent):
+            item_component = esper.component_for_entity(unit_id, ItemComponent)
+            unit_items = item_component.items.copy()
+        
         self.world_map_view.remove_unit(
             self.battle_id,
             unit_id,
         )
         unit_type = esper.component_for_entity(unit_id, UnitTypeComponent).type
         self.barracks.add_unit(unit_type)
+        
+        # Return items to barracks
+        for item_type in unit_items:
+            self.barracks.add_item(item_type)
+        
         if self.progress_panel is not None:
             self.progress_panel.update_battle(self.battle)
 
@@ -386,20 +518,28 @@ class SetupBattleScene(Scene):
             pos = esper.component_for_entity(unit_id, Position)
             unit_type_comp = esper.component_for_entity(unit_id, UnitTypeComponent)
             
+            # Get unit's items before removing the unit
+            unit_items = []
+            if esper.has_component(unit_id, ItemComponent):
+                item_component = esper.component_for_entity(unit_id, ItemComponent)
+                unit_items = item_component.items.copy()
+            
             # Calculate offset from group center
             offset_x = pos.x - center_x
             offset_y = pos.y - center_y
             self.group_unit_offsets.append((offset_x, offset_y))
             self.group_unit_types.append(unit_type_comp.type)
+            self.group_unit_items.append(unit_items)  # Store items for this unit
             
-            # Create transparent partial unit
+            # Create transparent partial unit with items
             partial_unit = create_unit(
                 x=mouse_world_pos[0] + offset_x,
                 y=mouse_world_pos[1] + offset_y,
                 unit_type=unit_type_comp.type,
                 team=placement_team,
                 corruption_powers=self.battle.corruption_powers,
-                tier=progress_manager.get_unit_tier(unit_type_comp.type)
+                tier=progress_manager.get_unit_tier(unit_type_comp.type),
+                items=unit_items  # Pass the items to the new unit
             )
             esper.add_component(partial_unit, Placing())
             esper.add_component(partial_unit, Transparency(alpha=128))
@@ -433,15 +573,17 @@ class SetupBattleScene(Scene):
         for i, unit_type in enumerate(self.group_unit_types):
             if i < len(self.group_unit_offsets):
                 offset_x, offset_y = self.group_unit_offsets[i]
+                unit_items = self.group_unit_items[i] if i < len(self.group_unit_items) else []
                 
-                # Create transparent partial unit with new team
+                # Create transparent partial unit with new team and items
                 partial_unit = create_unit(
                     x=mouse_world_pos[0] + offset_x,
                     y=mouse_world_pos[1] + offset_y,
                     unit_type=unit_type,
                     team=new_team,
                     corruption_powers=self.battle.corruption_powers,
-                    tier=progress_manager.get_unit_tier(unit_type)
+                    tier=progress_manager.get_unit_tier(unit_type),
+                    items=unit_items
                 )
                 esper.add_component(partial_unit, Placing())
                 esper.add_component(partial_unit, Transparency(alpha=128))
@@ -463,6 +605,7 @@ class SetupBattleScene(Scene):
         self.selected_group_partial_units.clear()
         self.group_unit_offsets.clear()
         self.group_unit_types.clear()
+        self.group_unit_items.clear()
         self.group_placement_team = None
 
     def place_group_units(self, mouse_world_pos: Tuple[float, float], snap_to_grid: bool = False) -> None:
@@ -497,11 +640,13 @@ class SetupBattleScene(Scene):
         # Place each unit at its calculated position
         for i, unit_type in enumerate(self.group_unit_types):
             if i < len(placement_positions):
+                unit_items = self.group_unit_items[i] if i < len(self.group_unit_items) else []
                 self.world_map_view.add_unit(
                     self.battle_id,
                     unit_type,
                     placement_positions[i],
                     placement_team,
+                    items=unit_items
                 )
         
         # Clear the group pickup
@@ -511,13 +656,18 @@ class SetupBattleScene(Scene):
             self.progress_panel.update_battle(self.battle)
 
     def cancel_group_pickup(self) -> None:
-        """Cancel group pickup and return units to barracks."""
+        """Cancel group pickup and return units and items to barracks."""
         if not self.selected_group_partial_units:
             return
             
         # Return units to barracks inventory
         for unit_type in self.group_unit_types:
             self.barracks.add_unit(unit_type)
+        
+        # Return items to barracks inventory
+        for unit_items in self.group_unit_items:
+            for item_type in unit_items:
+                self.barracks.add_item(item_type)
         
         # Clear the group pickup
         self.clear_group_pickup()
@@ -685,6 +835,7 @@ class SetupBattleScene(Scene):
         selection_surface.fill((0, 255, 0, 50))
         self.screen.blit(selection_surface, (rect_x, rect_y))
 
+
     def update(self, time_delta: float, events: list[pygame.event.Event]) -> bool:
         """Update the sandbox scene."""
         esper.switch_world(self.battle_id)
@@ -744,42 +895,39 @@ class SetupBattleScene(Scene):
             # Handle number keys for unit selection from barracks
             if event.type == pygame.KEYDOWN and ((event.key >= pygame.K_1 and event.key <= pygame.K_9) or event.key == pygame.K_0):
                 if event.key == pygame.K_0:
-                    unit_index = 9  # 0 key corresponds to 10th position (index 9)
+                    index = 9  # 0 key corresponds to 10th position (index 9)
                 else:
-                    unit_index = event.key - pygame.K_1  # Convert to 0-based index
+                    index = event.key - pygame.K_1  # Convert to 0-based index
                 
-                # Get current tab and determine which unit list to use
-                current_tab_units = None
-                
-                # Check if we're on the "ALL" tab
-                if self.barracks.current_container_index == self.barracks.all_tab_index:
-                    current_tab_units = self.barracks.unit_list_items_by_faction["ALL"]
-                else:
-                    # Check if we're on a faction tab
-                    for faction, tab_index in self.barracks.faction_to_tab_index.items():
-                        if tab_index == self.barracks.current_container_index:
-                            current_tab_units = self.barracks.unit_list_items_by_faction[faction.name]
-                            break
-                
-                if current_tab_units is not None:
-                    if unit_index < len(current_tab_units):
-                        unit_count = current_tab_units[unit_index]
-                        # Only select if the unit is interactive (has units available)
-                        if unit_count.interactive:
-                            play_intro(unit_count.unit_type)
-                            self.set_selected_unit_type(unit_count.unit_type, placement_team)
-                            emit_event(PLAY_SOUND, event=PlaySoundEvent(
-                                filename="ui_click.wav",
-                                volume=0.5
-                            ))
+                # Get item at the specified index
+                result = self.barracks.get_item_at_index(index)
+                if result is not None:
+                    emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                        filename="ui_click.wav",
+                        volume=0.5
+                    ))
+                # Check the type directly using isinstance
+                if isinstance(result, UnitType):
+                    play_intro(result)
+                    self.set_selected_unit_type(result, placement_team)
+                elif isinstance(result, ItemType):
+                    self.set_selected_item_type(result)
 
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
-                    for unit_count in self.barracks.unit_list_items:
-                        if event.ui_element == unit_count.button:
-                            play_intro(unit_count.unit_type)
-                            self.set_selected_unit_type(unit_count.unit_type, placement_team)
-                            break
+                    result = self.barracks.handle_button_press(event.ui_element)
+                    if result is not None:
+                        emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                            filename="ui_click.wav",
+                            volume=0.5
+                        ))
+                    # Check the type directly using isinstance
+                    if isinstance(result, UnitType):
+                        play_intro(result)
+                        self.set_selected_unit_type(result, placement_team)
+                    elif isinstance(result, ItemType):
+                        self.set_selected_item_type(result)
+                    
                     assert event.ui_element is not None
                     if event.ui_element == self.save_button:
                         enemy_placements = get_unit_placements(TeamType.TEAM2, self.battle)
@@ -871,6 +1019,8 @@ class SetupBattleScene(Scene):
                         )
                         placement_team = TeamType.TEAM1 if click_placement_pos[0] < world_x else TeamType.TEAM2
                         self.create_unit_of_selected_type(click_placement_pos, placement_team)
+                    elif self.selected_item_type is not None:
+                        self.try_place_item_on_unit(event.pos)
                     else:
                         self.is_drag_selecting = True
                         self.drag_start_pos = event.pos
@@ -885,6 +1035,13 @@ class SetupBattleScene(Scene):
                         self.set_selected_unit_type(None, placement_team)
                         emit_event(PLAY_SOUND, event=PlaySoundEvent(
                             filename="unit_picked_up.wav",
+                            volume=0.5,
+                        ))
+                    # If we have an item selected, cancel it
+                    elif self.selected_item_type is not None:
+                        self.set_selected_item_type(None)
+                        emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                            filename="ui_click.wav",
                             volume=0.5,
                         ))
                     # If right clicking on a unit, remove it
@@ -967,6 +1124,7 @@ class SetupBattleScene(Scene):
 
         self.world_map_view.update_battles(time_delta)
         self.barracks.select_unit_type(self.selected_unit_type)
+        self.barracks.select_item_type(self.selected_item_type)
         
         # Update selected unit manager for card animations
         selected_unit_manager.update(time_delta)

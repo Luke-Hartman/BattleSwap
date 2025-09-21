@@ -13,6 +13,7 @@ from components.position import Position
 from components.team import Team, TeamType
 from components.unit_type import UnitType, UnitTypeComponent
 from components.unit_tier import UnitTier, UnitTierComponent
+from entities.items import ItemType
 from entities.units import create_unit
 from processors.animation_processor import AnimationProcessor
 from processors.orientation_processor import OrientationProcessor
@@ -117,7 +118,7 @@ class WorldMapView:
             corruption_powers = battle.corruption_powers if is_corrupted else None
 
             world_x, world_y = axial_to_world(*battle.hex_coords)
-            for unit_type, position in battle.allies or []:
+            for unit_type, position, items in battle.allies or []:
                 # Get the appropriate tier for player units
                 if progress_manager:
                     tier = progress_manager.get_unit_tier(unit_type)
@@ -129,21 +130,24 @@ class WorldMapView:
                     unit_type,
                     TeamType.TEAM1,
                     corruption_powers=corruption_powers,
-                    tier=tier
+                    tier=tier,
+                    items=items
                 )
             # Get the appropriate tier for enemy units
             if is_corrupted:
                 tier = UnitTier.ELITE
             else:
                 tier = UnitTier.BASIC
-            for unit_type, position in battle.enemies:
+            for enemy in battle.enemies:
+                unit_type, position, items = enemy
                 create_unit(
                     position[0] + world_x,
                     position[1] + world_y,
                     unit_type,
                     TeamType.TEAM2,
                     corruption_powers=corruption_powers,
-                    tier=tier
+                    tier=tier,
+                    items=items
                 )
 
     def get_battle_from_hex(self, hex_coords: Tuple[int, int]) -> Optional[Battle]:
@@ -245,7 +249,7 @@ class WorldMapView:
     
 
     
-    def add_unit(self, battle_id: str, unit_type: UnitType, position: Tuple[float, float], team: TeamType) -> None:
+    def add_unit(self, battle_id: str, unit_type: UnitType, position: Tuple[float, float], team: TeamType, items: Optional[List[ItemType]] = None) -> None:
         """
         Add a unit to the specified battle and play a sound effect.
 
@@ -281,14 +285,15 @@ class WorldMapView:
             unit_type,
             team,
             corruption_powers=corruption_powers,
-            tier=tier
+            tier=tier,
+            items=items
         )
         if team == TeamType.TEAM1:
             if self.battles[battle_id].allies is None:
                 self.battles[battle_id].allies = []
-            self.battles[battle_id].allies.append((unit_type, (position[0] - world_x, position[1] - world_y)))
+            self.battles[battle_id].allies.append((unit_type, (position[0] - world_x, position[1] - world_y), items or []))
         else:
-            self.battles[battle_id].enemies.append((unit_type, (position[0] - world_x, position[1] - world_y)))
+            self.battles[battle_id].enemies.append((unit_type, (position[0] - world_x, position[1] - world_y), items or []))
         emit_event(PLAY_SOUND, event=PlaySoundEvent(
             filename="unit_placed.wav",
             volume=0.5

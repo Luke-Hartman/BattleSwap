@@ -7,7 +7,7 @@ from components.unit_type import UnitTypeComponent
 from effects import Revive
 from game_constants import gc
 from effects import PlaySound, SoundEffect
-from unit_values import unit_values
+from point_values import unit_values
 import esper
 
 from components.unit_state import State, UnitState

@@ -66,7 +66,7 @@ class ProgressPanel(UIPanel):
         # Barracks info
         barracks_units = []
         for unit_type, count in progress_manager.available_units(current_battle=current_battle).items():
-            barracks_units.extend([(unit_type, (0, 0))] * count)
+            barracks_units.extend([(unit_type, (0, 0), [])] * count)
         barracks_points = calculate_points_for_units(barracks_units)
 
         # Campaign completion stats

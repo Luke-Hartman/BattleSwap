@@ -11,7 +11,7 @@ from battle_solver import (
 from auto_battle import BattleOutcome, simulate_battle_with_dependencies
 from components.team import TeamType
 from components.unit_type import UnitType
-from unit_values import unit_values
+from point_values import unit_values
 
 class EloIndividual(Individual):
     def __init__(self, unit_placements: List[Tuple[UnitType, Tuple[float, float]]], elo: float = 1000.0):

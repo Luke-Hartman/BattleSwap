@@ -209,6 +209,24 @@
             "shape": "rectangle"
         }
     },
+    "@item_count": {
+        "colours": {
+            "normal_bg": "#8C9FA1",
+            "hovered_bg": "#A0B4B6",
+            "disabled_bg": "#677476",
+            "selected_bg": "#5C7A7C",
+            "active_bg": "#4E5D63",
+            "normal_border": "#32CD32",
+            "hovered_border": "#00FF00",
+            "disabled_border": "#228B22",
+            "selected_border": "#00FF00",
+            "active_border": "#00FF00"
+        },
+        "misc": {
+            "border_width": "3",
+            "shape": "rectangle"
+        }
+    },
     "@unit_count_text": {
         "misc": {
             "text_horiz_alignment": "right",
@@ -545,6 +563,13 @@
         "images": {
             "normal_image": {
                 "path": "assets/icons/ZombieTankIcon.png"
+            }
+        }
+    },
+    "#health_potion_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/CoreSwordsmanIcon.png"
             }
         }
     },

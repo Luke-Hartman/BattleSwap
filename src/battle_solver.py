@@ -13,7 +13,7 @@ from components.team import Team, TeamType
 from components.unit_state import State, UnitState
 from components.unit_type import UnitType
 from scene_utils import get_legal_placement_area
-from unit_values import unit_values
+from point_values import unit_values
 from game_constants import get_game_constants_hash
 import plotly.graph_objects as go
 from pathlib import Path
@@ -318,7 +318,7 @@ def generate_random_army(target_cost: int, max_decrease: int = 100) -> List[Tupl
             unit_placements = unit_placements[:delete_index] + unit_placements[delete_index + 1:]
         else:
             unit_type = _get_random_legal_unit_type()
-            unit_placements.append((unit_type, _get_random_legal_position(TeamType.TEAM1)))
+            unit_placements.append((unit_type, _get_random_legal_position(TeamType.TEAM1), []))
             current_cost += unit_values[unit_type]
     return unit_placements
 
@@ -334,7 +334,7 @@ class AddRandomUnit(Mutation):
         new_unit = _get_random_legal_unit_type()
         new_position = _get_random_legal_position(TeamType.TEAM1)
         index = random.randint(0, len(individual.unit_placements))
-        new_unit_placements = individual.unit_placements[:index] + [(new_unit, new_position)] + individual.unit_placements[index:]
+        new_unit_placements = individual.unit_placements[:index] + [(new_unit, new_position, [])] + individual.unit_placements[index:]
         return Individual(individual.battle_id, new_unit_placements)
 
 class RemoveRandomUnit(Mutation):
@@ -345,7 +345,7 @@ class RemoveRandomUnit(Mutation):
         index = random.randint(0, len(individual.unit_placements) - 1)
         new_unit_placements = individual.unit_placements[:index] + individual.unit_placements[index + 1:]
         if len(new_unit_placements) == 0:
-            return Individual(individual.battle_id, [(_get_random_legal_unit_type(), _get_random_legal_position(TeamType.TEAM1))])
+            return Individual(individual.battle_id, [(_get_random_legal_unit_type(), _get_random_legal_position(TeamType.TEAM1), [])])
         return Individual(individual.battle_id, new_unit_placements)
 
 class RandomizeUnitPosition(Mutation):
@@ -354,7 +354,7 @@ class RandomizeUnitPosition(Mutation):
         new_position = _get_random_legal_position(TeamType.TEAM1)
         index = random.randint(0, len(individual.unit_placements) - 1)
         unit_to_mutate = individual.unit_placements[index]
-        new_unit_placements = individual.unit_placements[:index] + [(unit_to_mutate[0], new_position)] + individual.unit_placements[index + 1:]
+        new_unit_placements = individual.unit_placements[:index] + [(unit_to_mutate[0], new_position, unit_to_mutate[2])] + individual.unit_placements[index + 1:]
         return Individual(individual.battle_id, new_unit_placements)
 
 class RandomizeUnitType(Mutation):
@@ -374,7 +374,7 @@ class RandomizeUnitType(Mutation):
         if not legal_options:
             return individual
         new_unit = random.choice(legal_options)
-        new_unit_placements = individual.unit_placements[:index] + [(new_unit, unit_to_mutate[1])] + individual.unit_placements[index + 1:]
+        new_unit_placements = individual.unit_placements[:index] + [(new_unit, unit_to_mutate[1], unit_to_mutate[2])] + individual.unit_placements[index + 1:]
         return Individual(individual.battle_id, new_unit_placements)
 
 class ApplyRandomMutations(Mutation):
@@ -398,7 +398,7 @@ class PerturbPosition(Mutation):
         index = random.randint(0, len(individual.unit_placements) - 1)
         unit_to_mutate = individual.unit_placements[index]
         new_position = (unit_to_mutate[1][0] + random.gauss(0, self.noise_scale), unit_to_mutate[1][1] + random.gauss(0, self.noise_scale))
-        new_unit_placements = individual.unit_placements[:index] + [(unit_to_mutate[0], new_position)] + individual.unit_placements[index + 1:]
+        new_unit_placements = individual.unit_placements[:index] + [(unit_to_mutate[0], new_position, unit_to_mutate[2])] + individual.unit_placements[index + 1:]
         return Individual(individual.battle_id, new_unit_placements)
 
 
@@ -413,7 +413,7 @@ class ReplaceSubarmy(Mutation):
         random.shuffle(kept_unit_placements)
         index = random.randint(0, len(kept_unit_placements) - 1)
         kept_unit_placements = kept_unit_placements[:index]
-        new_score = sum(unit_values[unit_type] for unit_type, _ in kept_unit_placements)
+        new_score = sum(unit_values[unit_type] for unit_type, _, _ in kept_unit_placements)
 
         new_subarmy = generate_random_army(original_score - new_score, self.max_decrease)
         return Individual(individual.battle_id, kept_unit_placements + new_subarmy)
@@ -481,16 +481,16 @@ class RandomMixCrossover(Crossover):
         while True:
             new_unit_placements1 = []
             new_unit_placements2 = []
-            for unit_type, position in individual1.unit_placements:
+            for unit_type, position, items in individual1.unit_placements:
                 if random.random() < 0.5:
-                    new_unit_placements1.append((unit_type, position))  
+                    new_unit_placements1.append((unit_type, position, items))  
                 else:
-                    new_unit_placements2.append((unit_type, position))
-            for unit_type, position in individual2.unit_placements:
+                    new_unit_placements2.append((unit_type, position, items))
+            for unit_type, position, items in individual2.unit_placements:
                 if random.random() < 0.5:
-                    new_unit_placements1.append((unit_type, position))
+                    new_unit_placements1.append((unit_type, position, items))
                 else:
-                    new_unit_placements2.append((unit_type, position))
+                    new_unit_placements2.append((unit_type, position, items))
             if not new_unit_placements1 or not new_unit_placements2:
                 continue
             return Individual(individual1.battle_id, new_unit_placements1), Individual(individual2.battle_id, new_unit_placements2)

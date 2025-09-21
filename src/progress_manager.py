@@ -13,14 +13,15 @@ from events import PLAY_SOUND, PlaySoundEvent, emit_event
 import battles
 from components.unit_type import UnitType
 from components.unit_tier import UnitTier
-from unit_values import unit_values
+from entities.items import ItemType
+from point_values import unit_values, item_values
 from hex_grid import hex_neighbors
 from game_constants import gc
 import random
 
 # Current version of the progress manager
 # Increment this when making breaking changes to save file format
-CURRENT_VERSION = 2
+CURRENT_VERSION = 3
 
 class HexLifecycleState(Enum):
     """Enum representing the lifecycle state of a hex (battle or upgrade)."""
@@ -30,46 +31,63 @@ class HexLifecycleState(Enum):
     CORRUPTED = "corrupted"  # Claimed/solved once, then corrupted (can be claimed/solved again)
     RECLAIMED = "reclaimed"  # Claimed/solved twice (once normal, once corrupted)
 
-def calculate_points_for_units(units: List[Tuple[UnitType, Tuple[float, float]]]) -> int:
+def calculate_points_for_units(units: List[Tuple[UnitType, Tuple[float, float], List[ItemType]]]) -> int:
     """Calculate total points for a list of unit placements."""
-    return sum(unit_values[unit_type] for unit_type, _ in units)
+    total_points = 0
+    for unit_type, _, items in units:
+        total_points += unit_values[unit_type]
+        total_points += sum(item_values[item_type] for item_type in items)
+    return total_points
 
 
 def calculate_total_available_points() -> int:
-    """Calculate total points available from starting units and completed battles."""
+    """Calculate total points available from starting units, items and completed battles."""
     points = sum(unit_values[unit_type] * count for unit_type, count in battles.starting_units.items())
+    points += sum(item_values[item_type] * count for item_type, count in battles.starting_items.items())
     for battle in battles.get_battles():
         if battle.hex_coords in progress_manager.solutions:
             solution = progress_manager.solutions[battle.hex_coords]
-            points += sum(unit_values[unit_type] for unit_type, _ in battle.enemies)
-            points -= sum(unit_values[unit_type] for unit_type, _ in solution.unit_placements)
+            points += sum(unit_values[unit_type] + sum(item_values[item_type] for item_type in items) for unit_type, _, items in battle.enemies)
+            points -= sum(unit_values[unit_type] + sum(item_values[item_type] for item_type in items) for unit_type, _, items in solution.unit_placements)
     return points
 
 
 class Solution(BaseModel):
     hex_coords: Tuple[int, int]
-    unit_placements: List[Tuple[UnitType, Tuple[float, float]]]
+    unit_placements: List[Tuple[UnitType, Tuple[float, float], List[ItemType]]]
     solved_corrupted: bool
 
     @field_serializer('hex_coords')
     def serialize_hex_coords(self, hex_coords: Tuple[int, int]) -> List[int]:
         return list(hex_coords)
+    
+    @field_serializer('unit_placements')
+    def serialize_unit_placements(self, unit_placements: List[Tuple[UnitType, Tuple[float, float], List[ItemType]]]) -> List[List]:
+        """Serialize unit placements for JSON storage."""
+        result = []
+        for unit_type, position, items in unit_placements:
+            result.append([unit_type.value, list(position), [item.value for item in items]])
+        return result
 
     @field_validator('hex_coords', mode='before')
     def parse_hex_coords(cls, value: Any) -> Tuple[int, int]:
         if isinstance(value, list):
             return tuple(value)
         return value
-
-    @field_serializer('unit_placements')
-    def serialize_unit_placements(self, unit_placements: List[Tuple[UnitType, Tuple[float, float]]]) -> List[List[Any]]:
-        return [[unit_type.value, list(coords)] for unit_type, coords in unit_placements]
-
+    
     @field_validator('unit_placements', mode='before')
-    def parse_unit_placements(cls, value: Any) -> List[Tuple[UnitType, Tuple[float, float]]]:
-        if isinstance(value, list) and all(isinstance(x, list) for x in value):
-            return [(UnitType(unit_type), tuple(coords)) for unit_type, coords in value]
-        return value
+    def parse_unit_placements(cls, value: Any) -> List[Tuple[UnitType, Tuple[float, float], List[ItemType]]]:
+        """Parse unit placements from JSON storage."""
+        result = []
+        for item in value:
+            unit_type_str, position_list, items_list = item
+            unit_type = UnitType(unit_type_str)
+            position = tuple(position_list)
+            items = [ItemType(item_str) for item_str in items_list]
+            result.append((unit_type, position, items))
+        return result
+
+
 
 
 class ProgressManager(BaseModel):
@@ -130,20 +148,42 @@ class ProgressManager(BaseModel):
             if current_battle is not None and current_battle.hex_coords == coords:
                 continue
             battle = battles.get_battle_coords(coords)
-            for (unit_type, _) in battle.enemies:
+            for (unit_type, _, _) in battle.enemies:
                 units[unit_type] += 1
-            for (unit_type, _) in self.solutions[coords].unit_placements:
+            for (unit_type, _, _) in self.solutions[coords].unit_placements:
                 units[unit_type] -= 1
         # Handle units from the current battle
         if current_battle is not None and current_battle.allies is not None:
             if current_battle.hex_coords in self.solutions:
-                for (unit_type, _) in current_battle.enemies:
+                for unit_type, _, _ in current_battle.enemies:
                     units[unit_type] += 1
-            for (unit_type, _) in current_battle.allies:
+            for (unit_type, _, _) in current_battle.allies:
                 units[unit_type] -= 1
         for unit_type, count in units.items():
             assert count >= 0, str(units)
         return units
+
+    def available_items(self, current_battle: Optional[battles.Battle]) -> Dict[ItemType, int]:
+        """Get the available items for the player."""
+        items = defaultdict(int)
+        items.update(battles.starting_items)
+        # Handle items from battles other than the current one
+        for coords in self.solutions:
+            if current_battle is not None and current_battle.hex_coords == coords:
+                continue
+            battle = battles.get_battle_coords(coords)
+            # Subtract items used in completed battles
+            for (unit_type, _, unit_items) in self.solutions[coords].unit_placements:
+                for item_type in unit_items:
+                    items[item_type] -= 1
+        # Handle items from the current battle
+        if current_battle is not None and current_battle.allies is not None:
+            for (unit_type, _, unit_items) in current_battle.allies:
+                for item_type in unit_items:
+                    items[item_type] -= 1
+        for item_type, count in items.items():
+            assert count >= 0, str(items)
+        return items
 
     def get_battles_including_solutions(self) -> List[battles.Battle]:
         """Get all battles, and include ally positions for solved battles."""

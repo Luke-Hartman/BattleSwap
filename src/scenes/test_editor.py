@@ -7,7 +7,7 @@ from camera import Camera
 from scenes.scene import Scene
 from scenes.events import PreviousSceneEvent, SetupBattleSceneEvent
 from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event
-from ui_components.barracks_ui import UnitCount
+from ui_components.unit_count import UnitCount
 import battles
 from auto_battle import simulate_battle, BattleOutcome
 from ui_components.save_battle_dialog import SaveBattleDialog

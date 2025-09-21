@@ -6,15 +6,16 @@ from ui_components.stat_bar import StatBar
 from components.unit_type import UnitType
 from entities.units import Faction, get_unit_sprite_sheet
 from ui_components.game_data import StatType, get_unit_data, UnitTier
-from unit_values import unit_values
+from point_values import unit_values
 from pygame_gui.elements import UILabel, UIButton, UIImage, UIPanel
 from pygame_gui.core import ObjectID
 from info_mode_manager import info_mode_manager
 from ui_components.glossary_entry import GlossaryEntry
 from components.animation import AnimationType
 from game_constants import gc
+from ui_components.base_card import BaseCard
 
-class UnitCard:
+class UnitCard(BaseCard):
     """A UI component that displays a unit card with a name, description, and stats."""
     
     def __init__(self, 
@@ -41,43 +42,31 @@ class UnitCard:
             container: Optional container to place the card in (if None, creates a window)
             padding: Padding around the unit card
         """
-        self.screen = screen
-        self.manager = manager
         self.name = name
+        self.description = description
         self.stat_bars: List[StatBar] = []
         self.unit_type = unit_type
         self.unit_tier = unit_tier
-        self.container = container
-        self.padding = padding
         
         # Get unit data for this tier
         self.unit_data = get_unit_data(unit_type, unit_tier)
         
-        # Add creation_index for positioning system
-        self.creation_index: int = 0
-        
-        # Create window title with tier information
-        faction_name = Faction.faction_of(unit_type).name.title()
-        window_title = name
-        
-        # Create the window or use the provided container
-        if container is None:
-            # Create a window if no container provided
-            self.window = pygame_gui.elements.UIWindow(
-                rect=pygame.Rect(position, (300, 475)),
-                window_display_title=window_title,
-                manager=manager,
-                resizable=False
-            )
-            self.card_container = self.window
-        else:
-            # Use the provided container
-            self.window = None
-            self.card_container = container
-        
+        # Initialize base card
+        super().__init__(
+            screen=screen,
+            manager=manager,
+            position=position,
+            title=name,
+            container=container,
+            padding=padding
+        )
+    
+    def _create_card_content(self) -> None:
+        """Create the unit card content."""
         # Adjust sizes for padding
-        card_width = 300 - 2 * self.padding
+        card_width = self.width - 2 * self.padding
         card_height_top = 200  # Height of image area remains 200
+        
         # Create a surface for the unit display area
         unit_display_surface = pygame.Surface((card_width, card_height_top))
         unit_display_surface.fill(gc.MAP_BATTLEFIELD_COLOR)
@@ -86,12 +75,12 @@ class UnitCard:
         self.unit_display = UIImage(
             relative_rect=pygame.Rect((self.padding, self.padding), (card_width, card_height_top)),
             image_surface=unit_display_surface,
-            manager=manager,
+            manager=self.manager,
             container=self.card_container
         )
         
         # Add point value box in upper right corner
-        point_value = unit_values.get(unit_type, 0)
+        point_value = unit_values.get(self.unit_type, 0)
         point_value_text = str(point_value)
         
         # Calculate box size based on text
@@ -100,8 +89,8 @@ class UnitCard:
         
         # Create a background panel for the point value (touching top right corner)
         self.point_value_bg = UIPanel(
-            relative_rect=pygame.Rect((300 - box_width - self.padding, self.padding), (box_width, box_height)),
-            manager=manager,
+            relative_rect=pygame.Rect((self.width - box_width - self.padding, self.padding), (box_width, box_height)),
+            manager=self.manager,
             container=self.card_container,
             margins={'left': 0, 'right': 0, 'top': 0, 'bottom': 0},
             object_id=ObjectID(object_id='#point_value_box')
@@ -111,73 +100,67 @@ class UnitCard:
         self.point_value_label = UILabel(
             relative_rect=pygame.Rect((0, 0), (box_width, box_height)),
             text=point_value_text,
-            manager=manager,
+            manager=self.manager,
             container=self.point_value_bg
         )
+        
         # Add faction label in upper left corner
+        faction_name = Faction.faction_of(self.unit_type).name.title()
         self.faction_label = UILabel(
             relative_rect=pygame.Rect((self.padding + 10, self.padding + 5), (150, 20)),
             text=f"Faction: {faction_name}",
-            manager=manager,
+            manager=self.manager,
             container=self.card_container,
             object_id=ObjectID(class_id='@left_aligned_text')
         )
         
         # Add tier label below faction label with tier-specific color
         from entities.units import get_tier_label_theme_class
-        tier_theme_class = get_tier_label_theme_class(unit_tier)
+        tier_theme_class = get_tier_label_theme_class(self.unit_tier)
         self.tier_label = UILabel(
             relative_rect=pygame.Rect((self.padding + 10, self.padding + 25), (150, 20)),
-            text=f"Tier: {unit_tier.value}",
-            manager=manager,
+            text=f"Tier: {self.unit_tier.value}",
+            manager=self.manager,
             container=self.card_container,
             object_id=ObjectID(class_id=tier_theme_class)
         )
         
         # Add description
-        full_description = f"{description}"
+        full_description = f"{self.description}"
         
         # Add unit description with clickable links
         self.text = pygame_gui.elements.UITextBox(
             relative_rect=pygame.Rect((self.padding, self.padding + 200), (card_width, 90)),
             html_text=full_description,
-            manager=manager,
+            manager=self.manager,
             container=self.card_container
         )
         
         # Store the window reference in the text box's container for link handling
         if self.window is not None:
             self.text.ui_container.window = self.window
-        elif hasattr(container, 'window'):
-            self.text.ui_container.window = container.window
+        elif hasattr(self.container, 'window'):
+            self.text.ui_container.window = self.container.window
 
         # Add bottom row with label and Tips button
         bottom_y = 410 + self.padding  # Move down if padding at top
         self.bottom_label = UILabel(
             relative_rect=pygame.Rect((self.padding + 10, bottom_y), (180, 30)),
             text="",
-            manager=manager,
+            manager=self.manager,
             container=self.card_container
         )
         self.tips_button = UIButton(
-            relative_rect=pygame.Rect((300 - 90 - self.padding, bottom_y), (80, 30)),
+            relative_rect=pygame.Rect((self.width - 90 - self.padding, bottom_y), (80, 30)),
             text="Tips",
-            manager=manager,
+            manager=self.manager,
             container=self.card_container
         )
-        self.sprite_sheet = get_unit_sprite_sheet(unit_type, tier=unit_tier)
+        self.sprite_sheet = get_unit_sprite_sheet(self.unit_type, tier=self.unit_tier)
         
         # Animation state tracking
         self.animation_time = 0.0
         self.current_frame = 0
-        
-        # Flash animation state
-        self.flash_time = 0.0
-        self.flash_duration = 1.0  # Total flash duration in seconds
-        self.flash_alternations = 6  # Number of border switches (3 full cycles)
-        self.flash_interval = self.flash_duration / self.flash_alternations
-        self.is_flashing = False
-        self.flash_state = False  # False = normal, True = flash theme
         
         # Update the unit display with sprite sheet animation
         self.update_unit_display()
@@ -185,7 +168,7 @@ class UnitCard:
     def update_unit_display(self):
         """Update the unit display surface with the current sprite frame."""
         # Create a new surface for the display
-        display_surface = pygame.Surface((300, 200), pygame.SRCALPHA)
+        display_surface = pygame.Surface((self.width, 200), pygame.SRCALPHA)
         display_surface.fill(gc.MAP_BATTLEFIELD_COLOR)
         
         # Update the sprite sheet frame
@@ -196,7 +179,7 @@ class UnitCard:
         sprite_height = self.sprite_sheet.rect.height
         
         # Calculate position to center the sprite in the display area
-        center_x = 150  # Center of 300px width
+        center_x = self.width // 2  # Center of card width
         center_y = 100  # Center of 200px height
         
         # Calculate the top-left position for blitting
@@ -271,42 +254,8 @@ class UnitCard:
         self.stat_bars.append(stat_bar)
         return stat_bar
     
-    def get_window(self):
-        """Get the window element for this unit card, or the container if no window."""
-        return self.window if self.window is not None else self.card_container
-    
-    def bring_to_front(self):
-        """Bring this unit card to the front with a flash effect."""
-        if self.window is not None and self.window.alive():
-            # Use pygame-gui's window stack to bring window to front
-            window_stack = self.manager.get_window_stack()
-            window_stack.move_window_to_front(self.window)
-        
-        # Start flash animation
-        self.start_flash()
-    
-    def start_flash(self):
-        """Start the flash animation effect."""
-        if self.window is not None and self.window.alive():
-            self.is_flashing = True
-            self.flash_time = 0.0
-            self.flash_state = False
-    
-    def _update_flash_theme(self):
-        """Update the window theme based on flash state."""
-        if self.window is not None and self.window.alive():
-            if self.flash_state:
-                # Switch to flash theme
-                self.window.change_object_id(pygame_gui.core.ObjectID(object_id='#flash_window'))
-            else:
-                # Switch back to normal theme
-                self.window.change_object_id(pygame_gui.core.ObjectID(class_id='window'))
-    
-    def kill(self):
-        """Remove the unit card from the UI."""
-        if self.window is not None:
-            self.window.kill()
-        # Note: If using a container, the container owner is responsible for cleanup
+    def _kill_card_elements(self) -> None:
+        """Kill unit card specific elements."""
         self.bottom_label.kill()
         self.tips_button.kill()
         self.point_value_label.kill()
@@ -318,6 +267,9 @@ class UnitCard:
         
     def update(self, time_delta: float):
         """Update all stat bars and animations."""
+        # Call base class update for flash animation
+        super().update(time_delta)
+        
         # Always update at 30fps
         time_delta = 1/30
         for stat_bar in self.stat_bars:
@@ -332,26 +284,6 @@ class UnitCard:
         else:
             # When in a panel, leave the bottom label empty
             self.bottom_label.set_text("")
-        
-        # Update flash animation
-        if self.is_flashing:
-            self.flash_time += time_delta
-            
-            # Calculate current alternation
-            current_alternation = int(self.flash_time / self.flash_interval)
-            new_flash_state = (current_alternation % 2) == 1
-            
-            # Update theme if state changed
-            if new_flash_state != self.flash_state:
-                self.flash_state = new_flash_state
-                self._update_flash_theme()
-            
-            # End flash after all alternations
-            if self.flash_time >= self.flash_duration:
-                self.is_flashing = False
-                self.flash_time = 0.0
-                self.flash_state = False
-                self._update_flash_theme()  # Ensure we end on normal theme
         
         # Update animation
         self.animation_time += time_delta

@@ -11,6 +11,7 @@ from typing import Dict, List, Optional, Tuple
 
 from pydantic import BaseModel
 from entities.units import UnitType
+from entities.items import ItemType
 from corruption_powers import CorruptionPowerUnion
 
 def get_resource_path(relative_path: str) -> Path:
@@ -27,19 +28,23 @@ starting_units: Dict[UnitType, int] = {
     UnitType.CORE_DUELIST: 1
 }
 
+starting_items: Dict[ItemType, int] = {
+    ItemType.HEALTH_POTION: 5
+}
+
 
 
 class Battle(BaseModel):
     """A battle configuration."""
     id: str
-    enemies: List[Tuple[UnitType, Tuple[float, float]]]
-    allies: Optional[List[Tuple[UnitType, Tuple[float, float]]]]
+    enemies: List[Tuple[UnitType, Tuple[float, float], List[ItemType]]]
+    allies: Optional[List[Tuple[UnitType, Tuple[float, float], List[ItemType]]]]
     hex_coords: Optional[Tuple[int, int]]
     is_test: bool
     tip_voice_filename: Optional[str] = None
 
-    best_solution: Optional[List[Tuple[UnitType, Tuple[float, float]]]] = None
-    best_corrupted_solution: Optional[List[Tuple[UnitType, Tuple[float, float]]]] = None
+    best_solution: Optional[List[Tuple[UnitType, Tuple[float, float], List[ItemType]]]] = None
+    best_corrupted_solution: Optional[List[Tuple[UnitType, Tuple[float, float], List[ItemType]]]] = None
     corruption_powers: List[CorruptionPowerUnion] = []
 
 def get_battle_id(battle_id: str) -> Battle:
