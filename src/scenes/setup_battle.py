@@ -319,10 +319,20 @@ class SetupBattleScene(Scene):
             self._remove_can_have_item_from_units()
     
     def _add_can_have_item_to_units(self) -> None:
-        """Add CanHaveItem component to all player units."""
+        """Add CanHaveItem component to all player units that don't already have the selected item."""
+        assert self._selected_item_type is not None
+            
         for ent, (team,) in esper.get_components(Team):
             if team.type == TeamType.TEAM1 and not esper.has_component(ent, CanHaveItem):
-                esper.add_component(ent, CanHaveItem())
+                # Check if unit already has this item type
+                has_item = False
+                if esper.has_component(ent, ItemComponent):
+                    item_component = esper.component_for_entity(ent, ItemComponent)
+                    has_item = self._selected_item_type in item_component.items
+                
+                # Only add CanHaveItem if unit doesn't already have this item
+                if not has_item:
+                    esper.add_component(ent, CanHaveItem())
     
     def _remove_can_have_item_from_units(self) -> None:
         """Remove CanHaveItem component from all units."""
@@ -390,6 +400,17 @@ class SetupBattleScene(Scene):
             ))
             return
         
+        # Check if unit already has this item type
+        if esper.has_component(unit_id, ItemComponent):
+            item_component = esper.component_for_entity(unit_id, ItemComponent)
+            if item_type in item_component.items:
+                # Unit already has this item, play error sound
+                emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                    filename="ui_click.wav",
+                    volume=0.3
+                ))
+                return
+        
         # Get unit data before removing it
         pos = esper.component_for_entity(unit_id, Position)
         unit_type_comp = esper.component_for_entity(unit_id, UnitTypeComponent)
@@ -416,8 +437,11 @@ class SetupBattleScene(Scene):
             team.type,
             items=current_items
         )
-        if self.barracks.has_item_available(item_type):
-            esper.add_component(entity, CanHaveItem())
+        
+        # Update CanHaveItem components - remove from all units first, then add back to eligible ones
+        self._remove_can_have_item_from_units()
+        if self._selected_item_type is not None:
+            self._add_can_have_item_to_units()
         
         # Play success sound
         emit_event(PLAY_SOUND, event=PlaySoundEvent(
