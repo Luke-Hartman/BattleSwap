@@ -154,6 +154,10 @@ class SceneManager:
                     params={"screen": self.screen, "manager": self.manager}
                 ))
 
+        # Clean up scene-specific windows and state
+        if self.current_scene:
+            self.current_scene._close_scene_windows()
+        
         # Clean up UI and ECS
         if self.manager:
             self.manager.clear_and_reset()

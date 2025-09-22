@@ -1232,6 +1232,11 @@ class SetupBattleScene(Scene):
             self.set_selected_unit_type(None, placement_team)
             windows_closed = True
             
+        # Handle item selection cleanup
+        if self.selected_item_type is not None:
+            self.set_selected_item_type(None)
+            windows_closed = True
+            
         # Check for save dialog
         if hasattr(self, 'save_dialog') and self.save_dialog is not None and self.save_dialog.dialog.alive():
             self.save_dialog.dialog.kill()
