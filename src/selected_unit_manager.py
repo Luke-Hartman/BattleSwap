@@ -354,6 +354,18 @@ class SelectedUnitManager:
             self._selected_unit_tier = value
             self._show_stats()
 
+    @property
+    def selected_item_type(self) -> Optional[ItemType]:
+        return self._selected_item_type
+    
+    @selected_item_type.setter
+    def selected_item_type(self, value: Optional[ItemType]) -> None:
+        if self._selected_item_type != value:
+            if not info_mode_manager.info_mode:
+                self._hide_stats()
+            self._selected_item_type = value
+            self._show_stats()
+
     def set_selected_unit(self, unit_type: Optional[UnitType], unit_tier: Optional[UnitTier] = None, items: Optional[List[ItemType]] = None) -> None:
         """Set the selected unit type, tier, and items at once."""
         if self._selected_unit_type != unit_type or self._selected_unit_tier != unit_tier or self._selected_items != (items or []):

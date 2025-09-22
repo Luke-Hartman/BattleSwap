@@ -10,7 +10,8 @@ from battles import get_battles
 from components.hitbox import Hitbox
 from components.position import Position
 from components.team import Team, TeamType
-from components.unit_type import UnitTypeComponent
+from components.unit_type import UnitTypeComponent, UnitType
+from components.item import ItemComponent
 from entities.items import ItemType
 from components.unit_tier import UnitTier
 from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event, PLAY_SOUND, PlaySoundEvent
@@ -520,6 +521,18 @@ class CampaignScene(Scene):
             self.feedback_button.handle_event(event)
             if self.barracks is not None:
                 self.barracks.handle_event(event)
+                # Handle item selection from barracks
+                if event.type == pygame_gui.UI_BUTTON_PRESSED:
+                    result = self.barracks.handle_button_press(event.ui_element)
+                    if result is not None:
+                        if isinstance(result, UnitType):
+                            # Handle unit selection - clear item selection
+                            selected_unit_manager.selected_item_type = None
+                            selected_unit_manager.selected_unit_type = result
+                        elif isinstance(result, ItemType):
+                            # Handle item selection - clear unit selection
+                            selected_unit_manager.selected_unit_type = None
+                            selected_unit_manager.selected_item_type = result
             
             # Handle progress details window events
             if self.progress_details_window is not None:
@@ -575,6 +588,22 @@ class CampaignScene(Scene):
                                 screen_pos = self.world_map_view.camera.world_to_screen(pos.x, pos.y)
                                 color = gc.TEAM1_COLOR if team.type == TeamType.TEAM1 else gc.TEAM2_COLOR
                                 pygame.draw.circle(self.screen, color, screen_pos, radius * self.world_map_view.camera.scale, width=1)
+        
+        # Draw circles around units equipped with the selected item
+        if selected_unit_manager.selected_item_type is not None:
+            for battle in get_battles():
+                hex_state = progress_manager.get_hex_state(battle.hex_coords)
+                if battle.hex_coords is not None and hex_state is not None and hex_state != HexLifecycleState.FOGGED:
+                    with use_world(battle.id):
+                        for ent, (pos, team, hitbox) in esper.get_components(Position, Team, Hitbox):
+                            # Check if this unit has the selected item
+                            if esper.has_component(ent, ItemComponent):
+                                item_component = esper.component_for_entity(ent, ItemComponent)
+                                if selected_unit_manager.selected_item_type in item_component.items:
+                                    radius = (hitbox.width ** 2 + hitbox.height ** 2) ** 0.5
+                                    screen_pos = self.world_map_view.camera.world_to_screen(pos.x, pos.y)
+                                    color = gc.TEAM1_COLOR if team.type == TeamType.TEAM1 else gc.TEAM2_COLOR
+                                    pygame.draw.circle(self.screen, color, screen_pos, radius * self.world_map_view.camera.scale, width=1)
         
         self.manager.update(time_delta)
         self.manager.draw_ui(self.screen)
