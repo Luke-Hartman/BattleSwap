@@ -333,8 +333,12 @@ class RenderingProcessor(esper.Processor):
         for ent, (focus,) in esper.get_components(Focus):
             esper.remove_component(ent, Focus)
 
-    def draw_health_bar(self, pos: Position, health: Health, team: Team, hitbox: Hitbox):
-        """Draw a health bar above the entity."""
+    def _calculate_health_bar_position(self, pos: Position, hitbox: Hitbox) -> tuple[float, float, float, float]:
+        """Calculate the position and dimensions of the health bar.
+        
+        Returns:
+            tuple: (x, y, width, height) in screen coordinates
+        """
         bar_width = 20 * self.camera.scale
         bar_height = 5 * self.camera.scale  # pixels
         bar_y_offset = 8 * self.camera.scale  # pixels above the unit's hitbox
@@ -343,9 +347,15 @@ class RenderingProcessor(esper.Processor):
         screen_pos = self.camera.world_to_screen(pos.x, pos.y)
         
         # Position the health bar above the hitbox
+        # Bottom of health bar is at a fixed distance above the unit's hitbox
         bar_x = screen_pos[0] - bar_width // 2
-        bar_y = screen_pos[1] - (hitbox.height * self.camera.scale)/2 - bar_height - bar_y_offset
+        bar_y = screen_pos[1] - (hitbox.height * self.camera.scale)/2 - bar_y_offset - bar_height
 
+        return bar_x, bar_y, bar_width, bar_height
+
+    def draw_health_bar(self, pos: Position, health: Health, team: Team, hitbox: Hitbox):
+        """Draw a health bar above the entity."""
+        bar_x, bar_y, bar_width, bar_height = self._calculate_health_bar_position(pos, hitbox)
         bar_pos = pygame.Rect(bar_x, bar_y, bar_width, bar_height)
 
         # Draw the background (empty health bar)
@@ -363,26 +373,23 @@ class RenderingProcessor(esper.Processor):
         """Draw small indicators showing that a unit has items equipped."""
         screen_pos = self.camera.world_to_screen(pos.x, pos.y)
         
+        bar_x, bar_y, bar_width, bar_height = self._calculate_health_bar_position(pos, hitbox)
+
         # Calculate position for item indicators (above the unit)
-        indicator_size = 8
-        indicator_spacing = 2
+        indicator_size = 10 * self.camera.scale
+        indicator_spacing = 2 * self.camera.scale
         total_width = len(item_component.items) * (indicator_size + indicator_spacing) - indicator_spacing
         start_x = screen_pos[0] - total_width // 2
-        
-        # Calculate health bar position
-        bar_height = 5 * self.camera.scale
-        bar_y_offset = 8 * self.camera.scale
-        health_bar_y = screen_pos[1] - (hitbox.height * self.camera.scale)/2 - bar_height - bar_y_offset
         
         # Check if health bar is being displayed (unit is not at full health)
         health_bar_displayed = health.current < health.maximum
         
         if health_bar_displayed:
             # Position above the health bar
-            start_y = health_bar_y - indicator_size - 3  # Above the health bar
+            start_y = bar_y - indicator_size - 3 * self.camera.scale  # Above the health bar
         else:
             # Position exactly where the health bar would be (replace health bar position)
-            start_y = health_bar_y  # Same Y position as health bar
+            start_y = bar_y  # Same Y position as health bar
         
         # Draw a small square for each item
         for i, item_type in enumerate(item_component.items):
