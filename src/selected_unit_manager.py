@@ -6,8 +6,10 @@ import pygame_gui
 from components.unit_type import UnitType
 from components.unit_tier import UnitTier
 from entities.items import ItemType
+from components.spell_type import SpellType
 from ui_components.unit_card import UnitCard
 from ui_components.item_card import ItemCard
+from ui_components.spell_card import SpellCard
 from ui_components.glossary_entry import GlossaryEntry
 from ui_components.game_data import get_unit_data, get_item_data, UnitTier, StatType, GLOSSARY_ENTRIES
 from info_mode_manager import info_mode_manager
@@ -28,6 +30,7 @@ class SelectedUnitManager:
         self._selected_unit_type: Optional[UnitType] = None
         self._selected_unit_tier: Optional[UnitTier] = None
         self._selected_item_type: Optional[ItemType] = None
+        self._selected_spell_type: Optional[SpellType] = None
         self._selected_items: List[ItemType] = []
         self.manager: Optional[pygame_gui.UIManager] = None
         self.screen: Optional[pygame.Surface] = None
@@ -495,5 +498,56 @@ class SelectedUnitManager:
             item_type=item_type,
             container=None
         )
+
+    def _find_existing_spell_card(self, spell_type: SpellType) -> Optional[SpellCard]:
+        """Find an existing spell card for the given spell type."""
+        for card in self.cards:
+            if isinstance(card, SpellCard) and card.spell_type == spell_type:
+                return card
+        return None
+
+    def _create_spell_card(self, spell_type: SpellType, position: Tuple[float, float]) -> SpellCard:
+        """Create a spell card with all information populated."""
+        return SpellCard(
+            screen=self.screen,
+            manager=self.manager,
+            position=position,
+            spell_type=spell_type,
+            container=None
+        )
+
+    def set_selected_spell_type(self, spell_type: Optional[SpellType]) -> None:
+        """Set the selected spell type and create/update the spell card."""
+        if self.manager is None or self.screen is None:
+            return
+            
+        self._selected_spell_type = spell_type
+        
+        if spell_type is None:
+            # Clear spell cards
+            if not info_mode_manager.info_mode:
+                spell_cards_to_remove = [card for card in self.cards if isinstance(card, SpellCard)]
+                for card in spell_cards_to_remove:
+                    card.kill()
+                    self.cards.remove(card)
+        else:
+            # Create or update the spell card
+            self._cleanup_dead_cards()
+            
+            existing_card = self._find_existing_spell_card(spell_type)
+            if existing_card is not None:
+                if info_mode_manager.info_mode:
+                    self.bring_card_to_front_by_index(existing_card.creation_index)
+                else:
+                    self.bring_card_to_front(existing_card)
+                return
+            
+            # Create new card
+            position = self.get_next_card_position()
+            new_card = self._create_spell_card(spell_type, position)
+            
+            card_index = self._get_next_card_index()
+            new_card.creation_index = card_index
+            self.cards.append(new_card)
 
 selected_unit_manager = SelectedUnitManager()

@@ -14,6 +14,8 @@ from components.position import Position
 from components.team import Team, TeamType
 from components.unit_type import UnitType, UnitTypeComponent
 from components.unit_tier import UnitTier, UnitTierComponent
+from components.spell import SpellComponent
+from components.spell_type import SpellType
 from entities.items import ItemType
 from entities.units import create_unit
 from processors.animation_processor import AnimationProcessor
@@ -150,6 +152,18 @@ class WorldMapView:
                     tier=tier,
                     items=items
                 )
+            
+            # Load spells if they exist
+            if battle.spells is not None:
+                from entities.spells import create_spell
+                for spell_type, position, team in battle.spells:
+                    create_spell(
+                        x=position[0] + world_x,
+                        y=position[1] + world_y,
+                        spell_type=spell_type,
+                        team=TeamType(team),
+                        corruption_powers=corruption_powers
+                    )
 
     def get_battle_from_hex(self, hex_coords: Tuple[int, int]) -> Optional[Battle]:
         return next((battle for battle in self.battles.values() if battle.hex_coords == hex_coords), None)
@@ -308,6 +322,31 @@ class WorldMapView:
         ))
         return entity
     
+    def add_spell(self, battle_id: str, spell_entity: int) -> None:
+        """
+        Add a spell entity to the specified battle.
+        
+        Args:
+            battle_id: ID of the battle to add the spell to
+            spell_entity: Entity ID of the spell to add
+        """
+        esper.switch_world(battle_id)
+        hex_coords = self.battles[battle_id].hex_coords
+        world_x, world_y = axial_to_world(*hex_coords)
+        
+        # Get spell position and type
+        pos = esper.component_for_entity(spell_entity, Position)
+        spell_component = esper.component_for_entity(spell_entity, SpellComponent)
+        
+        # Add to battle's spells list
+        if self.battles[battle_id].spells is None:
+            self.battles[battle_id].spells = []
+        self.battles[battle_id].spells.append((
+            spell_component.spell_type,
+            (pos.x - world_x, pos.y - world_y),
+            spell_component.team
+        ))
+    
     def remove_unit(self, battle_id: str, unit_id: int, required_team: Optional[TeamType] = None) -> bool:
         """
         Remove a unit from the specified battle and play a sound effect.
@@ -345,7 +384,38 @@ class WorldMapView:
             volume=0.5
         ))
         return True
-
+    
+    def remove_spell(self, battle_id: str, spell_entity: int) -> bool:
+        """
+        Remove a spell from the specified battle.
+        
+        Args:
+            battle_id: ID of the battle to remove the spell from
+            spell_entity: Entity ID of the spell to remove
+            
+        Returns:
+            True if the spell was removed, False if it wasn't found
+        """
+        esper.switch_world(battle_id)
+        
+        # Get spell position and type
+        pos = esper.component_for_entity(spell_entity, Position)
+        spell_component = esper.component_for_entity(spell_entity, SpellComponent)
+        
+        world_x, world_y = axial_to_world(*self.battles[battle_id].hex_coords)
+        local_x, local_y = pos.x - world_x, pos.y - world_y
+        
+        # Find and remove from battle's spells list
+        if self.battles[battle_id].spells is not None:
+            found_spell = next((spell for spell in self.battles[battle_id].spells 
+                              if spell[1] == (local_x, local_y) and spell[0] == spell_component.spell_type), None)
+            if found_spell is not None:
+                self.battles[battle_id].spells.remove(found_spell)
+                esper.delete_entity(spell_entity)
+                return True
+        
+        return False
+    
     def _cleanup(self) -> None:
         esper.switch_world(self.default_world)
         for battle in self.battles.values():

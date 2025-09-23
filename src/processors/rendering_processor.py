@@ -18,12 +18,16 @@ from components.item import ItemComponent
 from components.destination import Destination
 from components.focus import Focus
 from components.hitbox import Hitbox
+from components.placing import Placing
 from components.position import Position
 from components.range_indicator import RangeIndicator
+from components.spell import SpellComponent
+from components.spell_type import SpellType
 from components.sprite_sheet import SpriteSheet
 from components.team import Team, TeamType
 from components.health import Health
 from components.unit_state import UnitState, State
+from components.transparent import Transparency
 from camera import Camera
 from game_constants import gc
 from components.visual_link import VisualLink
@@ -329,6 +333,9 @@ class RenderingProcessor(esper.Processor):
                         color=gc.TEAM1_COLOR if team.type == TeamType.TEAM1 else gc.TEAM2_COLOR
                     )
         
+        # Draw spells (circles and handles)
+        self.draw_spells()
+        
         # Clear focus on all units
         for ent, (focus,) in esper.get_components(Focus):
             esper.remove_component(ent, Focus)
@@ -432,5 +439,82 @@ class RenderingProcessor(esper.Processor):
             (radius * self.camera.scale) * 0.7, 
             width=width
         )
-        
+    
+    def draw_spells(self) -> None:
+        """Draw spells including circles and handles."""
+        for ent, (pos, spell_component) in esper.get_components(Position, SpellComponent):
+            # Determine color based on team
+            team_type = TeamType(spell_component.team)
+            base_circle_color = (100, 100, 255, 100) if team_type == TeamType.TEAM1 else (255, 100, 100, 100)
+            if esper.has_component(ent, Focus):
+                # Make focused spells more white
+                circle_color = (200, 200, 200, 150)
+            else:
+                circle_color = base_circle_color
+            
+            # Apply transparency if the spell has a Transparency component
+            if esper.has_component(ent, Transparency):
+                transparency = esper.component_for_entity(ent, Transparency)
+                # Adjust alpha based on transparency component
+                circle_color = (*circle_color[:3], int(circle_color[3] * transparency.alpha / 255))
+                
+            # Draw spell circle
+            self._draw_circle(
+                center_x=pos.x,
+                center_y=pos.y,
+                radius=spell_component.radius,
+                fill_color=None,
+                outline_color=circle_color
+            )
+            
+            # Draw spell handle (small circle in center)
+            screen_pos = self.camera.world_to_screen(pos.x, pos.y)
+            handle_radius = gc.SPELL_HANDLE_SIZE * self.camera.scale
+            
+            # Handle color based on focus
+            handle_color = (255, 255, 255) if esper.has_component(ent, Focus) else (200, 200, 200)
+            
+            # Apply transparency to handle if the spell has a Transparency component
+            if esper.has_component(ent, Transparency):
+                transparency = esper.component_for_entity(ent, Transparency)
+                # Make handle semi-transparent based on transparency component
+                alpha = int(255 * transparency.alpha / 255)
+                handle_color = (*handle_color, alpha)
+            
+            # Draw handle with transparency support
+            if len(handle_color) == 4:  # Has alpha
+                # Create a surface for transparency
+                handle_surface = pygame.Surface((handle_radius * 2, handle_radius * 2), pygame.SRCALPHA)
+                pygame.draw.circle(
+                    handle_surface,
+                    handle_color,
+                    (handle_radius, handle_radius),
+                    handle_radius,
+                    width=2
+                )
+                # Draw inner circle for handle
+                pygame.draw.circle(
+                    handle_surface,
+                    handle_color,
+                    (handle_radius, handle_radius),
+                    handle_radius * 0.5,
+                    width=1
+                )
+                self.screen.blit(handle_surface, (screen_pos[0] - handle_radius, screen_pos[1] - handle_radius))
+            else:  # No alpha, draw directly
+                pygame.draw.circle(
+                    self.screen,
+                    handle_color,
+                    screen_pos,
+                    handle_radius,
+                    width=2
+                )
+                # Draw inner circle for handle
+                pygame.draw.circle(
+                    self.screen,
+                    handle_color,
+                    screen_pos,
+                    handle_radius * 0.5,
+                    width=1
+                )
 

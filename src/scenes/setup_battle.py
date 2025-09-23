@@ -13,6 +13,7 @@ from components.transparent import Transparency
 from components.unit_type import UnitType, UnitTypeComponent
 from components.item import ItemComponent
 from components.can_have_item import CanHaveItem
+from components.spell import SpellComponent
 from entities.items import ItemType
 from entities.units import create_unit
 from events import CHANGE_MUSIC, PLAY_SOUND, ChangeMusicEvent, PlaySoundEvent, emit_event, UNMUTE_DRUMS, UnmuteDrumsEvent
@@ -34,13 +35,16 @@ from auto_battle import BattleOutcome, simulate_battle
 import upgrade_hexes
 from voice import play_intro
 from world_map_view import BorderState, FillState, HexState, WorldMapView, hex_lifecycle_to_fill_state
-from scene_utils import draw_grid, get_center_line, get_placement_pos, get_hovered_unit, get_unit_placements, get_legal_placement_area, has_unsaved_changes, mouse_over_ui, calculate_group_placement_positions
+from scene_utils import draw_grid, get_center_line, get_placement_pos, get_hovered_unit, get_unit_placements, get_legal_placement_area, get_legal_spell_placement_area, has_unsaved_changes, mouse_over_ui, calculate_group_placement_positions, get_spell_placement_pos
 from ui_components.progress_panel import ProgressPanel
 from ui_components.corruption_power_editor import CorruptionPowerEditorDialog
 from corruption_powers import CorruptionPower
 from selected_unit_manager import selected_unit_manager
 from components.sprite_sheet import SpriteSheet
 from components.unit_tier import UnitTier
+from components.spell_type import SpellType
+from components.spell import SpellComponent
+from entities.spells import create_spell
 
 
 class SetupBattleScene(Scene):
@@ -79,6 +83,7 @@ class SetupBattleScene(Scene):
         self.manager = manager
         self._selected_unit_type: Optional[UnitType] = None
         self._selected_item_type: Optional[ItemType] = None
+        self._selected_spell_type: Optional[SpellType] = None
         if world_map_view is None:
             battle = battles.Battle(
                 id="sandbox",
@@ -177,6 +182,7 @@ class SetupBattleScene(Scene):
             self.manager,
             starting_units={} if self.sandbox_mode else progress_manager.available_units(battle),
             starting_items={} if self.sandbox_mode else progress_manager.available_items(battle),
+            starting_spells={} if self.sandbox_mode else progress_manager.available_spells(battle),
             interactive=True,
             sandbox_mode=self.sandbox_mode,
             current_battle=battle,
@@ -206,6 +212,7 @@ class SetupBattleScene(Scene):
         ) if not self.sandbox_mode else None
 
         self.selected_partial_unit: Optional[int] = None
+        self.selected_spell: Optional[int] = None
 
         self.save_dialog: Optional[SaveBattleDialog] = None
         if self.developer_mode:
@@ -272,6 +279,11 @@ class SetupBattleScene(Scene):
     def selected_item_type(self) -> Optional[ItemType]:
         """Get the currently selected item type."""
         return self._selected_item_type
+    
+    @property
+    def selected_spell_type(self) -> Optional[SpellType]:
+        """Get the currently selected spell type."""
+        return self._selected_spell_type
 
     def set_selected_unit_type(
         self,
@@ -283,10 +295,14 @@ class SetupBattleScene(Scene):
         self.barracks.select_unit_type(value)
         if self.selected_partial_unit is not None:
             esper.delete_entity(self.selected_partial_unit)
+        if self.selected_spell is not None:
+            esper.delete_entity(self.selected_spell)
         self.cancel_group_pickup()
         if value is None:
             self.selected_partial_unit = None
             return
+        self.set_selected_spell_type(None)
+        self.set_selected_item_type(None)
         self.selected_partial_unit = create_unit(
             x=0,
             y=0,
@@ -305,9 +321,10 @@ class SetupBattleScene(Scene):
         """Set the currently selected item type."""
         self._selected_item_type = value
         self.barracks.select_item_type(value)
-        # Clear unit selection when selecting an item
+        # Clear unit and spell selection when selecting an item
         if value is not None:
             self.set_selected_unit_type(None, TeamType.TEAM1)
+            self.set_selected_spell_type(None)
             # Change cursor to indicate item placement mode
             pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_CROSSHAIR)
             # Add CanHaveItem component to all player units
@@ -317,6 +334,30 @@ class SetupBattleScene(Scene):
             pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
             # Remove CanHaveItem component from all units
             self._remove_can_have_item_from_units()
+    
+    def set_selected_spell_type(self, value: Optional[SpellType]) -> None:
+        """Set the currently selected spell type."""
+        self._selected_spell_type = value
+        self.barracks.select_spell_type(value)
+        if self.selected_spell is not None:
+            esper.delete_entity(self.selected_spell)
+        self.cancel_group_pickup()
+        if value is None:
+            self.selected_spell = None
+            return
+        # Clear other selections when selecting a spell
+        self.set_selected_unit_type(None, TeamType.TEAM1)
+        self.set_selected_item_type(None)
+        # Create spell entity that follows the cursor
+        self.selected_spell = create_spell(
+            x=0,
+            y=0,
+            spell_type=value,
+            team=TeamType.TEAM1,  # Spells are always placed by the player
+            corruption_powers=self.battle.corruption_powers
+        )
+        esper.add_component(self.selected_spell, Placing())
+        esper.add_component(self.selected_spell, Transparency(alpha=128))
     
     def _add_can_have_item_to_units(self) -> None:
         """Add CanHaveItem component to all player units that don't already have the selected item."""
@@ -453,6 +494,98 @@ class SetupBattleScene(Scene):
         if self.progress_panel is not None:
             self.progress_panel.update_battle(self.battle)
     
+    def try_place_spell(self, mouse_pos: Tuple[int, int]) -> None:
+        """Try to place the selected spell at the mouse position."""
+        
+        # Check if we have any spells of this type available
+        if not self.barracks.has_spell_available(self.selected_spell_type):
+            # No spells available, play error sound
+            emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                filename="ui_click.wav",
+                volume=0.3
+            ))
+            return
+        
+        # Get placement position with collision detection
+        placement_pos = get_spell_placement_pos(
+            mouse_pos=mouse_pos,
+            battle_id=self.battle_id,
+            hex_coords=self.battle.hex_coords,
+            camera=self.camera,
+            snap_to_grid=False
+        )
+        
+        # Place the spell at the calculated position
+        self.place_spell(placement_pos, self.selected_spell_type)
+        
+        # Keep spell selected if there are more copies in the barracks
+        if not self.barracks.has_spell_available(self.selected_spell_type):
+            self.set_selected_spell_type(None)
+    
+    def place_spell(self, world_pos: Tuple[float, float], spell_type: SpellType) -> None:
+        """Place a spell at the specified world position."""
+        
+        # Create the spell entity
+        spell_entity = create_spell(
+            x=world_pos[0],
+            y=world_pos[1],
+            spell_type=spell_type,
+            team=TeamType.TEAM1,  # Spells are always placed by the player
+            corruption_powers=self.battle.corruption_powers
+        )
+        
+        # Add the spell to the world map view
+        self.world_map_view.add_spell(self.battle_id, spell_entity)
+        
+        # Remove the spell from the barracks
+        self.barracks.remove_spell(spell_type)
+        
+        # Play success sound
+        emit_event(PLAY_SOUND, event=PlaySoundEvent(
+            filename="unit_placed.wav",
+            volume=0.5
+        ))
+        
+        # Update progress panel if it exists
+        if self.progress_panel is not None:
+            self.progress_panel.update_battle(self.battle)
+    
+    def _is_hovering_spell(self, mouse_pos: Tuple[int, int]) -> bool:
+        """Check if the mouse is hovering over a spell handle."""
+        mouse_world_pos = self.camera.screen_to_world(*mouse_pos)
+        
+        for ent, (pos, spell_component) in esper.get_components(Position, SpellComponent):
+            # Check if mouse is within the spell's handle (not the full radius)
+            distance = ((mouse_world_pos[0] - pos.x) ** 2 + (mouse_world_pos[1] - pos.y) ** 2) ** 0.5
+            if distance <= gc.SPELL_HANDLE_SIZE:
+                return True
+        return False
+    
+    def remove_hovered_spell(self, mouse_pos: Tuple[int, int]) -> None:
+        """Remove the spell that the mouse is hovering over."""
+        mouse_world_pos = self.camera.screen_to_world(*mouse_pos)
+        
+        for ent, (pos, spell_component) in esper.get_components(Position, SpellComponent):
+            # Check if mouse is within the spell's handle (not the full radius)
+            distance = ((mouse_world_pos[0] - pos.x) ** 2 + (mouse_world_pos[1] - pos.y) ** 2) ** 0.5
+            if distance <= gc.SPELL_HANDLE_SIZE:
+                # Remove the spell from the world map view
+                self.world_map_view.remove_spell(self.battle_id, ent)
+                
+                # Add the spell back to the barracks
+                self.barracks.add_spell(spell_component.spell_type)
+                
+                # Play sound
+                emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                    filename="unit_returned.wav",
+                    volume=0.5
+                ))
+                
+                # Update progress panel if it exists
+                if self.progress_panel is not None:
+                    self.progress_panel.update_battle(self.battle)
+                break
+    
     def remove_unit(self, unit_id: int) -> None:
         """Delete a unit of the selected type."""
         assert self.sandbox_mode or esper.component_for_entity(unit_id, Team).type == TeamType.TEAM1
@@ -528,7 +661,11 @@ class SetupBattleScene(Scene):
         if self.selected_partial_unit is not None:
             esper.delete_entity(self.selected_partial_unit)
             self.selected_partial_unit = None
+        if self.selected_spell is not None:
+            esper.delete_entity(self.selected_spell)
+            self.selected_spell = None
         self.set_selected_unit_type(None, placement_team)
+        self.set_selected_spell_type(None)
         
         # Clear existing group pickup
         self.clear_group_pickup()
@@ -887,6 +1024,15 @@ class SetupBattleScene(Scene):
             required_team=None if self.sandbox_mode else TeamType.TEAM1,
         )
         placement_team = TeamType.TEAM1 if placement_pos[0] < world_x else TeamType.TEAM2
+        
+        # Calculate spell placement position separately
+        spell_placement_pos = get_spell_placement_pos(
+            mouse_pos=pygame.mouse.get_pos(),
+            battle_id=self.battle_id,
+            hex_coords=battle_coords,
+            camera=self.camera,
+            snap_to_grid=show_grid,
+        )
 
         stop_drag_selecting = False
         for event in events:
@@ -939,6 +1085,8 @@ class SetupBattleScene(Scene):
                     self.set_selected_unit_type(result, placement_team)
                 elif isinstance(result, ItemType):
                     self.set_selected_item_type(result)
+                elif isinstance(result, SpellType):
+                    self.set_selected_spell_type(result)
 
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
@@ -954,6 +1102,8 @@ class SetupBattleScene(Scene):
                         self.set_selected_unit_type(result, placement_team)
                     elif isinstance(result, ItemType):
                         self.set_selected_item_type(result)
+                    elif isinstance(result, SpellType):
+                        self.set_selected_spell_type(result)
                     
                     assert event.ui_element is not None
                     if event.ui_element == self.save_button:
@@ -1048,6 +1198,8 @@ class SetupBattleScene(Scene):
                         self.create_unit_of_selected_type(click_placement_pos, placement_team)
                     elif self.selected_item_type is not None:
                         self.try_place_item_on_unit(event.pos)
+                    elif self.selected_spell_type is not None:
+                        self.try_place_spell(event.pos)
                     else:
                         self.is_drag_selecting = True
                         self.drag_start_pos = event.pos
@@ -1071,9 +1223,19 @@ class SetupBattleScene(Scene):
                             filename="ui_click.wav",
                             volume=0.5,
                         ))
+                    # If we have a spell selected, cancel it
+                    elif self.selected_spell_type is not None:
+                        self.set_selected_spell_type(None)
+                        emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                            filename="ui_click.wav",
+                            volume=0.5,
+                        ))
                     # If right clicking on a unit, remove it
                     elif hovered_unit is not None and (self.sandbox_mode or hovered_team == TeamType.TEAM1):
                         self.remove_unit(hovered_unit)
+                    # If right clicking on a spell, remove it
+                    elif self._is_hovering_spell(event.pos):
+                        self.remove_hovered_spell(event.pos)
 
             elif event.type == pygame.MOUSEBUTTONUP:
                 if event.button == pygame.BUTTON_LEFT and self.is_drag_selecting:
@@ -1111,6 +1273,12 @@ class SetupBattleScene(Scene):
             position.x, position.y = placement_pos
             esper.add_component(self.selected_partial_unit, Focus())
 
+        # Update preview for selected spell
+        if self.selected_spell is not None:
+            position = esper.component_for_entity(self.selected_spell, Position)
+            position.x, position.y = spell_placement_pos
+            esper.add_component(self.selected_spell, Focus())
+
         # Update preview for group partial units
         if self.selected_group_partial_units:
             mouse_world_pos = self.camera.screen_to_world(*pygame.mouse.get_pos())
@@ -1134,6 +1302,15 @@ class SetupBattleScene(Scene):
                 battle_coords,
                 required_team=None if self.sandbox_mode else TeamType.TEAM1,
                 include_units=False,
+            )
+            for polygon in legal_area.geoms if isinstance(legal_area, shapely.MultiPolygon) else [legal_area]:
+                pygame.draw.lines(self.screen, (175, 175, 175), False, 
+                    [self.camera.world_to_screen(x, y) for x, y in polygon.exterior.coords], 
+                    width=2)
+        if self.selected_spell is not None:
+            legal_area = get_legal_spell_placement_area(
+                self.battle_id,
+                battle_coords,
             )
             for polygon in legal_area.geoms if isinstance(legal_area, shapely.MultiPolygon) else [legal_area]:
                 pygame.draw.lines(self.screen, (175, 175, 175), False, 

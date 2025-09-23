@@ -1135,6 +1135,9 @@ class CreatesUnit(Effect):
     batch_spacing: int = 10
     """The spacing between units in a batch. Defaults to 10 units."""
     
+    play_spawning: bool = False
+    """Whether to play the spawning animation when the unit is created."""
+    
     def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
         if self.recipient == Recipient.OWNER:
             assert owner is not None
@@ -1182,7 +1185,8 @@ class CreatesUnit(Effect):
                 unit_type=self.unit_type,
                 team=self.team,
                 corruption_powers=self.corruption_powers,
-                tier=tier
+                tier=tier,
+                play_spawning=self.play_spawning
             )
             esper.add_component(entity, Team(type=self.team))
             # Tag the created unit with its summoner, if applicable

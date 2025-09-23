@@ -14,6 +14,7 @@ from components.position import Position
 from components.sprite_sheet import SpriteSheet
 from components.unit_type import UnitType, UnitTypeComponent
 from components.item import ItemComponent
+from components.spell import SpellComponent
 from entities.items import ItemType
 from game_constants import gc
 from hex_grid import get_hex_vertices, axial_to_world
@@ -192,6 +193,20 @@ def _get_legal_placement_area_helper(
         legal_area = legal_area.difference(unit_circle)
     return legal_area
 
+def get_spell_placement_pos(
+    mouse_pos: Tuple[int, int],
+    battle_id: str,
+    hex_coords: Tuple[int, int],
+    camera: Camera,
+    snap_to_grid: bool = False,
+) -> Tuple[float, float]:
+    """Get placement position for spells, considering both unit and spell collisions."""
+    world_pos = camera.screen_to_world(*mouse_pos)
+    clipped_pos = clip_to_polygon(get_legal_spell_placement_area(battle_id, hex_coords), *world_pos)
+    if snap_to_grid:
+        return snap_position_to_grid(clipped_pos[0], clipped_pos[1], hex_coords)
+    return clipped_pos
+
 def get_legal_placement_area(
     battle_id: str,
     hex_coords: Tuple[int, int],
@@ -254,9 +269,63 @@ def get_legal_placement_area(
     if additional_unit_positions:
         all_unit_positions.extend(additional_unit_positions)
     
-    # Remove circles around all units
-    if all_unit_positions:
-        legal_area = _get_legal_placement_area_helper(legal_area, tuple(all_unit_positions))
+    # Collect all spell positions (always include spells as obstacles for units)
+    all_spell_positions = []
+    with use_world(battle_id):
+        for ent, (pos, _) in esper.get_components(Position, SpellComponent):
+            if esper.has_component(ent, Placing):
+                continue
+            all_spell_positions.append((pos.x, pos.y))
+    
+    # Remove circles around all units and spells
+    all_obstacle_positions = all_unit_positions + all_spell_positions
+    if all_obstacle_positions:
+        legal_area = _get_legal_placement_area_helper(legal_area, tuple(all_obstacle_positions))
+    
+    return legal_area
+
+def get_legal_spell_placement_area(
+    battle_id: str,
+    hex_coords: Tuple[int, int],
+) -> shapely.Polygon:
+    """Get the legal placement area for spells, considering both unit and spell collisions.
+    
+    Args:
+        battle_id: ID of the battle to check
+        hex_coords: (q,r) axial coordinates of the hex
+
+    Returns:
+        Shapely polygon representing the legal spell placement area
+    """
+    # Get hex center
+    hex_center_x, _ = axial_to_world(*hex_coords)
+    
+    # Create battlefield polygon centered on hex
+    battlefield = get_battlefield_polygon(hex_coords)
+    
+    # Start with the full battlefield (spells can be placed anywhere)
+    legal_area = battlefield
+    
+    # Collect all unit positions
+    all_unit_positions = []
+    with use_world(battle_id):
+        for ent, (pos, _) in esper.get_components(Position, UnitTypeComponent):
+            if esper.has_component(ent, Placing):
+                continue
+            all_unit_positions.append((pos.x, pos.y))
+    
+    # Collect all spell positions
+    all_spell_positions = []
+    with use_world(battle_id):
+        for ent, (pos, _) in esper.get_components(Position, SpellComponent):
+            if esper.has_component(ent, Placing):
+                continue
+            all_spell_positions.append((pos.x, pos.y))
+    
+    # Remove circles around all units and spells
+    all_obstacle_positions = all_unit_positions + all_spell_positions
+    if all_obstacle_positions:
+        legal_area = _get_legal_placement_area_helper(legal_area, tuple(all_obstacle_positions))
     
     return legal_area
 

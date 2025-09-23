@@ -14,7 +14,8 @@ import battles
 from components.unit_type import UnitType
 from components.unit_tier import UnitTier
 from entities.items import ItemType
-from point_values import unit_values, item_values
+from components.spell_type import SpellType
+from point_values import unit_values, item_values, spell_values
 from hex_grid import hex_neighbors
 from game_constants import gc
 import random
@@ -41,20 +42,23 @@ def calculate_points_for_units(units: List[Tuple[UnitType, Tuple[float, float], 
 
 
 def calculate_total_available_points() -> int:
-    """Calculate total points available from starting units, items and completed battles."""
+    """Calculate total points available from starting units, items, spells and completed battles."""
     points = sum(unit_values[unit_type] * count for unit_type, count in battles.starting_units.items())
     points += sum(item_values[item_type] * count for item_type, count in battles.starting_items.items())
+    points += sum(spell_values[spell_type] * count for spell_type, count in battles.starting_spells.items())
     for battle in battles.get_battles():
         if battle.hex_coords in progress_manager.solutions:
             solution = progress_manager.solutions[battle.hex_coords]
             points += sum(unit_values[unit_type] + sum(item_values[item_type] for item_type in items) for unit_type, _, items in battle.enemies)
             points -= sum(unit_values[unit_type] + sum(item_values[item_type] for item_type in items) for unit_type, _, items in solution.unit_placements)
+            points -= sum(spell_values[spell_type] for spell_type, _, _ in solution.spell_placements)
     return points
 
 
 class Solution(BaseModel):
     hex_coords: Tuple[int, int]
     unit_placements: List[Tuple[UnitType, Tuple[float, float], List[ItemType]]]
+    spell_placements: List[Tuple[SpellType, Tuple[float, float], int]]
     solved_corrupted: bool
 
     @field_serializer('hex_coords')
@@ -67,6 +71,14 @@ class Solution(BaseModel):
         result = []
         for unit_type, position, items in unit_placements:
             result.append([unit_type.value, list(position), [item.value for item in items]])
+        return result
+    
+    @field_serializer('spell_placements')
+    def serialize_spell_placements(self, spell_placements: List[Tuple[SpellType, Tuple[float, float], int]]) -> List[List]:
+        """Serialize spell placements for JSON storage."""
+        result = []
+        for spell_type, position, team in spell_placements:
+            result.append([spell_type.value, list(position), team])
         return result
 
     @field_validator('hex_coords', mode='before')
@@ -85,6 +97,19 @@ class Solution(BaseModel):
             position = tuple(position_list)
             items = [ItemType(item_str) for item_str in items_list]
             result.append((unit_type, position, items))
+        return result
+    
+    @field_validator('spell_placements', mode='before')
+    def parse_spell_placements(cls, value: Any) -> List[Tuple[SpellType, Tuple[float, float], int]]:
+        """Parse spell placements from JSON storage."""
+        if value is None:
+            return []
+        result = []
+        for item in value:
+            spell_type_str, position_list, team = item
+            spell_type = SpellType(spell_type_str)
+            position = tuple(position_list)
+            result.append((spell_type, position, team))
         return result
 
 
@@ -137,8 +162,6 @@ class ProgressManager(BaseModel):
             return result
         return value
 
-
-
     def available_units(self, current_battle: Optional[battles.Battle]) -> Dict[UnitType, int]:
         """Get the available units for the player."""
         units = defaultdict(int)
@@ -184,6 +207,24 @@ class ProgressManager(BaseModel):
         for item_type, count in items.items():
             assert count >= 0, str(items)
         return items
+
+    def available_spells(self, current_battle: Optional[battles.Battle]) -> Dict[SpellType, int]:
+        """Get the available spells for the player."""
+        spells = defaultdict(int)
+        spells.update(battles.starting_spells)
+        # Handle spells from battles other than the current one
+        for coords in self.solutions:
+            if current_battle is not None and current_battle.hex_coords == coords:
+                continue
+            for (spell_type, _, _) in self.solutions[coords].spell_placements:
+                spells[spell_type] -= 1
+        # Handle spells from the current battle
+        if current_battle is not None and hasattr(current_battle, 'spells') and current_battle.spells is not None:
+            for (spell_type, _, _) in current_battle.spells:
+                spells[spell_type] -= 1
+        for spell_type, count in spells.items():
+            assert count >= 0, str(spells)
+        return spells
 
     def get_battles_including_solutions(self) -> List[battles.Battle]:
         """Get all battles, and include ally positions for solved battles."""

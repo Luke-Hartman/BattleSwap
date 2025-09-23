@@ -12,6 +12,7 @@ from typing import Dict, List, Optional, Tuple
 from pydantic import BaseModel
 from entities.units import UnitType
 from entities.items import ItemType
+from components.spell_type import SpellType
 from corruption_powers import CorruptionPowerUnion
 
 def get_resource_path(relative_path: str) -> Path:
@@ -32,6 +33,10 @@ starting_items: Dict[ItemType, int] = {
     ItemType.HEALTH_POTION: 5
 }
 
+starting_spells: Dict[SpellType, int] = {
+    SpellType.SUMMON_SKELETON_SWORDSMEN: 3
+}
+
 
 
 class Battle(BaseModel):
@@ -46,6 +51,7 @@ class Battle(BaseModel):
     best_solution: Optional[List[Tuple[UnitType, Tuple[float, float], List[ItemType]]]] = None
     best_corrupted_solution: Optional[List[Tuple[UnitType, Tuple[float, float], List[ItemType]]]] = None
     corruption_powers: List[CorruptionPowerUnion] = []
+    spells: Optional[List[Tuple[SpellType, Tuple[float, float], int]]] = None
 
 def get_battle_id(battle_id: str) -> Battle:
     """Retrieve a battle by its ID."""

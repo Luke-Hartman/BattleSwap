@@ -1,5 +1,6 @@
 from components.unit_type import UnitType
 from entities.items import ItemType
+from components.spell_type import SpellType
 from typing import Dict
 from game_constants import gc
 
@@ -56,4 +57,9 @@ unit_values: Dict[UnitType, int] = {
 # Item point values
 item_values: Dict[ItemType, int] = {
     ItemType.HEALTH_POTION: gc.ITEM_HEALTH_POTION_POINTS,
+}
+
+# Spell point values
+spell_values: Dict[SpellType, int] = {
+    SpellType.SUMMON_SKELETON_SWORDSMEN: gc.SPELL_SUMMON_SKELETON_SWORDSMEN_POINTS,
 }

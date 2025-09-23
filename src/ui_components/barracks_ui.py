@@ -10,13 +10,15 @@ import battles
 from components.unit_type import UnitType
 from entities.units import unit_theme_ids, Faction
 from entities.items import ItemType
+from components.spell_type import SpellType
 from selected_unit_manager import selected_unit_manager
 from progress_manager import progress_manager
-from point_values import unit_values, item_values
+from point_values import unit_values, item_values, spell_values
 from events import PLAY_SOUND, PlaySoundEvent, emit_event
 from keyboard_shortcuts import format_button_text
 from ui_components.unit_count import UnitCount
 from ui_components.item_count import ItemCount
+from ui_components.spell_count import SpellCount
 
 
 class BarracksUI(UITabContainer):
@@ -27,6 +29,7 @@ class BarracksUI(UITabContainer):
             manager: pygame_gui.UIManager,
             starting_units: Dict[UnitType, int],
             starting_items: Dict[ItemType, int],
+            starting_spells: Dict[SpellType, int],
             interactive: bool,
             sandbox_mode: bool,
             current_battle: Optional[battles.Battle] = None,
@@ -34,11 +37,13 @@ class BarracksUI(UITabContainer):
         self.manager = manager
         self._units = starting_units.copy()
         self._items = starting_items.copy()
+        self._spells = starting_spells.copy()
         self.interactive = interactive
         self.sandbox_mode = sandbox_mode
         self.current_battle = current_battle
         self.selected_unit_type: Optional[UnitType] = None
         self.selected_item_type: Optional[ItemType] = None
+        self.selected_spell_type: Optional[SpellType] = None
         
         # Initialize units
         if sandbox_mode:
@@ -62,6 +67,14 @@ class BarracksUI(UITabContainer):
             for item_type in ItemType:
                 if item_type not in self._items:
                     self._items[item_type] = 0
+        
+        # Initialize spells
+        if sandbox_mode:
+            self._spells = {spell_type: float('inf') for spell_type in SpellType}
+        else:
+            for spell_type in SpellType:
+                if spell_type not in self._spells:
+                    self._spells[spell_type] = 0
         
         self.available_factions = {
             Faction.faction_of(unit_type)
@@ -94,11 +107,15 @@ class BarracksUI(UITabContainer):
         items_tab_index = self.add_tab("ITEMS", "items_tab")
         self.items_tab_index = items_tab_index
         
+        spells_tab_index = self.add_tab("SPELLS", "spells_tab")
+        self.spells_tab_index = spells_tab_index
+        
         # Unified container system
         self.containers: Dict[str, UIScrollingContainer] = {}
-        self.entity_items: Dict[str, List[Union[UnitCount, ItemCount]]] = {
+        self.entity_items: Dict[str, List[Union[UnitCount, ItemCount, SpellCount]]] = {
             "ALL": [],
-            "ITEMS": []
+            "ITEMS": [],
+            "SPELLS": []
         }
         
         # Add faction containers
@@ -151,21 +168,36 @@ class BarracksUI(UITabContainer):
             allow_scroll_y=False,
         )
         self.containers["ITEMS"] = items_container
+        
+        # Create SPELLS tab container
+        spells_tab_panel = self.get_tab_container(self.spells_tab_index)
+        spells_container = UIScrollingContainer(
+            relative_rect=container_rect,
+            manager=self.manager,
+            container=spells_tab_panel,
+            allow_scroll_y=False,
+        )
+        self.containers["SPELLS"] = spells_container
 
     def _calculate_panel_dimensions(self, panel_width: int, tab_name: str = "ALL") -> tuple[bool, int]:
         """Calculate panel dimensions based on content for the given tab."""
         padding = 10
         
         if tab_name == "ALL":
-            # ALL tab: units and items with count > 0
+            # ALL tab: units, items, and spells with count > 0
             units_count = len([unit_type for unit_type, count in self._units.items() 
                               if count > 0 or self.sandbox_mode])
             items_count = len([item_type for item_type, count in self._items.items() 
                               if count > 0 or self.sandbox_mode])
-            total_count = units_count + items_count
+            spells_count = len([spell_type for spell_type, count in self._spells.items() 
+                               if count > 0 or self.sandbox_mode])
+            total_count = units_count + items_count + spells_count
         elif tab_name == "ITEMS":
             # ITEMS tab: all items regardless of count
             total_count = len(ItemType)
+        elif tab_name == "SPELLS":
+            # SPELLS tab: all spells regardless of count
+            total_count = len(SpellType)
         else:
             # Faction tab: all units in faction regardless of count
             faction = next((f for f in self.available_factions if f.name == tab_name), None)
@@ -191,6 +223,9 @@ class BarracksUI(UITabContainer):
         
         # Populate ITEMS tab - all items regardless of count
         self._populate_items_tab(padding, needs_scrollbar)
+        
+        # Populate SPELLS tab - all spells regardless of count
+        self._populate_spells_tab(padding, needs_scrollbar)
 
     def _populate_all_tab(self, padding: int, needs_scrollbar: bool) -> None:
         """Populate the ALL tab with units and items that have count > 0."""
@@ -259,6 +294,36 @@ class BarracksUI(UITabContainer):
             
             self.entity_items["ALL"].append(item_count)
             x_position += item_count.size + padding // 2
+            index += 1
+        
+        # Add spells with count > 0
+        available_spells = sorted(
+            [(spell_type, count) for spell_type, count in self._spells.items() 
+             if count > 0 or self.sandbox_mode],
+            key=lambda x: x[0].value
+        )
+        
+        for spell_type, count in available_spells:
+            spell_count = SpellCount(
+                x_pos=x_position,
+                y_pos=y_offset,
+                spell_type=spell_type,
+                count=count,
+                interactive=self.interactive and count > 0,
+                manager=self.manager,
+                container=container,
+                infinite=self.sandbox_mode
+            )
+            
+            if index < 10:
+                shortcut_key = str((index + 1) % 10)
+                spell_name = spell_type.value.replace('_', ' ').title()
+                tooltip_text = format_button_text(spell_name, shortcut_key)
+                spell_count.button.tool_tip_text = tooltip_text
+                spell_count.button.tool_tip_delay = 0
+            
+            self.entity_items["ALL"].append(spell_count)
+            x_position += spell_count.size + padding // 2
             index += 1
 
     def _populate_faction_tabs(self, padding: int, needs_scrollbar: bool) -> None:
@@ -331,6 +396,40 @@ class BarracksUI(UITabContainer):
             self.entity_items["ITEMS"].append(item_count)
             x_position += item_count.size + padding // 2
 
+    def _populate_spells_tab(self, padding: int, needs_scrollbar: bool) -> None:
+        """Populate the SPELLS tab with all spells regardless of count."""
+        container = self.containers["SPELLS"]
+        container_height = container.rect.height
+        y_offset = (container_height - SpellCount.size) // 2 if not needs_scrollbar else 0
+        
+        x_position = 0
+        all_spells = sorted(
+            [(spell_type, count) for spell_type, count in self._spells.items()],
+            key=lambda x: x[0].value
+        )
+        
+        for index, (spell_type, count) in enumerate(all_spells):
+            spell_count = SpellCount(
+                x_pos=x_position,
+                y_pos=y_offset,
+                spell_type=spell_type,
+                count=count,
+                interactive=self.interactive and count > 0,
+                manager=self.manager,
+                container=container,
+                infinite=self.sandbox_mode
+            )
+            
+            if index < 10:
+                shortcut_key = str((index + 1) % 10)
+                spell_name = spell_type.value.replace('_', ' ').title()
+                tooltip_text = format_button_text(spell_name, shortcut_key)
+                spell_count.button.tool_tip_text = tooltip_text
+                spell_count.button.tool_tip_delay = 0
+            
+            self.entity_items["SPELLS"].append(spell_count)
+            x_position += spell_count.size + padding // 2
+
     def _rebuild(self) -> None:
         """Rebuild the UI when dimensions or content changes."""
         if not hasattr(self, '_previous_dimensions'):
@@ -374,6 +473,11 @@ class BarracksUI(UITabContainer):
                 count = self._items[item_type]
                 item.update_count(count)
                 item.set_interactive(self.interactive and count > 0)
+            elif isinstance(item, SpellCount):
+                spell_type = item.spell_type
+                count = self._spells[spell_type]
+                item.update_count(count)
+                item.set_interactive(self.interactive and count > 0)
         
         # Update faction tabs
         for faction in self.available_factions:
@@ -389,6 +493,14 @@ class BarracksUI(UITabContainer):
             if isinstance(item, ItemCount):
                 item_type = item.item_type
                 count = self._items[item_type]
+                item.update_count(count)
+                item.set_interactive(self.interactive and count > 0)
+        
+        # Update SPELLS tab
+        for item in self.entity_items["SPELLS"]:
+            if isinstance(item, SpellCount):
+                spell_type = item.spell_type
+                count = self._spells[spell_type]
                 item.update_count(count)
                 item.set_interactive(self.interactive and count > 0)
 
@@ -436,6 +548,15 @@ class BarracksUI(UITabContainer):
         for items in self.entity_items.values():
             for item in items:
                 if isinstance(item, ItemCount) and item.item_type == item_type:
+                    item.button.select()
+                elif item.button.is_selected:
+                    item.button.unselect()
+
+    def select_spell_type(self, spell_type: Optional[SpellType]) -> None:
+        """Select a spell type across all tabs."""
+        for items in self.entity_items.values():
+            for item in items:
+                if isinstance(item, SpellCount) and item.spell_type == spell_type:
                     item.button.select()
                 elif item.button.is_selected:
                     item.button.unselect()
@@ -497,12 +618,12 @@ class BarracksUI(UITabContainer):
 
     def cycle_to_next_faction(self) -> None:
         """Cycle to the next faction tab."""
-        # Total tabs = 1 ("ALL") + number of faction tabs + 1 ("ITEMS")
-        total_tabs = 1 + len(self.available_factions) + 1
+        # Total tabs = 1 ("ALL") + number of faction tabs + 1 ("ITEMS") + 1 ("SPELLS")
+        total_tabs = 1 + len(self.available_factions) + 1 + 1
         if total_tabs == 0:
             return
         
-        # Since tabs are added in order: "ALL" (index 0), then factions (indices 1, 2, 3, ...), then "ITEMS" (last)
+        # Since tabs are added in order: "ALL" (index 0), then factions (indices 1, 2, 3, ...), then "ITEMS", then "SPELLS" (last)
         next_tab_index = (self.current_container_index + 1) % total_tabs
         
         # Switch the container (this will automatically trigger resizing)
@@ -581,6 +702,43 @@ class BarracksUI(UITabContainer):
         """Check if an item type is available (count > 0)."""
         return self.get_item_count(item_type) > 0
     
+    def add_spell(self, spell_type: SpellType) -> None:
+        """Add a spell of the specified type to the barracks."""
+        self._spells[spell_type] += 1
+        
+        # Check if spell needs to be added to ALL tab (was count 0 before)
+        was_zero = self._spells[spell_type] == 1 and not self.sandbox_mode
+        
+        if was_zero:
+            # Need to rebuild to add spell to ALL tab
+            self._rebuild()
+        else:
+            # Just update existing counts
+            self._update_entity_counts()
+
+    def remove_spell(self, spell_type: SpellType) -> None:
+        """Remove a spell of the specified type from the barracks."""
+        assert self._spells[spell_type] > 0
+        self._spells[spell_type] -= 1
+        
+        # Check if spell needs to be removed from ALL tab (count became 0)
+        became_zero = self._spells[spell_type] == 0 and not self.sandbox_mode
+        
+        if became_zero:
+            # Need to rebuild to remove spell from ALL tab
+            self._rebuild()
+        else:
+            # Just update existing counts
+            self._update_entity_counts()
+
+    def get_spell_count(self, spell_type: SpellType) -> int:
+        """Get the count of a specific spell type."""
+        return self._spells.get(spell_type, 0)
+    
+    def has_spell_available(self, spell_type: SpellType) -> bool:
+        """Check if a spell type is available (count > 0)."""
+        return self.get_spell_count(spell_type) > 0
+    
     def get_unit_count(self, unit_type: UnitType) -> int:
         """Get the count of a specific unit type."""
         return self._units.get(unit_type, 0)
@@ -589,9 +747,9 @@ class BarracksUI(UITabContainer):
         """Check if a unit type is available (count > 0)."""
         return self.get_unit_count(unit_type) > 0
     
-    def handle_button_press(self, ui_element) -> Optional[Union[UnitType, ItemType]]:
+    def handle_button_press(self, ui_element) -> Optional[Union[UnitType, ItemType, SpellType]]:
         """
-        Handle button press events and return the UnitType or ItemType if handled.
+        Handle button press events and return the UnitType, ItemType, or SpellType if handled.
         Returns None if not handled.
         """
         # Check all entity items across all tabs
@@ -602,10 +760,12 @@ class BarracksUI(UITabContainer):
                         return item.unit_type
                     elif isinstance(item, ItemCount):
                         return item.item_type
+                    elif isinstance(item, SpellCount):
+                        return item.spell_type
         
         return None
     
-    def get_current_tab_items(self) -> List[Union[UnitCount, ItemCount]]:
+    def get_current_tab_items(self) -> List[Union[UnitCount, ItemCount, SpellCount]]:
         """Get the items currently visible in the active tab."""
         current_tab = self.get_tab(self.current_container_index)
         if current_tab is None:
@@ -614,10 +774,10 @@ class BarracksUI(UITabContainer):
         tab_text = current_tab["text"]
         return self.entity_items.get(tab_text, [])
     
-    def get_item_at_index(self, index: int) -> Optional[Union[UnitType, ItemType]]:
+    def get_item_at_index(self, index: int) -> Optional[Union[UnitType, ItemType, SpellType]]:
         """
         Get the item at the specified index in the current tab.
-        Returns the UnitType or ItemType directly, or None if index is out of bounds or item is not interactive.
+        Returns the UnitType, ItemType, or SpellType directly, or None if index is out of bounds or item is not interactive.
         """
         current_tab_items = self.get_current_tab_items()
         
@@ -635,5 +795,7 @@ class BarracksUI(UITabContainer):
             return item.unit_type
         elif hasattr(item, 'item_type'):  # ItemCount
             return item.item_type
+        elif hasattr(item, 'spell_type'):  # SpellCount
+            return item.spell_type
         
         return None

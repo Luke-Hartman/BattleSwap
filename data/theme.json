@@ -227,6 +227,24 @@
             "shape": "rectangle"
         }
     },
+    "@spell_count": {
+        "colours": {
+            "normal_bg": "#8C9FA1",
+            "hovered_bg": "#A0B4B6",
+            "disabled_bg": "#677476",
+            "selected_bg": "#5C7A7C",
+            "active_bg": "#4E5D63",
+            "normal_border": "#FF6B35",
+            "hovered_border": "#FF8C42",
+            "disabled_border": "#CC4A1C",
+            "selected_border": "#FF8C42",
+            "active_border": "#FF8C42"
+        },
+        "misc": {
+            "border_width": "3",
+            "shape": "rectangle"
+        }
+    },
     "@unit_count_text": {
         "misc": {
             "text_horiz_alignment": "right",
@@ -570,6 +588,13 @@
         "images": {
             "normal_image": {
                 "path": "assets/icons/CoreSwordsmanIcon.png"
+            }
+        }
+    },
+    "#summon_skeleton_swordsmen_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/SkeletonSwordsmanIcon.png"
             }
         }
     },

@@ -123,6 +123,12 @@ class GameConstants(BaseModel):
     ITEM_HEALTH_POTION_POINTS: int
     ITEM_HEALTH_POTION_HEALTH_BONUS: int
     
+    # Spell Point Values
+    SPELL_SUMMON_SKELETON_SWORDSMEN_POINTS: int
+    SPELL_SUMMON_SKELETON_SWORDSMEN_RADIUS: float
+    SPELL_SUMMON_SKELETON_SWORDSMEN_COUNT: int
+    SPELL_HANDLE_SIZE: float
+    
     # Core Units
     # Archer
     CORE_ARCHER_HP: float

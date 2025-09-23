@@ -4,7 +4,6 @@ import pygame
 import pygame_gui
 from pygame_gui.elements import UIPanel, UIButton, UILabel
 from typing import Optional
-from point_values import unit_values, item_values
 
 
 class BaseCountButton(UIPanel):

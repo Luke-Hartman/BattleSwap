@@ -34,6 +34,7 @@ from processors.unique_processor import UniqueProcessor
 from entities.units import create_unit
 from processors.visual_link_processor import VisualLinkProcessor
 from processors.repeat_processor import RepeatProcessor
+from processors.spell_effects_processor import SpellEffectsProcessor
 
 class BattleOutcome(Enum):
     TEAM1_VICTORY = auto()
@@ -76,6 +77,7 @@ class AutoBattle:
         _add_or_replace(RotationProcessor())
         _add_or_replace(UniqueProcessor())
         _add_or_replace(DyingProcessor())
+        _add_or_replace(SpellEffectsProcessor())
         self.remaining_time = max_duration
         self.battle_outcome = None
 
