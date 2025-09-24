@@ -119,10 +119,13 @@ class SetupBattleScene(Scene):
         self.drag_start_pos: Optional[Tuple[int, int]] = None
         self.drag_end_pos: Optional[Tuple[int, int]] = None
         
-        # Multi-unit pickup state (like single unit pickup but for groups)
+        # Multi-entity pickup state (like single entity pickup but for groups)
         self.selected_group_partial_units: List[int] = []  # List of partial unit entity IDs
-        self.group_unit_offsets: List[Tuple[float, float]] = []  # Relative offsets from mouse
+        self.selected_group_partial_spells: List[int] = []  # List of partial spell entity IDs
+        self.group_unit_offsets: List[Tuple[float, float]] = []  # Relative offsets from mouse for units
+        self.group_spell_offsets: List[Tuple[float, float]] = []  # Relative offsets from mouse for spells
         self.group_unit_types: List[UnitType] = []  # Unit types for each partial unit
+        self.group_spell_types: List[SpellType] = []  # Spell types for each partial spell
         self.group_unit_items: List[List[ItemType]] = []  # Items for each partial unit
         self.group_placement_team: Optional[TeamType] = None  # Team for the group
         
@@ -650,14 +653,14 @@ class SetupBattleScene(Scene):
             self.world_map_view.rebuild(battles=progress_manager.get_battles_including_solutions())
             pygame.event.post(PreviousSceneEvent(current_scene_id=id(self)).to_event())
 
-    def pickup_group_of_units(self, unit_ids: List[int], mouse_world_pos: Tuple[float, float], placement_team: TeamType) -> None:
-        """Pick up a group of units as transparent previews, like single unit pickup."""
-        if not unit_ids:
+    def pickup_group_of_entities(self, unit_ids: List[int], spell_ids: List[int], mouse_world_pos: Tuple[float, float], placement_team: TeamType) -> None:
+        """Pick up a group of units and spells as transparent previews, like single entity pickup."""
+        if not unit_ids and not spell_ids:
             return
             
         esper.switch_world(self.battle_id)
         
-        # Clear any existing single unit pickup
+        # Clear any existing single entity pickup
         if self.selected_partial_unit is not None:
             esper.delete_entity(self.selected_partial_unit)
             self.selected_partial_unit = None
@@ -670,11 +673,24 @@ class SetupBattleScene(Scene):
         # Clear existing group pickup
         self.clear_group_pickup()
         
-        # Calculate center of selected units for centering on mouse
-        center_x = sum(esper.component_for_entity(uid, Position).x for uid in unit_ids) / len(unit_ids)
-        center_y = sum(esper.component_for_entity(uid, Position).y for uid in unit_ids) / len(unit_ids)
+        # Calculate center of selected entities for centering on mouse
+        all_positions = []
+        for unit_id in unit_ids:
+            if esper.entity_exists(unit_id):
+                pos = esper.component_for_entity(unit_id, Position)
+                all_positions.append((pos.x, pos.y))
+        for spell_id in spell_ids:
+            if esper.entity_exists(spell_id):
+                pos = esper.component_for_entity(spell_id, Position)
+                all_positions.append((pos.x, pos.y))
         
-        # Store data for each unit and create partial units
+        if not all_positions:
+            return
+            
+        center_x = sum(pos[0] for pos in all_positions) / len(all_positions)
+        center_y = sum(pos[1] for pos in all_positions) / len(all_positions)
+        
+        # Handle units
         for unit_id in unit_ids:
             if not esper.entity_exists(unit_id):
                 continue
@@ -711,6 +727,35 @@ class SetupBattleScene(Scene):
             
             # Remove original unit from battlefield (but don't add to barracks since we're carrying them)
             self.world_map_view.remove_unit(self.battle_id, unit_id)
+        
+        # Handle spells
+        for spell_id in spell_ids:
+            if not esper.entity_exists(spell_id):
+                continue
+                
+            pos = esper.component_for_entity(spell_id, Position)
+            spell_component = esper.component_for_entity(spell_id, SpellComponent)
+            
+            # Calculate offset from group center
+            offset_x = pos.x - center_x
+            offset_y = pos.y - center_y
+            self.group_spell_offsets.append((offset_x, offset_y))
+            self.group_spell_types.append(spell_component.spell_type)
+            
+            # Create transparent partial spell
+            partial_spell = create_spell(
+                x=mouse_world_pos[0] + offset_x,
+                y=mouse_world_pos[1] + offset_y,
+                spell_type=spell_component.spell_type,
+                team=placement_team,
+                corruption_powers=self.battle.corruption_powers
+            )
+            esper.add_component(partial_spell, Placing())
+            esper.add_component(partial_spell, Transparency(alpha=128))
+            self.selected_group_partial_spells.append(partial_spell)
+            
+            # Remove original spell from battlefield (but don't add to barracks since we're carrying them)
+            self.world_map_view.remove_spell(self.battle_id, spell_id)
         
         self.group_placement_team = placement_team
 
@@ -757,7 +802,7 @@ class SetupBattleScene(Scene):
         self.group_placement_team = new_team
 
     def clear_group_pickup(self) -> None:
-        """Clear the group pickup state and delete partial units."""
+        """Clear the group pickup state and delete partial units and spells."""
         esper.switch_world(self.battle_id)
         
         # Delete all partial units
@@ -765,16 +810,24 @@ class SetupBattleScene(Scene):
             if esper.entity_exists(partial_unit):
                 esper.delete_entity(partial_unit)
         
+        # Delete all partial spells
+        for partial_spell in self.selected_group_partial_spells:
+            if esper.entity_exists(partial_spell):
+                esper.delete_entity(partial_spell)
+        
         # Clear state
         self.selected_group_partial_units.clear()
+        self.selected_group_partial_spells.clear()
         self.group_unit_offsets.clear()
+        self.group_spell_offsets.clear()
         self.group_unit_types.clear()
+        self.group_spell_types.clear()
         self.group_unit_items.clear()
         self.group_placement_team = None
 
-    def place_group_units(self, mouse_world_pos: Tuple[float, float], snap_to_grid: bool = False) -> None:
-        """Place all units from the group pickup."""
-        if not self.selected_group_partial_units or self.group_placement_team is None:
+    def place_group_entities(self, mouse_world_pos: Tuple[float, float], snap_to_grid: bool = False) -> None:
+        """Place all units and spells from the group pickup."""
+        if not (self.selected_group_partial_units or self.selected_group_partial_spells) or self.group_placement_team is None:
             return
             
         esper.switch_world(self.battle_id)
@@ -784,34 +837,53 @@ class SetupBattleScene(Scene):
         world_x, _ = axial_to_world(*battle_coords)
         
         if self.sandbox_mode:
-            # In sandbox mode, all units go to the side determined by mouse position
+            # In sandbox mode, all entities go to the side determined by mouse position
             placement_team = TeamType.TEAM1 if mouse_world_pos[0] < world_x else TeamType.TEAM2
         else:
             # In non-sandbox mode, always place on team 1 side
             placement_team = TeamType.TEAM1
         
-        # Use unified placement logic
-        placement_positions = calculate_group_placement_positions(
-            mouse_world_pos=mouse_world_pos,
-            unit_offsets=self.group_unit_offsets,
-            battle_id=self.battle_id,
-            hex_coords=battle_coords,
-            required_team=placement_team,
-            snap_to_grid=snap_to_grid,
-            sandbox_mode=self.sandbox_mode,
-        )
+        # Use unified placement logic for units
+        if self.group_unit_offsets:
+            placement_positions = calculate_group_placement_positions(
+                mouse_world_pos=mouse_world_pos,
+                unit_offsets=self.group_unit_offsets,
+                battle_id=self.battle_id,
+                hex_coords=battle_coords,
+                required_team=placement_team,
+                snap_to_grid=snap_to_grid,
+                sandbox_mode=self.sandbox_mode,
+            )
+            
+            # Place each unit at its calculated position
+            for i, unit_type in enumerate(self.group_unit_types):
+                if i < len(placement_positions):
+                    unit_items = self.group_unit_items[i] if i < len(self.group_unit_items) else []
+                    self.world_map_view.add_unit(
+                        self.battle_id,
+                        unit_type,
+                        placement_positions[i],
+                        placement_team,
+                        items=unit_items
+                    )
         
-        # Place each unit at its calculated position
-        for i, unit_type in enumerate(self.group_unit_types):
-            if i < len(placement_positions):
-                unit_items = self.group_unit_items[i] if i < len(self.group_unit_items) else []
-                self.world_map_view.add_unit(
-                    self.battle_id,
-                    unit_type,
-                    placement_positions[i],
-                    placement_team,
-                    items=unit_items
+        # Place spells at their offset positions
+        for i, spell_type in enumerate(self.group_spell_types):
+            if i < len(self.group_spell_offsets):
+                offset_x, offset_y = self.group_spell_offsets[i]
+                spell_pos = (mouse_world_pos[0] + offset_x, mouse_world_pos[1] + offset_y)
+                
+                # Create the spell entity
+                spell_entity = create_spell(
+                    x=spell_pos[0],
+                    y=spell_pos[1],
+                    spell_type=spell_type,
+                    team=placement_team,
+                    corruption_powers=self.battle.corruption_powers
                 )
+                
+                # Add the spell to the world map view
+                self.world_map_view.add_spell(self.battle_id, spell_entity)
         
         # Clear the group pickup
         self.clear_group_pickup()
@@ -820,8 +892,8 @@ class SetupBattleScene(Scene):
             self.progress_panel.update_battle(self.battle)
 
     def cancel_group_pickup(self) -> None:
-        """Cancel group pickup and return units and items to barracks."""
-        if not self.selected_group_partial_units:
+        """Cancel group pickup and return units, items, and spells to barracks."""
+        if not (self.selected_group_partial_units or self.selected_group_partial_spells):
             return
             
         # Return units to barracks inventory
@@ -832,6 +904,10 @@ class SetupBattleScene(Scene):
         for unit_items in self.group_unit_items:
             for item_type in unit_items:
                 self.barracks.add_item(item_type)
+        
+        # Return spells to barracks inventory
+        for spell_type in self.group_spell_types:
+            self.barracks.add_spell(spell_type)
         
         # Clear the group pickup
         self.clear_group_pickup()
@@ -876,7 +952,7 @@ class SetupBattleScene(Scene):
         return False
 
     def select_units_in_rect(self, start_pos: Tuple[float, float], end_pos: Tuple[float, float]) -> None:
-        """Select all units within the given screen rectangle and pick them up."""
+        """Select all units and spells within the given screen rectangle and pick them up."""
         esper.switch_world(self.battle_id)
         
         # Convert screen coordinates to world coordinates
@@ -895,8 +971,10 @@ class SetupBattleScene(Scene):
         
         # Find units within the rectangle
         selected_units = []
+        selected_spells = []
         placement_team = None
         
+        # Select units
         for ent, (pos, unit_type, team) in esper.get_components(Position, UnitTypeComponent, Team):
             if esper.has_component(ent, Placing):
                 continue
@@ -916,20 +994,35 @@ class SetupBattleScene(Scene):
                         world_x, _ = axial_to_world(*self.battle.hex_coords)
                         placement_team = TeamType.TEAM1 if pos.x < world_x else TeamType.TEAM2
         
-        # If units were selected, pick them up
-        if selected_units and placement_team is not None:
+        # Select spells
+        for ent, (pos, spell_component) in esper.get_components(Position, SpellComponent):
+            if esper.has_component(ent, Placing):
+                continue
+            
+            # Check if spell is within selection rectangle (spells use handle size for selection)
+            distance = ((pos.x - (min_x + max_x) / 2) ** 2 + (pos.y - (min_y + max_y) / 2) ** 2) ** 0.5
+            handle_size = gc.SPELL_HANDLE_SIZE
+            if (pos.x >= min_x - handle_size and pos.x <= max_x + handle_size and 
+                pos.y >= min_y - handle_size and pos.y <= max_y + handle_size):
+                selected_spells.append(ent)
+                if placement_team is None:
+                    # For spells, default to team 1 (player team)
+                    placement_team = TeamType.TEAM1
+        
+        # If entities were selected, pick them up
+        if (selected_units or selected_spells) and placement_team is not None:
             # Calculate mouse world position for centering
             mouse_pos = pygame.mouse.get_pos()
             mouse_world_pos = self.camera.screen_to_world(*mouse_pos)
-            self.pickup_group_of_units(selected_units, mouse_world_pos, placement_team)
+            self.pickup_group_of_entities(selected_units, selected_spells, mouse_world_pos, placement_team)
 
-    def update_group_partial_units_position(self, mouse_world_pos: Tuple[float, float], snap_to_grid: bool = False) -> None:
-        """Update positions of group partial units to show actual clipped placement positions.
+    def update_group_partial_entities_position(self, mouse_world_pos: Tuple[float, float], snap_to_grid: bool = False) -> None:
+        """Update positions of group partial units and spells to show actual clipped placement positions.
         
         This uses the same unified placement logic as actual placement to ensure 
         previews match the final placement positions exactly.
         """
-        if not self.selected_group_partial_units:
+        if not (self.selected_group_partial_units or self.selected_group_partial_spells):
             return
             
         esper.switch_world(self.battle_id)
@@ -939,7 +1032,7 @@ class SetupBattleScene(Scene):
         world_x, _ = axial_to_world(*battle_coords)
         
         if self.sandbox_mode:
-            # In sandbox mode, all units follow the mouse to either side
+            # In sandbox mode, all entities follow the mouse to either side
             preview_team = TeamType.TEAM1 if mouse_world_pos[0] < world_x else TeamType.TEAM2
             
             # Check if team changed and recreate partial units if needed
@@ -953,25 +1046,37 @@ class SetupBattleScene(Scene):
             # In non-sandbox mode, always use team 1
             preview_team = TeamType.TEAM1
         
-        # Use unified placement logic to calculate positions
-        placement_positions = calculate_group_placement_positions(
-            mouse_world_pos=mouse_world_pos,
-            unit_offsets=self.group_unit_offsets,
-            battle_id=self.battle_id,
-            hex_coords=battle_coords,
-            required_team=preview_team,
-            snap_to_grid=snap_to_grid,
-            sandbox_mode=self.sandbox_mode,
-        )
+        # Use unified placement logic to calculate positions for units
+        if self.group_unit_offsets:
+            placement_positions = calculate_group_placement_positions(
+                mouse_world_pos=mouse_world_pos,
+                unit_offsets=self.group_unit_offsets,
+                battle_id=self.battle_id,
+                hex_coords=battle_coords,
+                required_team=preview_team,
+                snap_to_grid=snap_to_grid,
+                sandbox_mode=self.sandbox_mode,
+            )
+            
+            # Update each partial unit's position to show actual placement position
+            for i, partial_unit in enumerate(self.selected_group_partial_units):
+                if not esper.entity_exists(partial_unit) or i >= len(placement_positions):
+                    continue
+                    
+                pos = esper.component_for_entity(partial_unit, Position)
+                pos.x, pos.y = placement_positions[i]
+                esper.add_component(partial_unit, Focus())
         
-        # Update each partial unit's position to show actual placement position
-        for i, partial_unit in enumerate(self.selected_group_partial_units):
-            if not esper.entity_exists(partial_unit) or i >= len(placement_positions):
+        # Update spell positions to follow mouse with their offsets
+        for i, partial_spell in enumerate(self.selected_group_partial_spells):
+            if not esper.entity_exists(partial_spell) or i >= len(self.group_spell_offsets):
                 continue
                 
-            pos = esper.component_for_entity(partial_unit, Position)
-            pos.x, pos.y = placement_positions[i]
-            esper.add_component(partial_unit, Focus())
+            offset_x, offset_y = self.group_spell_offsets[i]
+            pos = esper.component_for_entity(partial_spell, Position)
+            pos.x = mouse_world_pos[0] + offset_x
+            pos.y = mouse_world_pos[1] + offset_y
+            esper.add_component(partial_spell, Focus())
 
     def draw_selection_rectangle(self) -> None:
         """Draw the selection rectangle during drag selection."""
@@ -1181,9 +1286,9 @@ class SetupBattleScene(Scene):
             if event.type == pygame.MOUSEBUTTONDOWN and not mouse_over_ui(self.manager):
                 if event.button == pygame.BUTTON_LEFT:
                     # If we have a group picked up, place them
-                    if self.selected_group_partial_units:
+                    if self.selected_group_partial_units or self.selected_group_partial_spells:
                         mouse_world_pos = self.camera.screen_to_world(*event.pos)
-                        self.place_group_units(mouse_world_pos, snap_to_grid=show_grid)
+                        self.place_group_entities(mouse_world_pos, snap_to_grid=show_grid)
                     # If we have a single unit selected, place it
                     elif self.selected_unit_type is not None:
                         click_placement_pos = get_placement_pos(
@@ -1207,7 +1312,7 @@ class SetupBattleScene(Scene):
                         
                 elif event.button == pygame.BUTTON_RIGHT:
                     # If we have a group picked up, cancel the pickup
-                    if self.selected_group_partial_units:
+                    if self.selected_group_partial_units or self.selected_group_partial_spells:
                         self.cancel_group_pickup()
                     # If we have a single unit selected, cancel it
                     elif self.selected_unit_type is not None:
@@ -1279,10 +1384,10 @@ class SetupBattleScene(Scene):
             position.x, position.y = spell_placement_pos
             esper.add_component(self.selected_spell, Focus())
 
-        # Update preview for group partial units
-        if self.selected_group_partial_units:
+        # Update preview for group partial entities
+        if self.selected_group_partial_units or self.selected_group_partial_spells:
             mouse_world_pos = self.camera.screen_to_world(*pygame.mouse.get_pos())
-            self.update_group_partial_units_position(mouse_world_pos, snap_to_grid=show_grid)
+            self.update_group_partial_entities_position(mouse_world_pos, snap_to_grid=show_grid)
 
         # Only update camera if no dialog is focused
         if self.save_dialog is None or not self.save_dialog.dialog.alive():
@@ -1296,7 +1401,7 @@ class SetupBattleScene(Scene):
             draw_grid(self.screen, self.camera, battle_coords)
 
         # Draw the legal placement area
-        if self.selected_unit_type is not None or self.selected_group_partial_units:
+        if self.selected_unit_type is not None or self.selected_group_partial_units or self.selected_group_partial_spells:
             legal_area = get_legal_placement_area(
                 self.battle_id,
                 battle_coords,
@@ -1423,8 +1528,8 @@ class SetupBattleScene(Scene):
         """Close any open windows specific to the setup battle scene."""
         windows_closed = False
         
-        # Handle special escape logic for unit selections first
-        if self.selected_group_partial_units:
+        # Handle special escape logic for entity selections first
+        if self.selected_group_partial_units or self.selected_group_partial_spells:
             self.cancel_group_pickup()
             windows_closed = True
         if self.selected_unit_type is not None:
