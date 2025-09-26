@@ -35,7 +35,7 @@ from auto_battle import BattleOutcome, simulate_battle
 import upgrade_hexes
 from voice import play_intro
 from world_map_view import BorderState, FillState, HexState, WorldMapView, hex_lifecycle_to_fill_state
-from scene_utils import draw_grid, get_center_line, get_placement_pos, get_hovered_unit, get_unit_placements, get_legal_placement_area, get_legal_spell_placement_area, has_unsaved_changes, mouse_over_ui, calculate_group_placement_positions, get_spell_placement_pos
+from scene_utils import draw_grid, get_center_line, get_placement_pos, get_hovered_unit, get_unit_placements, get_legal_placement_area, get_legal_spell_placement_area, has_unsaved_changes, mouse_over_ui, calculate_group_placement_positions, get_spell_placement_pos, clip_to_polygon
 from ui_components.progress_panel import ProgressPanel
 from ui_components.corruption_power_editor import CorruptionPowerEditorDialog
 from corruption_powers import CorruptionPower
@@ -1067,15 +1067,21 @@ class SetupBattleScene(Scene):
                 pos.x, pos.y = placement_positions[i]
                 esper.add_component(partial_unit, Focus())
         
-        # Update spell positions to follow mouse with their offsets
+        # Update spell positions to follow mouse with their offsets, clipped to legal area
         for i, partial_spell in enumerate(self.selected_group_partial_spells):
             if not esper.entity_exists(partial_spell) or i >= len(self.group_spell_offsets):
                 continue
                 
             offset_x, offset_y = self.group_spell_offsets[i]
+            ideal_x = mouse_world_pos[0] + offset_x
+            ideal_y = mouse_world_pos[1] + offset_y
+            
+            # Clip to legal spell placement area
+            legal_area = get_legal_spell_placement_area(self.battle_id, battle_coords)
+            clipped_pos = clip_to_polygon(legal_area, ideal_x, ideal_y)
+            
             pos = esper.component_for_entity(partial_spell, Position)
-            pos.x = mouse_world_pos[0] + offset_x
-            pos.y = mouse_world_pos[1] + offset_y
+            pos.x, pos.y = clipped_pos
             esper.add_component(partial_spell, Focus())
 
     def draw_selection_rectangle(self) -> None:
@@ -1402,12 +1408,25 @@ class SetupBattleScene(Scene):
 
         # Draw the legal placement area
         if self.selected_unit_type is not None or self.selected_group_partial_units or self.selected_group_partial_spells:
-            legal_area = get_legal_placement_area(
-                self.battle_id,
-                battle_coords,
-                required_team=None if self.sandbox_mode else TeamType.TEAM1,
-                include_units=False,
-            )
+            # Check if this is a spell-only group selection
+            is_spell_only_group = (self.selected_group_partial_spells and 
+                                 not self.selected_group_partial_units and 
+                                 self.selected_unit_type is None)
+            
+            if is_spell_only_group:
+                # For spell-only groups, show the entire battlefield like individual spells
+                legal_area = get_legal_spell_placement_area(
+                    self.battle_id,
+                    battle_coords,
+                )
+            else:
+                # For units or mixed groups, use team-restricted area
+                legal_area = get_legal_placement_area(
+                    self.battle_id,
+                    battle_coords,
+                    required_team=None if self.sandbox_mode else TeamType.TEAM1,
+                    include_units=False,
+                )
             for polygon in legal_area.geoms if isinstance(legal_area, shapely.MultiPolygon) else [legal_area]:
                 pygame.draw.lines(self.screen, (175, 175, 175), False, 
                     [self.camera.world_to_screen(x, y) for x, y in polygon.exterior.coords], 

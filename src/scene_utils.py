@@ -15,10 +15,11 @@ from components.sprite_sheet import SpriteSheet
 from components.unit_type import UnitType, UnitTypeComponent
 from components.item import ItemComponent
 from components.spell import SpellComponent
+from components.spell_type import SpellType
+from components.team import Team, TeamType
 from entities.items import ItemType
 from game_constants import gc
 from hex_grid import get_hex_vertices, axial_to_world
-from components.team import Team, TeamType
 from shapely.ops import nearest_points
 from progress_manager import HexLifecycleState, progress_manager
 
@@ -297,13 +298,10 @@ def get_legal_spell_placement_area(
     Returns:
         Shapely polygon representing the legal spell placement area
     """
-    # Get hex center
-    hex_center_x, _ = axial_to_world(*hex_coords)
-    
     # Create battlefield polygon centered on hex
     battlefield = get_battlefield_polygon(hex_coords)
     
-    # Start with the full battlefield (spells can be placed anywhere)
+    # Start with the full battlefield (spells can be placed anywhere within the battlefield)
     legal_area = battlefield
     
     # Collect all unit positions
@@ -413,25 +411,44 @@ def get_unit_placements(team_type: TeamType, battle: Battle) -> List[Tuple[UnitT
             if team.type == team_type and ent not in esper._dead_entities and not esper.has_component(ent, Placing)
         ]
 
+def get_spell_placements(team_type: TeamType, battle: Battle) -> List[Tuple[SpellType, Tuple[float, float], int]]:
+    """Get spell placements for a specific team from a battle world.
+    
+    Args:
+        team_type: The team type to get spells for
+        battle: The battle containing the world
+        
+    Returns:
+        List of (spell_type, position, team) tuples for placed spells
+    """
+    world_x, world_y = axial_to_world(*battle.hex_coords)
+    with use_world(battle.id):
+        return [
+            (spell_component.spell_type, (pos.x - world_x, pos.y - world_y), team.type.value)
+            for ent, (spell_component, team, pos) in esper.get_components(SpellComponent, Team, Position)
+            if team.type == team_type and ent not in esper._dead_entities and not esper.has_component(ent, Placing)
+        ]
+
 def mouse_over_ui(manager: pygame_gui.UIManager) -> bool:
     return manager.get_hovering_any_element()
 
-def has_unsaved_changes(battle: Battle, unit_placements: List[Tuple[UnitType, Tuple[float, float], List[ItemType]]]) -> bool:
-    """Check if current unit placements differ from saved solution.
+def has_unsaved_changes(battle: Battle, unit_placements: List[Tuple[UnitType, Tuple[float, float], List[ItemType]]], spell_placements: Optional[List[Tuple[SpellType, Tuple[float, float], int]]] = None) -> bool:
+    """Check if current unit and spell placements differ from saved solution.
     
     Args:
         battle: The battle to check
         unit_placements: Current unit placements
+        spell_placements: Current spell placements (optional)
         
     Returns:
         True if there are unsaved changes, False otherwise
     """
     saved_solution = progress_manager.solutions.get(battle.hex_coords)
     # Convert items lists to tuples for hashing
-    current_set = set((unit_type, position, tuple(items)) for unit_type, position, items in unit_placements)
+    current_unit_set = set((unit_type, position, tuple(items)) for unit_type, position, items in unit_placements)
     
     if saved_solution is None:
-        return len(current_set) > 0
+        return len(current_unit_set) > 0 or (spell_placements is not None and len(spell_placements) > 0)
     
     # Check if the corruption state matches
     current_is_corrupted = progress_manager.get_hex_state(battle.hex_coords) in [HexLifecycleState.CORRUPTED, HexLifecycleState.RECLAIMED]
@@ -439,8 +456,18 @@ def has_unsaved_changes(battle: Battle, unit_placements: List[Tuple[UnitType, Tu
         return True
         
     # Convert saved solution items lists to tuples for hashing
-    saved_set = set((unit_type, position, tuple(items)) for unit_type, position, items in saved_solution.unit_placements)
-    return current_set != saved_set
+    saved_unit_set = set((unit_type, position, tuple(items)) for unit_type, position, items in saved_solution.unit_placements)
+    if current_unit_set != saved_unit_set:
+        return True
+    
+    # Check spell placements if provided
+    if spell_placements is not None:
+        current_spell_set = set(spell_placements)
+        saved_spell_set = set(saved_solution.spell_placements)
+        if current_spell_set != saved_spell_set:
+            return True
+    
+    return False
 
 def calculate_group_placement_positions(
     mouse_world_pos: Tuple[float, float],

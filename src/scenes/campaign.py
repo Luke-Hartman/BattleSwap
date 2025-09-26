@@ -84,6 +84,7 @@ class CampaignScene(Scene):
                 self.manager,
                 progress_manager.available_units(None),
                 progress_manager.available_items(None),
+                progress_manager.available_spells(None),
                 interactive=True,
                 sandbox_mode=False,
                 current_battle=None,

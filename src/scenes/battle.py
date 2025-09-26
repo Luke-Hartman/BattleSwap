@@ -4,7 +4,7 @@ import pygame
 import pygame_gui
 from auto_battle import AutoBattle, BattleOutcome
 from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event, UNMUTE_DRUMS, UnmuteDrumsEvent, PLAY_SOUND, PlaySoundEvent
-from scene_utils import has_unsaved_changes, use_world, get_unit_placements
+from scene_utils import has_unsaved_changes, use_world, get_unit_placements, get_spell_placements
 from scenes.scene import Scene
 from scenes.events import PreviousSceneEvent
 from world_map_view import BorderState, WorldMapView, HexState, FillState, hex_lifecycle_to_fill_state
@@ -61,6 +61,7 @@ class BattleScene(Scene):
 
         self.world_map_view.rebuild(self.world_map_view.battles.values())
         self.current_placements = get_unit_placements(TeamType.TEAM1, self.battle)
+        self.current_spell_placements = get_spell_placements(TeamType.TEAM1, self.battle)
 
         # Fog all other battles except the current one
         fogged_states = {}
@@ -153,7 +154,7 @@ class BattleScene(Scene):
         save_button_x = (panel_width - wide_button_width) // 2
 
         # Save button (top, wider)
-        has_changes = has_unsaved_changes(self.battle, self.current_placements)
+        has_changes = has_unsaved_changes(self.battle, self.current_placements, self.current_spell_placements)
         save_text = "Save" if has_changes else "No changes"
         
         # Add Enter shortcut to save button if it's enabled
@@ -343,7 +344,7 @@ class BattleScene(Scene):
                 if event.key == pygame.K_RETURN:
                     # In victory panel
                     if hasattr(self, 'victory_panel') and self.victory_panel is not None:
-                        has_changes = has_unsaved_changes(self.battle, self.current_placements)
+                        has_changes = has_unsaved_changes(self.battle, self.current_placements, self.current_spell_placements)
                         if has_changes and hasattr(self, 'save_button') and self.save_button.is_enabled:
                             # Save button is enabled, trigger save
                             pygame.event.post(pygame.event.Event(
@@ -416,6 +417,7 @@ class BattleScene(Scene):
                             Solution(
                                 hex_coords=self.battle.hex_coords,
                                 unit_placements=self.current_placements,
+                                spell_placements=self.current_spell_placements,
                                 solved_corrupted=progress_manager.get_hex_state(self.battle.hex_coords) in [HexLifecycleState.CORRUPTED, HexLifecycleState.RECLAIMED]
                             )
                         )
@@ -423,7 +425,7 @@ class BattleScene(Scene):
                         self.victory_panel.kill()
                         self.create_victory_panel()
                     elif hasattr(self, 'continue_button') and event.ui_element == self.continue_button:
-                        if has_unsaved_changes(self.battle, self.current_placements):
+                        if has_unsaved_changes(self.battle, self.current_placements, self.current_spell_placements):
                             self.show_continue_confirmation()
                         else:
                             self.world_map_view.rebuild(progress_manager.get_battles_including_solutions())
