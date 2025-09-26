@@ -587,14 +587,14 @@
     "#health_potion_icon": {
         "images": {
             "normal_image": {
-                "path": "assets/icons/CoreSwordsmanIcon.png"
+                "path": "assets/icons/HealthPotionIcon.png"
             }
         }
     },
     "#summon_skeleton_swordsmen_icon": {
         "images": {
             "normal_image": {
-                "path": "assets/icons/SkeletonSwordsmanIcon.png"
+                "path": "assets/icons/SummonSkeletonSwordsmenIcon.png"
             }
         }
     },

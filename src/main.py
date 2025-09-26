@@ -9,6 +9,8 @@ import argparse
 import sys
 import pygame
 from entities.units import load_sprite_sheets
+from entities.spells import load_spell_icons
+from entities.items import load_item_icons
 from handlers.combat_handler import CombatHandler
 from handlers.sound_handler import SoundHandler
 from handlers.state_machine import StateMachine
@@ -44,6 +46,8 @@ fps_font = pygame.font.SysFont('Arial', 30)
 
 # Load sprite sheets
 load_sprite_sheets()
+load_spell_icons()
+load_item_icons()
 load_visual_sheets()
 
 combat_handler = CombatHandler()

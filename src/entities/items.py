@@ -4,6 +4,8 @@ from enum import Enum
 from abc import ABC, abstractmethod
 from typing import Dict
 import esper
+import pygame
+import os
 from components.health import Health
 from game_constants import gc
 
@@ -46,7 +48,23 @@ item_theme_ids: Dict[ItemType, str] = {
     ItemType.HEALTH_POTION: "#health_potion_icon"
 }
 
+# Item icon surfaces for rendering
+item_icon_surfaces: Dict[ItemType, pygame.Surface] = {}
+
 # Item registry
 item_registry: Dict[ItemType, Item] = {
     ItemType.HEALTH_POTION: HealthPotion()
 }
+
+
+def load_item_icons() -> None:
+    """Load all item icons."""
+    item_icon_paths: Dict[ItemType, str] = {
+        ItemType.HEALTH_POTION: "HealthPotionIcon.png",
+    }
+    
+    for item_type, filename in item_icon_paths.items():
+        if item_type in item_icon_surfaces:
+            continue
+        path = os.path.join("assets", "icons", filename)
+        item_icon_surfaces[item_type] = pygame.image.load(path).convert_alpha()

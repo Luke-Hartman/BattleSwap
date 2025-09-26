@@ -22,6 +22,8 @@ from components.placing import Placing
 from components.position import Position
 from components.range_indicator import RangeIndicator
 from components.spell import SpellComponent
+from entities.spells import spell_icon_surfaces
+from entities.items import item_icon_surfaces
 from components.spell_type import SpellType
 from components.sprite_sheet import SpriteSheet
 from components.team import Team, TeamType
@@ -378,13 +380,15 @@ class RenderingProcessor(esper.Processor):
 
     def draw_item_indicators(self, pos: Position, item_component: 'ItemComponent', hitbox: 'Hitbox', team: 'Team', health: 'Health') -> None:
         """Draw small indicators showing that a unit has items equipped."""
+        if health.current == 0:
+            return
         screen_pos = self.camera.world_to_screen(pos.x, pos.y)
         
         bar_x, bar_y, bar_width, bar_height = self._calculate_health_bar_position(pos, hitbox)
 
         # Calculate position for item indicators (above the unit)
-        indicator_size = 10 * self.camera.scale
-        indicator_spacing = 2 * self.camera.scale
+        indicator_size = 16 * self.camera.scale
+        indicator_spacing = 3 * self.camera.scale
         total_width = len(item_component.items) * (indicator_size + indicator_spacing) - indicator_spacing
         start_x = screen_pos[0] - total_width // 2
         
@@ -398,18 +402,32 @@ class RenderingProcessor(esper.Processor):
             # Position exactly where the health bar would be (replace health bar position)
             start_y = bar_y  # Same Y position as health bar
         
-        # Draw a small square for each item
+        # Draw item icons for each item
         for i, item_type in enumerate(item_component.items):
             x = start_x + i * (indicator_size + indicator_spacing)
             y = start_y
             
-            # Use team color for item indicators
-            color = tuple(gc.TEAM1_COLOR) if team.type == TeamType.TEAM1 else tuple(gc.TEAM2_COLOR)
+            # Get the item icon surface
+            icon_surface = item_icon_surfaces[item_type]
             
-            # Draw filled square
-            pygame.draw.rect(self.screen, color, (x, y, indicator_size, indicator_size))
-            # Draw border
-            pygame.draw.rect(self.screen, (0, 0, 0), (x, y, indicator_size, indicator_size), 1)
+            # Calculate the size to scale the icon to
+            icon_width, icon_height = icon_surface.get_size()
+            max_dimension = max(icon_width, icon_height)
+            scale_factor = indicator_size / max_dimension
+            
+            # Scale the icon
+            scaled_icon = pygame.transform.scale(
+                icon_surface,
+                (int(icon_width * scale_factor), int(icon_height * scale_factor))
+            )
+            
+            # Calculate position to center the icon
+            icon_rect = scaled_icon.get_rect()
+            icon_x = x + (indicator_size - icon_rect.width) // 2
+            icon_y = y + (indicator_size - icon_rect.height) // 2
+            
+            # Draw the item icon
+            self.screen.blit(scaled_icon, (icon_x, icon_y))
 
     def draw_item_placement_indicator(self, pos: Position, hitbox: Hitbox, team: Team, entity_id: int) -> None:
         """Draw visual indicator for item placement on a unit."""
@@ -467,54 +485,37 @@ class RenderingProcessor(esper.Processor):
                 outline_color=circle_color
             )
             
-            # Draw spell handle (small circle in center)
+            # Draw spell handle (spell icon)
             screen_pos = self.camera.world_to_screen(pos.x, pos.y)
-            handle_radius = gc.SPELL_HANDLE_SIZE * self.camera.scale
+            handle_size = gc.SPELL_HANDLE_SIZE * self.camera.scale
             
-            # Handle color based on focus
-            handle_color = (255, 255, 255) if esper.has_component(ent, Focus) else (200, 200, 200)
+            # Get the spell icon surface
+            icon_surface = spell_icon_surfaces[spell_component.spell_type]
             
-            # Apply transparency to handle if the spell has a Transparency component
+            # Calculate the size to scale the icon to
+            icon_width, icon_height = icon_surface.get_size()
+            max_dimension = max(icon_width, icon_height)
+            scale_factor = 3 * handle_size / max_dimension
+            
+            # Scale the icon
+            scaled_icon = pygame.transform.scale(
+                icon_surface,
+                (int(icon_width * scale_factor), int(icon_height * scale_factor))
+            )
+            
+            # Calculate position to center the icon
+            icon_rect = scaled_icon.get_rect()
+            icon_pos = (screen_pos[0] - icon_rect.width // 2, screen_pos[1] - icon_rect.height // 2)
+            
+            # Apply transparency if the spell has a Transparency component
             if esper.has_component(ent, Transparency):
                 transparency = esper.component_for_entity(ent, Transparency)
-                # Make handle semi-transparent based on transparency component
                 alpha = int(255 * transparency.alpha / 255)
-                handle_color = (*handle_color, alpha)
-            
-            # Draw handle with transparency support
-            if len(handle_color) == 4:  # Has alpha
+                
                 # Create a surface for transparency
-                handle_surface = pygame.Surface((handle_radius * 2, handle_radius * 2), pygame.SRCALPHA)
-                pygame.draw.circle(
-                    handle_surface,
-                    handle_color,
-                    (handle_radius, handle_radius),
-                    handle_radius,
-                    width=2
-                )
-                # Draw inner circle for handle
-                pygame.draw.circle(
-                    handle_surface,
-                    handle_color,
-                    (handle_radius, handle_radius),
-                    handle_radius * 0.5,
-                    width=1
-                )
-                self.screen.blit(handle_surface, (screen_pos[0] - handle_radius, screen_pos[1] - handle_radius))
-            else:  # No alpha, draw directly
-                pygame.draw.circle(
-                    self.screen,
-                    handle_color,
-                    screen_pos,
-                    handle_radius,
-                    width=2
-                )
-                # Draw inner circle for handle
-                pygame.draw.circle(
-                    self.screen,
-                    handle_color,
-                    screen_pos,
-                    handle_radius * 0.5,
-                    width=1
-                )
+                icon_surface_with_alpha = scaled_icon.copy()
+                icon_surface_with_alpha.set_alpha(alpha)
+                self.screen.blit(icon_surface_with_alpha, icon_pos)
+            else:
+                self.screen.blit(scaled_icon, icon_pos)
 

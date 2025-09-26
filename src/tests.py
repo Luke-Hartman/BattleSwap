@@ -5,6 +5,8 @@ import pygame
 from auto_battle import simulate_battle, BattleOutcome
 from battles import get_battles
 from entities.units import load_sprite_sheets
+from entities.spells import load_spell_icons
+from entities.items import load_item_icons
 from handlers.combat_handler import CombatHandler
 from handlers.state_machine import StateMachine
 from visuals import load_visual_sheets
@@ -18,6 +20,8 @@ def run_tests() -> bool:
     screen = pygame.display.set_mode((800, 600))
     pygame.display.set_caption("Battle Swap")
     load_sprite_sheets()
+    load_spell_icons()
+    load_item_icons()
     load_visual_sheets()
     combat_handler = CombatHandler()
     state_machine = StateMachine()

@@ -171,11 +171,15 @@ def simulate_battle_with_dependencies(
     from handlers.state_machine import StateMachine
     from visuals import load_visual_sheets
     from entities.units import load_sprite_sheets
+    from entities.spells import load_spell_icons
+    from entities.items import load_item_icons
 
     os.environ['SDL_VIDEODRIVER'] = 'dummy'
     pygame.display.init()
     pygame.display.set_mode((800, 600))
     load_sprite_sheets()
+    load_spell_icons()
+    load_item_icons()
     load_visual_sheets()
     combat_handler = CombatHandler()
     state_machine = StateMachine()

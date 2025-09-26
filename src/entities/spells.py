@@ -4,6 +4,8 @@ from enum import Enum
 from typing import Dict, List, Tuple
 import esper
 import math
+import pygame
+import os
 from components.position import Position
 from components.team import Team, TeamType
 from components.unit_type import UnitType
@@ -18,6 +20,21 @@ from game_constants import gc
 spell_theme_ids: Dict[SpellType, str] = {
     SpellType.SUMMON_SKELETON_SWORDSMEN: "#summon_skeleton_swordsmen_icon"
 }
+
+spell_icon_surfaces: Dict[SpellType, pygame.Surface] = {}
+
+
+def load_spell_icons() -> None:
+    """Load all spell icons."""
+    spell_icon_paths: Dict[SpellType, str] = {
+        SpellType.SUMMON_SKELETON_SWORDSMEN: "SummonSkeletonSwordsmenIcon.png",
+    }
+    
+    for spell_type, filename in spell_icon_paths.items():
+        if spell_type in spell_icon_surfaces:
+            continue
+        path = os.path.join("assets", "icons", filename)
+        spell_icon_surfaces[spell_type] = pygame.image.load(path).convert_alpha()
 
 
 def create_spell(
