@@ -319,6 +319,7 @@ class TestEditorScene(Scene):
                             battle.allies,
                             battle.enemies,
                             existing_battle_id=battle_id,
+                            spell_placements=battle.spells,
                         )
                     elif event.ui_element in self.sandbox_buttons.values():
                         battle_id = list(self.sandbox_buttons.keys())[

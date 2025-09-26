@@ -232,6 +232,7 @@ class ProgressManager(BaseModel):
         for battle in all_battles:
             if battle.hex_coords in self.solutions:
                 battle.allies = self.solutions[battle.hex_coords].unit_placements
+                battle.spells = self.solutions[battle.hex_coords].spell_placements
         return all_battles
 
     def save_solution(self, solution: Solution) -> None:

@@ -289,7 +289,8 @@ class CampaignEditorScene(Scene):
                             enemy_placements=[],  # Start with empty placements
                             existing_battle_id=None,
                             hex_coords=self.selected_hex,
-                            show_test_button=False  # Only show save battle button
+                            show_test_button=False,  # Only show save battle button
+                            spell_placements=None
                         )
                     elif event.ui_element == self.context_buttons.get("create_upgrade"):
                         # Create a new upgrade hex at the selected hex
@@ -310,7 +311,8 @@ class CampaignEditorScene(Scene):
                                 enemy_placements=battle.enemies,
                                 existing_battle_id=battle.id,
                                 hex_coords=battle.hex_coords,
-                                show_test_button=False  # Only show save battle button
+                                show_test_button=False,  # Only show save battle button
+                                spell_placements=battle.spells
                             )
                     elif event.ui_element == self.context_buttons.get("delete"):
                         # Delete the selected battle

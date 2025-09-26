@@ -49,6 +49,18 @@ def create_spell(
     return spell_creators[spell_type](x, y, team, corruption_powers)
 
 
+def create_base_spell(
+    x: float,
+    y: float,
+    team: TeamType,
+    corruption_powers: List = None,
+) -> int:
+    """Create a base spell entity with all necessary components."""
+    entity = esper.create_entity()
+    esper.add_component(entity, Position(x=x, y=y))
+    esper.add_component(entity, Team(type=team))
+    return entity
+
 def create_summon_skeleton_swordsmen_spell(
     x: float,
     y: float,
@@ -69,10 +81,7 @@ def create_summon_skeleton_swordsmen_spell(
     Returns:
         Entity ID of the created spell
     """
-    entity = esper.create_entity()
-    
-    # Add position component
-    esper.add_component(entity, Position(x=x, y=y))
+    entity = create_base_spell(x, y, team, corruption_powers)
     
     # Create effects for summoning skeleton swordsmen in a circle
     effects = []

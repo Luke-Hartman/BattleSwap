@@ -35,7 +35,7 @@ from auto_battle import BattleOutcome, simulate_battle
 import upgrade_hexes
 from voice import play_intro
 from world_map_view import BorderState, FillState, HexState, WorldMapView, hex_lifecycle_to_fill_state
-from scene_utils import draw_grid, get_center_line, get_placement_pos, get_hovered_unit, get_unit_placements, get_legal_placement_area, get_legal_spell_placement_area, has_unsaved_changes, mouse_over_ui, calculate_group_placement_positions, get_spell_placement_pos, clip_to_polygon
+from scene_utils import draw_grid, get_center_line, get_placement_pos, get_hovered_unit, get_unit_placements, get_spell_placements, get_legal_placement_area, get_legal_spell_placement_area, has_unsaved_changes, mouse_over_ui, calculate_group_placement_positions, get_spell_placement_pos, clip_to_polygon
 from ui_components.progress_panel import ProgressPanel
 from ui_components.corruption_power_editor import CorruptionPowerEditorDialog
 from corruption_powers import CorruptionPower
@@ -1220,11 +1220,13 @@ class SetupBattleScene(Scene):
                     if event.ui_element == self.save_button:
                         enemy_placements = get_unit_placements(TeamType.TEAM2, self.battle)
                         ally_placements = get_unit_placements(TeamType.TEAM1, self.battle)
+                        spell_placements = get_spell_placements(TeamType.TEAM1, self.battle)
                         self.save_dialog = SaveBattleDialog(
                             self.manager,
                             ally_placements=ally_placements,
                             enemy_placements=enemy_placements,
                             existing_battle_id=self.battle_id,
+                            spell_placements=spell_placements,
                         )
                     elif event.ui_element == self.return_button:
                         self.handle_return()

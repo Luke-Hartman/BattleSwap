@@ -3,6 +3,7 @@ import pygame
 import pygame_gui
 from typing import List, Tuple, Optional, Protocol, Callable
 from components.unit_type import UnitType
+from components.spell_type import SpellType
 import battles
 
 class SaveBattleCallback(Protocol):
@@ -21,6 +22,7 @@ class SaveBattleDialog:
         hex_coords: Optional[Tuple[int, int]] = None,
         show_battle_button: bool = True,
         show_test_button: bool = True,
+        spell_placements: Optional[List[Tuple[SpellType, Tuple[float, float], int]]] = None,
     ):
         dialog_width = 300
         dialog_height = 370
@@ -83,6 +85,7 @@ class SaveBattleDialog:
         self.enemy_placements = enemy_placements
         self.ally_placements = ally_placements
         self.existing_battle_id = existing_battle_id
+        self.spell_placements = spell_placements
         self.hex_coords = (hex_coords if hex_coords is not None else 
                           (battles.get_battle_id(existing_battle_id).hex_coords 
                            if existing_battle_id else None))
@@ -103,7 +106,8 @@ class SaveBattleDialog:
             allies=self.ally_placements if is_test else None,
             is_test=is_test,
             hex_coords=self.hex_coords if not is_test else None,
-            corruption_powers=existing_battle.corruption_powers if existing_battle else []
+            corruption_powers=existing_battle.corruption_powers if existing_battle else [],
+            spells=self.spell_placements
         )
 
         if self.existing_battle_id:

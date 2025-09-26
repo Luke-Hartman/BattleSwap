@@ -426,7 +426,7 @@ def get_spell_placements(team_type: TeamType, battle: Battle) -> List[Tuple[Spel
         return [
             (spell_component.spell_type, (pos.x - world_x, pos.y - world_y), team.type.value)
             for ent, (spell_component, team, pos) in esper.get_components(SpellComponent, Team, Position)
-            if team.type == team_type and ent not in esper._dead_entities and not esper.has_component(ent, Placing)
+            if team.type == team_type and not esper.has_component(ent, Placing)
         ]
 
 def mouse_over_ui(manager: pygame_gui.UIManager) -> bool:
