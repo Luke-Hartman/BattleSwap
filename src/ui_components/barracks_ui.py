@@ -439,25 +439,21 @@ class BarracksUI(UITabContainer):
         current_tab_name = self.get_tab(self.current_container_index)["text"]
         needs_scrollbar, content_height = self._calculate_panel_dimensions(self.rect.width, current_tab_name)
         current_dimensions = (self.rect.width, content_height)
+
+        # Kill all containers and items
+        for container in self.containers.values():
+            container.kill()
+        for items in self.entity_items.values():
+            for item in items:
+                item.kill()
+            items.clear()
         
-        if self._previous_dimensions != current_dimensions:
-            # Kill all containers and items
-            for container in self.containers.values():
-                container.kill()
-            for items in self.entity_items.values():
-                for item in items:
-                    item.kill()
-                items.clear()
-            
-            # Recreate all containers
-            self._create_containers(10, self.rect.width, content_height)
-            
-            # Repopulate all entities
-            self._populate_entities(10, needs_scrollbar)
-            self._previous_dimensions = current_dimensions
-        else:
-            # Just update counts for existing items
-            self._update_entity_counts()
+        # Recreate all containers
+        self._create_containers(10, self.rect.width, content_height)
+        
+        # Repopulate all entities
+        self._populate_entities(10, needs_scrollbar)
+        self._previous_dimensions = current_dimensions
 
     def _update_entity_counts(self) -> None:
         """Update counts for all existing entities without rebuilding."""
