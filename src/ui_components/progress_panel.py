@@ -12,6 +12,7 @@ from components.team import TeamType
 from scene_utils import get_unit_placements
 from game_constants import gc
 from ui_components.game_data import GlossaryEntryType
+from point_values import item_values, spell_values
 
 class ProgressPanel(UIPanel):
     """Panel showing progress information including battle points, completion stats, and barracks info."""
@@ -63,11 +64,19 @@ class ProgressPanel(UIPanel):
             player_points = "-"
             enemy_points = "-"
 
-        # Barracks info
+        # Barracks info - calculate unused points for units, items, and spells
         barracks_units = []
         for unit_type, count in progress_manager.available_units(current_battle=current_battle).items():
             barracks_units.extend([(unit_type, (0, 0), [])] * count)
-        barracks_points = calculate_points_for_units(barracks_units)
+        unit_points = calculate_points_for_units(barracks_units)
+        
+        available_items = progress_manager.available_items(current_battle=current_battle)
+        item_points = sum(item_values[item_type] * count for item_type, count in available_items.items())
+        
+        available_spells = progress_manager.available_spells(current_battle=current_battle)
+        spell_points = sum(spell_values[spell_type] * count for spell_type, count in available_spells.items())
+        
+        unused_points = unit_points + item_points + spell_points
 
         # Campaign completion stats
         denominator = 2 * len([b for b in battles.get_battles() if not b.is_test])
@@ -100,7 +109,7 @@ class ProgressPanel(UIPanel):
         completion_link = f"<a href='progress_details'>{percentage}% completion</a>"
         
         html_content = f"""{player_points_text} vs {enemy_points_text}
-{barracks_points} pts unused
+{unused_points} pts unused
 ({corruption_threshold} {points_link} unused {corruption_link})
 {completion_link}"""
         
