@@ -482,7 +482,7 @@ class SetupBattleScene(Scene):
             self.progress_panel.update_battle(self.battle)
     
     def try_place_spell(self, mouse_pos: Tuple[int, int]) -> None:
-        """Try to place the selected spell at the mouse position."""
+        """Try to place the selected spell at the preview position."""
         
         # Check if we have any spells of this type available
         if not self.barracks.has_spell_available(self.selected_spell_type):
@@ -493,16 +493,11 @@ class SetupBattleScene(Scene):
             ))
             return
         
-        # Get placement position with collision detection
-        placement_pos = get_spell_placement_pos(
-            mouse_pos=mouse_pos,
-            battle_id=self.battle_id,
-            hex_coords=self.battle.hex_coords,
-            camera=self.camera,
-            snap_to_grid=False
-        )
+        # Use the position from the preview spell instead of recalculating
+        position = esper.component_for_entity(self.selected_spell, Position)
+        placement_pos = (position.x, position.y)
         
-        # Place the spell at the calculated position
+        # Place the spell at the preview position
         self.place_spell(placement_pos, self.selected_spell_type)
         
         # Keep spell selected if there are more copies in the barracks
