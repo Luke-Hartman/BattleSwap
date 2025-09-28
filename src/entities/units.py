@@ -29,7 +29,7 @@ from components.unusable_corpse import UnusableCorpse
 from game_constants import gc
 from components.ability import Abilities, Ability, Cooldown, HasTarget, SatisfiesUnitCondition
 from components.armor import Armor, ArmorLevel
-from components.aura import Aura
+from components.aura import Auras, Aura
 from components.position import Position
 from components.animation import AnimationState, AnimationType
 from components.sprite_sheet import SpriteSheet
@@ -2974,21 +2974,23 @@ def create_infantry_banner_bearer(
             )
         )
     
-    esper.add_component(
-        entity,
-        Aura(
-            owner=entity,
-            radius=gc.INFANTRY_BANNER_BEARER_AURA_RADIUS,
-            effects=aura_effects,
-            period=gc.DEFAULT_AURA_PERIOD,
-            owner_condition=Alive(),
-            unit_condition=All([
-                OnTeam(team=team),
-                Alive()
-            ]),
-            color=(255, 215, 0),
-        )
+    # Create the auras component and add the banner bearer aura
+    auras = Auras()
+    banner_aura = Aura(
+        owner=entity,
+        radius=gc.INFANTRY_BANNER_BEARER_AURA_RADIUS,
+        effects=aura_effects,
+        period=gc.DEFAULT_AURA_PERIOD,
+        owner_condition=Alive(),
+        unit_condition=All([
+            OnTeam(team=team),
+            Alive()
+        ]),
+        color=(255, 215, 0),
+        duration=float('inf')  # Permanent
     )
+    auras.auras.append(banner_aura)
+    esper.add_component(entity, auras)
     esper.add_component(entity, SmoothMovement())
     esper.add_component(entity, get_unit_sprite_sheet(UnitType.INFANTRY_BANNER_BEARER, tier))
     esper.add_component(entity, AnimationEffects({
@@ -3522,27 +3524,29 @@ def create_misc_commander(
             ]
         )
     )
-    esper.add_component(
-        entity,
-        Aura(
-            owner=entity,
-            radius=gc.MISC_COMMANDER_AURA_RADIUS,
-            effects=[
-                AppliesStatusEffect(
-                    status_effect=InfantryBannerBearerEmpowered(time_remaining=gc.DEFAULT_AURA_PERIOD),
-                    recipient=Recipient.TARGET
-                ),
-            ],
-            period=gc.DEFAULT_AURA_PERIOD,
-            owner_condition=Alive(),
-            unit_condition=All([
-                Not(IsEntity(entity=entity)),
-                OnTeam(team=team),
-                Alive()
-            ]),
-            color=(255, 215, 0),
-        )
+    # Create the auras component and add the commander aura
+    auras = Auras()
+    commander_aura = Aura(
+        owner=entity,
+        radius=gc.MISC_COMMANDER_AURA_RADIUS,
+        effects=[
+            AppliesStatusEffect(
+                status_effect=InfantryBannerBearerEmpowered(time_remaining=gc.DEFAULT_AURA_PERIOD),
+                recipient=Recipient.TARGET
+            ),
+        ],
+        period=gc.DEFAULT_AURA_PERIOD,
+        owner_condition=Alive(),
+        unit_condition=All([
+            Not(IsEntity(entity=entity)),
+            OnTeam(team=team),
+            Alive()
+        ]),
+        color=(255, 215, 0),
+        duration=float('inf')  # Permanent
     )
+    auras.auras.append(commander_aura)
+    esper.add_component(entity, auras)
     esper.add_component(entity, get_unit_sprite_sheet(UnitType.MISC_COMMANDER, tier))
     esper.add_component(entity, AnimationEffects({
         AnimationType.WALKING: {

@@ -1,7 +1,7 @@
 """Components for aura effects."""
 
 from dataclasses import dataclass, field
-from typing import List, Tuple
+from typing import List, Tuple, Dict, Type
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -10,16 +10,19 @@ if TYPE_CHECKING:
 
 @dataclass
 class Aura:
-    """Aura component."""
+    """Individual aura attached to a unit."""
     owner: int
-    radius: int
+    radius: float
     effects: List["Effect"]
     color: Tuple[int, int, int]
     period: float
     owner_condition: "UnitCondition"
-    """Condition that determines whether the aura is active."""
     unit_condition: "UnitCondition"
-    """Condition that determines which units are affected by the aura."""
+    duration: float = float('inf')
     time_elapsed: float = 0
-    """Time since the aura was created."""
+
+@dataclass
+class Auras:
+    """Collection of auras attached to a unit."""
+    auras: List[Aura] = field(default_factory=list)
 

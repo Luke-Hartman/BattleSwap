@@ -2369,4 +2369,14 @@ def get_item_data(item_type: ItemType) -> ItemData:
             }
         )
     
+    if item_type == ItemType.DAMAGE_AURA:
+        return ItemData(
+            name="Damage Aura",
+            description=f"Grants the unit an aura that deals {gc.ITEM_DAMAGE_AURA_DAMAGE_PER_SECOND} damage per second to all units within {gc.ITEM_DAMAGE_AURA_RADIUS} range, including itself. Only active while the unit is alive.",
+            tips={
+                "Strong when": ["Unit has high health", "Enemy units are grouped together", "Unit is tanky"],
+                "Weak when": ["Unit dies quickly", "Allies are nearby", "Unit has low health"],
+            }
+        )
+    
     raise ValueError(f"Unknown item type: {item_type}")

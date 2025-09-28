@@ -605,6 +605,13 @@
             }
         }
     },
+    "#damage_aura_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/DamageAuraIcon.png"
+            }
+        }
+    },
     "#summon_skeleton_swordsmen_icon": {
         "images": {
             "normal_image": {

@@ -12,7 +12,7 @@ from typing import Optional, Tuple
 import pygame.gfxdraw
 import pygame_gui
 from components.animation import AnimationType
-from components.aura import Aura
+from components.aura import Auras
 from components.can_have_item import CanHaveItem
 from components.item import ItemComponent
 from components.destination import Destination
@@ -134,15 +134,16 @@ class RenderingProcessor(esper.Processor):
 
     def process(self, dt: float):
         # Draw all auras
-        for ent, (aura, position) in esper.get_components(Aura, Position):
-            if aura.owner_condition.check(aura.owner):
-                self._draw_circle(
-                    position.x,
-                    position.y,
-                    aura.radius,
-                    fill_color=(*aura.color, 25),
-                    outline_color=(*aura.color, 120)
-                )
+        for ent, (auras, position) in esper.get_components(Auras, Position):
+            for aura in auras.auras:
+                if aura.owner_condition.check(ent):
+                    self._draw_circle(
+                        position.x,
+                        position.y,
+                        aura.radius,
+                        fill_color=(*aura.color, 25),
+                        outline_color=(*aura.color, 120)
+                    )
 
         # Draw visual links
         for ent, (visual_link,) in esper.get_components(VisualLink):

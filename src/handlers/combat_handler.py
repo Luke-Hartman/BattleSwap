@@ -88,7 +88,7 @@ class CombatHandler:
     def handle_aura_hit(self, event: AuraHitEvent):
         aura_ent = event.entity
         target_ent = event.target
-        aura = esper.component_for_entity(aura_ent, Aura)
+        aura = event.aura
         if aura.unit_condition.check(target_ent):
             for effect in aura.effects:
                 effect.apply(

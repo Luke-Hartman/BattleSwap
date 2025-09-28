@@ -21,7 +21,7 @@ from components.animation import AnimationState, AnimationType
 from components.aoe import CircleAoE, VisualAoE
 from components.armor import Armor
 from components.attached import Attached
-from components.aura import Aura
+from components.aura import Auras, Aura
 from components.corruption import IncreasedDamageComponent
 from components.dying import Dying
 from components.entity_memory import EntityMemory
@@ -455,9 +455,6 @@ class CreatesTemporaryAura(Effect):
     recipient: Recipient
     """The recipient of the effect."""
 
-    unique_key: Optional[str]
-    """The key of the unique component to attach to the aura."""
-
     on_death: Optional[Callable[[int], None]] = None
     """The action to take when the recipient dies."""
 
@@ -473,25 +470,26 @@ class CreatesTemporaryAura(Effect):
             recipient = target
         else:
             raise ValueError(f"Invalid recipient: {self.recipient}")
-        entity = esper.create_entity()
-        esper.add_component(
-            entity,
-            Aura(
-                owner=owner,
-                radius=self.radius,
-                effects=self.effects,
-                color=self.color,
-                period=self.period,
-                owner_condition=self.owner_condition,
-                unit_condition=self.unit_condition
-            )
+        
+        # Get or create the Auras component on the recipient
+        if esper.has_component(recipient, Auras):
+            auras = esper.component_for_entity(recipient, Auras)
+        else:
+            auras = Auras()
+            esper.add_component(recipient, auras)
+        
+        # Create and add the temporary aura
+        temp_aura = Aura(
+            owner=owner,
+            radius=self.radius,
+            effects=self.effects,
+            color=self.color,
+            period=self.period,
+            owner_condition=self.owner_condition,
+            unit_condition=self.unit_condition,
+            duration=self.duration
         )
-        esper.add_component(entity, Expiration(time_left=self.duration))
-        esper.add_component(entity, Attached(entity=recipient, on_death=self.on_death))
-        position = esper.component_for_entity(recipient, Position)
-        esper.add_component(entity, Position(x=position.x, y=position.y))
-        if self.unique_key:
-            esper.add_component(entity, Unique(key=self.unique_key))
+        auras.auras.append(temp_aura)
 
 
 @dataclass

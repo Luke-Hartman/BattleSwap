@@ -378,7 +378,7 @@ class WorldMapView:
                 raise ValueError(f"Unit {unit_id} not found in enemies by position")
             self.battles[battle_id].enemies.remove(found_unit)
 
-        esper.delete_entity(unit_id)
+        esper.delete_entity(unit_id, immediate=True)
         emit_event(PLAY_SOUND, event=PlaySoundEvent(
             filename="unit_returned.wav",
             volume=0.5
@@ -411,7 +411,7 @@ class WorldMapView:
                               if spell[1] == (local_x, local_y) and spell[0] == spell_component.spell_type), None)
             if found_spell is not None:
                 self.battles[battle_id].spells.remove(found_spell)
-                esper.delete_entity(spell_entity)
+                esper.delete_entity(spell_entity, immediate=True)
                 return True
         
         return False

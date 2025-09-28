@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Tuple
 from components.unit_state import State
 from pydispatch import dispatcher
+from components.aura import Aura
 
 @dataclass
 class AbilityActivatedEvent:
@@ -41,6 +42,7 @@ class AuraHitEvent:
     """
     entity: int
     target: int
+    aura: Aura
 
 @dataclass
 class ChangeMusicEvent:

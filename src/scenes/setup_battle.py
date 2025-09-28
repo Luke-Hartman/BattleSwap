@@ -578,11 +578,11 @@ class SetupBattleScene(Scene):
             item_component = esper.component_for_entity(unit_id, ItemComponent)
             unit_items = item_component.items.copy()
         
+        unit_type = esper.component_for_entity(unit_id, UnitTypeComponent).type
         self.world_map_view.remove_unit(
             self.battle_id,
             unit_id,
         )
-        unit_type = esper.component_for_entity(unit_id, UnitTypeComponent).type
         self.barracks.add_unit(unit_type)
         
         # Return items to barracks

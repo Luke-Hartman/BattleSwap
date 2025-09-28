@@ -9,9 +9,14 @@ import os
 from components.health import Health
 from components.dying import OnDeathEffect
 from components.armor import Armor, ArmorLevel
+from components.aura import Auras, Aura
+from components.position import Position
+from components.attached import Attached
+from components.expiration import Expiration
 from unit_condition import All, Alive, Grounded, Always, NotHeavilyArmored
-from effects import CreatesCircleAoE, CreatesVisual, Damages, PlaySound, Recipient, SoundEffect, Effect
+from effects import CreatesCircleAoE, CreatesVisual, Damages, PlaySound, Recipient, SoundEffect, Effect, AppliesStatusEffect
 from visuals import Visual
+from components.status_effect import DamageOverTime
 from game_constants import gc
 from unit_condition import UnitCondition
 
@@ -51,6 +56,7 @@ class ItemType(Enum):
     EXTRA_HEALTH = "extra_health"
     EXPLODE_ON_DEATH = "EXPLODE_ON_DEATH"
     UPGRADE_ARMOR = "upgrade_armor"
+    DAMAGE_AURA = "damage_aura"
 
 class Item(ABC):
     """Base class for all items."""
@@ -145,11 +151,63 @@ class UpgradeArmor(Item):
         """Return the unit condition for this item - can only be applied to units that are not heavily armored."""
         return NotHeavilyArmored()
 
+
+class DamageAura(Item):
+    """Grants the unit a red aura that deals damage to all units in range, including itself."""
+    
+    def apply(self, entity: int) -> None:
+        """Apply damage aura to the entity."""
+        # Get or create the Auras component
+        if esper.has_component(entity, Auras):
+            auras = esper.component_for_entity(entity, Auras)
+        else:
+            auras = Auras()
+            esper.add_component(entity, auras)
+        
+        # Create and add the damage aura
+        damage_aura = Aura(
+            owner=entity,
+            radius=gc.ITEM_DAMAGE_AURA_RADIUS,
+            effects=[
+                AppliesStatusEffect(
+                    status_effect=DamageOverTime(dps=gc.ITEM_DAMAGE_AURA_DAMAGE_PER_SECOND, time_remaining=gc.DEFAULT_AURA_PERIOD),
+                    recipient=Recipient.TARGET
+                )
+            ],
+            color=(255, 0, 0),  # Red color
+            period=gc.DEFAULT_AURA_PERIOD,
+            owner_condition=Alive(),
+            unit_condition=Alive(),
+            duration=float('inf')  # Permanent
+        )
+        # Add a marker to identify this as a damage aura
+        damage_aura._aura_type = DamageAura
+        auras.auras.append(damage_aura)
+    
+    def remove(self, entity: int) -> None:
+        """Remove damage aura from the entity."""
+        if esper.has_component(entity, Auras):
+            auras = esper.component_for_entity(entity, Auras)
+            # Remove the first damage aura found
+            for aura in auras.auras:
+                if hasattr(aura, '_aura_type') and aura._aura_type == DamageAura:
+                    auras.auras.remove(aura)
+                    break
+            # If no more auras, remove the Auras component
+            if not auras.auras:
+                esper.remove_component(entity, Auras)
+    
+    @classmethod
+    def get_unit_condition(cls) -> UnitCondition:
+        """Return the unit condition for this item."""
+        return Always()
+
 # Item theme IDs for UI styling
 item_theme_ids: Dict[ItemType, str] = {
     ItemType.EXTRA_HEALTH: "#extra_health_icon",
     ItemType.EXPLODE_ON_DEATH: "#explode_on_death_icon",
-    ItemType.UPGRADE_ARMOR: "#upgrade_armor_icon"
+    ItemType.UPGRADE_ARMOR: "#upgrade_armor_icon",
+    ItemType.DAMAGE_AURA: "#damage_aura_icon"
 }
 
 # Item icon surfaces for rendering
@@ -159,7 +217,8 @@ item_icon_surfaces: Dict[ItemType, pygame.Surface] = {}
 item_registry: Dict[ItemType, Item] = {
     ItemType.EXTRA_HEALTH: ExtraHealth(),
     ItemType.EXPLODE_ON_DEATH: ExplodeOnDeath(),
-    ItemType.UPGRADE_ARMOR: UpgradeArmor()
+    ItemType.UPGRADE_ARMOR: UpgradeArmor(),
+    ItemType.DAMAGE_AURA: DamageAura()
 }
 
 
@@ -169,6 +228,7 @@ def load_item_icons() -> None:
         ItemType.EXTRA_HEALTH: "ExtraHealthIcon.png",
         ItemType.EXPLODE_ON_DEATH: "ExplodeOnDeathIcon.png",
         ItemType.UPGRADE_ARMOR: "UpgradeArmorIcon.png",
+        ItemType.DAMAGE_AURA: "DamageAuraIcon.png",
     }
     
     for item_type, filename in item_icon_paths.items():
