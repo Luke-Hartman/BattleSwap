@@ -2339,20 +2339,20 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
 def get_item_data(item_type: ItemType) -> ItemData:
     """Get item data for the specified item type."""
     
-    if item_type == ItemType.HEALTH_POTION:
+    if item_type == ItemType.EXTRA_HEALTH:
         return ItemData(
-            name="Health Potion",
-            description=f"Grants the equipped unit +{gc.ITEM_HEALTH_POTION_HEALTH_BONUS} HP.",
+            name="Extra Health",
+            description=f"Grants the equipped unit +{gc.ITEM_EXTRA_HEALTH_HEALTH_BONUS} HP.",
             tips={
                 "Strong when": ["Unit has low health", "Unit is a tank", "Unit needs survivability", "Long battles"],
                 "Weak when": ["Unit already has high health", "Unit dies quickly anyway", "Unit is ranged and safe"],
             }
         )
     
-    if item_type == ItemType.NASTY_SURPRISE:
+    if item_type == ItemType.EXPLODE_ON_DEATH:
         return ItemData(
-            name="Nasty Surprise",
-            description=f"Creates an explosion when the unit dies, dealing {gc.ITEM_NASTY_SURPRISE_DAMAGE} damage to all nearby units (allies and enemies).",
+            name="Explode on Death",
+            description=f"Creates an explosion when the unit dies, dealing {gc.ITEM_EXPLODE_ON_DEATH_DAMAGE} damage to all nearby units (allies and enemies).",
             tips={
                 "Strong when": ["Unit is not near allies", "Enemy units are grouped together"],
                 "Weak when": ["Unit does not die in a useful position"],

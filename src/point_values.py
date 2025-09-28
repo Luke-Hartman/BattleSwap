@@ -56,8 +56,8 @@ unit_values: Dict[UnitType, int] = {
 
 # Item point values
 item_values: Dict[ItemType, int] = {
-    ItemType.HEALTH_POTION: gc.ITEM_HEALTH_POTION_POINTS,
-    ItemType.NASTY_SURPRISE: gc.ITEM_NASTY_SURPRISE_POINTS,
+    ItemType.EXTRA_HEALTH: gc.ITEM_EXTRA_HEALTH_POINTS,
+    ItemType.EXPLODE_ON_DEATH: gc.ITEM_EXPLODE_ON_DEATH_POINTS,
 }
 
 # Spell point values

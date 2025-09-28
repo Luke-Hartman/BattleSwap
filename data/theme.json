@@ -584,17 +584,17 @@
             }
         }
     },
-    "#health_potion_icon": {
+    "#extra_health_icon": {
         "images": {
             "normal_image": {
-                "path": "assets/icons/HealthPotionIcon.png"
+                "path": "assets/icons/ExtraHealthIcon.png"
             }
         }
     },
-    "#nasty_surprise_icon": {
+    "#explode_on_death_icon": {
         "images": {
             "normal_image": {
-                "path": "assets/icons/NastySurpriseIcon.png"
+                "path": "assets/icons/ExplodeOnDeathIcon.png"
             }
         }
     },
