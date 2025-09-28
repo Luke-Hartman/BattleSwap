@@ -8,10 +8,12 @@ import pygame
 import os
 from components.health import Health
 from components.dying import OnDeathEffect
-from unit_condition import All, Alive, Grounded
+from components.armor import Armor, ArmorLevel
+from unit_condition import All, Alive, Grounded, Always, NotHeavilyArmored
 from effects import CreatesCircleAoE, CreatesVisual, Damages, PlaySound, Recipient, SoundEffect, Effect
 from visuals import Visual
 from game_constants import gc
+from unit_condition import UnitCondition
 
 
 class ExplodeOnDeathExplosionEffect(Effect):
@@ -48,6 +50,7 @@ class ItemType(Enum):
     """Types of items that can be equipped to units."""
     EXTRA_HEALTH = "extra_health"
     EXPLODE_ON_DEATH = "EXPLODE_ON_DEATH"
+    UPGRADE_ARMOR = "upgrade_armor"
 
 class Item(ABC):
     """Base class for all items."""
@@ -60,6 +63,12 @@ class Item(ABC):
     @abstractmethod
     def remove(self, entity: int) -> None:
         """Remove the item's effect from the given entity."""
+        pass
+    
+    @classmethod
+    @abstractmethod
+    def get_unit_condition(cls) -> UnitCondition:
+        """Return the unit condition that determines which units this item can be applied to."""
         pass
 
 class ExtraHealth(Item):
@@ -78,6 +87,11 @@ class ExtraHealth(Item):
             health = esper.component_for_entity(entity, Health)
             health.current -= gc.ITEM_EXTRA_HEALTH_HEALTH_BONUS
             health.maximum -= gc.ITEM_EXTRA_HEALTH_HEALTH_BONUS
+    
+    @classmethod
+    def get_unit_condition(cls) -> UnitCondition:
+        """Return the unit condition for this item."""
+        return Always()
 
 
 class ExplodeOnDeath(Item):
@@ -95,11 +109,47 @@ class ExplodeOnDeath(Item):
             if isinstance(effect, ExplodeOnDeathExplosionEffect):
                 death_effect.effects.remove(effect)
                 break
+    
+    @classmethod
+    def get_unit_condition(cls) -> UnitCondition:
+        """Return the unit condition for this item."""
+        return Always()
+
+
+class UpgradeArmor(Item):
+    """Upgrades a unit's armor. If no armor, adds normal armor. If normal armor, upgrades to heavily armored."""
+    
+    def apply(self, entity: int) -> None:
+        """Apply armor upgrade to the entity."""
+        if not esper.has_component(entity, Armor):
+            # No armor - add normal armor
+            esper.add_component(entity, Armor(level=ArmorLevel.NORMAL))
+        else:
+            # Has armor - upgrade to heavily armored
+            armor = esper.component_for_entity(entity, Armor)
+            armor.level = ArmorLevel.HEAVILY
+    
+    def remove(self, entity: int) -> None:
+        """Remove armor upgrade from the entity."""
+        if esper.has_component(entity, Armor):
+            armor = esper.component_for_entity(entity, Armor)
+            if armor.level == ArmorLevel.HEAVILY:
+                # Downgrade to normal armor
+                armor.level = ArmorLevel.NORMAL
+            else:
+                # Remove armor completely
+                esper.remove_component(entity, Armor)
+    
+    @classmethod
+    def get_unit_condition(cls) -> UnitCondition:
+        """Return the unit condition for this item - can only be applied to units that are not heavily armored."""
+        return NotHeavilyArmored()
 
 # Item theme IDs for UI styling
 item_theme_ids: Dict[ItemType, str] = {
     ItemType.EXTRA_HEALTH: "#extra_health_icon",
-    ItemType.EXPLODE_ON_DEATH: "#EXPLODE_ON_DEATH_icon"
+    ItemType.EXPLODE_ON_DEATH: "#explode_on_death_icon",
+    ItemType.UPGRADE_ARMOR: "#upgrade_armor_icon"
 }
 
 # Item icon surfaces for rendering
@@ -108,7 +158,8 @@ item_icon_surfaces: Dict[ItemType, pygame.Surface] = {}
 # Item registry
 item_registry: Dict[ItemType, Item] = {
     ItemType.EXTRA_HEALTH: ExtraHealth(),
-    ItemType.EXPLODE_ON_DEATH: ExplodeOnDeath()
+    ItemType.EXPLODE_ON_DEATH: ExplodeOnDeath(),
+    ItemType.UPGRADE_ARMOR: UpgradeArmor()
 }
 
 
@@ -117,6 +168,7 @@ def load_item_icons() -> None:
     item_icon_paths: Dict[ItemType, str] = {
         ItemType.EXTRA_HEALTH: "ExtraHealthIcon.png",
         ItemType.EXPLODE_ON_DEATH: "ExplodeOnDeathIcon.png",
+        ItemType.UPGRADE_ARMOR: "UpgradeArmorIcon.png",
     }
     
     for item_type, filename in item_icon_paths.items():

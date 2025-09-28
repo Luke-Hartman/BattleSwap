@@ -58,6 +58,7 @@ unit_values: Dict[UnitType, int] = {
 item_values: Dict[ItemType, int] = {
     ItemType.EXTRA_HEALTH: gc.ITEM_EXTRA_HEALTH_POINTS,
     ItemType.EXPLODE_ON_DEATH: gc.ITEM_EXPLODE_ON_DEATH_POINTS,
+    ItemType.UPGRADE_ARMOR: gc.ITEM_UPGRADE_ARMOR_POINTS,
 }
 
 # Spell point values

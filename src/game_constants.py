@@ -125,6 +125,7 @@ class GameConstants(BaseModel):
     ITEM_EXPLODE_ON_DEATH_POINTS: int
     ITEM_EXPLODE_ON_DEATH_DAMAGE: float
     ITEM_EXPLODE_ON_DEATH_AOE_SCALE: float
+    ITEM_UPGRADE_ARMOR_POINTS: int
     
     # Spell Point Values
     SPELL_SUMMON_SKELETON_SWORDSMEN_POINTS: int

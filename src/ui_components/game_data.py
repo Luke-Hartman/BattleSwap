@@ -2342,7 +2342,7 @@ def get_item_data(item_type: ItemType) -> ItemData:
     if item_type == ItemType.EXTRA_HEALTH:
         return ItemData(
             name="Extra Health",
-            description=f"Grants the equipped unit +{gc.ITEM_EXTRA_HEALTH_HEALTH_BONUS} HP.",
+            description=f"Grants +{gc.ITEM_EXTRA_HEALTH_HEALTH_BONUS} HP.",
             tips={
                 "Strong when": ["Unit has low health", "Unit is a tank", "Unit needs survivability", "Long battles"],
                 "Weak when": ["Unit already has high health", "Unit dies quickly anyway", "Unit is ranged and safe"],
@@ -2356,6 +2356,16 @@ def get_item_data(item_type: ItemType) -> ItemData:
             tips={
                 "Strong when": ["Unit is not near allies", "Enemy units are grouped together"],
                 "Weak when": ["Unit does not die in a useful position"],
+            }
+        )
+    
+    if item_type == ItemType.UPGRADE_ARMOR:
+        return ItemData(
+            name="Upgrade Armor",
+            description=f"Upgrades the unit's armor by one tier. If the unit has no armor, grants <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a>. If the unit has <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a>, upgrades to <a href='{GlossaryEntryType.HEAVILY_ARMORED.value}'>Heavily Armored</a>. Cannot be used on <a href='{GlossaryEntryType.HEAVILY_ARMORED.value}'>Heavily Armored</a> units.",
+            tips={
+                "Strong when": ["Against low damage enemies", "Supported by healing units", "Unit has lots of health"],
+                "Weak when": ["Against high damage enemies", "Unit is not tanking damage"],
             }
         )
     

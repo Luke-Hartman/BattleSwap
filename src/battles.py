@@ -30,8 +30,8 @@ starting_units: Dict[UnitType, int] = {
 }
 
 starting_items: Dict[ItemType, int] = {
-    ItemType.EXTRA_HEALTH: 5,
-    ItemType.EXPLODE_ON_DEATH: 3
+    item_type: 5
+    for item_type in ItemType
 }
 
 starting_spells: Dict[SpellType, int] = {

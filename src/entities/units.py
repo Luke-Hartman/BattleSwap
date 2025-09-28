@@ -28,7 +28,7 @@ from components.animation_effects import AnimationEffects
 from components.unusable_corpse import UnusableCorpse
 from game_constants import gc
 from components.ability import Abilities, Ability, Cooldown, HasTarget, SatisfiesUnitCondition
-from components.armor import Armor
+from components.armor import Armor, ArmorLevel
 from components.aura import Aura
 from components.position import Position
 from components.animation import AnimationState, AnimationType
@@ -3060,7 +3060,7 @@ def create_crusader_black_knight(
         entity,
         Destination(target_strategy=targetting_strategy, x_offset=gc.CRUSADER_BLACK_KNIGHT_ATTACK_RANGE*2/3)
     )
-    esper.add_component(entity, Armor(flat_reduction=gc.ARMOR_FLAT_DAMAGE_REDUCTION, percent_reduction=gc.ARMOR_PERCENT_DAMAGE_REDUCTION))
+    esper.add_component(entity, Armor(level=ArmorLevel.NORMAL))
     esper.add_component(
         entity,
         Abilities(
@@ -3615,9 +3615,9 @@ def create_infantry_crossbowman(
     )
     # Add armor based on tier
     if tier == UnitTier.ADVANCED or tier == UnitTier.ELITE:
-        esper.add_component(entity, Armor(flat_reduction=gc.HEAVILY_ARMOR_FLAT_DAMAGE_REDUCTION, percent_reduction=gc.HEAVILY_ARMOR_PERCENT_DAMAGE_REDUCTION))
+        esper.add_component(entity, Armor(level=ArmorLevel.HEAVILY))
     else:
-        esper.add_component(entity, Armor(flat_reduction=gc.ARMOR_FLAT_DAMAGE_REDUCTION, percent_reduction=gc.ARMOR_PERCENT_DAMAGE_REDUCTION))
+        esper.add_component(entity, Armor(level=ArmorLevel.NORMAL))
     esper.add_component(entity, RangeIndicator(ranges=[gc.INFANTRY_CROSSBOWMAN_ATTACK_RANGE]))
     RELOADING = 0
     FIRING = 1
@@ -3808,9 +3808,9 @@ def create_core_defender(
         defender_health = defender_health * 1.75
     
     if tier == UnitTier.ADVANCED or tier == UnitTier.ELITE:
-        armor_component = Armor(flat_reduction=gc.HEAVILY_ARMOR_FLAT_DAMAGE_REDUCTION, percent_reduction=gc.HEAVILY_ARMOR_PERCENT_DAMAGE_REDUCTION)
+        armor_component = Armor(level=ArmorLevel.HEAVILY)
     else:
-        armor_component = Armor(flat_reduction=gc.ARMOR_FLAT_DAMAGE_REDUCTION, percent_reduction=gc.ARMOR_PERCENT_DAMAGE_REDUCTION)
+        armor_component = Armor(level=ArmorLevel.NORMAL)
     
     entity = unit_base_entity(
         x=x,
@@ -3946,7 +3946,7 @@ def create_crusader_gold_knight(
         entity,
         Destination(target_strategy=targetting_strategy, x_offset=gc.CRUSADER_GOLD_KNIGHT_ATTACK_RANGE*2/3)
     )
-    esper.add_component(entity, Armor(flat_reduction=gc.ARMOR_FLAT_DAMAGE_REDUCTION, percent_reduction=gc.ARMOR_PERCENT_DAMAGE_REDUCTION))
+    esper.add_component(entity, Armor(level=ArmorLevel.NORMAL))
     esper.add_component(
         entity,
         Abilities(
@@ -4203,7 +4203,7 @@ def create_crusader_paladin(
         entity,
         Destination(target_strategy=targetting_strategy, x_offset=gc.CRUSADER_PALADIN_ATTACK_RANGE*2/3)
     )
-    esper.add_component(entity, Armor(flat_reduction=gc.ARMOR_FLAT_DAMAGE_REDUCTION, percent_reduction=gc.ARMOR_PERCENT_DAMAGE_REDUCTION))
+    esper.add_component(entity, Armor(level=ArmorLevel.NORMAL))
     esper.add_component(
         entity,
         Abilities(
@@ -4623,7 +4623,7 @@ def create_infantry_soldier(
         RangeIndicator(ranges=[soldier_ranged_range])
     )
     esper.add_component(entity, Stance(stance=RANGED))
-    esper.add_component(entity, Armor(flat_reduction=gc.ARMOR_FLAT_DAMAGE_REDUCTION, percent_reduction=gc.ARMOR_PERCENT_DAMAGE_REDUCTION))
+    esper.add_component(entity, Armor(level=ArmorLevel.NORMAL))
     esper.add_component(
         entity,
         InstantAbilities(

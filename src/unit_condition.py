@@ -20,6 +20,7 @@ from components.team import Team, TeamType
 from components.unit_state import State, UnitState
 from components.unit_type import UnitType, UnitTypeComponent
 from components.airborne import Airborne
+from components.armor import Armor, ArmorLevel
 
 class UnitCondition(ABC):
     """A condition that a unit may or may not meet."""
@@ -343,3 +344,14 @@ class HasStatusEffect(UnitCondition):
             return False
         status_effects = esper.component_for_entity(entity, StatusEffects)
         return any(isinstance(effect, self.status_effect_class) for effect in status_effects.active_effects())
+
+
+@dataclass
+class NotHeavilyArmored(UnitCondition):
+    """The unit is not heavily armored (either has no armor or normal armor)."""
+
+    def check(self, entity: int) -> bool:
+        if not esper.has_component(entity, Armor):
+            return True  # No armor means not heavily armored
+        armor = esper.component_for_entity(entity, Armor)
+        return armor.level != ArmorLevel.HEAVILY
