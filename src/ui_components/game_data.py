@@ -2349,4 +2349,14 @@ def get_item_data(item_type: ItemType) -> ItemData:
             }
         )
     
+    if item_type == ItemType.NASTY_SURPRISE:
+        return ItemData(
+            name="Nasty Surprise",
+            description=f"Creates an explosion when the unit dies, dealing {gc.ITEM_NASTY_SURPRISE_DAMAGE} damage to all nearby units (allies and enemies).",
+            tips={
+                "Strong when": ["Unit is not near allies", "Enemy units are grouped together"],
+                "Weak when": ["Unit does not die in a useful position"],
+            }
+        )
+    
     raise ValueError(f"Unknown item type: {item_type}")

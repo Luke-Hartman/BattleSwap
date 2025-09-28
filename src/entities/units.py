@@ -328,74 +328,68 @@ def _get_corruption_power(
             return power
     return None
 
-MALE_DEATH_SOUNDS = OnDeathEffect(
-    [
-        PlaySound([
-            (SoundEffect(filename=f"male_death_grunt_{i}.wav", volume=0.07), 1.0) for i in range(8)
-        ] + [
+# Note: These are tuples, not lists so they don't get mutated as they will be shared by many units.
+MALE_DEATH_SOUNDS = (
+    PlaySound(
+        (
+            *((SoundEffect(filename=f"male_death_grunt_{i}.wav", volume=0.07), 1.0) for i in range(8)),
             (SoundEffect(filename=f"wilhelm_scream.wav", volume=0.07), gc.WILHELM_CHANCE*8)
-        ]),
-    ]
+        )
+    ),
 )
 
-FEMALE_DEATH_SOUNDS = OnDeathEffect(
-    [
-        PlaySound([
-            (SoundEffect(filename=f"female_death_grunt_{i}.wav", volume=0.07), 1.0) for i in range(8)
-        ] + [
+FEMALE_DEATH_SOUNDS = (
+    PlaySound(
+        (
+            *((SoundEffect(filename=f"female_death_grunt_{i}.wav", volume=0.07), 1.0) for i in range(8)),
             (SoundEffect(filename=f"wilhelm_scream.wav", volume=0.07), gc.WILHELM_CHANCE*8)
-        ]),
-    ]
+        )
+    ),
 )
 
-HORSE_DEATH_SOUNDS = OnDeathEffect(
-    [
-        PlaySound([
-            (SoundEffect(filename=f"neighing_{i}.wav", volume=0.07), 1.0) for i in range(3)
-        ] + [
+HORSE_DEATH_SOUNDS = (
+    PlaySound(
+        (
+            *((SoundEffect(filename=f"neighing_{i}.wav", volume=0.07), 1.0) for i in range(3)),
             (SoundEffect(filename=f"wilhelm_scream.wav", volume=0.07), gc.WILHELM_CHANCE*3)
-        ]),
-    ]
+        )
+    ),
 )
 
-OLD_MALE_DEATH_SOUNDS = OnDeathEffect(
-    [
-        PlaySound([
-            (SoundEffect(filename=f"old_male_death_grunt_{i}.wav", volume=0.1), 1.0) for i in range(4)
-        ] + [
+OLD_MALE_DEATH_SOUNDS = (
+    PlaySound(
+        (
+            *((SoundEffect(filename=f"old_male_death_grunt_{i}.wav", volume=0.1), 1.0) for i in range(4)),
             (SoundEffect(filename=f"wilhelm_scream.wav", volume=0.07), gc.WILHELM_CHANCE*4)
-        ]),
-    ]
+        )
+    ),
 )
 
-ORC_DEATH_SOUNDS = OnDeathEffect(
-    [
-        PlaySound([
-            (SoundEffect(filename=f"orc_death_grunt_{i}.wav", volume=0.07), 1.0) for i in range(3)
-        ] + [
+ORC_DEATH_SOUNDS = (
+    PlaySound(
+        (
+            *((SoundEffect(filename=f"orc_death_grunt_{i}.wav", volume=0.07), 1.0) for i in range(3)),
             (SoundEffect(filename=f"wilhelm_scream.wav", volume=0.07), gc.WILHELM_CHANCE*3)
-        ]),
-    ]
+        )
+    ),
 )
 
-SKELETON_DEATH_SOUNDS = OnDeathEffect(
-    [
-        PlaySound([
-            (SoundEffect(filename=f"skeleton_death_{i}.wav", volume=0.07), 1.0) for i in range(4)
-        ] + [
+SKELETON_DEATH_SOUNDS = (
+    PlaySound(
+        (
+            *((SoundEffect(filename=f"skeleton_death_{i}.wav", volume=0.07), 1.0) for i in range(4)),
             (SoundEffect(filename=f"wilhelm_scream.wav", volume=0.07), gc.WILHELM_CHANCE*4)
-        ]),
-    ]
+        )
+    ),
 )
 
-ZOMBIE_DEATH_SOUNDS = OnDeathEffect(
-    [
-        PlaySound([
-            (SoundEffect(filename=f"zombie_grunt_{i}.wav", volume=0.07), 1.0) for i in range(3)
-        ] + [
+ZOMBIE_DEATH_SOUNDS = (
+    PlaySound(
+        (
+            *((SoundEffect(filename=f"zombie_grunt_{i}.wav", volume=0.07), 1.0) for i in range(3)),
             (SoundEffect(filename=f"wilhelm_scream.wav", volume=0.07), gc.WILHELM_CHANCE*3)
-        ]),
-    ]
+        )
+    ),
 )
 
 def create_unit(
@@ -511,6 +505,8 @@ def unit_base_entity(
     if damage_power is not None:
         esper.add_component(entity, IncreasedDamageComponent(increase_percent=damage_power.increase_percent))
     esper.add_component(entity, UnitTierComponent(tier))
+    # Add empty OnDeathEffect component to all units for items and other death effects
+    esper.add_component(entity, OnDeathEffect(effects=[]))
     return entity
 
 def create_core_archer(
@@ -630,7 +626,7 @@ def create_core_archer(
             for frame in [1, 4]
         },
     }))
-    esper.add_component(entity, MALE_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(MALE_DEATH_SOUNDS)
     return entity
 
 def create_core_veteran(
@@ -736,7 +732,7 @@ def create_core_veteran(
             for frame in [2, 5]
         },
     }))
-    esper.add_component(entity, MALE_DEATH_SOUNDS)  
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(MALE_DEATH_SOUNDS)
     return entity
 
 def create_core_cavalry(
@@ -837,7 +833,8 @@ def create_core_cavalry(
             for frame in [2]
         },
     }))
-    esper.add_component(entity, HORSE_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(HORSE_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(MALE_DEATH_SOUNDS)
     return entity
 
 def create_core_duelist(
@@ -955,7 +952,7 @@ def create_core_duelist(
             for frame in [3, 7]
         },
     }))
-    esper.add_component(entity, FEMALE_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(FEMALE_DEATH_SOUNDS)
     return entity
 
 def create_core_longbowman(
@@ -1081,7 +1078,7 @@ def create_core_longbowman(
             for frame in [3, 7]
         },
     }))
-    esper.add_component(entity, FEMALE_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(FEMALE_DEATH_SOUNDS)
     return entity
 
 def create_core_swordsman(
@@ -1186,7 +1183,7 @@ def create_core_swordsman(
             for frame in [2, 5]
         },
     }))
-    esper.add_component(entity, MALE_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(MALE_DEATH_SOUNDS)
     return entity
 
 def create_skeleton_archer(
@@ -1314,7 +1311,7 @@ def create_skeleton_archer(
             for frame in [1, 4]
         },
     }))
-    esper.add_component(entity, SKELETON_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(SKELETON_DEATH_SOUNDS)
     esper.add_component(entity, UnusableCorpse())
     return entity
 
@@ -1441,7 +1438,7 @@ def create_skeleton_mage(
             for frame in [1, 4]
         },
     }))
-    esper.add_component(entity, SKELETON_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(SKELETON_DEATH_SOUNDS)
     esper.add_component(entity, UnusableCorpse())
     return entity
 
@@ -1547,7 +1544,7 @@ def create_skeleton_swordsman(
             for frame in [2, 5]
         },
     }))
-    esper.add_component(entity, SKELETON_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(SKELETON_DEATH_SOUNDS)
     esper.add_component(entity, UnusableCorpse())
     return entity
 
@@ -1645,7 +1642,8 @@ def create_skeleton_horseman(
             for frame in [2]
         },
     }))
-    esper.add_component(entity, HORSE_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(SKELETON_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(HORSE_DEATH_SOUNDS)
     esper.add_component(entity, UnusableCorpse())
     return entity
 
@@ -1925,7 +1923,7 @@ def create_orc_berserker(
             for frame in [2, 5]
         },
     }))
-    esper.add_component(entity, ORC_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(ORC_DEATH_SOUNDS)
     return entity
 
 def create_orc_warrior(
@@ -2058,7 +2056,7 @@ def create_orc_warrior(
             for frame in [2, 5]
         },
     }))
-    esper.add_component(entity, ORC_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(ORC_DEATH_SOUNDS)
     return entity
 
 def create_orc_warchief(
@@ -2192,7 +2190,7 @@ def create_orc_warchief(
             for frame in [2, 5]
         },
     }))
-    esper.add_component(entity, ORC_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(ORC_DEATH_SOUNDS)
     return entity
 
 def create_orc_goblin(
@@ -2490,7 +2488,7 @@ def create_orc_warg_rider(
             for frame in [2, 5]
         },
     }))
-    esper.add_component(entity, ORC_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(ORC_DEATH_SOUNDS)
     return entity
 
 def create_core_wizard(
@@ -2623,7 +2621,7 @@ def create_core_wizard(
             for frame in [1, 4]
         },
     }))
-    esper.add_component(entity, OLD_MALE_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(OLD_MALE_DEATH_SOUNDS)
     return entity
 
 def _create_skeleton_necromancer(
@@ -2743,7 +2741,7 @@ def _create_skeleton_necromancer(
             for frame in [1, 4]
         },
     }))
-    esper.add_component(entity, OLD_MALE_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(OLD_MALE_DEATH_SOUNDS)
     return entity
 
 def create_skeleton_archer_necromancer(x: int, y: int, team: TeamType, corruption_powers: Optional[List[CorruptionPower]], tier: UnitTier, play_spawning: bool = False, orientation: Optional[FacingDirection] = None) -> int:
@@ -2857,7 +2855,7 @@ def create_skeleton_lich(
     )
     
     esper.add_component(entity, get_unit_sprite_sheet(UnitType.SKELETON_LICH, tier))
-    esper.add_component(entity, SKELETON_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(SKELETON_DEATH_SOUNDS)
     esper.add_component(entity, UnusableCorpse())
     return entity
 
@@ -3003,7 +3001,7 @@ def create_infantry_banner_bearer(
             2: [PlaySound(SoundEffect("bannerbearer_drum_2.wav", volume=0.5, channel="drum"))],
         },
     }))
-    esper.add_component(entity, MALE_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(MALE_DEATH_SOUNDS)
     return entity
 
 def create_crusader_black_knight(
@@ -3145,7 +3143,8 @@ def create_crusader_black_knight(
             for frame in [3]
         },
     }))
-    esper.add_component(entity, HORSE_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(HORSE_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(FEMALE_DEATH_SOUNDS)
     return entity
 
 def create_infantry_catapult(
@@ -3443,7 +3442,7 @@ def create_crusader_cleric(
             for frame in [3, 7]
         },
     }))
-    esper.add_component(entity, FEMALE_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(FEMALE_DEATH_SOUNDS)
     return entity
 
 def create_misc_commander(
@@ -3553,7 +3552,7 @@ def create_misc_commander(
             for frame in [3, 7]
         },
     }))
-    esper.add_component(entity, MALE_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(MALE_DEATH_SOUNDS)
     return entity
 
 def create_infantry_crossbowman(
@@ -3784,7 +3783,7 @@ def create_infantry_crossbowman(
             for frame in [1, 5]
         },
     }))
-    esper.add_component(entity, MALE_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(MALE_DEATH_SOUNDS)
     return entity
 
 def create_core_defender(
@@ -3890,7 +3889,7 @@ def create_core_defender(
             for frame in [1, 5]
         },
     }))
-    esper.add_component(entity, MALE_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(MALE_DEATH_SOUNDS)
     return entity
 
 def create_crusader_gold_knight(
@@ -4004,7 +4003,7 @@ def create_crusader_gold_knight(
             for frame in [3, 7]
         },
     }))
-    esper.add_component(entity, MALE_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(MALE_DEATH_SOUNDS)
     return entity
 
 def create_crusader_guardian_angel(
@@ -4274,7 +4273,8 @@ def create_crusader_paladin(
             for frame in [3]
         },
     }))
-    esper.add_component(entity, HORSE_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(HORSE_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(MALE_DEATH_SOUNDS)
     return entity
 
 def create_infantry_pikeman(
@@ -4418,7 +4418,7 @@ def create_infantry_pikeman(
             for frame in [1, 4]
         },
     }))
-    esper.add_component(entity, MALE_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(MALE_DEATH_SOUNDS)
     return entity
 
 def create_misc_red_knight(
@@ -4556,7 +4556,7 @@ def create_misc_red_knight(
             for frame in [3, 7]
         },
     }))
-    esper.add_component(entity, MALE_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(MALE_DEATH_SOUNDS)
     return entity
 
 def create_infantry_soldier(
@@ -4783,7 +4783,7 @@ def create_infantry_soldier(
             for frame in [3, 7]
         },
     }))
-    esper.add_component(entity, MALE_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(MALE_DEATH_SOUNDS)
     return entity
 
 
@@ -4945,7 +4945,7 @@ def create_pirate_crew(
             for frame in [2, 5]
         },
     }))
-    esper.add_component(entity, MALE_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(MALE_DEATH_SOUNDS)
     return entity
 
 def create_pirate_gunner(
@@ -5135,7 +5135,7 @@ def create_pirate_gunner(
             for frame in [2, 5]
         },
     }))
-    esper.add_component(entity, FEMALE_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(FEMALE_DEATH_SOUNDS)
     return entity
 
 def create_pirate_cannon(
@@ -5393,7 +5393,7 @@ def create_pirate_captain(
             for frame in [2, 5]
         },
     }))
-    esper.add_component(entity, MALE_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(MALE_DEATH_SOUNDS)
     return entity
 
 
@@ -5575,7 +5575,7 @@ def create_zombie_basic_zombie(
             for frame in [1, 3]
         },
     }))
-    esper.add_component(entity, ZOMBIE_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(ZOMBIE_DEATH_SOUNDS)
     return entity
 
 def create_zombie_fighter(
@@ -5680,7 +5680,7 @@ def create_zombie_fighter(
             for frame in [1, 3]
         },
     }))
-    esper.add_component(entity, ZOMBIE_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(ZOMBIE_DEATH_SOUNDS)
     return entity
 
 def create_misc_brute(
@@ -5996,7 +5996,7 @@ def create_zombie_jumper(
             for frame in [1, 3]
         },
     }))
-    esper.add_component(entity, ZOMBIE_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(ZOMBIE_DEATH_SOUNDS)
     return entity
 
 def create_zombie_spitter(
@@ -6158,7 +6158,7 @@ def create_zombie_spitter(
             ]
         )
     )
-    esper.add_component(entity, ZOMBIE_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(ZOMBIE_DEATH_SOUNDS)
     esper.add_component(entity, get_unit_sprite_sheet(UnitType.ZOMBIE_SPITTER, tier))
     return entity
 
@@ -6464,7 +6464,7 @@ def create_misc_grabber(
             ]
         )
     )
-    esper.add_component(entity, ZOMBIE_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(ZOMBIE_DEATH_SOUNDS)
     esper.add_component(entity, get_unit_sprite_sheet(UnitType.MISC_GRABBER, tier))
     return entity
 
@@ -6683,7 +6683,7 @@ def create_pirate_harpooner(
             for frame in [2, 5]
         },
     }))
-    esper.add_component(entity, ZOMBIE_DEATH_SOUNDS)
+    esper.component_for_entity(entity, OnDeathEffect).effects.extend(MALE_DEATH_SOUNDS)
     return entity
 
 def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:

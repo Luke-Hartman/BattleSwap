@@ -7,11 +7,47 @@ import esper
 import pygame
 import os
 from components.health import Health
+from components.dying import OnDeathEffect
+from unit_condition import All, Alive, Grounded
+from effects import CreatesCircleAoE, CreatesVisual, Damages, PlaySound, Recipient, SoundEffect, Effect
+from visuals import Visual
 from game_constants import gc
+
+
+class NastySurpriseExplosionEffect(Effect):
+    """Custom effect for NastySurprise explosion that can be identified and removed."""
+    
+    def __init__(self):
+        self.effects = [
+            CreatesCircleAoE(
+                effects=[
+                    Damages(damage=gc.ITEM_NASTY_SURPRISE_DAMAGE, recipient=Recipient.TARGET),
+                ],
+                radius=9 * gc.ITEM_NASTY_SURPRISE_AOE_SCALE,  # Smaller than wizard fireball (9*3.0 = 27 vs 9*5.0 = 45)
+                unit_condition=All([Alive(), Grounded()]),  # Hits both allies and enemies
+                location=Recipient.PARENT,
+            ),
+            CreatesVisual(
+                recipient=Recipient.PARENT,
+                visual=Visual.Explosion,
+                animation_duration=gc.CORE_WIZARD_FIREBALL_AOE_DURATION,  # Same duration as wizard fireball
+                scale=gc.ITEM_NASTY_SURPRISE_AOE_SCALE,
+                duration=gc.CORE_WIZARD_FIREBALL_AOE_DURATION,
+                layer=2,
+            ),
+            PlaySound(SoundEffect(filename="fireball_impact.wav", volume=0.50)),  # Same sound as wizard fireball
+        ]
+    
+    def apply(self, owner: int, parent: int, target: int) -> None:
+        """Apply all the explosion effects."""
+        for effect in self.effects:
+            effect.apply(owner, parent, target)
+
 
 class ItemType(Enum):
     """Types of items that can be equipped to units."""
     HEALTH_POTION = "health_potion"
+    NASTY_SURPRISE = "nasty_surprise"
 
 class Item(ABC):
     """Base class for all items."""
@@ -43,9 +79,27 @@ class HealthPotion(Item):
             health.current -= gc.ITEM_HEALTH_POTION_HEALTH_BONUS
             health.maximum -= gc.ITEM_HEALTH_POTION_HEALTH_BONUS
 
+
+class NastySurprise(Item):
+    """An item that creates an explosion when the unit dies, damaging all nearby units."""
+    
+    def apply(self, entity: int) -> None:
+        """Add death explosion effect to the entity."""
+        death_effect = esper.component_for_entity(entity, OnDeathEffect)
+        death_effect.effects.append(NastySurpriseExplosionEffect())
+    
+    def remove(self, entity: int) -> None:
+        """Remove the death explosion effect from the entity."""
+        death_effect = esper.component_for_entity(entity, OnDeathEffect)
+        for effect in death_effect.effects:
+            if isinstance(effect, NastySurpriseExplosionEffect):
+                death_effect.effects.remove(effect)
+                break
+
 # Item theme IDs for UI styling
 item_theme_ids: Dict[ItemType, str] = {
-    ItemType.HEALTH_POTION: "#health_potion_icon"
+    ItemType.HEALTH_POTION: "#health_potion_icon",
+    ItemType.NASTY_SURPRISE: "#nasty_surprise_icon"
 }
 
 # Item icon surfaces for rendering
@@ -53,7 +107,8 @@ item_icon_surfaces: Dict[ItemType, pygame.Surface] = {}
 
 # Item registry
 item_registry: Dict[ItemType, Item] = {
-    ItemType.HEALTH_POTION: HealthPotion()
+    ItemType.HEALTH_POTION: HealthPotion(),
+    ItemType.NASTY_SURPRISE: NastySurprise()
 }
 
 
@@ -61,6 +116,7 @@ def load_item_icons() -> None:
     """Load all item icons."""
     item_icon_paths: Dict[ItemType, str] = {
         ItemType.HEALTH_POTION: "HealthPotionIcon.png",
+        ItemType.NASTY_SURPRISE: "NastySurpriseIcon.png",
     }
     
     for item_type, filename in item_icon_paths.items():

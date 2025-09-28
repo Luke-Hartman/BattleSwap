@@ -434,12 +434,12 @@ class RenderingProcessor(esper.Processor):
         screen_pos = self.camera.world_to_screen(pos.x, pos.y)
         radius = (hitbox.width ** 2 + hitbox.height ** 2) ** 0.5
         
-        # Check if this unit is being hovered (simplified check)
-        # We'll use a basic mouse position check since we don't have access to the hover logic here
-        mouse_pos = pygame.mouse.get_pos()
-        mouse_world_pos = self.camera.screen_to_world(*mouse_pos)
-        distance = ((pos.x - mouse_world_pos[0]) ** 2 + (pos.y - mouse_world_pos[1]) ** 2) ** 0.5
-        is_hovered = distance < radius * 0.8  # Rough hover detection
+        # Import here to avoid circular imports
+        from scene_utils import get_hovered_unit
+        
+        # Use the same hover detection logic as the item placement system
+        hovered_unit = get_hovered_unit(self.camera)
+        is_hovered = (hovered_unit == entity_id)
         
         # Choose color based on hover state
         if is_hovered:

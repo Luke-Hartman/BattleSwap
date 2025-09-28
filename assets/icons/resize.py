@@ -1,7 +1,7 @@
 from PIL import Image
 
 filenames = [
-    'SummonSkeletonSwordsmenIcon',
+    'NastySurpriseIcon',
 ]
 original_size = 16
 for filename in filenames:

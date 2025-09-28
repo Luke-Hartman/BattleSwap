@@ -591,6 +591,13 @@
             }
         }
     },
+    "#nasty_surprise_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/NastySurpriseIcon.png"
+            }
+        }
+    },
     "#summon_skeleton_swordsmen_icon": {
         "images": {
             "normal_image": {

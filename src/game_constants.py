@@ -122,6 +122,9 @@ class GameConstants(BaseModel):
     # Item Point Values
     ITEM_HEALTH_POTION_POINTS: int
     ITEM_HEALTH_POTION_HEALTH_BONUS: int
+    ITEM_NASTY_SURPRISE_POINTS: int
+    ITEM_NASTY_SURPRISE_DAMAGE: float
+    ITEM_NASTY_SURPRISE_AOE_SCALE: float
     
     # Spell Point Values
     SPELL_SUMMON_SKELETON_SWORDSMEN_POINTS: int
