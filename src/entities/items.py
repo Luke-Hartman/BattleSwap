@@ -73,11 +73,6 @@ class Item(ABC):
         """Apply the item's effect to the given entity."""
         pass
     
-    @abstractmethod
-    def remove(self, entity: int) -> None:
-        """Remove the item's effect from the given entity."""
-        pass
-    
     @classmethod
     @abstractmethod
     def get_unit_condition(cls) -> UnitCondition:
@@ -94,12 +89,6 @@ class ExtraHealth(Item):
             health.current += gc.ITEM_EXTRA_HEALTH_HEALTH_BONUS
             health.maximum += gc.ITEM_EXTRA_HEALTH_HEALTH_BONUS
     
-    def remove(self, entity: int) -> None:
-        """Remove health bonus from the entity."""
-        if esper.has_component(entity, Health):
-            health = esper.component_for_entity(entity, Health)
-            health.current -= gc.ITEM_EXTRA_HEALTH_HEALTH_BONUS
-            health.maximum -= gc.ITEM_EXTRA_HEALTH_HEALTH_BONUS
     
     @classmethod
     def get_unit_condition(cls) -> UnitCondition:
@@ -115,13 +104,6 @@ class ExplodeOnDeath(Item):
         death_effect = esper.component_for_entity(entity, OnDeathEffect)
         death_effect.effects.append(ExplodeOnDeathExplosionEffect())
     
-    def remove(self, entity: int) -> None:
-        """Remove the death explosion effect from the entity."""
-        death_effect = esper.component_for_entity(entity, OnDeathEffect)
-        for effect in death_effect.effects:
-            if isinstance(effect, ExplodeOnDeathExplosionEffect):
-                death_effect.effects.remove(effect)
-                break
     
     @classmethod
     def get_unit_condition(cls) -> UnitCondition:
@@ -142,16 +124,6 @@ class UpgradeArmor(Item):
             armor = esper.component_for_entity(entity, Armor)
             armor.level = ArmorLevel.HEAVILY
     
-    def remove(self, entity: int) -> None:
-        """Remove armor upgrade from the entity."""
-        if esper.has_component(entity, Armor):
-            armor = esper.component_for_entity(entity, Armor)
-            if armor.level == ArmorLevel.HEAVILY:
-                # Downgrade to normal armor
-                armor.level = ArmorLevel.NORMAL
-            else:
-                # Remove armor completely
-                esper.remove_component(entity, Armor)
     
     @classmethod
     def get_unit_condition(cls) -> UnitCondition:
@@ -191,18 +163,6 @@ class DamageAura(Item):
         damage_aura._aura_type = DamageAura
         auras.auras.append(damage_aura)
     
-    def remove(self, entity: int) -> None:
-        """Remove damage aura from the entity."""
-        if esper.has_component(entity, Auras):
-            auras = esper.component_for_entity(entity, Auras)
-            # Remove the first damage aura found
-            for aura in auras.auras:
-                if hasattr(aura, '_aura_type') and aura._aura_type == DamageAura:
-                    auras.auras.remove(aura)
-                    break
-            # If no more auras, remove the Auras component
-            if not auras.auras:
-                esper.remove_component(entity, Auras)
     
     @classmethod
     def get_unit_condition(cls) -> UnitCondition:
@@ -218,10 +178,6 @@ class ExtraMovementSpeed(Item):
         movement = esper.component_for_entity(entity, Movement)
         movement.speed += gc.ITEM_EXTRA_MOVEMENT_SPEED_BONUS
     
-    def remove(self, entity: int) -> None:
-        """Remove movement speed bonus from the entity."""
-        movement = esper.component_for_entity(entity, Movement)
-        movement.speed -= gc.ITEM_EXTRA_MOVEMENT_SPEED_BONUS
     
     @classmethod
     def get_unit_condition(cls) -> UnitCondition:
@@ -252,10 +208,6 @@ class InfectOnHit(Item):
             )
         )
     
-    def remove(self, entity: int) -> None:
-        """Remove infect on hit effect from the entity."""
-        if esper.has_component(entity, OnHitEffects):
-            esper.remove_component(entity, OnHitEffects)
     
     @classmethod
     def get_unit_condition(cls) -> UnitCondition:
@@ -295,10 +247,6 @@ class HealOnKill(Item):
             )
         )
     
-    def remove(self, entity: int) -> None:
-        """Remove heal on kill effect from the entity."""
-        if esper.has_component(entity, OnKillEffects):
-            esper.remove_component(entity, OnKillEffects)
     
     @classmethod
     def get_unit_condition(cls) -> UnitCondition:
