@@ -2409,8 +2409,18 @@ def get_item_data(item_type: ItemType) -> ItemData:
             name="Infect On Hit",
             description="Grants the unit ability to infect enemies with zombie infection on hit.",
             tips={
-                "Strong when": ["Against multiple weak enemies" "Unit kills multiple enemies", "Unit deals area of effect damage"],
+                "Strong when": ["Against multiple weak enemies", "Unit kills multiple enemies", "Unit deals area of effect damage"],
                 "Weak when": ["Unit dies quickly", "Against strong enemies"],
+            }
+        )
+    
+    if item_type == ItemType.HUNTER:
+        return ItemData(
+            name="Hunter",
+            description="Grants <a href='Hunter'>Hunter</a>.",
+            tips={
+                "Strong when": ["Enemy has high value targets behind other units.", "Unit has on kill effects"],
+                "Weak when": ["Default targeting works better."],
             }
         )
     

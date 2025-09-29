@@ -8,7 +8,8 @@ filenames = [
     'MeteorShowerIcon',
     'ExtraMovementSpeedIcon',
     'HealOnKillIcon',
-    'InfectOnHitIcon'
+    'InfectOnHitIcon',
+    'HunterIcon'
 ]
 original_size = 16
 for filename in filenames:

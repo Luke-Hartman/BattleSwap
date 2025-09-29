@@ -363,13 +363,19 @@ class SetupBattleScene(Scene):
         esper.add_component(self.selected_spell, Transparency(alpha=128))
     
     def _add_can_have_item_to_units(self) -> None:
-        """Add CanHaveItem component to all player units."""
+        """Add CanHaveItem component to all player units that meet the item's unit condition."""
         assert self._selected_item_type is not None
+        
+        # Get the item's unit condition
+        from entities.items import item_registry
+        item = item_registry[self._selected_item_type]
+        unit_condition = item.get_unit_condition()
             
         for ent, (team,) in esper.get_components(Team):
             if team.type == TeamType.TEAM1 and not esper.has_component(ent, CanHaveItem):
-                # Add CanHaveItem to all player units (removed restriction for multiple items of same type)
-                esper.add_component(ent, CanHaveItem())
+                # Check if the unit meets the item's unit condition
+                if unit_condition.check(ent):
+                    esper.add_component(ent, CanHaveItem())
     
     def _remove_can_have_item_from_units(self) -> None:
         """Remove CanHaveItem component from all units."""

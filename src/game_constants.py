@@ -133,6 +133,7 @@ class GameConstants(BaseModel):
     ITEM_EXTRA_MOVEMENT_SPEED_BONUS: float
     ITEM_HEAL_ON_KILL_POINTS: int
     ITEM_INFECT_ON_HIT_POINTS: int
+    ITEM_HUNTER_POINTS: int
     
     # Spell Point Values
     SPELL_SUMMON_SKELETON_SWORDSMEN_POINTS: int

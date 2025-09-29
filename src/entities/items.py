@@ -17,7 +17,7 @@ from components.expiration import Expiration
 from components.movement import Movement
 from components.corruption import IncreasedMovementSpeedComponent
 from components.team import Team
-from unit_condition import All, Alive, Grounded, Always, HasComponent, NotHeavilyArmored
+from unit_condition import All, Alive, Grounded, Always, HasComponent, NotHeavilyArmored, HasDefaultTargetingStrategies
 from effects import CreatesCircleAoE, CreatesVisual, Damages, PlaySound, Recipient, SoundEffect, Effect, AppliesStatusEffect, OnKillEffects, HealPercentageMax, CreatesAttachedVisual
 from visuals import Visual
 from components.status_effect import DamageOverTime, ZombieInfection
@@ -64,6 +64,7 @@ class ItemType(Enum):
     EXTRA_MOVEMENT_SPEED = "extra_movement_speed"
     HEAL_ON_KILL = "heal_on_kill"
     INFECT_ON_HIT = "infect_on_hit"
+    HUNTER = "hunter"
 
 class Item(ABC):
     """Base class for all items."""
@@ -215,6 +216,22 @@ class InfectOnHit(Item):
         return Always()
 
 
+class Hunter(Item):
+    """Grants hunter targeting behavior - prioritizes low health enemies."""
+    
+    def apply(self, entity: int) -> None:
+        """Apply hunter targeting to the entity."""
+        from targeting_strategy_factory import replace_targeting_strategies, TargetingStrategyType
+        
+        # Replace all DEFAULT targeting strategies with HUNTER
+        replace_targeting_strategies(entity, TargetingStrategyType.DEFAULT, TargetingStrategyType.HUNTER)
+    
+    @classmethod
+    def get_unit_condition(cls) -> UnitCondition:
+        """Return the unit condition for this item."""
+        return HasDefaultTargetingStrategies()
+
+
 class HealOnKill(Item):
     """Grants healing for half of maximum health when the unit gets a kill."""
     
@@ -262,7 +279,8 @@ item_theme_ids: Dict[ItemType, str] = {
     ItemType.DAMAGE_AURA: "#damage_aura_icon",
     ItemType.EXTRA_MOVEMENT_SPEED: "#extra_movement_speed_icon",
     ItemType.HEAL_ON_KILL: "#heal_on_kill_icon",
-    ItemType.INFECT_ON_HIT: "#infect_on_hit_icon"
+    ItemType.INFECT_ON_HIT: "#infect_on_hit_icon",
+    ItemType.HUNTER: "#hunter_icon"
 }
 
 # Item icon surfaces for rendering
@@ -276,7 +294,8 @@ item_registry: Dict[ItemType, Item] = {
     ItemType.DAMAGE_AURA: DamageAura(),
     ItemType.EXTRA_MOVEMENT_SPEED: ExtraMovementSpeed(),
     ItemType.HEAL_ON_KILL: HealOnKill(),
-    ItemType.INFECT_ON_HIT: InfectOnHit()
+    ItemType.INFECT_ON_HIT: InfectOnHit(),
+    ItemType.HUNTER: Hunter()
 }
 
 
@@ -290,6 +309,7 @@ def load_item_icons() -> None:
         ItemType.EXTRA_MOVEMENT_SPEED: "ExtraMovementSpeedIcon.png",
         ItemType.HEAL_ON_KILL: "HealOnKillIcon.png",
         ItemType.INFECT_ON_HIT: "InfectOnHitIcon.png",
+        ItemType.HUNTER: "HunterIcon.png",
     }
     
     for item_type, filename in item_icon_paths.items():

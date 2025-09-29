@@ -355,3 +355,27 @@ class NotHeavilyArmored(UnitCondition):
             return True  # No armor means not heavily armored
         armor = esper.component_for_entity(entity, Armor)
         return armor.level != ArmorLevel.HEAVILY
+
+@dataclass
+class HasDefaultTargetingStrategies(UnitCondition):
+    """The unit has at least one DEFAULT targeting strategy."""
+
+    def check(self, entity: int) -> bool:
+        from targeting_strategy_factory import get_targeting_strategy_type, TargetingStrategyType
+        from components.destination import Destination
+        from components.ability import Abilities
+        
+        # Check destination targeting strategy
+        if esper.has_component(entity, Destination):
+            destination = esper.component_for_entity(entity, Destination)
+            if get_targeting_strategy_type(destination.target_strategy) == TargetingStrategyType.DEFAULT:
+                return True
+        
+        # Check ability targeting strategies
+        if esper.has_component(entity, Abilities):
+            abilities = esper.component_for_entity(entity, Abilities)
+            for ability in abilities.abilities:
+                if get_targeting_strategy_type(ability.target_strategy) == TargetingStrategyType.DEFAULT:
+                    return True
+        
+        return False

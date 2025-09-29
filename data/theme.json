@@ -633,6 +633,13 @@
             }
         }
     },
+    "#hunter_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/HunterIcon.png"
+            }
+        }
+    },
     "#summon_skeleton_swordsmen_icon": {
         "images": {
             "normal_image": {
