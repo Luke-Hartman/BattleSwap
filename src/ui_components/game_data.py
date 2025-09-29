@@ -2379,4 +2379,14 @@ def get_item_data(item_type: ItemType) -> ItemData:
             }
         )
     
+    if item_type == ItemType.EXTRA_MOVEMENT_SPEED:
+        return ItemData(
+            name="Extra Movement Speed",
+            description=f"Grants +{gc.ITEM_EXTRA_MOVEMENT_SPEED_BONUS} movement speed to the unit.",
+            tips={
+                "Strong when": ["Unit is slow", "Unit is a melee fighter", "To keep up with faster allies", "To dodge enemy attacks"],
+                "Weak when": ["Unit is already fast", "Unit is ranged and stays back"],
+            }
+        )
+    
     raise ValueError(f"Unknown item type: {item_type}")

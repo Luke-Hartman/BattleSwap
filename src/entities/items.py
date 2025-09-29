@@ -13,6 +13,8 @@ from components.aura import Auras, Aura
 from components.position import Position
 from components.attached import Attached
 from components.expiration import Expiration
+from components.movement import Movement
+from components.corruption import IncreasedMovementSpeedComponent
 from unit_condition import All, Alive, Grounded, Always, NotHeavilyArmored
 from effects import CreatesCircleAoE, CreatesVisual, Damages, PlaySound, Recipient, SoundEffect, Effect, AppliesStatusEffect
 from visuals import Visual
@@ -57,6 +59,7 @@ class ItemType(Enum):
     EXPLODE_ON_DEATH = "EXPLODE_ON_DEATH"
     UPGRADE_ARMOR = "upgrade_armor"
     DAMAGE_AURA = "damage_aura"
+    EXTRA_MOVEMENT_SPEED = "extra_movement_speed"
 
 class Item(ABC):
     """Base class for all items."""
@@ -202,12 +205,32 @@ class DamageAura(Item):
         """Return the unit condition for this item."""
         return Always()
 
+
+class ExtraMovementSpeed(Item):
+    """Grants extra movement speed to the equipped unit."""
+    
+    def apply(self, entity: int) -> None:
+        """Apply movement speed bonus to the entity."""
+        movement = esper.component_for_entity(entity, Movement)
+        movement.speed += gc.ITEM_EXTRA_MOVEMENT_SPEED_BONUS
+    
+    def remove(self, entity: int) -> None:
+        """Remove movement speed bonus from the entity."""
+        movement = esper.component_for_entity(entity, Movement)
+        movement.speed -= gc.ITEM_EXTRA_MOVEMENT_SPEED_BONUS
+    
+    @classmethod
+    def get_unit_condition(cls) -> UnitCondition:
+        """Return the unit condition for this item."""
+        return HasComponent(Movement)
+
 # Item theme IDs for UI styling
 item_theme_ids: Dict[ItemType, str] = {
     ItemType.EXTRA_HEALTH: "#extra_health_icon",
     ItemType.EXPLODE_ON_DEATH: "#explode_on_death_icon",
     ItemType.UPGRADE_ARMOR: "#upgrade_armor_icon",
-    ItemType.DAMAGE_AURA: "#damage_aura_icon"
+    ItemType.DAMAGE_AURA: "#damage_aura_icon",
+    ItemType.EXTRA_MOVEMENT_SPEED: "#extra_movement_speed_icon"
 }
 
 # Item icon surfaces for rendering
@@ -218,7 +241,8 @@ item_registry: Dict[ItemType, Item] = {
     ItemType.EXTRA_HEALTH: ExtraHealth(),
     ItemType.EXPLODE_ON_DEATH: ExplodeOnDeath(),
     ItemType.UPGRADE_ARMOR: UpgradeArmor(),
-    ItemType.DAMAGE_AURA: DamageAura()
+    ItemType.DAMAGE_AURA: DamageAura(),
+    ItemType.EXTRA_MOVEMENT_SPEED: ExtraMovementSpeed()
 }
 
 
@@ -229,6 +253,7 @@ def load_item_icons() -> None:
         ItemType.EXPLODE_ON_DEATH: "ExplodeOnDeathIcon.png",
         ItemType.UPGRADE_ARMOR: "UpgradeArmorIcon.png",
         ItemType.DAMAGE_AURA: "DamageAuraIcon.png",
+        ItemType.EXTRA_MOVEMENT_SPEED: "ExtraMovementSpeedIcon.png",
     }
     
     for item_type, filename in item_icon_paths.items():

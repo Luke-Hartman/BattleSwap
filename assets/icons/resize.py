@@ -6,6 +6,7 @@ filenames = [
     'UpgradeArmorIcon',
     'DamageAuraIcon',
     'MeteorShowerIcon',
+    'ExtraMovementSpeedIcon'
 ]
 original_size = 16
 for filename in filenames:

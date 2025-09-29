@@ -612,6 +612,13 @@
             }
         }
     },
+    "#extra_movement_speed_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/ExtraMovementSpeedIcon.png"
+            }
+        }
+    },
     "#summon_skeleton_swordsmen_icon": {
         "images": {
             "normal_image": {
