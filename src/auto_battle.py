@@ -35,6 +35,7 @@ from entities.units import create_unit
 from processors.visual_link_processor import VisualLinkProcessor
 from processors.repeat_processor import RepeatProcessor
 from processors.spell_effects_processor import SpellEffectsProcessor
+from processors.volley_projectile_processor import VolleyProjectileProcessor
 
 class BattleOutcome(Enum):
     TEAM1_VICTORY = auto()
@@ -78,6 +79,7 @@ class AutoBattle:
         _add_or_replace(UniqueProcessor())
         _add_or_replace(DyingProcessor())
         _add_or_replace(SpellEffectsProcessor())
+        _add_or_replace(VolleyProjectileProcessor())
         self.remaining_time = max_duration
         self.battle_outcome = None
 

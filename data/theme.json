@@ -619,6 +619,13 @@
             }
         }
     },
+    "#meteor_shower_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/MeteorShowerIcon.png"
+            }
+        }
+    },
     "#text_box": {
         "misc": {
             "text_horiz_alignment": "center"

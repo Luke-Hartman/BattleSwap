@@ -30,7 +30,7 @@ class ExplodeOnDeathExplosionEffect(Effect):
                 effects=[
                     Damages(damage=gc.ITEM_EXPLODE_ON_DEATH_DAMAGE, recipient=Recipient.TARGET),
                 ],
-                radius=9 * gc.ITEM_EXPLODE_ON_DEATH_AOE_SCALE,  # Smaller than wizard fireball (9*3.0 = 27 vs 9*5.0 = 45)
+                radius=gc.ITEM_EXPLODE_ON_DEATH_AOE_RADIUS,
                 unit_condition=All([Alive(), Grounded()]),  # Hits both allies and enemies
                 location=Recipient.PARENT,
             ),
@@ -38,7 +38,7 @@ class ExplodeOnDeathExplosionEffect(Effect):
                 recipient=Recipient.PARENT,
                 visual=Visual.Explosion,
                 animation_duration=gc.CORE_WIZARD_FIREBALL_AOE_DURATION,  # Same duration as wizard fireball
-                scale=gc.ITEM_EXPLODE_ON_DEATH_AOE_SCALE,
+                scale=gc.ITEM_EXPLODE_ON_DEATH_AOE_RADIUS * gc.EXPLOSION_VISUAL_SCALE_RATIO,
                 duration=gc.CORE_WIZARD_FIREBALL_AOE_DURATION,
                 layer=2,
             ),

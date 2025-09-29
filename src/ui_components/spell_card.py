@@ -58,6 +58,11 @@ class SpellCard(BaseCard):
                 name="Summon Skeleton Swordsmen",
                 description=f"Summons {gc.SPELL_SUMMON_SKELETON_SWORDSMEN_COUNT} skeleton swordsmen in a circle with radius {gc.SPELL_SUMMON_SKELETON_SWORDSMEN_RADIUS}."
             )
+        elif spell_type == SpellType.METEOR_SHOWER:
+            return SpellData(
+                name="Meteor Shower",
+                description=f"Summons {gc.SPELL_METEOR_SHOWER_METEOR_COUNT} meteors that rain down from above, dealing {gc.SPELL_METEOR_SHOWER_DAMAGE} damage in a {gc.SPELL_METEOR_SHOWER_AOE_RADIUS} radius around each impact point."
+            )
         else:
             raise ValueError(f"Unknown spell type: {spell_type}")
     

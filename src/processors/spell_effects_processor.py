@@ -21,5 +21,5 @@ class SpellEffectsProcessor(esper.Processor):
         # Find all spells and apply their effects
         for ent, (pos, spell_component) in esper.get_components(Position, SpellComponent):
             for effect in spell_component.effects:
-                effect.apply(ent, ent, ent)
+                effect.apply(None, ent, None)
             esper.remove_component(ent, SpellComponent)

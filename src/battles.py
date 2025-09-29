@@ -35,7 +35,8 @@ starting_items: Dict[ItemType, int] = {
 }
 
 starting_spells: Dict[SpellType, int] = {
-    SpellType.SUMMON_SKELETON_SWORDSMEN: 3
+    spell_type: 5
+    for spell_type in SpellType
 }
 
 

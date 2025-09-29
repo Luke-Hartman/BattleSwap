@@ -2587,7 +2587,7 @@ def create_core_wizard(
                                         effects=[
                                             Damages(damage=wizard_damage, recipient=Recipient.TARGET),
                                         ],
-                                        radius=9*gc.CORE_WIZARD_FIREBALL_AOE_SCALE,
+                                        radius=gc.CORE_WIZARD_FIREBALL_AOE_RADIUS,
                                         unit_condition=All([Alive(), Grounded()]),
                                         location=Recipient.PARENT,
                                     ),
@@ -2595,7 +2595,7 @@ def create_core_wizard(
                                         recipient=Recipient.PARENT,
                                         visual=Visual.Explosion,
                                         animation_duration=gc.CORE_WIZARD_FIREBALL_AOE_DURATION,
-                                        scale=gc.CORE_WIZARD_FIREBALL_AOE_SCALE,
+                                        scale=gc.CORE_WIZARD_FIREBALL_AOE_RADIUS * gc.EXPLOSION_VISUAL_SCALE_RATIO,
                                         duration=gc.CORE_WIZARD_FIREBALL_AOE_DURATION,
                                         layer=2,
                                     ),

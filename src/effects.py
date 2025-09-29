@@ -32,6 +32,7 @@ from components.lobbed import Lobbed
 from components.orientation import FacingDirection, Orientation
 from components.position import Position
 from components.projectile import Projectile
+from components.volley_projectile import VolleyProjectile
 from components.stance import Stance
 from components.status_effect import InfantryBannerBearerEmpowered, Healing, StatusEffect, StatusEffects
 from components.sprite_sheet import SpriteSheet
@@ -341,9 +342,7 @@ class CreatesCircleAoE(Effect):
         else:
             raise ValueError(f"Invalid location: {self.location}")
         position = esper.component_for_entity(recipient, Position)
-        team = esper.component_for_entity(recipient, Team)
         esper.add_component(entity, Position(x=position.x, y=position.y))
-        esper.add_component(entity, Team(type=team.type))
         esper.add_component(entity, CircleAoE(
             effects=self.effects,
             owner=owner,
@@ -685,11 +684,9 @@ class CreatesVisual(Effect):
             raise ValueError(f"Invalid recipient: {self.recipient}")
             
         recipient_position = esper.component_for_entity(recipient, Position)
-        team = esper.component_for_entity(recipient, Team)
         entity = esper.create_entity()
         
         esper.add_component(entity, Position(x=recipient_position.x, y=recipient_position.y))
-        esper.add_component(entity, Team(type=team.type))
         esper.add_component(entity, create_visual_spritesheet(
             visual=self.visual,
             duration=self.duration,
@@ -1364,3 +1361,115 @@ class Revive(Effect):
             play_spawning=True,
             orientation=orientation.facing
         )
+
+
+@dataclass
+class CreatesVolley(Effect):
+    """Effect creates a volley of projectiles that fly in from a fixed angle and distance.
+    
+    The volley creates multiple projectiles over time, each targeting a random location
+    within the specified radius around the target position.
+    """
+
+    recipient: Recipient
+    """The recipient of the effect."""
+    
+    random_seed: int
+    """Random seed for deterministic projectile placement."""
+    
+    radius: float
+    """Radius around which projectiles can be spawned."""
+    
+    duration: float
+    """Duration over which projectiles are created."""
+
+    num_projectiles: int
+    """Number of projectiles to create."""
+    
+    projectile_visual: Visual
+    """Visual for the volley projectiles."""
+    
+    projectile_effects: List[Effect]
+    """Effects triggered by the volley projectiles when they land."""
+    
+    projectile_speed: float
+    """Speed of the projectiles."""
+    
+    projectile_distance: float
+    """Distance the projectiles have to travel before hitting the ground."""
+    
+    projectile_angle: float
+    """Angle the projectiles fly in from (y component is always 0, just between x and z)."""
+    
+    on_create: Optional[Callable[[int], None]] = None
+    """Function to call when each projectile is created."""
+    
+    def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
+        if self.recipient == Recipient.OWNER:
+            assert owner is not None
+            recipient = owner
+        elif self.recipient == Recipient.PARENT:
+            assert parent is not None
+            recipient = parent
+        elif self.recipient == Recipient.TARGET:
+            assert target is not None
+            recipient = target
+        else:
+            raise ValueError(f"Invalid recipient: {self.recipient}")
+        random.seed(self.random_seed)
+        
+        destination = esper.component_for_entity(recipient, Position)
+        
+        for _ in range(self.num_projectiles):
+            entity = esper.create_entity()
+            while True:
+                x_offset = random.uniform(-self.radius, self.radius)
+                y_offset = random.uniform(-self.radius, self.radius)
+                if x_offset**2 + y_offset**2 <= self.radius**2:
+                    break
+            x = destination.x + x_offset
+            y = destination.y + y_offset
+            esper.add_component(
+                entity,
+                Expiration(
+                    time_left=random.uniform(0, self.duration),
+                    expiration_effects=[CreatesSingleVolleyProjectile(
+                        start_x=self.projectile_distance * math.cos(self.projectile_angle) + x,
+                        start_y=self.projectile_distance * math.sin(self.projectile_angle) + y,
+                        target_x=x,
+                        target_y=y,
+                        speed=self.projectile_speed,
+                        visual=self.projectile_visual,
+                        effects=self.projectile_effects,
+                        on_create=self.on_create,
+                    )]
+                )
+            )
+
+@dataclass
+class CreatesSingleVolleyProjectile(Effect):
+
+    start_x: float
+    start_y: float
+    target_x: float
+    target_y: float
+    speed: float
+    visual: Visual
+    effects: List[Effect]
+    on_create: Optional[Callable[[int], None]] = None
+
+    def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
+        entity = esper.create_entity()
+        esper.add_component(entity, Position(x=self.start_x, y=self.start_y))
+        esper.add_component(entity, VolleyProjectile(
+            effects=self.effects,
+            owner=owner,
+            target_x=self.target_x,
+            target_y=self.target_y,
+            speed=self.speed,
+        ))
+        esper.add_component(entity, create_visual_spritesheet(self.visual, layer=1))
+        esper.add_component(entity, AnimationState(type=AnimationType.IDLE))
+        esper.add_component(entity, Angle(angle=math.atan2(self.target_y - self.start_y, self.target_x - self.start_x)))
+        if self.on_create:
+            self.on_create(entity)

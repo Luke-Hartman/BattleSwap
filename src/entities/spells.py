@@ -18,7 +18,8 @@ from effects import Effect, CreatesUnit, Recipient
 from game_constants import gc
 
 spell_theme_ids: Dict[SpellType, str] = {
-    SpellType.SUMMON_SKELETON_SWORDSMEN: "#summon_skeleton_swordsmen_icon"
+    SpellType.SUMMON_SKELETON_SWORDSMEN: "#summon_skeleton_swordsmen_icon",
+    SpellType.METEOR_SHOWER: "#meteor_shower_icon"
 }
 
 spell_icon_surfaces: Dict[SpellType, pygame.Surface] = {}
@@ -28,6 +29,7 @@ def load_spell_icons() -> None:
     """Load all spell icons."""
     spell_icon_paths: Dict[SpellType, str] = {
         SpellType.SUMMON_SKELETON_SWORDSMEN: "SummonSkeletonSwordsmenIcon.png",
+        SpellType.METEOR_SHOWER: "MeteorShowerIcon.png",
     }
     
     for spell_type, filename in spell_icon_paths.items():
@@ -58,6 +60,7 @@ def create_spell(
     """
     spell_creators = {
         SpellType.SUMMON_SKELETON_SWORDSMEN: create_summon_skeleton_swordsmen_spell,
+        SpellType.METEOR_SHOWER: create_meteor_shower_spell,
     }
     
     if spell_type not in spell_creators:
@@ -127,4 +130,76 @@ def create_summon_skeleton_swordsmen_spell(
         effects=effects,
         radius=radius
     ))
+    return entity
+
+
+def create_meteor_shower_spell(
+    x: float,
+    y: float,
+    team: TeamType,
+    corruption_powers: List = None,
+) -> int:
+    """Create a Meteor Shower spell entity.
+    
+    This spell creates a volley of meteors that fly in from a fixed angle
+    and explode on impact, dealing AoE damage.
+    
+    Args:
+        x: X coordinate to place the spell at
+        y: Y coordinate to place the spell at
+        team: Team that is casting the spell
+        corruption_powers: Optional corruption powers to apply
+        
+    Returns:
+        Entity ID of the created spell
+    """
+    entity = create_base_spell(x, y, team, corruption_powers)
+    
+    # Import the effects we need
+    from effects import CreatesVolley, CreatesCircleAoE, Damages, CreatesVisual, PlaySound, Recipient, SoundEffect
+    from unit_condition import All, Alive, Grounded
+    from visuals import Visual
+    
+    # Create the meteor shower effect
+    meteor_effects = [
+        CreatesCircleAoE(
+            effects=[
+                Damages(damage=gc.SPELL_METEOR_SHOWER_DAMAGE, recipient=Recipient.TARGET),
+            ],
+            radius=gc.SPELL_METEOR_SHOWER_AOE_RADIUS,
+            unit_condition=All([Alive(), Grounded()]),
+            location=Recipient.PARENT,
+        ),
+        CreatesVisual(
+            recipient=Recipient.PARENT,
+            visual=Visual.Explosion,
+            animation_duration=gc.SPELL_METEOR_SHOWER_AOE_DURATION,
+            scale=gc.SPELL_METEOR_SHOWER_AOE_RADIUS * gc.EXPLOSION_VISUAL_SCALE_RATIO,
+            duration=gc.SPELL_METEOR_SHOWER_AOE_DURATION,
+            layer=2,
+        ),
+        PlaySound(SoundEffect(filename="fireball_impact.wav", volume=0.5)),
+    ]
+    
+    meteor_shower_effect = CreatesVolley(
+        recipient=Recipient.PARENT,
+        random_seed=43,  # Fixed seed for deterministic behavior
+        radius=gc.SPELL_METEOR_SHOWER_RADIUS,
+        duration=gc.SPELL_METEOR_SHOWER_DURATION,
+        num_projectiles=gc.SPELL_METEOR_SHOWER_METEOR_COUNT,
+        projectile_visual=Visual.Fireball,  # Using fireball visual for now
+        projectile_effects=meteor_effects,
+        projectile_speed=gc.SPELL_METEOR_SHOWER_PROJECTILE_SPEED,
+        projectile_distance=gc.SPELL_METEOR_SHOWER_PROJECTILE_DISTANCE,
+        projectile_angle=gc.SPELL_METEOR_SHOWER_PROJECTILE_ANGLE,
+        on_create=lambda _: PlaySound(SoundEffect(filename="meteor_falling.wav", volume=0.5)).apply(None, None, None),
+    )
+    
+    esper.add_component(entity, SpellComponent(
+        spell_type=SpellType.METEOR_SHOWER,
+        team=team.value,
+        effects=[meteor_shower_effect],
+        radius=gc.SPELL_METEOR_SHOWER_RADIUS
+    ))
+    
     return entity
