@@ -23,7 +23,9 @@ from components.armor import Armor
 from components.attached import Attached
 from components.aura import Auras, Aura
 from components.corruption import IncreasedDamageComponent
-from components.dying import Dying, OnKillEffects
+from components.dying import Dying
+from components.on_kill_effects import OnKillEffects
+from components.on_hit_effects import OnHitEffects
 from components.entity_memory import EntityMemory
 from components.expiration import Expiration
 from components.forced_movement import ForcedMovement
@@ -128,6 +130,13 @@ class Damages(Effect):
         # Apply the damage
         previous_health = recipient_health.current
         recipient_health.current = max(recipient_health.current - damage, 0)
+        
+        # Check for OnHitEffects component on the owner (including self-hits)
+        if owner and esper.has_component(owner, OnHitEffects):
+            on_hit_effects = esper.component_for_entity(owner, OnHitEffects)
+            for effect in on_hit_effects.effects:
+                effect.apply(owner, parent, recipient)
+        
         if recipient_health.current == 0 and previous_health > 0:
             esper.add_component(recipient, Dying())
             # Check for OnKillEffects component on the owner (but not if killing self)

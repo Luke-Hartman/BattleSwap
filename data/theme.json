@@ -626,6 +626,13 @@
             }
         }
     },
+    "#infect_on_hit_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/InfectOnHitIcon.png"
+            }
+        }
+    },
     "#summon_skeleton_swordsmen_icon": {
         "images": {
             "normal_image": {

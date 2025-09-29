@@ -1,7 +1,8 @@
 """Processor for units that are dying."""
 
 import esper
-from components.dying import Dying, OnDeathEffect
+from components.dying import Dying
+from components.on_death_effects import OnDeathEffect
 from components.forced_movement import ForcedMovement
 from components.position import Position
 from components.sprite_sheet import SpriteSheet

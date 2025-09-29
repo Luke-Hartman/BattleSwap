@@ -57,7 +57,9 @@ from unit_condition import (
     MaximumDistanceFromEntity, RememberedBy, RememberedSatisfies
 )
 from visuals import Visual
-from components.dying import OnDeathEffect, OnKillEffects
+from components.on_death_effects import OnDeathEffect
+from components.on_kill_effects import OnKillEffects
+from components.on_hit_effects import OnHitEffects
 from corruption_powers import CorruptionPower, IncreasedAbilitySpeed, IncreasedDamage, IncreasedMaxHealth, IncreasedMovementSpeed
 
 unit_theme_ids: Dict[UnitType, str] = {
@@ -5555,6 +5557,20 @@ def create_zombie_basic_zombie(
         play_spawning=play_spawning,
         orientation=orientation
     )
+    
+    # Add OnHitEffects component for zombie infection
+    esper.add_component(
+        entity,
+        OnHitEffects(
+            effects=[
+                AppliesStatusEffect(
+                    status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers, owner=entity),
+                    recipient=Recipient.TARGET
+                )
+            ]
+        )
+    )
+    
     targetting_strategy = TargetStrategy(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
@@ -5597,11 +5613,7 @@ def create_zombie_basic_zombie(
                         )
                     ],
                     effects={1: [
-                        Damages(damage=gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_DAMAGE, recipient=Recipient.TARGET),
-                        AppliesStatusEffect(
-                            status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers, owner=entity),
-                            recipient=Recipient.TARGET
-                        )
+                        Damages(damage=gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_DAMAGE, recipient=Recipient.TARGET)
                     ]},
                 )
             ]
@@ -5660,6 +5672,20 @@ def create_zombie_fighter(
         play_spawning=play_spawning,
         orientation=orientation
     )
+    
+    # Add OnHitEffects component for zombie infection
+    esper.add_component(
+        entity,
+        OnHitEffects(
+            effects=[
+                AppliesStatusEffect(
+                    status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers, owner=entity),
+                    recipient=Recipient.TARGET
+                )
+            ]
+        )
+    )
+    
     targetting_strategy = TargetStrategy(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
@@ -5702,11 +5728,7 @@ def create_zombie_fighter(
                         )
                     ],
                     effects={3: [
-                        Damages(damage=fighter_damage, recipient=Recipient.TARGET),
-                        AppliesStatusEffect(
-                            status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers, owner=entity),
-                            recipient=Recipient.TARGET
-                        )
+                        Damages(damage=fighter_damage, recipient=Recipient.TARGET)
                     ]},
                 )
             ]
@@ -5929,6 +5951,20 @@ def create_zombie_jumper(
         play_spawning=play_spawning,
         orientation=orientation
     )
+    
+    # Add OnHitEffects component for zombie infection
+    esper.add_component(
+        entity,
+        OnHitEffects(
+            effects=[
+                AppliesStatusEffect(
+                    status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers, owner=entity),
+                    recipient=Recipient.TARGET
+                )
+            ]
+        )
+    )
+    
     targetting_strategy = TargetStrategy(
         rankings=[
             WeightedRanking(
@@ -5978,11 +6014,7 @@ def create_zombie_jumper(
                         )
                     ],
                     effects={2: [
-                        Damages(damage=gc.ZOMBIE_JUMPER_ATTACK_DAMAGE, recipient=Recipient.TARGET),
-                        AppliesStatusEffect(
-                            status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers, owner=entity),
-                            recipient=Recipient.TARGET
-                        )
+                        Damages(damage=gc.ZOMBIE_JUMPER_ATTACK_DAMAGE, recipient=Recipient.TARGET)
                     ]},
                 ),
                 Ability(
@@ -6084,6 +6116,20 @@ def create_zombie_spitter(
         play_spawning=play_spawning,
         orientation=orientation
     )
+    
+    # Add OnHitEffects component for zombie infection
+    esper.add_component(
+        entity,
+        OnHitEffects(
+            effects=[
+                AppliesStatusEffect(
+                    status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers, owner=entity),
+                    recipient=Recipient.TARGET
+                )
+            ]
+        )
+    )
+    
     targetting_strategy = TargetStrategy(
         rankings=[
             WeightedRanking(
@@ -6143,10 +6189,6 @@ def create_zombie_spitter(
                                 projectile_speed=gc.ZOMBIE_SPITTER_PROJECTILE_SPEED,
                                 effects=[
                                     AppliesStatusEffect(
-                                        status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers, owner=entity),
-                                        recipient=Recipient.TARGET
-                                    ),
-                                    AppliesStatusEffect(
                                         status_effect=DamageOverTime(
                                             time_remaining=gc.ZOMBIE_INFECTION_DURATION,
                                             dps=spitter_damage/gc.ZOMBIE_INFECTION_DURATION,
@@ -6194,11 +6236,7 @@ def create_zombie_spitter(
                     ],
                     effects={1: [
                         Damages(damage=melee_damage/2, recipient=Recipient.TARGET),
-                        Damages(damage=melee_damage/2, recipient=Recipient.TARGET),
-                        AppliesStatusEffect(
-                            status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers, owner=entity),
-                            recipient=Recipient.TARGET
-                        )
+                        Damages(damage=melee_damage/2, recipient=Recipient.TARGET)
                     ]},
                 )
             ]
@@ -6242,6 +6280,20 @@ def create_zombie_tank(
         play_spawning=play_spawning,
         orientation=orientation
     )
+    
+    # Add OnHitEffects component for zombie infection
+    esper.add_component(
+        entity,
+        OnHitEffects(
+            effects=[
+                AppliesStatusEffect(
+                    status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers, owner=entity),
+                    recipient=Recipient.TARGET
+                )
+            ]
+        )
+    )
+    
     targetting_strategy = TargetStrategy(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
@@ -6284,11 +6336,7 @@ def create_zombie_tank(
                         )
                     ],
                     effects={3: [
-                        Damages(damage=gc.ZOMBIE_TANK_ATTACK_DAMAGE, recipient=Recipient.TARGET),
-                        AppliesStatusEffect(
-                            status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers, owner=entity),
-                            recipient=Recipient.TARGET
-                        )
+                        Damages(damage=gc.ZOMBIE_TANK_ATTACK_DAMAGE, recipient=Recipient.TARGET)
                     ]},
                 )
             ]

@@ -7,7 +7,8 @@ import esper
 import pygame
 import os
 from components.health import Health
-from components.dying import OnDeathEffect
+from components.on_death_effects import OnDeathEffect
+from components.on_hit_effects import OnHitEffects
 from components.armor import Armor, ArmorLevel
 from components.aura import Auras, Aura
 from components.position import Position
@@ -15,10 +16,11 @@ from components.attached import Attached
 from components.expiration import Expiration
 from components.movement import Movement
 from components.corruption import IncreasedMovementSpeedComponent
-from unit_condition import All, Alive, Grounded, Always, NotHeavilyArmored
+from components.team import Team
+from unit_condition import All, Alive, Grounded, Always, HasComponent, NotHeavilyArmored
 from effects import CreatesCircleAoE, CreatesVisual, Damages, PlaySound, Recipient, SoundEffect, Effect, AppliesStatusEffect, OnKillEffects, HealPercentageMax, CreatesAttachedVisual
 from visuals import Visual
-from components.status_effect import DamageOverTime
+from components.status_effect import DamageOverTime, ZombieInfection
 from game_constants import gc
 from unit_condition import UnitCondition
 
@@ -61,6 +63,7 @@ class ItemType(Enum):
     DAMAGE_AURA = "damage_aura"
     EXTRA_MOVEMENT_SPEED = "extra_movement_speed"
     HEAL_ON_KILL = "heal_on_kill"
+    INFECT_ON_HIT = "infect_on_hit"
 
 class Item(ABC):
     """Base class for all items."""
@@ -226,6 +229,40 @@ class ExtraMovementSpeed(Item):
         return HasComponent(Movement)
 
 
+class InfectOnHit(Item):
+    """Grants zombie infection on hit."""
+    
+    def apply(self, entity: int) -> None:
+        """Apply infect on hit effect to the entity."""
+        # Add OnHitEffects component for zombie infection on hit
+        esper.add_component(
+            entity,
+            OnHitEffects(
+                effects=[
+                    AppliesStatusEffect(
+                        status_effect=ZombieInfection(
+                            time_remaining=gc.ZOMBIE_INFECTION_DURATION, 
+                            team=esper.component_for_entity(entity, Team).type,
+                            corruption_powers=None, 
+                            owner=entity
+                        ),
+                        recipient=Recipient.TARGET
+                    )
+                ]
+            )
+        )
+    
+    def remove(self, entity: int) -> None:
+        """Remove infect on hit effect from the entity."""
+        if esper.has_component(entity, OnHitEffects):
+            esper.remove_component(entity, OnHitEffects)
+    
+    @classmethod
+    def get_unit_condition(cls) -> UnitCondition:
+        """Return the unit condition for this item."""
+        return Always()
+
+
 class HealOnKill(Item):
     """Grants healing for half of maximum health when the unit gets a kill."""
     
@@ -276,7 +313,8 @@ item_theme_ids: Dict[ItemType, str] = {
     ItemType.UPGRADE_ARMOR: "#upgrade_armor_icon",
     ItemType.DAMAGE_AURA: "#damage_aura_icon",
     ItemType.EXTRA_MOVEMENT_SPEED: "#extra_movement_speed_icon",
-    ItemType.HEAL_ON_KILL: "#heal_on_kill_icon"
+    ItemType.HEAL_ON_KILL: "#heal_on_kill_icon",
+    ItemType.INFECT_ON_HIT: "#infect_on_hit_icon"
 }
 
 # Item icon surfaces for rendering
@@ -289,7 +327,8 @@ item_registry: Dict[ItemType, Item] = {
     ItemType.UPGRADE_ARMOR: UpgradeArmor(),
     ItemType.DAMAGE_AURA: DamageAura(),
     ItemType.EXTRA_MOVEMENT_SPEED: ExtraMovementSpeed(),
-    ItemType.HEAL_ON_KILL: HealOnKill()
+    ItemType.HEAL_ON_KILL: HealOnKill(),
+    ItemType.INFECT_ON_HIT: InfectOnHit()
 }
 
 
@@ -302,6 +341,7 @@ def load_item_icons() -> None:
         ItemType.DAMAGE_AURA: "DamageAuraIcon.png",
         ItemType.EXTRA_MOVEMENT_SPEED: "ExtraMovementSpeedIcon.png",
         ItemType.HEAL_ON_KILL: "HealOnKillIcon.png",
+        ItemType.INFECT_ON_HIT: "InfectOnHitIcon.png",
     }
     
     for item_type, filename in item_icon_paths.items():

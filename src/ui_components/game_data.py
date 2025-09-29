@@ -2404,4 +2404,14 @@ def get_item_data(item_type: ItemType) -> ItemData:
             }
         )
     
+    if item_type == ItemType.INFECT_ON_HIT:
+        return ItemData(
+            name="Infect On Hit",
+            description="Grants the unit ability to infect enemies with zombie infection on hit.",
+            tips={
+                "Strong when": ["Against multiple weak enemies" "Unit kills multiple enemies", "Unit deals area of effect damage"],
+                "Weak when": ["Unit dies quickly", "Against strong enemies"],
+            }
+        )
+    
     raise ValueError(f"Unknown item type: {item_type}")

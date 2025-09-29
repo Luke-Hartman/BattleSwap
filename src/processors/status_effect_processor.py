@@ -1,6 +1,7 @@
 """Processor for status effects."""
 
-from components.dying import Dying, OnKillEffects
+from components.dying import Dying
+from components.on_kill_effects import OnKillEffects
 from components.health import Health
 from components.status_effect import InfantryBannerBearerEmpowered, InfantryBannerBearerMovementSpeedBuff, InfantryBannerBearerAbilitySpeedBuff, Fleeing, Healing, DamageOverTime, StatusEffects, WontPursue, ZombieInfection, Invisible, Immobilized, ReviveProgress
 from components.unit_type import UnitTypeComponent
