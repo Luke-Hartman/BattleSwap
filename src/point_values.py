@@ -61,6 +61,7 @@ item_values: Dict[ItemType, int] = {
     ItemType.UPGRADE_ARMOR: gc.ITEM_UPGRADE_ARMOR_POINTS,
     ItemType.DAMAGE_AURA: gc.ITEM_DAMAGE_AURA_POINTS,
     ItemType.EXTRA_MOVEMENT_SPEED: gc.ITEM_EXTRA_MOVEMENT_SPEED_POINTS,
+    ItemType.HEAL_ON_KILL: gc.ITEM_HEAL_ON_KILL_POINTS,
 }
 
 # Spell point values

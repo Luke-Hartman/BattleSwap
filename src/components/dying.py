@@ -25,3 +25,10 @@ class OnDeathEffect:
     
     condition: Optional[UnitCondition] = None
     """Optional condition that must be met for the effects to be applied."""
+
+@dataclass
+class OnKillEffects:
+    """Component for units that have effects when they kill another unit."""
+    
+    effects: List["Effect"]
+    """The effects to apply when the unit kills another unit."""

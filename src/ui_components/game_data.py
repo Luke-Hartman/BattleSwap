@@ -649,7 +649,12 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
                 StatType.UTILITY: None
             },
             tips={
-                "Strong when": ["Against other ranged units", "Against slow melee units", "Against healing units", "When hitting multiple targets with one arrow"],
+                "Strong when": [
+                    "Against other ranged units",
+                    "Against slow melee units",
+                    f"Against <a href='{GlossaryEntryType.FOLLOWER.value}'>Followers</a>",
+                    "When hitting multiple targets with one arrow"
+                ],
                 "Weak when": ["Against fast melee units"],
             },
             modification_levels={
@@ -880,7 +885,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
                 StatType.UTILITY: None
             },
             tips={
-                "Strong when": ["Able to damage slow melee units with ranged attacks", "Able to adapt to different ranges", "Able to kill multiple units quickly", "Paired with healing units"],
+                "Strong when": ["Able to damage slow melee units with ranged attacks", "Able to adapt to different ranges", "Able to kill multiple units quickly", "Supported by healing"],
                 "Weak when": ["Overwhelmed before killing any units", "Against high armor units", "Against powerful melee units", "Against very long ranged units"],
             },
             modification_levels={
@@ -928,7 +933,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
                 StatType.UTILITY: None
             },
             tips={
-                "Strong when": ["Against weaker melee units", "In a large group", "Able to kill multiple units quickly", "Paired with healing units"],
+                "Strong when": ["Against weaker melee units", "In a large group", "Able to kill multiple units quickly", "Supported by healing"],
                 "Weak when": ["Against ranged units", "Overwhelmed before killing any units", "Against powerful melee units"],
             },
             modification_levels={
@@ -972,7 +977,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
                 StatType.UTILITY: None
             },
             tips={
-                "Strong when": ["Able to gain a large amount of health from killing units", "Able to kill multiple units quickly", "Able to kill units with high health", "Paired with healing units"],
+                "Strong when": ["Able to gain a large amount of health from killing units", "Able to kill multiple units quickly", "Able to kill units with high health", "Supported by healing"],
                 "Weak when": ["Against ranged units", "Overwhelmed before killing any units", "Against even more powerful melee units"],
             },
             modification_levels={
@@ -1351,7 +1356,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
                 StatType.UTILITY: None
             },
             tips={
-                "Strong when": ["Tanking damage", "Against units with low damage per hit", "Supported by healing units"],
+                "Strong when": ["Tanking damage", "Against units with low damage per hit", "Supported by healing"],
                 "Weak when": ["Against more powerful melee units", "Against ranged units"],
             },
             modification_levels={
@@ -1400,7 +1405,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
                 StatType.UTILITY: None
             },
             tips={
-                "Strong when": ["Against melee units","Against large groups", "Against units with low damage per hit", "Supported by healing units", "Spreading out incoming damage"],
+                "Strong when": ["Against melee units","Against large groups", "Against units with low damage per hit", "Supported by healing", "Spreading out incoming damage"],
                 "Weak when": ["Against ranged units", "Against stronger melee units", f"Against <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a> units", "Overwhelmed by high damage"],
             },
             modification_levels={
@@ -1489,7 +1494,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
                 StatType.UTILITY: None
             },
             tips={
-                "Strong when": ["Tanking damage", "Against units with low damage per hit", "In one-on-one fights", "Supported by healing units"],
+                "Strong when": ["Tanking damage", "Against units with low damage per hit", "In one-on-one fights", "Supported by healing"],
                 "Weak when": ["Against units with high damage per hit", "Against units with high damage per second", "Against large groups"],
             },
             modification_levels={
@@ -2107,7 +2112,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
                 StatType.UTILITY: None,
             },
             tips={
-                "Strong when": ["Able to kill units quickly", "Against isolated targets", "In a group with other fast units", "Paired with healing units"],
+                "Strong when": ["Able to kill units quickly", "Against isolated targets", "In a group with other fast units", "Supported by healing"],
                 "Weak when": ["Against armor", "Against more powerful units", "Surrounded by enemies"],
             },
             modification_levels={
@@ -2364,7 +2369,7 @@ def get_item_data(item_type: ItemType) -> ItemData:
             name="Upgrade Armor",
             description=f"Upgrades the unit's armor by one tier. If the unit has no armor, grants <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a>. If the unit has <a href='{GlossaryEntryType.ARMORED.value}'>Armored</a>, upgrades to <a href='{GlossaryEntryType.HEAVILY_ARMORED.value}'>Heavily Armored</a>. Cannot be used on <a href='{GlossaryEntryType.HEAVILY_ARMORED.value}'>Heavily Armored</a> units.",
             tips={
-                "Strong when": ["Against low damage enemies", "Supported by healing units", "Unit has lots of health"],
+                "Strong when": ["Against low damage enemies", "Supported by healing", "Unit has lots of health"],
                 "Weak when": ["Against high damage enemies", "Unit is not tanking damage"],
             }
         )
@@ -2374,7 +2379,7 @@ def get_item_data(item_type: ItemType) -> ItemData:
             name="Damage Aura",
             description=f"Grants the unit an aura that deals {gc.ITEM_DAMAGE_AURA_DAMAGE_PER_SECOND} damage per second to all units within {gc.ITEM_DAMAGE_AURA_RADIUS} range, including itself. Only active while the unit is alive.",
             tips={
-                "Strong when": ["Unit has high health", "Enemy units are grouped together", "Unit is tanky"],
+                "Strong when": ["Unit has high health", "Enemy units are grouped together", "Unit is tanky", "Unit is supported by healing"],
                 "Weak when": ["Unit dies quickly", "Allies are nearby", "Unit has low health"],
             }
         )
@@ -2386,6 +2391,16 @@ def get_item_data(item_type: ItemType) -> ItemData:
             tips={
                 "Strong when": ["Unit is slow", "Unit is a melee fighter", "To keep up with faster allies", "To dodge enemy attacks"],
                 "Weak when": ["Unit is already fast", "Unit is ranged and stays back"],
+            }
+        )
+    
+    if item_type == ItemType.HEAL_ON_KILL:
+        return ItemData(
+            name="Heal On Kill",
+            description="Grants the unit ability to heal for half of its maximum health on killing blows.",
+            tips={
+                "Strong when": ["Granted to powerful units", "Unit has high health", "Unit is tanking damage", "Unit is in prolonged fights", "Against weak units"],
+                "Weak when": ["Unit dies quickly"],
             }
         )
     

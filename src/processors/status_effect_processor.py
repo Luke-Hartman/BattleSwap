@@ -1,6 +1,6 @@
 """Processor for status effects."""
 
-from components.dying import Dying
+from components.dying import Dying, OnKillEffects
 from components.health import Health
 from components.status_effect import InfantryBannerBearerEmpowered, InfantryBannerBearerMovementSpeedBuff, InfantryBannerBearerAbilitySpeedBuff, Fleeing, Healing, DamageOverTime, StatusEffects, WontPursue, ZombieInfection, Invisible, Immobilized, ReviveProgress
 from components.unit_type import UnitTypeComponent
@@ -23,9 +23,15 @@ class StatusEffectProcessor(esper.Processor):
                     if esper.component_for_entity(ent, UnitState).state != State.DEAD:
                         damage = status_effect.dps * dt
                         health = esper.component_for_entity(ent, Health)
+                        previous_health = health.current
                         health.current = max(health.current - damage, 0)
-                        if health.current == 0:
+                        if health.current == 0 and previous_health > 0:
                             esper.add_component(ent, Dying())
+                            # Check for OnKillEffects component on the owner (but not if killing self)
+                            if status_effect.owner and status_effect.owner != ent and esper.has_component(status_effect.owner, OnKillEffects):
+                                on_kill_effects = esper.component_for_entity(status_effect.owner, OnKillEffects)
+                                for effect in on_kill_effects.effects:
+                                    effect.apply(status_effect.owner, None, ent)
                 elif isinstance(status_effect, InfantryBannerBearerEmpowered):
                     # Handled in the damage effect
                     pass

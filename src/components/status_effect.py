@@ -15,6 +15,9 @@ class StatusEffect:
 
     time_remaining: float
     """The time remaining for the status effect."""
+    
+    owner: Optional[int]
+    """The entity that applied this status effect."""
 
 @dataclass
 class InfantryBannerBearerEmpowered(StatusEffect):

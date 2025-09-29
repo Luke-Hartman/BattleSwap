@@ -57,7 +57,7 @@ from unit_condition import (
     MaximumDistanceFromEntity, RememberedBy, RememberedSatisfies
 )
 from visuals import Visual
-from components.dying import OnDeathEffect
+from components.dying import OnDeathEffect, OnKillEffects
 from corruption_powers import CorruptionPower, IncreasedAbilitySpeed, IncreasedDamage, IncreasedMaxHealth, IncreasedMovementSpeed
 
 unit_theme_ids: Dict[UnitType, str] = {
@@ -1695,6 +1695,33 @@ def create_orc_berserker(
     health_component = esper.component_for_entity(entity, Health)
     health_component.current = int(health_component.maximum * 0.5)
     
+    # Add OnKillEffects component for orc healing
+    esper.add_component(
+        entity,
+        OnKillEffects(
+            effects=[
+                HealPercentageMax(
+                    recipient=Recipient.OWNER,
+                    percentage=0.5,
+                    duration=1.0
+                ),
+                PlaySound([
+                    (SoundEffect(filename=f"orc_berserker_kill_sound{i+1}.wav", volume=0.50), 1.0) for i in range(4)
+                ]),
+                CreatesAttachedVisual(
+                    recipient=Recipient.OWNER,
+                    visual=Visual.Healing,
+                    animation_duration=1,
+                    expiration_duration=1,
+                    scale=2,
+                    random_starting_frame=True,
+                    layer=1,
+                    on_death=lambda e: esper.delete_entity(e),
+                )
+            ]
+        )
+    )
+    
     targetting_strategy = TargetStrategy(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
@@ -1735,26 +1762,6 @@ def create_orc_berserker(
             ]
         )
     )
-    on_kill_effects = [
-        HealPercentageMax(
-            recipient=Recipient.OWNER,
-            percentage=0.5,
-            duration=1.0
-        ),
-        PlaySound([
-            (SoundEffect(filename=f"orc_berserker_kill_sound{i+1}.wav", volume=0.50), 1.0) for i in range(4)
-        ]),
-        CreatesAttachedVisual(
-            recipient=Recipient.OWNER,
-            visual=Visual.Healing,
-            animation_duration=1,
-            expiration_duration=1,
-            scale=2,
-            random_starting_frame=True,
-            layer=1,
-            on_death=lambda e: esper.delete_entity(e),
-        )
-    ]
     esper.add_component(
         entity,
         Abilities(
@@ -1814,13 +1821,11 @@ def create_orc_berserker(
                         2: [
                             Damages(
                                 damage=orc_berserker_melee_damage, 
-                                recipient=Recipient.TARGET,
-                                on_kill_effects=on_kill_effects
+                                recipient=Recipient.TARGET
                             ),
                             Damages(
                                 damage=orc_berserker_melee_damage, 
-                                recipient=Recipient.TARGET,
-                                on_kill_effects=on_kill_effects,
+                                recipient=Recipient.TARGET
                             ),
                             PlaySound([
                                 (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
@@ -1873,8 +1878,7 @@ def create_orc_berserker(
                                 effects=[
                                     Damages(
                                         damage=orc_berserker_ranged_damage, 
-                                        recipient=Recipient.TARGET,
-                                        on_kill_effects=on_kill_effects
+                                        recipient=Recipient.TARGET
                                     ),
                                 ],
                                 visual=Visual.OrcThrowingAxe,
@@ -1971,6 +1975,33 @@ def create_orc_warrior(
     health_component = esper.component_for_entity(entity, Health)
     health_component.current = int(health_component.maximum * 0.5)
     
+    # Add OnKillEffects component for orc healing
+    esper.add_component(
+        entity,
+        OnKillEffects(
+            effects=[
+                HealPercentageMax(
+                    recipient=Recipient.OWNER,
+                    percentage=0.5,
+                    duration=1.0
+                ),  
+                PlaySound([
+                    (SoundEffect(filename=f"orc_kill_sound{i+1}.wav", volume=0.50), 1.0) for i in range(4)
+                ]),
+                CreatesAttachedVisual(
+                    recipient=Recipient.OWNER,
+                    visual=Visual.Healing,
+                    animation_duration=1,
+                    expiration_duration=1,
+                    scale=2,
+                    random_starting_frame=True,
+                    layer=1,
+                    on_death=lambda e: esper.delete_entity(e),
+                )
+            ]
+        )
+    )
+    
     targetting_strategy = TargetStrategy(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
@@ -2016,27 +2047,7 @@ def create_orc_warrior(
                         2: [
                             Damages(
                                 damage=orc_warrior_damage, 
-                                recipient=Recipient.TARGET,
-                                on_kill_effects=[
-                                    HealPercentageMax(
-                                        recipient=Recipient.OWNER,
-                                        percentage=0.5,
-                                        duration=1.0
-                                    ),  
-                                    PlaySound([
-                                        (SoundEffect(filename=f"orc_kill_sound{i+1}.wav", volume=0.50), 1.0) for i in range(4)
-                                    ]),
-                                    CreatesAttachedVisual(
-                                        recipient=Recipient.OWNER,
-                                        visual=Visual.Healing,
-                                        animation_duration=1,
-                                        expiration_duration=1,
-                                        scale=2,
-                                        random_starting_frame=True,
-                                        layer=1,
-                                        on_death=lambda e: esper.delete_entity(e),
-                                    )
-                                ]
+                                recipient=Recipient.TARGET
                             ),
                             PlaySound([
                                 (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
@@ -2102,6 +2113,36 @@ def create_orc_warchief(
     health_component = esper.component_for_entity(entity, Health)
     health_component.current = int(health_component.maximum * 0.5)
     
+    # Add OnKillEffects component for orc warchief abilities
+    esper.add_component(
+        entity,
+        OnKillEffects(
+            effects=[
+                IncreasesMaxHealthFromTarget(
+                    recipient=Recipient.OWNER
+                ),
+                HealPercentageMax(
+                    recipient=Recipient.OWNER,
+                    percentage=0.5,
+                    duration=1.0
+                ),
+                PlaySound([
+                    (SoundEffect(filename=f"orc_warchief_kill_sound{i+1}.wav", volume=0.50), 1.0) for i in range(4)
+                ]),
+                CreatesAttachedVisual(
+                    recipient=Recipient.OWNER,
+                    visual=Visual.Healing,
+                    animation_duration=1,
+                    expiration_duration=1,
+                    scale=2,
+                    random_starting_frame=True,
+                    layer=1,
+                    on_death=lambda e: esper.delete_entity(e),
+                )
+            ]
+        )
+    )
+    
     targetting_strategy = TargetStrategy(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
@@ -2147,30 +2188,7 @@ def create_orc_warchief(
                         2: [
                             Damages(
                                 damage=orc_warchief_damage, 
-                                recipient=Recipient.TARGET,
-                                on_kill_effects=[
-                                    IncreasesMaxHealthFromTarget(
-                                        recipient=Recipient.OWNER
-                                    ),
-                                    HealPercentageMax(
-                                        recipient=Recipient.OWNER,
-                                        percentage=0.5,
-                                        duration=1.0
-                                    ),
-                                    PlaySound([
-                                        (SoundEffect(filename=f"orc_warchief_kill_sound{i+1}.wav", volume=0.50), 1.0) for i in range(4)
-                                    ]),
-                                    CreatesAttachedVisual(
-                                        recipient=Recipient.OWNER,
-                                        visual=Visual.Healing,
-                                        animation_duration=1,
-                                        expiration_duration=1,
-                                        scale=2,
-                                        random_starting_frame=True,
-                                        layer=1,
-                                        on_death=lambda e: esper.delete_entity(e),
-                                    )
-                                ]
+                                recipient=Recipient.TARGET
                             ),
                             PlaySound([
                                 (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
@@ -2226,6 +2244,20 @@ def create_orc_goblin(
         tier=tier,
         play_spawning=play_spawning,
         orientation=orientation
+    )
+    
+    # Add OnKillEffects component for orc goblin invisibility
+    esper.add_component(
+        entity,
+        OnKillEffects(
+            effects=[
+                AppliesStatusEffect(
+                    status_effect=Invisible(time_remaining=orc_goblin_invisible_duration, owner=entity),
+                    recipient=Recipient.OWNER
+                ),
+                PlaySound(SoundEffect(filename="orc_goblin_laugh.wav", volume=0.50)),
+            ]
+        )
     )
     
     # Hunter targeting strategy like black knight
@@ -2284,14 +2316,7 @@ def create_orc_goblin(
                         2: [
                             Damages(
                                 damage=gc.ORC_GOBLIN_ATTACK_DAMAGE, 
-                                recipient=Recipient.TARGET,
-                                on_kill_effects=[
-                                    AppliesStatusEffect(
-                                        status_effect=Invisible(time_remaining=orc_goblin_invisible_duration),
-                                        recipient=Recipient.OWNER
-                                    ),
-                                    PlaySound(SoundEffect(filename="orc_goblin_laugh.wav", volume=0.50)),
-                                ]
+                                recipient=Recipient.TARGET
                             ),
                             PlaySound([
                                 (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
@@ -2316,7 +2341,7 @@ def create_orc_goblin(
                         ],
                         effects=[
                             AppliesStatusEffect(
-                                status_effect=Invisible(time_remaining=orc_goblin_invisible_duration),
+                                status_effect=Invisible(time_remaining=orc_goblin_invisible_duration, owner=entity),
                                 recipient=Recipient.OWNER
                             ),
                             PlaySound(SoundEffect(filename="orc_goblin_laugh.wav", volume=0.50))
@@ -2391,6 +2416,33 @@ def create_orc_warg_rider(
     health_component = esper.component_for_entity(entity, Health)
     health_component.current = int(health_component.maximum * 0.5)
     
+    # Add OnKillEffects component for orc healing
+    esper.add_component(
+        entity,
+        OnKillEffects(
+            effects=[
+                HealPercentageMax(
+                    recipient=Recipient.OWNER,
+                    percentage=0.5,
+                    duration=1.0
+                ),
+                PlaySound([
+                    (SoundEffect(filename=f"orc_warg_rider_kill_sound{i+1}.wav", volume=0.50), 1.0) for i in range(4)
+                ]),
+                CreatesAttachedVisual(
+                    recipient=Recipient.OWNER,
+                    visual=Visual.Healing,
+                    animation_duration=1,
+                    expiration_duration=1,
+                    scale=2,
+                    random_starting_frame=True,
+                    layer=1,
+                    on_death=lambda e: esper.delete_entity(e),
+                )
+            ]
+        )
+    )
+    
     targetting_strategy = TargetStrategy(
         rankings=[
             ByDistance(entity=entity, y_bias=2, ascending=True),
@@ -2402,26 +2454,6 @@ def create_orc_warg_rider(
         entity,
         Destination(target_strategy=targetting_strategy, x_offset=gc.ORC_WARG_RIDER_ATTACK_RANGE*2/3)
     )
-    on_kill_effects = [
-        HealPercentageMax(
-            recipient=Recipient.OWNER,
-            percentage=0.5,
-            duration=1.0
-        ),
-        PlaySound([
-            (SoundEffect(filename=f"orc_warg_rider_kill_sound{i+1}.wav", volume=0.50), 1.0) for i in range(4)
-        ]),
-        CreatesAttachedVisual(
-            recipient=Recipient.OWNER,
-            visual=Visual.Healing,
-            animation_duration=1,
-            expiration_duration=1,
-            scale=2,
-            random_starting_frame=True,
-            layer=1,
-            on_death=lambda e: esper.delete_entity(e),
-        )
-    ]
     esper.add_component(
         entity,
         Abilities(
@@ -2461,13 +2493,11 @@ def create_orc_warg_rider(
                         2: [
                             Damages(
                                 damage=warg_rider_damage * 2/3, 
-                                recipient=Recipient.TARGET,
-                                on_kill_effects=on_kill_effects
+                                recipient=Recipient.TARGET
                             ),
                             Damages(
                                 damage=warg_rider_damage * 1/3, 
-                                recipient=Recipient.TARGET,
-                                on_kill_effects=on_kill_effects
+                                recipient=Recipient.TARGET
                             ),
                             PlaySound([
                                 (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
@@ -2834,7 +2864,8 @@ def create_skeleton_lich(
                                     stacks=50,
                                     team=team,
                                     tier=tier,
-                                    corruption_powers=corruption_powers
+                                    corruption_powers=corruption_powers,
+                                    owner=entity
                                 ),
                                 recipient=Recipient.TARGET
                             ),
@@ -2951,7 +2982,7 @@ def create_infantry_banner_bearer(
     aura_effects = [
         # All tiers get movement speed buff
         AppliesStatusEffect(
-            status_effect=InfantryBannerBearerMovementSpeedBuff(time_remaining=gc.DEFAULT_AURA_PERIOD),
+            status_effect=InfantryBannerBearerMovementSpeedBuff(time_remaining=gc.DEFAULT_AURA_PERIOD, owner=entity),
             recipient=Recipient.TARGET
         )
     ]
@@ -2960,7 +2991,7 @@ def create_infantry_banner_bearer(
     if tier == UnitTier.ADVANCED or tier == UnitTier.ELITE:
         aura_effects.append(
             AppliesStatusEffect(
-                status_effect=InfantryBannerBearerEmpowered(time_remaining=gc.DEFAULT_AURA_PERIOD),
+                status_effect=InfantryBannerBearerEmpowered(time_remaining=gc.DEFAULT_AURA_PERIOD, owner=entity),
                 recipient=Recipient.TARGET
             )
         )
@@ -2969,7 +3000,7 @@ def create_infantry_banner_bearer(
     if tier == UnitTier.ELITE:
         aura_effects.append(
             AppliesStatusEffect(
-                status_effect=InfantryBannerBearerAbilitySpeedBuff(time_remaining=gc.DEFAULT_AURA_PERIOD),
+                status_effect=InfantryBannerBearerAbilitySpeedBuff(time_remaining=gc.DEFAULT_AURA_PERIOD, owner=entity),
                 recipient=Recipient.TARGET
             )
         )
@@ -3046,6 +3077,45 @@ def create_crusader_black_knight(
         play_spawning=play_spawning,
         orientation=orientation
     )
+    
+    # Add OnKillEffects component for black knight fear
+    esper.add_component(
+        entity,
+        OnKillEffects(
+            effects=[
+                CreatesVisualAoE(
+                    effects=[
+                        AppliesStatusEffect(
+                            status_effect=Fleeing(
+                                time_remaining=gc.CRUSADER_BLACK_KNIGHT_FLEE_DURATION,
+                                entity=entity,
+                                owner=entity
+                            ),
+                            recipient=Recipient.TARGET
+                        ),
+                        CreatesAttachedVisual(
+                            recipient=Recipient.TARGET,
+                            visual=Visual.Fear,
+                            animation_duration=0.3,
+                            expiration_duration=gc.CRUSADER_BLACK_KNIGHT_FLEE_DURATION,
+                            scale=gc.TINY_RPG_SCALE,
+                            on_death=lambda e: esper.delete_entity(e),
+                            unique_key=lambda e: f"FLEE {e}",
+                            offset=lambda e: (0, -esper.component_for_entity(e, Hitbox).height/2),
+                            layer=1
+                        )
+                    ],
+                    duration=gc.CRUSADER_BLACK_KNIGHT_FEAR_AOE_DURATION,
+                    scale=gc.CRUSADER_BLACK_KNIGHT_FEAR_AOE_SCALE,
+                    unit_condition=All([Alive(), Grounded(), Not(IsEntity(entity=entity))]),
+                    visual=Visual.CrusaderBlackKnightFear,
+                    location=Recipient.PARENT,
+                ),
+                PlaySound(SoundEffect(filename="black_knight_screech.wav", volume=0.50)),
+            ]
+        )
+    )
+    
     targetting_strategy = TargetStrategy(
         rankings=[
             WeightedRanking(
@@ -3096,37 +3166,7 @@ def create_crusader_black_knight(
                     effects={2: [
                         Damages(
                             damage=black_knight_damage,
-                            recipient=Recipient.TARGET,
-                            on_kill_effects=[
-                                CreatesVisualAoE(
-                                    effects=[
-                                        AppliesStatusEffect(
-                                            status_effect=Fleeing(
-                                                time_remaining=gc.CRUSADER_BLACK_KNIGHT_FLEE_DURATION,
-                                                entity=entity
-                                            ),
-                                            recipient=Recipient.TARGET
-                                        ),
-                                        CreatesAttachedVisual(
-                                            recipient=Recipient.TARGET,
-                                            visual=Visual.Fear,
-                                            animation_duration=0.3,
-                                            expiration_duration=gc.CRUSADER_BLACK_KNIGHT_FLEE_DURATION,
-                                            scale=gc.TINY_RPG_SCALE,
-                                            on_death=lambda e: esper.delete_entity(e),
-                                            unique_key=lambda e: f"FLEE {e}",
-                                            offset=lambda e: (0, -esper.component_for_entity(e, Hitbox).height/2),
-                                            layer=1
-                                        )
-                                    ],
-                                    duration=gc.CRUSADER_BLACK_KNIGHT_FEAR_AOE_DURATION,
-                                    scale=gc.CRUSADER_BLACK_KNIGHT_FEAR_AOE_SCALE,
-                                    unit_condition=All([Alive(), Grounded(), Not(IsEntity(entity=entity))]),
-                                    visual=Visual.CrusaderBlackKnightFear,
-                                    location=Recipient.PARENT,
-                                ),
-                                PlaySound(SoundEffect(filename="black_knight_screech.wav", volume=0.50)),
-                            ]
+                            recipient=Recipient.TARGET
                         ),
                         PlaySound([
                             (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
@@ -3191,7 +3231,7 @@ def create_infantry_catapult(
         orientation=orientation
     )
     # Add permanent immobilization effect
-    immobilized_effect = Immobilized(time_remaining=float("inf"))
+    immobilized_effect = Immobilized(time_remaining=float("inf"), owner=entity)
     esper.component_for_entity(entity, StatusEffects).add(immobilized_effect)
     targetting_strategy = TargetStrategy(
         rankings=[
@@ -3531,7 +3571,7 @@ def create_misc_commander(
         radius=gc.MISC_COMMANDER_AURA_RADIUS,
         effects=[
             AppliesStatusEffect(
-                status_effect=InfantryBannerBearerEmpowered(time_remaining=gc.DEFAULT_AURA_PERIOD),
+                status_effect=InfantryBannerBearerEmpowered(time_remaining=gc.DEFAULT_AURA_PERIOD, owner=entity),
                 recipient=Recipient.TARGET
             ),
         ],
@@ -4116,7 +4156,7 @@ def create_crusader_guardian_angel(
                     ],
                     effects=[
                         AppliesStatusEffect(
-                            status_effect=Healing(time_remaining=gc.CRUSADER_GUARDIAN_ANGEL_HEAL_COOLDOWN, dps=guardian_angel_healing/gc.CRUSADER_GUARDIAN_ANGEL_HEAL_COOLDOWN),
+                            status_effect=Healing(time_remaining=gc.CRUSADER_GUARDIAN_ANGEL_HEAL_COOLDOWN, dps=guardian_angel_healing/gc.CRUSADER_GUARDIAN_ANGEL_HEAL_COOLDOWN, owner=entity),
                             recipient=Recipient.TARGET
                         ),
                         CreatesAttachedVisual(
@@ -4490,7 +4530,8 @@ def create_misc_red_knight(
                                 AppliesStatusEffect(
                                     status_effect=DamageOverTime(
                                         dps=gc.MISC_RED_KNIGHT_SKILL_IGNITE_DAMAGE/gc.MISC_RED_KNIGHT_SKILL_IGNITED_DURATION,
-                                        time_remaining=gc.MISC_RED_KNIGHT_SKILL_IGNITED_DURATION
+                                        time_remaining=gc.MISC_RED_KNIGHT_SKILL_IGNITED_DURATION,
+                                        owner=entity
                                     ),
                                     recipient=Recipient.TARGET
                                 )
@@ -5558,7 +5599,7 @@ def create_zombie_basic_zombie(
                     effects={1: [
                         Damages(damage=gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_DAMAGE, recipient=Recipient.TARGET),
                         AppliesStatusEffect(
-                            status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers),
+                            status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers, owner=entity),
                             recipient=Recipient.TARGET
                         )
                     ]},
@@ -5663,7 +5704,7 @@ def create_zombie_fighter(
                     effects={3: [
                         Damages(damage=fighter_damage, recipient=Recipient.TARGET),
                         AppliesStatusEffect(
-                            status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers),
+                            status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers, owner=entity),
                             recipient=Recipient.TARGET
                         )
                     ]},
@@ -5831,7 +5872,7 @@ def create_misc_brute(
                     effects={3: [
                         Damages(damage=brute_damage, recipient=Recipient.TARGET),
                         AppliesStatusEffect(
-                            status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers),
+                            status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers, owner=entity),
                             recipient=Recipient.TARGET
                         )
                     ]},
@@ -5939,7 +5980,7 @@ def create_zombie_jumper(
                     effects={2: [
                         Damages(damage=gc.ZOMBIE_JUMPER_ATTACK_DAMAGE, recipient=Recipient.TARGET),
                         AppliesStatusEffect(
-                            status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers),
+                            status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers, owner=entity),
                             recipient=Recipient.TARGET
                         )
                     ]},
@@ -6102,13 +6143,14 @@ def create_zombie_spitter(
                                 projectile_speed=gc.ZOMBIE_SPITTER_PROJECTILE_SPEED,
                                 effects=[
                                     AppliesStatusEffect(
-                                        status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers),
+                                        status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers, owner=entity),
                                         recipient=Recipient.TARGET
                                     ),
                                     AppliesStatusEffect(
                                         status_effect=DamageOverTime(
                                             time_remaining=gc.ZOMBIE_INFECTION_DURATION,
                                             dps=spitter_damage/gc.ZOMBIE_INFECTION_DURATION,
+                                            owner=entity
                                         ),
                                         recipient=Recipient.TARGET
                                     )
@@ -6154,7 +6196,7 @@ def create_zombie_spitter(
                         Damages(damage=melee_damage/2, recipient=Recipient.TARGET),
                         Damages(damage=melee_damage/2, recipient=Recipient.TARGET),
                         AppliesStatusEffect(
-                            status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers),
+                            status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers, owner=entity),
                             recipient=Recipient.TARGET
                         )
                     ]},
@@ -6244,7 +6286,7 @@ def create_zombie_tank(
                     effects={3: [
                         Damages(damage=gc.ZOMBIE_TANK_ATTACK_DAMAGE, recipient=Recipient.TARGET),
                         AppliesStatusEffect(
-                            status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers),
+                            status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers, owner=entity),
                             recipient=Recipient.TARGET
                         )
                     ]},
@@ -6394,7 +6436,7 @@ def create_misc_grabber(
                                     RememberTarget(recipient=Recipient.OWNER),
                                     Damages(damage=grab_damage, recipient=Recipient.TARGET),
                                     AppliesStatusEffect(
-                                        status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers),
+                                        status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers, owner=entity),
                                         recipient=Recipient.TARGET
                                     ),
                                     AddsForcedMovement(
@@ -6460,7 +6502,7 @@ def create_misc_grabber(
                     effects={3: [
                         Damages(damage=melee_damage, recipient=Recipient.TARGET),
                         AppliesStatusEffect(
-                            status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers),
+                            status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers, owner=entity),
                             recipient=Recipient.TARGET
                         )
                     ]},

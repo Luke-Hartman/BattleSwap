@@ -16,7 +16,7 @@ from components.expiration import Expiration
 from components.movement import Movement
 from components.corruption import IncreasedMovementSpeedComponent
 from unit_condition import All, Alive, Grounded, Always, NotHeavilyArmored
-from effects import CreatesCircleAoE, CreatesVisual, Damages, PlaySound, Recipient, SoundEffect, Effect, AppliesStatusEffect
+from effects import CreatesCircleAoE, CreatesVisual, Damages, PlaySound, Recipient, SoundEffect, Effect, AppliesStatusEffect, OnKillEffects, HealPercentageMax, CreatesAttachedVisual
 from visuals import Visual
 from components.status_effect import DamageOverTime
 from game_constants import gc
@@ -60,6 +60,7 @@ class ItemType(Enum):
     UPGRADE_ARMOR = "upgrade_armor"
     DAMAGE_AURA = "damage_aura"
     EXTRA_MOVEMENT_SPEED = "extra_movement_speed"
+    HEAL_ON_KILL = "heal_on_kill"
 
 class Item(ABC):
     """Base class for all items."""
@@ -173,7 +174,7 @@ class DamageAura(Item):
             radius=gc.ITEM_DAMAGE_AURA_RADIUS,
             effects=[
                 AppliesStatusEffect(
-                    status_effect=DamageOverTime(dps=gc.ITEM_DAMAGE_AURA_DAMAGE_PER_SECOND, time_remaining=gc.DEFAULT_AURA_PERIOD),
+                    status_effect=DamageOverTime(dps=gc.ITEM_DAMAGE_AURA_DAMAGE_PER_SECOND, time_remaining=gc.DEFAULT_AURA_PERIOD, owner=entity),
                     recipient=Recipient.TARGET
                 )
             ],
@@ -224,13 +225,58 @@ class ExtraMovementSpeed(Item):
         """Return the unit condition for this item."""
         return HasComponent(Movement)
 
+
+class HealOnKill(Item):
+    """Grants healing for half of maximum health when the unit gets a kill."""
+    
+    def apply(self, entity: int) -> None:
+        """Apply heal on kill effect to the entity."""
+        # Add OnKillEffects component for healing on kill
+        esper.add_component(
+            entity,
+            OnKillEffects(
+                effects=[
+                    HealPercentageMax(
+                        recipient=Recipient.OWNER,
+                        percentage=0.5,
+                        duration=1.0
+                    ),
+                    PlaySound([
+                        (SoundEffect(filename=f"heal.wav", volume=0.50), 1.0)
+                    ]),
+                    CreatesAttachedVisual(
+                        recipient=Recipient.OWNER,
+                        visual=Visual.Healing,
+                        animation_duration=1,
+                        expiration_duration=1,
+                        scale=2,
+                        random_starting_frame=True,
+                        layer=1,
+                        on_death=lambda e: esper.delete_entity(e),
+                    )
+                ]
+            )
+        )
+    
+    def remove(self, entity: int) -> None:
+        """Remove heal on kill effect from the entity."""
+        if esper.has_component(entity, OnKillEffects):
+            esper.remove_component(entity, OnKillEffects)
+    
+    @classmethod
+    def get_unit_condition(cls) -> UnitCondition:
+        """Return the unit condition for this item."""
+        return Always()
+
+
 # Item theme IDs for UI styling
 item_theme_ids: Dict[ItemType, str] = {
     ItemType.EXTRA_HEALTH: "#extra_health_icon",
     ItemType.EXPLODE_ON_DEATH: "#explode_on_death_icon",
     ItemType.UPGRADE_ARMOR: "#upgrade_armor_icon",
     ItemType.DAMAGE_AURA: "#damage_aura_icon",
-    ItemType.EXTRA_MOVEMENT_SPEED: "#extra_movement_speed_icon"
+    ItemType.EXTRA_MOVEMENT_SPEED: "#extra_movement_speed_icon",
+    ItemType.HEAL_ON_KILL: "#heal_on_kill_icon"
 }
 
 # Item icon surfaces for rendering
@@ -242,7 +288,8 @@ item_registry: Dict[ItemType, Item] = {
     ItemType.EXPLODE_ON_DEATH: ExplodeOnDeath(),
     ItemType.UPGRADE_ARMOR: UpgradeArmor(),
     ItemType.DAMAGE_AURA: DamageAura(),
-    ItemType.EXTRA_MOVEMENT_SPEED: ExtraMovementSpeed()
+    ItemType.EXTRA_MOVEMENT_SPEED: ExtraMovementSpeed(),
+    ItemType.HEAL_ON_KILL: HealOnKill()
 }
 
 
@@ -254,6 +301,7 @@ def load_item_icons() -> None:
         ItemType.UPGRADE_ARMOR: "UpgradeArmorIcon.png",
         ItemType.DAMAGE_AURA: "DamageAuraIcon.png",
         ItemType.EXTRA_MOVEMENT_SPEED: "ExtraMovementSpeedIcon.png",
+        ItemType.HEAL_ON_KILL: "HealOnKillIcon.png",
     }
     
     for item_type, filename in item_icon_paths.items():

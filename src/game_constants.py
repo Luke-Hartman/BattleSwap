@@ -131,6 +131,7 @@ class GameConstants(BaseModel):
     ITEM_DAMAGE_AURA_RADIUS: float
     ITEM_EXTRA_MOVEMENT_SPEED_POINTS: int
     ITEM_EXTRA_MOVEMENT_SPEED_BONUS: float
+    ITEM_HEAL_ON_KILL_POINTS: int
     
     # Spell Point Values
     SPELL_SUMMON_SKELETON_SWORDSMEN_POINTS: int

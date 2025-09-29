@@ -619,6 +619,13 @@
             }
         }
     },
+    "#heal_on_kill_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/HealOnKillIcon.png"
+            }
+        }
+    },
     "#summon_skeleton_swordsmen_icon": {
         "images": {
             "normal_image": {

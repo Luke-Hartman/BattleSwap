@@ -23,7 +23,7 @@ from components.armor import Armor
 from components.attached import Attached
 from components.aura import Auras, Aura
 from components.corruption import IncreasedDamageComponent
-from components.dying import Dying
+from components.dying import Dying, OnKillEffects
 from components.entity_memory import EntityMemory
 from components.expiration import Expiration
 from components.forced_movement import ForcedMovement
@@ -82,9 +82,6 @@ class Damages(Effect):
     recipient: Recipient
     """The recipient of the effect."""
 
-    on_kill_effects: Optional[List[Effect]] = None
-    """Effects to apply when the target is killed."""
-
     def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
         if self.recipient == Recipient.OWNER:
             assert owner is not None
@@ -133,8 +130,10 @@ class Damages(Effect):
         recipient_health.current = max(recipient_health.current - damage, 0)
         if recipient_health.current == 0 and previous_health > 0:
             esper.add_component(recipient, Dying())
-            if self.on_kill_effects:
-                for effect in self.on_kill_effects:
+            # Check for OnKillEffects component on the owner (but not if killing self)
+            if owner and owner != recipient and esper.has_component(owner, OnKillEffects):
+                on_kill_effects = esper.component_for_entity(owner, OnKillEffects)
+                for effect in on_kill_effects.effects:
                     effect.apply(owner, parent, recipient)
 
 
@@ -205,7 +204,7 @@ class HealToFull(Effect):
         
         if missing_health > 0:
             # Create a healing status effect that heals all missing health over 1 second
-            healing_status = Healing(time_remaining=1.0, dps=missing_health)
+            healing_status = Healing(time_remaining=1.0, dps=missing_health, owner=owner)
             status_effects = esper.component_for_entity(recipient, StatusEffects)
             status_effects.add(healing_status)
 
@@ -241,7 +240,7 @@ class HealPercentageMax(Effect):
         heal_amount = health_component.maximum * self.percentage
 
         # Create a healing status effect that heals the percentage over the duration
-        healing_status = Healing(time_remaining=self.duration, dps=heal_amount / self.duration)
+        healing_status = Healing(time_remaining=self.duration, dps=heal_amount / self.duration, owner=owner)
         status_effects = esper.component_for_entity(recipient, StatusEffects)
         status_effects.add(healing_status)
 
