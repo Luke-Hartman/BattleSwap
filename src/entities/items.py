@@ -24,37 +24,6 @@ from components.status_effect import DamageOverTime, ZombieInfection
 from game_constants import gc
 from unit_condition import UnitCondition
 
-
-class ExplodeOnDeathExplosionEffect(Effect):
-    """Custom effect for ExplodeOnDeath explosion that can be identified and removed."""
-    
-    def __init__(self):
-        self.effects = [
-            CreatesCircleAoE(
-                effects=[
-                    Damages(damage=gc.ITEM_EXPLODE_ON_DEATH_DAMAGE, recipient=Recipient.TARGET),
-                ],
-                radius=gc.ITEM_EXPLODE_ON_DEATH_AOE_RADIUS,
-                unit_condition=All([Alive(), Grounded()]),  # Hits both allies and enemies
-                location=Recipient.PARENT,
-            ),
-            CreatesVisual(
-                recipient=Recipient.PARENT,
-                visual=Visual.Explosion,
-                animation_duration=gc.CORE_WIZARD_FIREBALL_AOE_DURATION,  # Same duration as wizard fireball
-                scale=gc.ITEM_EXPLODE_ON_DEATH_AOE_RADIUS * gc.EXPLOSION_VISUAL_SCALE_RATIO,
-                duration=gc.CORE_WIZARD_FIREBALL_AOE_DURATION,
-                layer=2,
-            ),
-            PlaySound(SoundEffect(filename="fireball_impact.wav", volume=0.50)),  # Same sound as wizard fireball
-        ]
-    
-    def apply(self, owner: int, parent: int, target: int) -> None:
-        """Apply all the explosion effects."""
-        for effect in self.effects:
-            effect.apply(owner, parent, target)
-
-
 class ItemType(Enum):
     """Types of items that can be equipped to units."""
     EXTRA_HEALTH = "extra_health"
@@ -103,7 +72,25 @@ class ExplodeOnDeath(Item):
     def apply(self, entity: int) -> None:
         """Add death explosion effect to the entity."""
         death_effect = esper.component_for_entity(entity, OnDeathEffect)
-        death_effect.effects.append(ExplodeOnDeathExplosionEffect())
+        death_effect.effects.extend([
+            CreatesCircleAoE(
+                effects=[
+                    Damages(damage=gc.ITEM_EXPLODE_ON_DEATH_DAMAGE, recipient=Recipient.TARGET),
+                ],
+                radius=gc.ITEM_EXPLODE_ON_DEATH_AOE_RADIUS,
+                unit_condition=All([Alive(), Grounded()]),  # Hits both allies and enemies
+                location=Recipient.OWNER,
+            ),
+            CreatesVisual(
+                recipient=Recipient.OWNER,
+                visual=Visual.Explosion,
+                animation_duration=gc.CORE_WIZARD_FIREBALL_AOE_DURATION,  # Same duration as wizard fireball
+                scale=gc.ITEM_EXPLODE_ON_DEATH_AOE_RADIUS * gc.EXPLOSION_VISUAL_SCALE_RATIO,
+                duration=gc.CORE_WIZARD_FIREBALL_AOE_DURATION,
+                layer=2,
+            ),
+            PlaySound(SoundEffect(filename="fireball_impact.wav", volume=0.50)),  # Same sound as wizard fireball
+        ])
     
     
     @classmethod

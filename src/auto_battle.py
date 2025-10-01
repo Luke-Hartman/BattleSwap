@@ -8,6 +8,7 @@ from components.team import Team, TeamType
 from components.unit_state import State, UnitState
 from components.unit_tier import UnitTier
 from components.unit_type import UnitType, UnitTypeComponent
+from entities.items import ItemType
 
 from corruption_powers import CorruptionPower
 from processors.ability_processor import AbilityProcessor
@@ -110,19 +111,21 @@ class AutoBattle:
         return self.battle_outcome
 
 def simulate_battle(
-    ally_placements: List[Tuple[UnitType, Tuple[float, float]]],
-    enemy_placements: List[Tuple[UnitType, Tuple[float, float]]],
+    ally_placements: List[Tuple[UnitType, Tuple[float, float], List]],
+    enemy_placements: List[Tuple[UnitType, Tuple[float, float], List]],
     max_duration: float,
     corruption_powers: Optional[List[CorruptionPower]] = None,
+    spell_placements: Optional[List[Tuple]] = None,
     post_battle_callback: Optional[Callable[[BattleOutcome], Any]] = None,
 ) -> Union[BattleOutcome, Tuple[BattleOutcome, Any]]:
     """Simulate a battle between two teams.
     
     Args:
-        ally_placements: List of (unit_type, position) tuples for team 1.
-        enemy_placements: List of (unit_type, position) tuples for team 2.
+        ally_placements: List of (unit_type, position, items) tuples for team 1.
+        enemy_placements: List of (unit_type, position, items) tuples for team 2.
         max_duration: Maximum duration for the battle in seconds.
         corruption_powers: Optional list of corruption powers to apply to units.
+        spell_placements: Optional list of (spell_type, position, team) tuples for spells.
         post_battle_callback: Optional callback to be called after the battle.
     
     Returns:
@@ -135,9 +138,16 @@ def simulate_battle(
 
     # Create units for both teams
     for unit_type, position, items in ally_placements:
-        create_unit(x=position[0], y=position[1], unit_type=unit_type, team=TeamType.TEAM1, corruption_powers=corruption_powers, tier=UnitTier.ELITE)
+        create_unit(x=position[0], y=position[1], unit_type=unit_type, team=TeamType.TEAM1, corruption_powers=corruption_powers, tier=UnitTier.ELITE, items=items)
     for unit_type, position, items in enemy_placements:
-        create_unit(x=position[0], y=position[1], unit_type=unit_type, team=TeamType.TEAM2, corruption_powers=corruption_powers, tier=UnitTier.ELITE)
+        create_unit(x=position[0], y=position[1], unit_type=unit_type, team=TeamType.TEAM2, corruption_powers=corruption_powers, tier=UnitTier.ELITE, items=items)
+    
+    # Create spells if provided
+    if spell_placements:
+        from entities.spells import create_spell
+        for spell_type, position, team_value in spell_placements:
+            team = TeamType(team_value)
+            create_spell(x=position[0], y=position[1], spell_type=spell_type, team=team, corruption_powers=corruption_powers)
     
     # Run the battle simulation
     outcome = None
@@ -161,10 +171,11 @@ def simulate_battle(
         return outcome
 
 def simulate_battle_with_dependencies(
-    ally_placements: List[Tuple[UnitType, Tuple[float, float]]],
-    enemy_placements: List[Tuple[UnitType, Tuple[float, float]]],
+    ally_placements: List[Tuple[UnitType, Tuple[float, float], List]],
+    enemy_placements: List[Tuple[UnitType, Tuple[float, float], List]],
     max_duration: float,
     corruption_powers: Optional[List[CorruptionPower]] = None,
+    spell_placements: Optional[List[Tuple]] = None,
     post_battle_callback: Optional[Callable[[BattleOutcome], Any]] = None,
 ) -> Union[BattleOutcome, Tuple[BattleOutcome, Any]]:
     import os
@@ -185,4 +196,4 @@ def simulate_battle_with_dependencies(
     load_visual_sheets()
     combat_handler = CombatHandler()
     state_machine = StateMachine()
-    return simulate_battle(ally_placements, enemy_placements, max_duration, corruption_powers, post_battle_callback)
+    return simulate_battle(ally_placements, enemy_placements, max_duration, corruption_powers, spell_placements, post_battle_callback)

@@ -44,6 +44,7 @@ def _simulate_match(args: Tuple[Tuple[int, EloIndividual], Tuple[int, EloIndivid
         ally_placements=player1.unit_placements,
         enemy_placements=player2.unit_placements,
         max_duration=120.0,
+        spell_placements=player1.spell_placements,
     )
     return idx1, idx2, outcome
 

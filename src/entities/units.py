@@ -3111,7 +3111,7 @@ def create_crusader_black_knight(
                     scale=gc.CRUSADER_BLACK_KNIGHT_FEAR_AOE_SCALE,
                     unit_condition=All([Alive(), Grounded(), Not(IsEntity(entity=entity))]),
                     visual=Visual.CrusaderBlackKnightFear,
-                    location=Recipient.PARENT,
+                    location=Recipient.TARGET,
                 ),
                 PlaySound(SoundEffect(filename="black_knight_screech.wav", volume=0.50)),
             ]

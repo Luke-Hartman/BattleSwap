@@ -296,10 +296,8 @@ class CreatesVisualAoE(Effect):
         else:
             raise ValueError(f"Invalid location: {self.location}")
         position = esper.component_for_entity(recipient, Position)
-        team = esper.component_for_entity(recipient, Team)
         orientation = esper.try_component(recipient, Orientation)
         esper.add_component(entity, Position(x=position.x, y=position.y))
-        esper.add_component(entity, Team(type=team.type))
         esper.add_component(entity, VisualAoE(
             effects=self.effects,
             owner=owner,

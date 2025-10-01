@@ -1257,6 +1257,7 @@ class SetupBattleScene(Scene):
                             enemy_placements=get_unit_placements(TeamType.TEAM2, self.battle),
                             max_duration=60,  # 60 second timeout
                             corruption_powers=self.battle.corruption_powers,
+                            spell_placements=self.battle.spells,
                         )
                         
                         # Update results box based on outcome

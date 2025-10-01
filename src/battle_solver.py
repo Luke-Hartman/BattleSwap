@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import math
 import random
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 from collections import Counter, defaultdict
 from functools import total_ordering
 import esper
@@ -12,8 +12,10 @@ from components.health import Health
 from components.team import Team, TeamType
 from components.unit_state import State, UnitState
 from components.unit_type import UnitType
-from scene_utils import get_legal_placement_area
-from point_values import unit_values
+from entities.items import ItemType
+from components.spell_type import SpellType
+from scene_utils import get_legal_placement_area, axial_to_world
+from point_values import unit_values, item_values, spell_values
 from game_constants import get_game_constants_hash
 import plotly.graph_objects as go
 from pathlib import Path
@@ -81,6 +83,22 @@ ALLOWED_UNIT_TYPES = [
     UnitType.ZOMBIE_FIGHTER,
 ]
 
+ALLOWED_ITEM_TYPES = [
+    ItemType.EXTRA_HEALTH,
+    ItemType.EXPLODE_ON_DEATH,
+    ItemType.UPGRADE_ARMOR,
+    ItemType.DAMAGE_AURA,
+    ItemType.EXTRA_MOVEMENT_SPEED,
+    ItemType.HEAL_ON_KILL,
+    ItemType.INFECT_ON_HIT,
+    ItemType.HUNTER,
+]
+
+ALLOWED_SPELL_TYPES = [
+    SpellType.METEOR_SHOWER,
+    SpellType.SUMMON_SKELETON_SWORDSMEN,
+]
+
 
 
 @total_ordering
@@ -112,17 +130,25 @@ class Fitness:
 
 
 class Individual:
-    def __init__(self, battle_id: str, unit_placements: List[Tuple[UnitType, Tuple[float, float]]]):
+    def __init__(self, battle_id: str, unit_placements: List[Tuple[UnitType, Tuple[float, float], List[ItemType]]], spell_placements: Optional[List[Tuple[SpellType, Tuple[float, float], int]]] = None):
         self.battle_id = battle_id
         self.unit_placements = sorted(unit_placements)
+        self.spell_placements = spell_placements or []
         self._fitness = None
     
     @property
     def points(self) -> float:
-        return sum(unit_values[unit_type] for unit_type, _ in self.unit_placements)
+        unit_points = sum(unit_values[unit_type] for unit_type, _, _ in self.unit_placements)
+        item_points = sum(
+            item_values[item_type] 
+            for _, _, items in self.unit_placements 
+            for item_type in items
+        )
+        spell_points = sum(spell_values[spell_type] for spell_type, _, _ in self.spell_placements)
+        return unit_points + item_points + spell_points
     
     def __str__(self) -> str:
-        counts = Counter(unit_type for unit_type, _ in self.unit_placements)
+        counts = Counter(unit_type for unit_type, _, _ in self.unit_placements)
         return ", ".join(f"{count} {unit_type}" for unit_type, count in counts.items())
     
     def needs_evaluation(self) -> bool:
@@ -135,7 +161,7 @@ class Individual:
         return self._fitness
 
     def short_str(self) -> str:
-        return ", ".join(f"{count} {unit_type}" for unit_type, count in sorted(Counter(unit_type for unit_type, _ in self.unit_placements).items()))
+        return ", ".join(f"{count} {unit_type}" for unit_type, count in sorted(Counter(unit_type for unit_type, _, _ in self.unit_placements).items()))
     
     def evaluate(
         self,
@@ -170,10 +196,13 @@ class Individual:
         return self.short_str()
 
     def __eq__(self, other: 'Individual') -> bool:
-        return self.unit_placements == other.unit_placements
+        return self.unit_placements == other.unit_placements and self.spell_placements == other.spell_placements
     
     def __hash__(self) -> int:
-        return hash(tuple(self.unit_placements))
+        # Convert all lists to tuples for hashing
+        unit_placements_tuple = tuple((unit_type, position, tuple(items)) for unit_type, position, items in self.unit_placements)
+        spell_placements_tuple = tuple(tuple(spell) for spell in self.spell_placements)
+        return hash((unit_placements_tuple, spell_placements_tuple))
 
 def _evaluate(individual: Individual, max_duration: float, use_powers: bool):
     return individual.evaluate(max_duration, use_powers)
@@ -269,12 +298,12 @@ class Population:
         str += f"Number timed out: {len(timeout_individuals)}\n"
 
         str += f"Number of each unit type in population:\n"
-        population_counts = Counter(unit_type for ind in self.individuals for unit_type, _ in ind.unit_placements)
+        population_counts = Counter(unit_type for ind in self.individuals for unit_type, _, _ in ind.unit_placements)
         for unit_type, count in sorted(population_counts.items(), key=lambda x: x[1], reverse=True):
             str += f"\t{unit_type:<20}: {count:<5}\n"
         
         str += f"Number of each unit type in best individuals:\n"
-        best_population_counts = Counter(unit_type for ind in self.best_individuals for unit_type, _ in ind.unit_placements)
+        best_population_counts = Counter(unit_type for ind in self.best_individuals for unit_type, _, _ in ind.unit_placements)
         for unit_type, count in sorted(best_population_counts.items(), key=lambda x: x[1], reverse=True):
             str += f"\t{unit_type:<20}: {count:<5}\n"
         return str
@@ -308,19 +337,79 @@ def _get_random_legal_unit_type() -> UnitType:
         ALLOWED_UNIT_TYPES
     )
 
-def generate_random_army(target_cost: int, max_decrease: int = 100) -> List[Tuple[UnitType, Tuple[float, float]]]:
+def _get_random_spell_position(battle_id: str, hex_coords: Tuple[int, int]) -> Tuple[float, float]:
+    """Get a random legal position for a spell within the battlefield."""
+    from scene_utils import get_legal_spell_placement_area
+    
+    legal_area = get_legal_spell_placement_area(battle_id, hex_coords)
+    
+    # Get bounding box of legal area
+    minx, miny, maxx, maxy = legal_area.bounds
+    
+    # Try to find a valid position within the legal area
+    for _ in range(100):  # Try up to 100 times
+        x = random.uniform(minx, maxx)
+        y = random.uniform(miny, maxy)
+        point = shapely.Point(x, y)
+        if legal_area.contains(point):
+            return (x, y)
+    
+    # If we can't find a valid position, return center of battlefield
+    hex_center_x, hex_center_y = axial_to_world(*hex_coords)
+    return (hex_center_x, hex_center_y)
+
+def generate_random_army(target_cost: int, battle_id: str, hex_coords: Tuple[int, int], max_decrease: int = 100) -> Tuple[List[Tuple[UnitType, Tuple[float, float], List[ItemType]]], List[Tuple[SpellType, Tuple[float, float], int]]]:
     current_cost = 0
     unit_placements = []
-    while not (target_cost - max_decrease <= current_cost <= target_cost):
+    spell_placements = []
+    
+    # First, allocate spells to ensure expensive spells have a chance
+    # Randomly choose what percentage of budget to use for spells (10% to 60%)
+    spell_percentage = random.uniform(0.1, 0.6)
+    spell_budget = min(target_cost * spell_percentage, target_cost - 100)  # Leave at least 100 for units
+    
+    # Keep adding random spells until we can't afford any more
+    while spell_budget > 0:
+        # Get all spells we can afford
+        affordable_spells = [spell_type for spell_type in ALLOWED_SPELL_TYPES if spell_values[spell_type] <= spell_budget]
+        if not affordable_spells:
+            break
+        
+        # Pick a random affordable spell
+        spell_type = random.choice(affordable_spells)
+        position = _get_random_spell_position(battle_id, hex_coords)
+        spell_placements.append((spell_type, position, TeamType.TEAM1.value))
+        spell_budget -= spell_values[spell_type]
+        current_cost += spell_values[spell_type]
+    
+    # Then generate units with items using the remaining budget
+    remaining_budget = target_cost - current_cost
+    while not (remaining_budget - max_decrease <= current_cost <= target_cost):
         if current_cost > target_cost:
+            # Remove a unit if we're over budget
             delete_index = random.randint(0, len(unit_placements) - 1)
-            current_cost -= unit_values[unit_placements[delete_index][0]]
+            unit_type, _, items = unit_placements[delete_index]
+            current_cost -= unit_values[unit_type]
+            for item_type in items:
+                current_cost -= item_values[item_type]
             unit_placements = unit_placements[:delete_index] + unit_placements[delete_index + 1:]
         else:
             unit_type = _get_random_legal_unit_type()
-            unit_placements.append((unit_type, _get_random_legal_position(TeamType.TEAM1), []))
+            position = _get_random_legal_position(TeamType.TEAM1)
+            
+            # Randomly add 0-2 items to the unit
+            items = []
+            if random.random() < 0.3:  # 30% chance of having items
+                num_items = random.randint(1, 2)
+                for _ in range(num_items):
+                    item_type = random.choice(ALLOWED_ITEM_TYPES)
+                    items.append(item_type)
+                    current_cost += item_values[item_type]
+            
+            unit_placements.append((unit_type, position, items))
             current_cost += unit_values[unit_type]
-    return unit_placements
+    
+    return unit_placements, spell_placements
 
 class Mutation(ABC):
 
@@ -334,8 +423,17 @@ class AddRandomUnit(Mutation):
         new_unit = _get_random_legal_unit_type()
         new_position = _get_random_legal_position(TeamType.TEAM1)
         index = random.randint(0, len(individual.unit_placements))
-        new_unit_placements = individual.unit_placements[:index] + [(new_unit, new_position, [])] + individual.unit_placements[index:]
-        return Individual(individual.battle_id, new_unit_placements)
+        
+        # Randomly add items to the new unit
+        items = []
+        if random.random() < 0.3:  # 30% chance of having items
+            num_items = random.randint(1, 2)
+            for _ in range(num_items):
+                item_type = random.choice(ALLOWED_ITEM_TYPES)
+                items.append(item_type)
+        
+        new_unit_placements = individual.unit_placements[:index] + [(new_unit, new_position, items)] + individual.unit_placements[index:]
+        return Individual(individual.battle_id, new_unit_placements, individual.spell_placements)
 
 class RemoveRandomUnit(Mutation):
 
@@ -345,17 +443,19 @@ class RemoveRandomUnit(Mutation):
         index = random.randint(0, len(individual.unit_placements) - 1)
         new_unit_placements = individual.unit_placements[:index] + individual.unit_placements[index + 1:]
         if len(new_unit_placements) == 0:
-            return Individual(individual.battle_id, [(_get_random_legal_unit_type(), _get_random_legal_position(TeamType.TEAM1), [])])
-        return Individual(individual.battle_id, new_unit_placements)
+            return Individual(individual.battle_id, [(_get_random_legal_unit_type(), _get_random_legal_position(TeamType.TEAM1), [])], individual.spell_placements)
+        return Individual(individual.battle_id, new_unit_placements, individual.spell_placements)
 
 class RandomizeUnitPosition(Mutation):
 
     def __call__(self, individual: Individual) -> Individual:
+        if len(individual.unit_placements) == 0:
+            return individual
         new_position = _get_random_legal_position(TeamType.TEAM1)
         index = random.randint(0, len(individual.unit_placements) - 1)
         unit_to_mutate = individual.unit_placements[index]
         new_unit_placements = individual.unit_placements[:index] + [(unit_to_mutate[0], new_position, unit_to_mutate[2])] + individual.unit_placements[index + 1:]
-        return Individual(individual.battle_id, new_unit_placements)
+        return Individual(individual.battle_id, new_unit_placements, individual.spell_placements)
 
 class RandomizeUnitType(Mutation):
 
@@ -363,6 +463,8 @@ class RandomizeUnitType(Mutation):
         self.max_decrease = max_decrease
 
     def __call__(self, individual: Individual) -> Individual:
+        if len(individual.unit_placements) == 0:
+            return individual
         index = random.randint(0, len(individual.unit_placements) - 1)
         unit_to_mutate = individual.unit_placements[index]
         current_value = unit_values[unit_to_mutate[0]]
@@ -375,7 +477,7 @@ class RandomizeUnitType(Mutation):
             return individual
         new_unit = random.choice(legal_options)
         new_unit_placements = individual.unit_placements[:index] + [(new_unit, unit_to_mutate[1], unit_to_mutate[2])] + individual.unit_placements[index + 1:]
-        return Individual(individual.battle_id, new_unit_placements)
+        return Individual(individual.battle_id, new_unit_placements, individual.spell_placements)
 
 class ApplyRandomMutations(Mutation):
 
@@ -395,11 +497,67 @@ class PerturbPosition(Mutation):
         self.noise_scale = noise_scale
     
     def __call__(self, individual: Individual) -> Individual:
+        if len(individual.unit_placements) == 0:
+            return individual
         index = random.randint(0, len(individual.unit_placements) - 1)
         unit_to_mutate = individual.unit_placements[index]
         new_position = (unit_to_mutate[1][0] + random.gauss(0, self.noise_scale), unit_to_mutate[1][1] + random.gauss(0, self.noise_scale))
         new_unit_placements = individual.unit_placements[:index] + [(unit_to_mutate[0], new_position, unit_to_mutate[2])] + individual.unit_placements[index + 1:]
-        return Individual(individual.battle_id, new_unit_placements)
+        return Individual(individual.battle_id, new_unit_placements, individual.spell_placements)
+
+
+class RandomizeSpellPosition(Mutation):
+
+    def __call__(self, individual: Individual) -> Individual:
+        if not individual.spell_placements:
+            return individual
+        
+        battle = get_battle_id(individual.battle_id)
+        hex_coords = battle.hex_coords or (0, 0)
+        new_position = _get_random_spell_position(individual.battle_id, hex_coords)
+        index = random.randint(0, len(individual.spell_placements) - 1)
+        spell_to_mutate = individual.spell_placements[index]
+        new_spell_placements = individual.spell_placements[:index] + [(spell_to_mutate[0], new_position, spell_to_mutate[2])] + individual.spell_placements[index + 1:]
+        return Individual(individual.battle_id, individual.unit_placements, new_spell_placements)
+
+
+class PerturbSpellPosition(Mutation):
+
+    def __init__(self, noise_scale: float):
+        self.noise_scale = noise_scale
+    
+    def __call__(self, individual: Individual) -> Individual:
+        if not individual.spell_placements:
+            return individual
+        
+        index = random.randint(0, len(individual.spell_placements) - 1)
+        spell_to_mutate = individual.spell_placements[index]
+        new_position = (spell_to_mutate[1][0] + random.gauss(0, self.noise_scale), spell_to_mutate[1][1] + random.gauss(0, self.noise_scale))
+        new_spell_placements = individual.spell_placements[:index] + [(spell_to_mutate[0], new_position, spell_to_mutate[2])] + individual.spell_placements[index + 1:]
+        return Individual(individual.battle_id, individual.unit_placements, new_spell_placements)
+
+
+class AddRandomSpell(Mutation):
+
+    def __call__(self, individual: Individual) -> Individual:
+        battle = get_battle_id(individual.battle_id)
+        hex_coords = battle.hex_coords or (0, 0)
+        new_spell_type = random.choice(ALLOWED_SPELL_TYPES)
+        new_position = _get_random_spell_position(individual.battle_id, hex_coords)
+        
+        new_spell_placements = individual.spell_placements + [(new_spell_type, new_position, TeamType.TEAM1.value)]
+        return Individual(individual.battle_id, individual.unit_placements, new_spell_placements)
+
+
+class RemoveRandomSpell(Mutation):
+
+    def __call__(self, individual: Individual) -> Individual:
+        if not individual.spell_placements:
+            return individual
+        
+        index = random.randint(0, len(individual.spell_placements) - 1)
+        new_spell_placements = individual.spell_placements[:index] + individual.spell_placements[index + 1:]
+        return Individual(individual.battle_id, individual.unit_placements, new_spell_placements)
 
 
 class ReplaceSubarmy(Mutation):
@@ -408,6 +566,8 @@ class ReplaceSubarmy(Mutation):
         self.max_decrease = max_decrease
 
     def __call__(self, individual: Individual) -> Individual:
+        if len(individual.unit_placements) == 0:
+            return individual
         original_score = individual.points
         kept_unit_placements = list(individual.unit_placements)
         random.shuffle(kept_unit_placements)
@@ -415,8 +575,10 @@ class ReplaceSubarmy(Mutation):
         kept_unit_placements = kept_unit_placements[:index]
         new_score = sum(unit_values[unit_type] for unit_type, _, _ in kept_unit_placements)
 
-        new_subarmy = generate_random_army(original_score - new_score, self.max_decrease)
-        return Individual(individual.battle_id, kept_unit_placements + new_subarmy)
+        battle = get_battle_id(individual.battle_id)
+        hex_coords = battle.hex_coords or (0, 0)  # Default to (0,0) if no hex coords
+        new_subarmy_unit_placements, new_subarmy_spell_placements = generate_random_army(original_score - new_score, individual.battle_id, hex_coords, self.max_decrease)
+        return Individual(individual.battle_id, kept_unit_placements + new_subarmy_unit_placements, individual.spell_placements + new_subarmy_spell_placements)
 
 
 class MoveNextToAlly(Mutation):
@@ -425,6 +587,8 @@ class MoveNextToAlly(Mutation):
         self.noise_scale = noise_scale
 
     def __call__(self, individual: Individual) -> Individual:
+        if len(individual.unit_placements) == 0:
+            return individual
         random_ally_index = random.randint(0, len(individual.unit_placements) - 1)
         random_other_ally_index = random.randint(0, len(individual.unit_placements) - 1)
         # Can be the same ally
@@ -441,7 +605,8 @@ class MoveNextToAlly(Mutation):
             )
         return Individual(
             individual.battle_id,
-            individual.unit_placements[:random_ally_index] + [(random_ally[0], new_position)] + individual.unit_placements[random_ally_index + 1:]
+            individual.unit_placements[:random_ally_index] + [(random_ally[0], new_position, random_ally[2])] + individual.unit_placements[random_ally_index + 1:],
+            individual.spell_placements
         )
 
 
@@ -472,7 +637,7 @@ class SinglePointCrossover(Crossover):
             right_unit_placements = individual2.unit_placements[:right_split_index] + individual1.unit_placements[left_split_index:]
             if not left_unit_placements or not right_unit_placements:
                 continue
-            return Individual(individual1.battle_id, left_unit_placements), Individual(individual2.battle_id, right_unit_placements)
+            return Individual(individual1.battle_id, left_unit_placements, individual1.spell_placements), Individual(individual2.battle_id, right_unit_placements, individual2.spell_placements)
 
 
 class RandomMixCrossover(Crossover):
@@ -493,7 +658,7 @@ class RandomMixCrossover(Crossover):
                     new_unit_placements2.append((unit_type, position, items))
             if not new_unit_placements1 or not new_unit_placements2:
                 continue
-            return Individual(individual1.battle_id, new_unit_placements1), Individual(individual2.battle_id, new_unit_placements2)
+            return Individual(individual1.battle_id, new_unit_placements1, individual1.spell_placements), Individual(individual2.battle_id, new_unit_placements2, individual2.spell_placements)
 
 
 class ChooseRandomCrossover(Crossover):
@@ -625,7 +790,7 @@ class EvolutionStrategy(Evolution):
         category_counts = defaultdict(int)
         for individual in sorted(parents_and_children.individuals, key=lambda x: x.fitness, reverse=True):
             category = tuple(sorted(Counter(
-                unit_type for unit_type, _ in individual.unit_placements
+                unit_type for unit_type, _, _ in individual.unit_placements
             ).items()))
             if category_counts[category] < self.category_cap:
                 individuals.append(individual)
@@ -680,7 +845,7 @@ class UnitCountsPlotter(Plotter):
         population_counts = Counter(
             unit_type 
             for ind in population.individuals 
-            for unit_type, _ in ind.unit_placements
+            for unit_type, _, _ in ind.unit_placements
         )
         for unit_type in ALLOWED_UNIT_TYPES:
             self.unit_counts_history[unit_type].append(population_counts.get(unit_type, 0))
@@ -723,7 +888,7 @@ class UnitValuesPlotter(Plotter):
     def update(self, population: Population):
         total_unit_values = defaultdict(int)
         for ind in population.individuals:
-            for unit_type, _ in ind.unit_placements:
+            for unit_type, _, _ in ind.unit_placements:
                 total_unit_values[unit_type] += unit_values[unit_type]
         for unit_type in ALLOWED_UNIT_TYPES:
             self.unit_values_history[unit_type].append(total_unit_values[unit_type])
@@ -742,6 +907,174 @@ class UnitValuesPlotter(Plotter):
         return fig.to_html()
 
 
+class ItemCountsPlotter(Plotter):
+
+    def __init__(self):
+        self.item_counts_history = defaultdict(list)
+    
+    def update(self, population: Population):
+        population_counts = Counter()
+        for ind in population.individuals:
+            for _, _, items in ind.unit_placements:
+                for item_type in items:
+                    population_counts[item_type] += 1
+        
+        for item_type in ALLOWED_ITEM_TYPES:
+            self.item_counts_history[item_type].append(population_counts.get(item_type, 0))
+        
+    def create_plot(self) -> str:
+        """Create and save the item counts plot."""
+        fig = go.Figure()
+        
+        for item_type in ALLOWED_ITEM_TYPES:
+            counts = self.item_counts_history[item_type]
+            fig.add_trace(go.Scatter(
+                x=list(range(len(counts))),
+                y=counts,
+                name=item_type.name,
+                mode='lines',
+                hovertemplate='%{fullData.name}<extra></extra>',
+            ))
+        
+        fig.update_layout(
+            title="Item Type Population Over Generations",
+            xaxis_title="Generation",
+            yaxis_title="Item Count",
+            showlegend=True,
+            legend=dict(
+                yanchor="top",
+                y=0.99,
+                xanchor="left",
+                x=1.05
+            ),
+            margin=dict(r=150)  # Add right margin for legend
+        )
+        return fig.to_html()
+
+
+class ItemValuesPlotter(Plotter):
+
+    def __init__(self):
+        self.item_values_history = defaultdict(list)
+
+    def update(self, population: Population):
+        total_item_values = defaultdict(int)
+        for ind in population.individuals:
+            for _, _, items in ind.unit_placements:
+                for item_type in items:
+                    total_item_values[item_type] += item_values[item_type]
+        for item_type in ALLOWED_ITEM_TYPES:
+            self.item_values_history[item_type].append(total_item_values[item_type])
+
+    def create_plot(self) -> str:
+        fig = go.Figure()
+        for item_type in ALLOWED_ITEM_TYPES:
+            counts = self.item_values_history[item_type]
+            fig.add_trace(go.Scatter(
+                x=list(range(len(counts))),
+                y=counts,
+                name=item_type.name,
+                mode='lines',
+                hovertemplate='%{fullData.name}<extra></extra>',
+            ))
+        fig.update_layout(
+            title="Item Type Values Over Generations",
+            xaxis_title="Generation",
+            yaxis_title="Total Item Value",
+            showlegend=True,
+            legend=dict(
+                yanchor="top",
+                y=0.99,
+                xanchor="left",
+                x=1.05
+            ),
+            margin=dict(r=150)
+        )
+        return fig.to_html()
+
+
+class SpellCountsPlotter(Plotter):
+
+    def __init__(self):
+        self.spell_counts_history = defaultdict(list)
+    
+    def update(self, population: Population):
+        population_counts = Counter()
+        for ind in population.individuals:
+            for spell_type, _, _ in ind.spell_placements:
+                population_counts[spell_type] += 1
+        
+        for spell_type in ALLOWED_SPELL_TYPES:
+            self.spell_counts_history[spell_type].append(population_counts.get(spell_type, 0))
+        
+    def create_plot(self) -> str:
+        """Create and save the spell counts plot."""
+        fig = go.Figure()
+        
+        for spell_type in ALLOWED_SPELL_TYPES:
+            counts = self.spell_counts_history[spell_type]
+            fig.add_trace(go.Scatter(
+                x=list(range(len(counts))),
+                y=counts,
+                name=spell_type.name,
+                mode='lines',
+                hovertemplate='%{fullData.name}<extra></extra>',
+            ))
+        
+        fig.update_layout(
+            title="Spell Type Population Over Generations",
+            xaxis_title="Generation",
+            yaxis_title="Spell Count",
+            showlegend=True,
+            legend=dict(
+                yanchor="top",
+                y=0.99,
+                xanchor="left",
+                x=1.05
+            ),
+            margin=dict(r=150)  # Add right margin for legend
+        )
+        return fig.to_html()
+
+
+class SpellValuesPlotter(Plotter):
+
+    def __init__(self):
+        self.spell_values_history = defaultdict(list)
+
+    def update(self, population: Population):
+        total_spell_values = defaultdict(int)
+        for ind in population.individuals:
+            for spell_type, _, _ in ind.spell_placements:
+                total_spell_values[spell_type] += spell_values[spell_type]
+        for spell_type in ALLOWED_SPELL_TYPES:
+            self.spell_values_history[spell_type].append(total_spell_values[spell_type])
+
+    def create_plot(self) -> str:
+        fig = go.Figure()
+        for spell_type in ALLOWED_SPELL_TYPES:
+            counts = self.spell_values_history[spell_type]
+            fig.add_trace(go.Scatter(
+                x=list(range(len(counts))),
+                y=counts,
+                name=spell_type.name,
+                mode='lines',
+                hovertemplate='%{fullData.name}<extra></extra>',
+            ))
+        fig.update_layout(
+            title="Spell Type Values Over Generations",
+            xaxis_title="Generation",
+            yaxis_title="Total Spell Value",
+            showlegend=True,
+            legend=dict(
+                yanchor="top",
+                y=0.99,
+                xanchor="left",
+                x=1.05
+            ),
+            margin=dict(r=150)
+        )
+        return fig.to_html()
 
 
 class PlotGroup(Plotter):
@@ -768,8 +1101,10 @@ def random_population(
 ) -> Population:
     min_target_cost = 300
     max_target_cost = 3000
+    battle = get_battle_id(battle_id)
+    hex_coords = battle.hex_coords or (0, 0)  # Default to (0,0) if no hex coords
     return Population([
-        Individual(battle_id, generate_random_army(random.randint(min_target_cost, max_target_cost)))
+        Individual(battle_id, *generate_random_army(random.randint(min_target_cost, max_target_cost), battle_id, hex_coords))
         for _ in range(size)
     ])
 

@@ -32,7 +32,7 @@ class StatusEffectProcessor(esper.Processor):
                             if status_effect.owner and status_effect.owner != ent and esper.has_component(status_effect.owner, OnKillEffects):
                                 on_kill_effects = esper.component_for_entity(status_effect.owner, OnKillEffects)
                                 for effect in on_kill_effects.effects:
-                                    effect.apply(status_effect.owner, None, ent)
+                                    effect.apply(status_effect.owner, ent, ent)
                 elif isinstance(status_effect, InfantryBannerBearerEmpowered):
                     # Handled in the damage effect
                     pass
