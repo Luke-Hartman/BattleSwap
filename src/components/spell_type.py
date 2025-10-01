@@ -8,4 +8,6 @@ class SpellType(Enum):
     
     SUMMON_SKELETON_SWORDSMEN = "summon_skeleton_swordsmen"
     METEOR_SHOWER = "meteor_shower"
-    INFECT_AREA = "infect_area"
+    INFECTING_AREA = "infecting_area"
+    HEALING_AREA = "healing_area"
+    SLOWING_AREA = "slowing_area"

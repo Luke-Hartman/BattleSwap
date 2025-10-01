@@ -21,7 +21,9 @@ from unit_condition import Always
 spell_theme_ids: Dict[SpellType, str] = {
     SpellType.SUMMON_SKELETON_SWORDSMEN: "#summon_skeleton_swordsmen_icon",
     SpellType.METEOR_SHOWER: "#meteor_shower_icon",
-    SpellType.INFECT_AREA: "#infect_area_icon"
+    SpellType.INFECTING_AREA: "#infecting_area_icon",
+    SpellType.HEALING_AREA: "#healing_area_icon",
+    SpellType.SLOWING_AREA: "#slowing_area_icon"
 }
 
 spell_icon_surfaces: Dict[SpellType, pygame.Surface] = {}
@@ -32,7 +34,9 @@ def load_spell_icons() -> None:
     spell_icon_paths: Dict[SpellType, str] = {
         SpellType.SUMMON_SKELETON_SWORDSMEN: "SummonSkeletonSwordsmenIcon.png",
         SpellType.METEOR_SHOWER: "MeteorShowerIcon.png",
-        SpellType.INFECT_AREA: "InfectAreaIcon.png",
+        SpellType.INFECTING_AREA: "InfectingAreaIcon.png",
+        SpellType.HEALING_AREA: "HealingAreaIcon.png",
+        SpellType.SLOWING_AREA: "SlowingAreaIcon.png",
     }
     
     for spell_type, filename in spell_icon_paths.items():
@@ -64,7 +68,9 @@ def create_spell(
     spell_creators = {
         SpellType.SUMMON_SKELETON_SWORDSMEN: create_summon_skeleton_swordsmen_spell,
         SpellType.METEOR_SHOWER: create_meteor_shower_spell,
-        SpellType.INFECT_AREA: create_infect_area_spell,
+        SpellType.INFECTING_AREA: create_infecting_area_spell,
+        SpellType.HEALING_AREA: create_healing_area_spell,
+        SpellType.SLOWING_AREA: create_slowing_area_spell,
     }
     
     if spell_type not in spell_creators:
@@ -209,13 +215,13 @@ def create_meteor_shower_spell(
     return entity
 
 
-def create_infect_area_spell(
+def create_infecting_area_spell(
     x: float,
     y: float,
     team: TeamType,
     corruption_powers: List = None,
 ) -> int:
-    """Create an Infect Area spell entity.
+    """Create an Infecting Area spell entity.
     
     This spell creates a temporary aura on the ground that infects all units
     in the area with zombie infection when they die.
@@ -236,10 +242,10 @@ def create_infect_area_spell(
     from unit_condition import All, Alive, Infected, Not
     from components.status_effect import ZombieInfection
     
-    # Create the infect area effect
-    infect_area_effect = CreatesTemporaryAura(
-        radius=gc.SPELL_INFECT_AREA_RADIUS,
-        duration=gc.SPELL_INFECT_AREA_DURATION,
+    # Create the infecting area effect
+    infecting_area_effect = CreatesTemporaryAura(
+        radius=gc.SPELL_INFECTING_AREA_RADIUS,
+        duration=gc.SPELL_INFECTING_AREA_DURATION,
         effects=[
             AppliesStatusEffect(
                 status_effect=ZombieInfection(
@@ -259,10 +265,126 @@ def create_infect_area_spell(
     )
     
     esper.add_component(entity, SpellComponent(
-        spell_type=SpellType.INFECT_AREA,
+        spell_type=SpellType.INFECTING_AREA,
         team=team.value,
-        effects=[infect_area_effect],
-        radius=gc.SPELL_INFECT_AREA_RADIUS
+        effects=[infecting_area_effect],
+        radius=gc.SPELL_INFECTING_AREA_RADIUS
+    ))
+    
+    return entity
+
+
+def create_healing_area_spell(
+    x: float,
+    y: float,
+    team: TeamType,
+    corruption_powers: List = None,
+) -> int:
+    """Create a Healing Area spell entity.
+    
+    This spell creates a temporary aura on the ground that heals all living units
+    in the area, both allies and enemies.
+    
+    Args:
+        x: X coordinate to place the spell at
+        y: Y coordinate to place the spell at
+        team: Team that is casting the spell
+        corruption_powers: Optional corruption powers to apply
+        
+    Returns:
+        Entity ID of the created spell
+    """
+    entity = create_base_spell(x, y, team, corruption_powers)
+    
+    # Import the effects we need
+    from effects import CreatesTemporaryAura, AppliesStatusEffect, Recipient
+    from unit_condition import Alive
+    from components.status_effect import Healing
+    
+    # Create the healing area effect
+    healing_area_effect = CreatesTemporaryAura(
+        radius=gc.SPELL_HEALING_AREA_RADIUS,
+        duration=gc.SPELL_HEALING_AREA_DURATION,
+        effects=[
+            AppliesStatusEffect(
+                status_effect=Healing(
+                    dps=gc.SPELL_HEALING_AREA_HEALING_DPS,
+                    time_remaining=gc.DEFAULT_AURA_PERIOD,  # Refresh each period
+                    owner=None  # The aura itself is the source
+                ),
+                recipient=Recipient.TARGET
+            )
+        ],
+        color=(0, 255, 0),  # Green color for healing aura
+        period=gc.DEFAULT_AURA_PERIOD,
+        owner_condition=Always(),  # Always active (no owner condition needed)
+        unit_condition=Alive(),  # Only affect living units
+        recipient=Recipient.PARENT,  # Create aura at the spell's position
+    )
+    
+    esper.add_component(entity, SpellComponent(
+        spell_type=SpellType.HEALING_AREA,
+        team=team.value,
+        effects=[healing_area_effect],
+        radius=gc.SPELL_HEALING_AREA_RADIUS
+    ))
+    
+    return entity
+
+
+def create_slowing_area_spell(
+    x: float,
+    y: float,
+    team: TeamType,
+    corruption_powers: List = None,
+) -> int:
+    """Create a Slowing Area spell entity.
+    
+    This spell creates a temporary aura on the ground that slows all living units
+    in the area, both allies and enemies.
+    
+    Args:
+        x: X coordinate to place the spell at
+        y: Y coordinate to place the spell at
+        team: Team that is casting the spell
+        corruption_powers: Optional corruption powers to apply
+        
+    Returns:
+        Entity ID of the created spell
+    """
+    entity = create_base_spell(x, y, team, corruption_powers)
+    
+    # Import the effects we need
+    from effects import CreatesTemporaryAura, AppliesStatusEffect, Recipient
+    from unit_condition import Alive
+    from components.status_effect import Slowed
+    
+    # Create the slowing area effect
+    slowing_area_effect = CreatesTemporaryAura(
+        radius=gc.SPELL_SLOWING_AREA_RADIUS,
+        duration=gc.SPELL_SLOWING_AREA_DURATION,
+        effects=[
+            AppliesStatusEffect(
+                status_effect=Slowed(
+                    speed_reduction_percent=gc.SPELL_SLOWING_AREA_SPEED_REDUCTION_PERCENT,
+                    time_remaining=gc.DEFAULT_AURA_PERIOD,  # Refresh each period
+                    owner=None  # The aura itself is the source
+                ),
+                recipient=Recipient.TARGET
+            )
+        ],
+        color=(0, 100, 255),  # Blue color for slowing aura
+        period=gc.DEFAULT_AURA_PERIOD,
+        owner_condition=Always(),  # Always active (no owner condition needed)
+        unit_condition=Alive(),  # Only affect living units
+        recipient=Recipient.PARENT,  # Create aura at the spell's position
+    )
+    
+    esper.add_component(entity, SpellComponent(
+        spell_type=SpellType.SLOWING_AREA,
+        team=team.value,
+        effects=[slowing_area_effect],
+        radius=gc.SPELL_SLOWING_AREA_RADIUS
     ))
     
     return entity

@@ -63,10 +63,20 @@ class SpellCard(BaseCard):
                 name="Meteor Shower",
                 description=f"Summons {gc.SPELL_METEOR_SHOWER_METEOR_COUNT} meteors that rain down from above, dealing {gc.SPELL_METEOR_SHOWER_DAMAGE} damage in a {gc.SPELL_METEOR_SHOWER_AOE_RADIUS} radius around each impact point."
             )
-        elif spell_type == SpellType.INFECT_AREA:
+        elif spell_type == SpellType.INFECTING_AREA:
             return SpellData(
-                name="Infect Area",
-                description=f"Creates a {gc.SPELL_INFECT_AREA_DURATION}-second aura with radius {gc.SPELL_INFECT_AREA_RADIUS} that infects all living units with zombie infection."
+                name="Infecting Area",
+                description=f"Creates a {gc.SPELL_INFECTING_AREA_DURATION}-second aura with radius {gc.SPELL_INFECTING_AREA_RADIUS} that infects all living units with zombie infection."
+            )
+        elif spell_type == SpellType.HEALING_AREA:
+            return SpellData(
+                name="Healing Area",
+                description=f"Creates a {gc.SPELL_HEALING_AREA_DURATION}-second aura with radius {gc.SPELL_HEALING_AREA_RADIUS} that heals all living units for {gc.SPELL_HEALING_AREA_HEALING_DPS} HP per second."
+            )
+        elif spell_type == SpellType.SLOWING_AREA:
+            return SpellData(
+                name="Slowing Area",
+                description=f"Creates a {gc.SPELL_SLOWING_AREA_DURATION}-second aura with radius {gc.SPELL_SLOWING_AREA_RADIUS} that slows all living units by {gc.SPELL_SLOWING_AREA_SPEED_REDUCTION_PERCENT * 100:.0f}%."
             )
         else:
             raise ValueError(f"Unknown spell type: {spell_type}")

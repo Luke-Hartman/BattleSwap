@@ -654,10 +654,24 @@
             }
         }
     },
-    "#infect_area_icon": {
+    "#infecting_area_icon": {
         "images": {
             "normal_image": {
-                "path": "assets/icons/InfectAreaIcon.png"
+                "path": "assets/icons/InfectingAreaIcon.png"
+            }
+        }
+    },
+    "#healing_area_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/HealingAreaIcon.png"
+            }
+        }
+    },
+    "#slowing_area_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/SlowingAreaIcon.png"
             }
         }
     },

@@ -113,6 +113,13 @@ class ReviveProgress(StatusEffect):
     corruption_powers: Optional[List[CorruptionPower]]
     """The corruption powers of the lich that applied this revive progress."""
 
+@dataclass
+class Slowed(StatusEffect):
+    """Status effect that reduces movement speed."""
+    
+    speed_reduction_percent: float
+    """The percentage reduction in movement speed (0.0 to 1.0)."""
+
 class StatusEffects:
     """Component that stores the status effects of a unit."""
     # TODO: This not really a following ECS best practice
@@ -130,6 +137,7 @@ class StatusEffects:
             Immobilized: [],
             WontPursue: [],
             ReviveProgress: [],
+            Slowed: [],
         }
 
     def add(self, status_effect: StatusEffect) -> None:
@@ -175,6 +183,9 @@ class StatusEffects:
         if self._status_by_type[WontPursue]:
             longest_wont_pursue = max(self._status_by_type[WontPursue], key=lambda e: e.time_remaining)
             active_effects.append(longest_wont_pursue)
+        if self._status_by_type[Slowed]:
+            strongest_slowed = max(self._status_by_type[Slowed], key=lambda e: e.speed_reduction_percent)
+            active_effects.append(strongest_slowed)
         active_effects.extend(self._status_by_type[Healing])
         active_effects.extend(self._status_by_type[ReviveProgress])
         return active_effects
