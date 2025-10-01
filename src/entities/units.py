@@ -6195,6 +6195,15 @@ def create_zombie_spitter(
                                             owner=entity
                                         ),
                                         recipient=Recipient.TARGET
+                                    ),
+                                    AppliesStatusEffect(
+                                        status_effect=ZombieInfection(
+                                            time_remaining=gc.ZOMBIE_INFECTION_DURATION,
+                                            team=team,
+                                            corruption_powers=corruption_powers,
+                                            owner=entity
+                                        ),
+                                        recipient=Recipient.TARGET
                                     )
                                 ],
                                 visual=Visual.ZombieSpit,
