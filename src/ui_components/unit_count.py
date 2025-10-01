@@ -23,6 +23,7 @@ class UnitCount(BaseCountButton):
         manager: pygame_gui.UIManager,
         infinite: bool = False,
         container: Optional[pygame_gui.core.UIContainer] = None,
+        hotkey: Optional[str] = None,
     ):
         self.unit_type = unit_type
         super().__init__(
@@ -32,7 +33,8 @@ class UnitCount(BaseCountButton):
             interactive=interactive,
             manager=manager,
             infinite=infinite,
-            container=container
+            container=container,
+            hotkey=hotkey
         )
     
     def _get_button_object_id(self) -> pygame_gui.core.ObjectID:

@@ -19,11 +19,13 @@ class BaseCountButton(UIPanel):
         manager: pygame_gui.UIManager,
         infinite: bool = False,
         container: Optional[pygame_gui.core.UIContainer] = None,
+        hotkey: Optional[str] = None,
     ):
         self.count = count
         self.interactive = interactive
         self.infinite = infinite
         self.manager = manager
+        self.hotkey = hotkey
         
         super().__init__(
             relative_rect=pygame.Rect((x_pos, y_pos), (self.size, self.size)),
@@ -59,6 +61,17 @@ class BaseCountButton(UIPanel):
             container=self,
             object_id=pygame_gui.core.ObjectID(class_id="@unit_count_text"),
         )
+        
+        # Create hotkey label if hotkey is provided
+        self.hotkey_label = None
+        if hotkey:
+            self.hotkey_label = UILabel(
+                relative_rect=pygame.Rect((0, self.size - 25), (25, 25)),
+                text=hotkey,
+                manager=manager,
+                container=self,
+                object_id=pygame_gui.core.ObjectID(class_id="@unit_count_text"),
+            )
         
         if not interactive:
             self.button.disable()

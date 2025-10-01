@@ -244,6 +244,7 @@ class BarracksUI(UITabContainer):
         )
         
         for unit_type, count in available_units:
+            hotkey = str((index + 1) % 10) if index < 10 else None
             item = UnitCount(
                 x_pos=x_position,
                 y_pos=y_offset,
@@ -252,7 +253,8 @@ class BarracksUI(UITabContainer):
                 interactive=self.interactive and count > 0,
                 manager=self.manager,
                 container=container,
-                infinite=self.sandbox_mode
+                infinite=self.sandbox_mode,
+                hotkey=hotkey
             )
             
             if index < 10:
@@ -274,6 +276,7 @@ class BarracksUI(UITabContainer):
         )
         
         for item_type, count in available_items:
+            hotkey = str((index + 1) % 10) if index < 10 else None
             item_count = ItemCount(
                 x_pos=x_position,
                 y_pos=y_offset,
@@ -282,7 +285,8 @@ class BarracksUI(UITabContainer):
                 interactive=self.interactive and count > 0,
                 manager=self.manager,
                 container=container,
-                infinite=self.sandbox_mode
+                infinite=self.sandbox_mode,
+                hotkey=hotkey
             )
             
             if index < 10:
@@ -304,6 +308,7 @@ class BarracksUI(UITabContainer):
         )
         
         for spell_type, count in available_spells:
+            hotkey = str((index + 1) % 10) if index < 10 else None
             spell_count = SpellCount(
                 x_pos=x_position,
                 y_pos=y_offset,
@@ -312,7 +317,8 @@ class BarracksUI(UITabContainer):
                 interactive=self.interactive and count > 0,
                 manager=self.manager,
                 container=container,
-                infinite=self.sandbox_mode
+                infinite=self.sandbox_mode,
+                hotkey=hotkey
             )
             
             if index < 10:
@@ -341,6 +347,7 @@ class BarracksUI(UITabContainer):
             )
             
             for unit_index, (unit_type, count) in enumerate(faction_units):
+                hotkey = str((unit_index + 1) % 10) if unit_index < 10 else None
                 item = UnitCount(
                     x_pos=x_position,
                     y_pos=y_offset,
@@ -349,7 +356,8 @@ class BarracksUI(UITabContainer):
                     interactive=self.interactive and count > 0,
                     manager=self.manager,
                     container=container,
-                    infinite=self.sandbox_mode
+                    infinite=self.sandbox_mode,
+                    hotkey=hotkey
                 )
                 
                 if unit_index < 10:
@@ -375,6 +383,7 @@ class BarracksUI(UITabContainer):
         )
         
         for index, (item_type, count) in enumerate(all_items):
+            hotkey = str((index + 1) % 10) if index < 10 else None
             item_count = ItemCount(
                 x_pos=x_position,
                 y_pos=y_offset,
@@ -383,7 +392,8 @@ class BarracksUI(UITabContainer):
                 interactive=self.interactive and count > 0,
                 manager=self.manager,
                 container=container,
-                infinite=self.sandbox_mode
+                infinite=self.sandbox_mode,
+                hotkey=hotkey
             )
             
             if index < 10:
@@ -409,6 +419,7 @@ class BarracksUI(UITabContainer):
         )
         
         for index, (spell_type, count) in enumerate(all_spells):
+            hotkey = str((index + 1) % 10) if index < 10 else None
             spell_count = SpellCount(
                 x_pos=x_position,
                 y_pos=y_offset,
@@ -417,7 +428,8 @@ class BarracksUI(UITabContainer):
                 interactive=self.interactive and count > 0,
                 manager=self.manager,
                 container=container,
-                infinite=self.sandbox_mode
+                infinite=self.sandbox_mode,
+                hotkey=hotkey
             )
             
             if index < 10:
