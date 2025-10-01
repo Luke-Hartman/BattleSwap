@@ -712,6 +712,11 @@ class GameConstants(BaseModel):
     SPELL_METEOR_SHOWER_POINTS: int
     SPELL_METEOR_SHOWER_METEOR_COUNT: int
 
+    # Infect Area Spell
+    SPELL_INFECT_AREA_POINTS: int
+    SPELL_INFECT_AREA_RADIUS: float
+    SPELL_INFECT_AREA_DURATION: float
+
     # Explosion Visual Scaling
     EXPLOSION_VISUAL_SCALE_RATIO: float
 

@@ -70,4 +70,5 @@ item_values: Dict[ItemType, int] = {
 spell_values: Dict[SpellType, int] = {
     SpellType.METEOR_SHOWER: gc.SPELL_METEOR_SHOWER_POINTS,
     SpellType.SUMMON_SKELETON_SWORDSMEN: gc.SPELL_SUMMON_SKELETON_SWORDSMEN_POINTS,
+    SpellType.INFECT_AREA: gc.SPELL_INFECT_AREA_POINTS,
 }

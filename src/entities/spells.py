@@ -16,10 +16,12 @@ from components.spell_type import SpellType
 from components.placing import Placing
 from effects import Effect, CreatesUnit, Recipient
 from game_constants import gc
+from unit_condition import Always
 
 spell_theme_ids: Dict[SpellType, str] = {
     SpellType.SUMMON_SKELETON_SWORDSMEN: "#summon_skeleton_swordsmen_icon",
-    SpellType.METEOR_SHOWER: "#meteor_shower_icon"
+    SpellType.METEOR_SHOWER: "#meteor_shower_icon",
+    SpellType.INFECT_AREA: "#infect_area_icon"
 }
 
 spell_icon_surfaces: Dict[SpellType, pygame.Surface] = {}
@@ -30,6 +32,7 @@ def load_spell_icons() -> None:
     spell_icon_paths: Dict[SpellType, str] = {
         SpellType.SUMMON_SKELETON_SWORDSMEN: "SummonSkeletonSwordsmenIcon.png",
         SpellType.METEOR_SHOWER: "MeteorShowerIcon.png",
+        SpellType.INFECT_AREA: "InfectAreaIcon.png",
     }
     
     for spell_type, filename in spell_icon_paths.items():
@@ -61,6 +64,7 @@ def create_spell(
     spell_creators = {
         SpellType.SUMMON_SKELETON_SWORDSMEN: create_summon_skeleton_swordsmen_spell,
         SpellType.METEOR_SHOWER: create_meteor_shower_spell,
+        SpellType.INFECT_AREA: create_infect_area_spell,
     }
     
     if spell_type not in spell_creators:
@@ -200,6 +204,65 @@ def create_meteor_shower_spell(
         team=team.value,
         effects=[meteor_shower_effect],
         radius=gc.SPELL_METEOR_SHOWER_RADIUS
+    ))
+    
+    return entity
+
+
+def create_infect_area_spell(
+    x: float,
+    y: float,
+    team: TeamType,
+    corruption_powers: List = None,
+) -> int:
+    """Create an Infect Area spell entity.
+    
+    This spell creates a temporary aura on the ground that infects all units
+    in the area with zombie infection when they die.
+    
+    Args:
+        x: X coordinate to place the spell at
+        y: Y coordinate to place the spell at
+        team: Team that is casting the spell
+        corruption_powers: Optional corruption powers to apply
+        
+    Returns:
+        Entity ID of the created spell
+    """
+    entity = create_base_spell(x, y, team, corruption_powers)
+    
+    # Import the effects we need
+    from effects import CreatesTemporaryAura, AppliesStatusEffect, Recipient
+    from unit_condition import All, Alive, Infected, Not
+    from components.status_effect import ZombieInfection
+    
+    # Create the infect area effect
+    infect_area_effect = CreatesTemporaryAura(
+        radius=gc.SPELL_INFECT_AREA_RADIUS,
+        duration=gc.SPELL_INFECT_AREA_DURATION,
+        effects=[
+            AppliesStatusEffect(
+                status_effect=ZombieInfection(
+                    time_remaining=gc.ZOMBIE_INFECTION_DURATION,
+                    team=team,
+                    corruption_powers=corruption_powers,
+                    owner=None  # The aura itself is the source
+                ),
+                recipient=Recipient.TARGET
+            )
+        ],
+        color=(100, 50, 100),  # Purple color for infection aura
+        period=gc.DEFAULT_AURA_PERIOD,
+        owner_condition=Always(),  # Always active (no owner condition needed)
+        unit_condition=Alive(),  # Only affect living, non-infected units
+        recipient=Recipient.PARENT,  # Create aura at the spell's position
+    )
+    
+    esper.add_component(entity, SpellComponent(
+        spell_type=SpellType.INFECT_AREA,
+        team=team.value,
+        effects=[infect_area_effect],
+        radius=gc.SPELL_INFECT_AREA_RADIUS
     ))
     
     return entity

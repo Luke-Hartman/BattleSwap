@@ -6,8 +6,8 @@ from typing import Dict
 from battles import get_battle_id, get_battles
 from battle_solver import (
     ALLOWED_UNIT_TYPES, EvolutionStrategy, AddRandomUnit, MoveNextToAlly, PlotGroup, Plotter, Population, RemoveRandomUnit, 
-    PerturbPosition, RandomizeUnitPosition, RandomizeUnitType, ReplaceSubarmy, TournamentSelection, UniformSelection, UnitCountsPlotter, UnitValuesPlotter, 
-    ItemCountsPlotter, ItemValuesPlotter, SpellCountsPlotter, SpellValuesPlotter, 
+    PerturbPosition, RandomizeUnitPosition, RandomizeUnitType, ReplaceSubarmy, TournamentSelection, UniformSelection,
+    AllCountsPlotter, AllValuesPlotter,
     RandomizeSpellPosition, PerturbSpellPosition, AddRandomSpell, RemoveRandomSpell, random_population
 )
 from point_values import unit_values
@@ -81,7 +81,6 @@ def run_balance_overview():
             RandomizeSpellPosition(),
             PerturbSpellPosition(noise_scale=10),
             PerturbSpellPosition(noise_scale=100),
-            AddRandomSpell(),
             RemoveRandomSpell(),
         ],
         selector=TournamentSelection(tournament_size=TOURNAMENT_SIZE) if TOURNAMENT_SIZE is not None else UniformSelection(),
@@ -113,22 +112,12 @@ def run_balance_overview():
     all_battles_plotter = AllBattlesPlotter(
         overview_plotter=PlotGroup(
             plotters=[
-                UnitCountsPlotter(),
-                UnitValuesPlotter(),
-                ItemCountsPlotter(),
-                ItemValuesPlotter(),
-                SpellCountsPlotter(),
-                SpellValuesPlotter(),
+                AllCountsPlotter(),
+                AllValuesPlotter(),
             ],
         ),
         battle_plotters={
-            battle.id: PlotGroup(
-                plotters=[
-                    UnitCountsPlotter(),
-                    ItemCountsPlotter(),
-                    SpellCountsPlotter(),
-                ],
-            )
+            battle.id: AllCountsPlotter()
             for battle in battles
         }
     )

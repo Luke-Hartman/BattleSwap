@@ -14,7 +14,7 @@ from components.unit_state import State, UnitState
 from components.unit_type import UnitType
 from entities.items import ItemType
 from components.spell_type import SpellType
-from scene_utils import get_legal_placement_area, axial_to_world
+from scene_utils import get_legal_placement_area, get_legal_spell_placement_area, axial_to_world, clip_to_polygon
 from point_values import unit_values, item_values, spell_values
 from game_constants import get_game_constants_hash
 import plotly.graph_objects as go
@@ -97,6 +97,7 @@ ALLOWED_ITEM_TYPES = [
 ALLOWED_SPELL_TYPES = [
     SpellType.METEOR_SHOWER,
     SpellType.SUMMON_SKELETON_SWORDSMEN,
+    SpellType.INFECT_AREA,
 ]
 
 
@@ -501,7 +502,22 @@ class PerturbPosition(Mutation):
             return individual
         index = random.randint(0, len(individual.unit_placements) - 1)
         unit_to_mutate = individual.unit_placements[index]
-        new_position = (unit_to_mutate[1][0] + random.gauss(0, self.noise_scale), unit_to_mutate[1][1] + random.gauss(0, self.noise_scale))
+        
+        # Calculate perturbed position
+        perturbed_x = unit_to_mutate[1][0] + random.gauss(0, self.noise_scale)
+        perturbed_y = unit_to_mutate[1][1] + random.gauss(0, self.noise_scale)
+        
+        # Get legal placement area and clip the position
+        battle = get_battle_id(individual.battle_id)
+        hex_coords = battle.hex_coords or (0, 0)
+        legal_area = get_legal_placement_area(
+            battle_id=individual.battle_id,
+            hex_coords=hex_coords,
+            required_team=TeamType.TEAM1,
+            include_units=False,
+        )
+        new_position = clip_to_polygon(legal_area, perturbed_x, perturbed_y)
+        
         new_unit_placements = individual.unit_placements[:index] + [(unit_to_mutate[0], new_position, unit_to_mutate[2])] + individual.unit_placements[index + 1:]
         return Individual(individual.battle_id, new_unit_placements, individual.spell_placements)
 
@@ -532,7 +548,17 @@ class PerturbSpellPosition(Mutation):
         
         index = random.randint(0, len(individual.spell_placements) - 1)
         spell_to_mutate = individual.spell_placements[index]
-        new_position = (spell_to_mutate[1][0] + random.gauss(0, self.noise_scale), spell_to_mutate[1][1] + random.gauss(0, self.noise_scale))
+        
+        # Calculate perturbed position
+        perturbed_x = spell_to_mutate[1][0] + random.gauss(0, self.noise_scale)
+        perturbed_y = spell_to_mutate[1][1] + random.gauss(0, self.noise_scale)
+        
+        # Get legal spell placement area and clip the position
+        battle = get_battle_id(individual.battle_id)
+        hex_coords = battle.hex_coords or (0, 0)
+        legal_area = get_legal_spell_placement_area(individual.battle_id, hex_coords)
+        new_position = clip_to_polygon(legal_area, perturbed_x, perturbed_y)
+        
         new_spell_placements = individual.spell_placements[:index] + [(spell_to_mutate[0], new_position, spell_to_mutate[2])] + individual.spell_placements[index + 1:]
         return Individual(individual.battle_id, individual.unit_placements, new_spell_placements)
 
@@ -1077,6 +1103,181 @@ class SpellValuesPlotter(Plotter):
         return fig.to_html()
 
 
+class AllCountsPlotter(Plotter):
+    """Combined plotter for units, items, and spells counts."""
+
+    def __init__(self):
+        self.unit_counts_history = defaultdict(list)
+        self.item_counts_history = defaultdict(list)
+        self.spell_counts_history = defaultdict(list)
+    
+    def update(self, population: Population):
+        # Count units
+        unit_counts = Counter(
+            unit_type 
+            for ind in population.individuals 
+            for unit_type, _, _ in ind.unit_placements
+        )
+        for unit_type in ALLOWED_UNIT_TYPES:
+            self.unit_counts_history[unit_type].append(unit_counts.get(unit_type, 0))
+        
+        # Count items
+        item_counts = Counter()
+        for ind in population.individuals:
+            for _, _, items in ind.unit_placements:
+                for item_type in items:
+                    item_counts[item_type] += 1
+        for item_type in ALLOWED_ITEM_TYPES:
+            self.item_counts_history[item_type].append(item_counts.get(item_type, 0))
+        
+        # Count spells
+        spell_counts = Counter()
+        for ind in population.individuals:
+            for spell_type, _, _ in ind.spell_placements:
+                spell_counts[spell_type] += 1
+        for spell_type in ALLOWED_SPELL_TYPES:
+            self.spell_counts_history[spell_type].append(spell_counts.get(spell_type, 0))
+    
+    def create_plot(self) -> str:
+        """Create combined counts plot for units, items, and spells."""
+        fig = go.Figure()
+        
+        # Add units
+        for unit_type in ALLOWED_UNIT_TYPES:
+            counts = self.unit_counts_history[unit_type]
+            fig.add_trace(go.Scatter(
+                x=list(range(len(counts))),
+                y=counts,
+                name=f"Unit: {unit_type.name}",
+                mode='lines',
+                hovertemplate='%{fullData.name}<extra></extra>',
+            ))
+        
+        # Add items
+        for item_type in ALLOWED_ITEM_TYPES:
+            counts = self.item_counts_history[item_type]
+            fig.add_trace(go.Scatter(
+                x=list(range(len(counts))),
+                y=counts,
+                name=f"Item: {item_type.name}",
+                mode='lines',
+                hovertemplate='%{fullData.name}<extra></extra>',
+            ))
+        
+        # Add spells
+        for spell_type in ALLOWED_SPELL_TYPES:
+            counts = self.spell_counts_history[spell_type]
+            fig.add_trace(go.Scatter(
+                x=list(range(len(counts))),
+                y=counts,
+                name=f"Spell: {spell_type.name}",
+                mode='lines',
+                hovertemplate='%{fullData.name}<extra></extra>',
+            ))
+        
+        fig.update_layout(
+            title="Units/Items/Spells Population Over Generations",
+            xaxis_title="Generation",
+            yaxis_title="Count",
+            showlegend=True,
+            legend=dict(
+                yanchor="top",
+                y=0.99,
+                xanchor="left",
+                x=1.05
+            ),
+            margin=dict(r=200)  # Add right margin for legend
+        )
+        return fig.to_html()
+
+
+class AllValuesPlotter(Plotter):
+    """Combined plotter for units, items, and spells values."""
+
+    def __init__(self):
+        self.unit_values_history = defaultdict(list)
+        self.item_values_history = defaultdict(list)
+        self.spell_values_history = defaultdict(list)
+
+    def update(self, population: Population):
+        # Calculate unit values
+        total_unit_values = defaultdict(int)
+        for ind in population.individuals:
+            for unit_type, _, _ in ind.unit_placements:
+                total_unit_values[unit_type] += unit_values[unit_type]
+        for unit_type in ALLOWED_UNIT_TYPES:
+            self.unit_values_history[unit_type].append(total_unit_values[unit_type])
+        
+        # Calculate item values
+        total_item_values = defaultdict(int)
+        for ind in population.individuals:
+            for _, _, items in ind.unit_placements:
+                for item_type in items:
+                    total_item_values[item_type] += item_values[item_type]
+        for item_type in ALLOWED_ITEM_TYPES:
+            self.item_values_history[item_type].append(total_item_values[item_type])
+        
+        # Calculate spell values
+        total_spell_values = defaultdict(int)
+        for ind in population.individuals:
+            for spell_type, _, _ in ind.spell_placements:
+                total_spell_values[spell_type] += spell_values[spell_type]
+        for spell_type in ALLOWED_SPELL_TYPES:
+            self.spell_values_history[spell_type].append(total_spell_values[spell_type])
+
+    def create_plot(self) -> str:
+        """Create combined values plot for units, items, and spells."""
+        fig = go.Figure()
+        
+        # Add units
+        for unit_type in ALLOWED_UNIT_TYPES:
+            values = self.unit_values_history[unit_type]
+            fig.add_trace(go.Scatter(
+                x=list(range(len(values))),
+                y=values,
+                name=f"Unit: {unit_type.name}",
+                mode='lines',
+                hovertemplate='%{fullData.name}<extra></extra>',
+            ))
+        
+        # Add items
+        for item_type in ALLOWED_ITEM_TYPES:
+            values = self.item_values_history[item_type]
+            fig.add_trace(go.Scatter(
+                x=list(range(len(values))),
+                y=values,
+                name=f"Item: {item_type.name}",
+                mode='lines',
+                hovertemplate='%{fullData.name}<extra></extra>',
+            ))
+        
+        # Add spells
+        for spell_type in ALLOWED_SPELL_TYPES:
+            values = self.spell_values_history[spell_type]
+            fig.add_trace(go.Scatter(
+                x=list(range(len(values))),
+                y=values,
+                name=f"Spell: {spell_type.name}",
+                mode='lines',
+                hovertemplate='%{fullData.name}<extra></extra>',
+            ))
+        
+        fig.update_layout(
+            title="Units/Items/Spells Values Over Generations",
+            xaxis_title="Generation",
+            yaxis_title="Total Value",
+            showlegend=True,
+            legend=dict(
+                yanchor="top",
+                y=0.99,
+                xanchor="left",
+                x=1.05
+            ),
+            margin=dict(r=200)
+        )
+        return fig.to_html()
+
+
 class PlotGroup(Plotter):
 
     def __init__(
@@ -1141,8 +1342,8 @@ def main():
     # Initialize the population plotter
     plotter = PlotGroup(
         plotters=[
-            UnitCountsPlotter(),
-            UnitValuesPlotter(),
+            AllCountsPlotter(),
+            AllValuesPlotter(),
         ],
     )
     

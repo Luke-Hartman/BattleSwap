@@ -63,6 +63,11 @@ class SpellCard(BaseCard):
                 name="Meteor Shower",
                 description=f"Summons {gc.SPELL_METEOR_SHOWER_METEOR_COUNT} meteors that rain down from above, dealing {gc.SPELL_METEOR_SHOWER_DAMAGE} damage in a {gc.SPELL_METEOR_SHOWER_AOE_RADIUS} radius around each impact point."
             )
+        elif spell_type == SpellType.INFECT_AREA:
+            return SpellData(
+                name="Infect Area",
+                description=f"Creates a {gc.SPELL_INFECT_AREA_DURATION}-second aura with radius {gc.SPELL_INFECT_AREA_RADIUS} that infects all living units with zombie infection."
+            )
         else:
             raise ValueError(f"Unknown spell type: {spell_type}")
     
