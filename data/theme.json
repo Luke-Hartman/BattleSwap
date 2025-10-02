@@ -381,10 +381,10 @@
             }
         }
     },
-    "#crusader_defender_icon": {
+    "#core_defender_icon": {
         "images": {
             "normal_image": {
-                "path": "assets/icons/CrusaderDefenderIcon.png"
+                "path": "assets/icons/CoreDefenderIcon.png"
             }
         }
     },

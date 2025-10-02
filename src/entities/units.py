@@ -70,7 +70,7 @@ unit_theme_ids: Dict[UnitType, str] = {
     UnitType.CORE_LONGBOWMAN: "#core_longbowman_icon",
     UnitType.CORE_SWORDSMAN: "#core_swordsman_icon",
     UnitType.CORE_WIZARD: "#core_wizard_icon",
-    UnitType.INFANTRY_BANNER_BEARER: "#infantry_infantry_banner_bearer_icon",
+    UnitType.INFANTRY_BANNER_BEARER: "#infantry_banner_bearer_icon",
     UnitType.CRUSADER_BLACK_KNIGHT: "#crusader_black_knight_icon",
     UnitType.INFANTRY_CATAPULT: "#infantry_catapult_icon",
     UnitType.CRUSADER_CLERIC: "#crusader_cleric_icon",
