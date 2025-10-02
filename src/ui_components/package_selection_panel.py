@@ -12,6 +12,8 @@ from point_values import item_values, spell_values
 from progress_manager import Package
 from ui_components.item_card import ItemCard
 from ui_components.spell_card import SpellCard
+from ui_components.item_count import ItemCount
+from ui_components.spell_count import SpellCount
 from ui_components.game_data import get_item_data
 
 
@@ -51,8 +53,8 @@ class PackageSelectionPanel(UIPanel):
             margins={'left': 0, 'right': 0, 'top': 0, 'bottom': 0}
         )
         
-        # Create package selection buttons (icon-based)
-        self.package_buttons: List[UIButton] = []
+        # Create package selection buttons using count buttons
+        self.package_buttons: List[Union[ItemCount, SpellCount]] = []
         
         # Create card slot panel on top
         card_slot_width = 300  # BaseCard.WIDTH
@@ -79,20 +81,37 @@ class PackageSelectionPanel(UIPanel):
         for i, package in enumerate(packages):
             button_x = start_x + i * (icon_size + button_spacing)
             
-            # Get the theme ID for the first item/spell in the package
-            theme_id = self._get_package_theme_id(package)
+            # Create count button for the package
+            hotkey = str(i + 1) if i < 3 else None  # Hotkeys 1-3
             
-            # Package button with theme-based icon
-            button = UIButton(
-                relative_rect=pygame.Rect((button_x, button_y), (icon_size, icon_size)),
-                text="",  # No text, just icon
-                manager=manager,
-                container=self,
-                object_id=pygame_gui.core.ObjectID(
-                    class_id="@package_button",
-                    object_id=theme_id
+            if package.items:
+                # Create ItemCount for item package
+                item_type = list(package.items.keys())[0]
+                quantity = package.items[item_type]
+                button = ItemCount(
+                    x_pos=button_x,
+                    y_pos=button_y,
+                    item_type=item_type,
+                    count=quantity,
+                    interactive=True,
+                    manager=manager,
+                    container=self,
+                    hotkey=hotkey
                 )
-            )
+            else:
+                # Create SpellCount for spell package
+                spell_type = list(package.spells.keys())[0]
+                quantity = package.spells[spell_type]
+                button = SpellCount(
+                    x_pos=button_x,
+                    y_pos=button_y,
+                    spell_type=spell_type,
+                    count=quantity,
+                    interactive=True,
+                    manager=manager,
+                    container=self,
+                    hotkey=hotkey
+                )
             
             self.package_buttons.append(button)
             
@@ -152,10 +171,28 @@ class PackageSelectionPanel(UIPanel):
         Returns:
             bool: True if the event was handled, False otherwise.
         """
+        # Handle keyboard shortcuts (1-3)
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_1 and len(self.packages) > 0:
+                self._select_package(0)
+                self.on_selection(self.selected_package)
+                self.kill()
+                return True
+            elif event.key == pygame.K_2 and len(self.packages) > 1:
+                self._select_package(1)
+                self.on_selection(self.selected_package)
+                self.kill()
+                return True
+            elif event.key == pygame.K_3 and len(self.packages) > 2:
+                self._select_package(2)
+                self.on_selection(self.selected_package)
+                self.kill()
+                return True
+        
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
             # Handle package selection - directly select and close
             for i, button in enumerate(self.package_buttons):
-                if event.ui_element == button:
+                if event.ui_element == button.button:  # Count buttons have a .button attribute
                     self._select_package(i)
                     # Immediately call the selection callback and close panel
                     self.on_selection(self.selected_package)
@@ -195,9 +232,9 @@ class PackageSelectionPanel(UIPanel):
         # Update button appearances
         for i, button in enumerate(self.package_buttons):
             if i == package_index:
-                button.select()
+                button.button.select()
             else:
-                button.unselect()
+                button.button.unselect()
         
         # Display the selected package card
         self._display_package_card(self.selected_package)
@@ -242,6 +279,10 @@ class PackageSelectionPanel(UIPanel):
     
     def kill(self) -> None:
         """Clean up the panel and displayed card."""
+        # Clean up count buttons
+        for button in self.package_buttons:
+            button.kill()
+        
         # Clean up displayed card
         self._clear_card_slot()
         
