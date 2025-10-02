@@ -184,8 +184,8 @@ class SetupBattleScene(Scene):
         self.barracks = BarracksUI(
             self.manager,
             starting_units={} if self.sandbox_mode else progress_manager.available_units(battle),
-            starting_items={} if self.sandbox_mode else progress_manager.available_items(battle),
-            starting_spells={} if self.sandbox_mode else progress_manager.available_spells(battle),
+            acquired_items={} if self.sandbox_mode else progress_manager.available_items(battle),
+            acquired_spells={} if self.sandbox_mode else progress_manager.available_spells(battle),
             interactive=True,
             sandbox_mode=self.sandbox_mode,
             current_battle=battle,

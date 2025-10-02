@@ -24,6 +24,55 @@ import random
 # Increment this when making breaking changes to save file format
 CURRENT_VERSION = 3
 
+
+class Package(BaseModel):
+    """Represents a package of items or spells with a total value of 300 points."""
+    items: Dict[ItemType, int] = {}
+    spells: Dict[SpellType, int] = {}
+    total_value: int = 300
+    
+    
+    def model_post_init(self, __context) -> None:
+        """Validate the complete package after initialization."""
+        if self.items and self.spells:
+            raise ValueError("Package cannot contain both items and spells")
+        if not self.items and not self.spells:
+            raise ValueError("Package must contain either items or spells")
+        
+        # Calculate total value
+        total = 0
+        for item_type, count in self.items.items():
+            total += item_values[item_type] * count
+        for spell_type, count in self.spells.items():
+            total += spell_values[spell_type] * count
+            
+        if total != 300:
+            raise ValueError(f"Package must have exactly 300 points, got {total}")
+    
+    @field_serializer('items')
+    def serialize_items(self, items: Dict[ItemType, int]) -> Dict[str, int]:
+        return {item_type.value: count for item_type, count in items.items()}
+    
+    @field_serializer('spells')
+    def serialize_spells(self, spells: Dict[SpellType, int]) -> Dict[str, int]:
+        return {spell_type.value: count for spell_type, count in spells.items()}
+    
+    @field_validator('items', mode='before')
+    def parse_items(cls, value: Any) -> Dict[ItemType, int]:
+        if isinstance(value, dict):
+            if all(isinstance(k, str) for k in value.keys()):
+                return {ItemType(item_type): count for item_type, count in value.items()}
+            return value
+        return value
+    
+    @field_validator('spells', mode='before')
+    def parse_spells(cls, value: Any) -> Dict[SpellType, int]:
+        if isinstance(value, dict):
+            if all(isinstance(k, str) for k in value.keys()):
+                return {SpellType(spell_type): count for spell_type, count in value.items()}
+            return value
+        return value
+
 class HexLifecycleState(Enum):
     """Enum representing the lifecycle state of a hex (battle or upgrade)."""
     FOGGED = "fogged"        # Not adjacent to any claimed hex, inaccessible
@@ -44,8 +93,8 @@ def calculate_points_for_units(units: List[Tuple[UnitType, Tuple[float, float], 
 def calculate_total_available_points() -> int:
     """Calculate total points available from starting units, items, spells and completed battles."""
     points = sum(unit_values[unit_type] * count for unit_type, count in battles.starting_units.items())
-    points += sum(item_values[item_type] * count for item_type, count in battles.starting_items.items())
-    points += sum(spell_values[spell_type] * count for spell_type, count in battles.starting_spells.items())
+    points += sum(item_values[item_type] * count for item_type, count in progress_manager.acquired_items.items())
+    points += sum(spell_values[spell_type] * count for spell_type, count in progress_manager.acquired_spells.items())
     for battle in battles.get_battles():
         if battle.hex_coords in progress_manager.solutions:
             solution = progress_manager.solutions[battle.hex_coords]
@@ -120,9 +169,12 @@ class ProgressManager(BaseModel):
     solutions: Dict[Tuple[int, int], Solution] = {}
     game_completed: bool = False
     game_completed_corruption: bool = False
+    pending_packages: Optional[List[Package]] = None
     unit_tiers: Dict[UnitType, UnitTier] = {}
     hex_states: Dict[Tuple[int, int], HexLifecycleState] = {}
     upgrade_tutorial_shown: bool = False
+    acquired_items: Dict[ItemType, int] = {}
+    acquired_spells: Dict[SpellType, int] = {}
 
     @field_serializer('solutions')
     def serialize_solutions(self, solutions: Dict[Tuple[int, int], Solution]) -> Dict[str, Any]:
@@ -151,6 +203,26 @@ class ProgressManager(BaseModel):
     @field_serializer('hex_states')
     def serialize_hex_states(self, hex_states: Dict[Tuple[int, int], HexLifecycleState]) -> Dict[str, str]:
         return {str(list(coords)): state.value for coords, state in hex_states.items()}
+    
+    @field_serializer('acquired_items')
+    def serialize_acquired_items(self, acquired_items: Dict[ItemType, int]) -> Dict[str, int]:
+        return {item_type.value: count for item_type, count in acquired_items.items()}
+    
+    @field_serializer('acquired_spells')
+    def serialize_acquired_spells(self, acquired_spells: Dict[SpellType, int]) -> Dict[str, int]:
+        return {spell_type.value: count for spell_type, count in acquired_spells.items()}
+    
+    @field_serializer('pending_packages')
+    def serialize_pending_packages(self, pending_packages: Optional[List[Package]]) -> Optional[List[Dict[str, Any]]]:
+        return [package.model_dump() for package in pending_packages] if pending_packages is not None else None
+    
+    @field_validator('pending_packages', mode='before')
+    def parse_pending_packages(cls, value: Any) -> Optional[List[Package]]:
+        if value is None:
+            return None
+        if isinstance(value, list):
+            return [Package.model_validate(package_data) for package_data in value]
+        return value
 
     @field_validator('hex_states', mode='before')
     def parse_hex_states(cls, value: Any) -> Dict[Tuple[int, int], HexLifecycleState]:
@@ -160,6 +232,18 @@ class ProgressManager(BaseModel):
                 coords = tuple(json.loads(key))
                 result[coords] = HexLifecycleState(state_value)
             return result
+        return value
+    
+    @field_validator('acquired_items', mode='before')
+    def parse_acquired_items(cls, value: Any) -> Dict[ItemType, int]:
+        if isinstance(value, dict):
+            return {ItemType(item_type_str): count for item_type_str, count in value.items()}
+        return value
+    
+    @field_validator('acquired_spells', mode='before')
+    def parse_acquired_spells(cls, value: Any) -> Dict[SpellType, int]:
+        if isinstance(value, dict):
+            return {SpellType(spell_type_str): count for spell_type_str, count in value.items()}
         return value
 
     def available_units(self, current_battle: Optional[battles.Battle]) -> Dict[UnitType, int]:
@@ -189,7 +273,7 @@ class ProgressManager(BaseModel):
     def available_items(self, current_battle: Optional[battles.Battle]) -> Dict[ItemType, int]:
         """Get the available items for the player."""
         items = defaultdict(int)
-        items.update(battles.starting_items)
+        items.update(self.acquired_items)
         # Handle items from battles other than the current one
         for coords in self.solutions:
             if current_battle is not None and current_battle.hex_coords == coords:
@@ -211,7 +295,7 @@ class ProgressManager(BaseModel):
     def available_spells(self, current_battle: Optional[battles.Battle]) -> Dict[SpellType, int]:
         """Get the available spells for the player."""
         spells = defaultdict(int)
-        spells.update(battles.starting_spells)
+        spells.update(self.acquired_spells)
         # Handle spells from battles other than the current one
         for coords in self.solutions:
             if current_battle is not None and current_battle.hex_coords == coords:
@@ -252,6 +336,10 @@ class ProgressManager(BaseModel):
             battle.hex_coords in self.solutions and self.solutions[battle.hex_coords].solved_corrupted for battle in battles.get_battles()
             if not battle.is_test
         ) and not self.game_completed_corruption
+    
+    def should_show_package_selection(self) -> bool:
+        """Check if package selection should be shown after reclaiming all corrupted maps."""
+        return self.pending_packages is not None
 
     def mark_congratulations_shown(self) -> None:
         self.game_completed = True
@@ -259,6 +347,109 @@ class ProgressManager(BaseModel):
 
     def mark_corruption_congratulations_shown(self) -> None:
         self.game_completed_corruption = True
+        save_progress()
+    
+    def mark_package_selection_needed(self) -> None:
+        """Mark that package selection is needed after reclaiming all corrupted battles."""
+        # Generate 3 random packages (avoiding duplicates)
+        self.pending_packages = self._generate_packages()
+        
+        save_progress()
+    
+    def mark_package_selection_completed(self) -> None:
+        """Mark that package selection has been completed."""
+        self.pending_packages = None  # Clear the packages
+        save_progress()
+    
+    def _generate_packages(self) -> List[Package]:
+        """Generate 3 random packages avoiding duplicates.
+        
+        Returns:
+            List of 3 unique packages with 300 points each.
+        """
+        # Create lists of all available items and spells
+        all_items = list(ItemType)
+        all_spells = list(SpellType)
+        
+        # Shuffle to randomize selection
+        random.shuffle(all_items)
+        random.shuffle(all_spells)
+        
+        packages = []
+        used_items = set()
+        used_spells = set()
+        
+        # Generate 3 packages, alternating between items and spells
+        for i in range(3):
+            # Alternate between items and spells
+            if i % 2 == 0:
+                # Try items first
+                available_items = [item for item in all_items if item not in used_items]
+                if available_items:
+                    item_type = available_items[0]
+                    quantity = 300 // item_values[item_type]
+                    packages.append(Package(items={item_type: quantity}, spells={}))
+                    used_items.add(item_type)
+                else:
+                    # Fallback to spells
+                    available_spells = [spell for spell in all_spells if spell not in used_spells]
+                    if available_spells:
+                        spell_type = available_spells[0]
+                        quantity = 300 // spell_values[spell_type]
+                        packages.append(Package(items={}, spells={spell_type: quantity}))
+                        used_spells.add(spell_type)
+            else:
+                # Try spells first
+                available_spells = [spell for spell in all_spells if spell not in used_spells]
+                if available_spells:
+                    spell_type = available_spells[0]
+                    quantity = 300 // spell_values[spell_type]
+                    packages.append(Package(items={}, spells={spell_type: quantity}))
+                    used_spells.add(spell_type)
+                else:
+                    # Fallback to items
+                    available_items = [item for item in all_items if item not in used_items]
+                    if available_items:
+                        item_type = available_items[0]
+                        quantity = 300 // item_values[item_type]
+                        packages.append(Package(items={item_type: quantity}, spells={}))
+                        used_items.add(item_type)
+        
+        return packages
+    
+    def select_package(self, package: Package) -> None:
+        """Handle package selection by adding items/spells and marking selection complete.
+        
+        Args:
+            package: The selected package containing items or spells.
+        """
+        # Add items or spells from the package to the acquired inventory
+        if package.items:
+            self.add_package_items(package.items)
+        if package.spells:
+            self.add_package_spells(package.spells)
+        
+        # Mark package selection as completed
+        self.mark_package_selection_completed()
+    
+    def add_package_items(self, items: Dict[ItemType, int]) -> None:
+        """Add items from a selected package to the acquired items.
+        
+        Args:
+            items: Dictionary mapping item types to quantities to add.
+        """
+        for item_type, count in items.items():
+            self.acquired_items[item_type] = self.acquired_items.get(item_type, 0) + count
+        save_progress()
+    
+    def add_package_spells(self, spells: Dict[SpellType, int]) -> None:
+        """Add spells from a selected package to the acquired spells.
+        
+        Args:
+            spells: Dictionary mapping spell types to quantities to add.
+        """
+        for spell_type, count in spells.items():
+            self.acquired_spells[spell_type] = self.acquired_spells.get(spell_type, 0) + count
         save_progress()
         
     def should_trigger_corruption(self) -> bool:
@@ -405,9 +596,11 @@ class ProgressManager(BaseModel):
             if is_upgrade_hex(hex_coords):
                 emit_event(PLAY_SOUND, event=PlaySoundEvent(filename="reclaim_upgrade.wav", volume=0.5))
             
-            # Check if this was the last corrupted hex - if so, restore fogged hexes
+            # Check if this was the last corrupted hex - if so, restore fogged hexes and trigger package selection
             if not self.has_uncompleted_corrupted_battles():
                 self._restore_fogged_hexes_after_corruption()
+                # Mark that package selection is needed after reclaiming all corrupted battles
+                self.mark_package_selection_needed()
 
     def _restore_fogged_hexes_after_corruption(self) -> None:
         """Restore fogged hexes that are adjacent to claimed/reclaimed hexes back to unclaimed state."""
@@ -538,6 +731,9 @@ def reset_progress() -> None:
     }
     progress_manager.hex_states[(0, 0)] = HexLifecycleState.UNCLAIMED
     progress_manager.upgrade_tutorial_shown = False
+    progress_manager.pending_packages = None
+    progress_manager.acquired_items.clear()
+    progress_manager.acquired_spells.clear()
     save_progress()
 
 def has_incompatible_save() -> bool:

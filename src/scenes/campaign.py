@@ -1,6 +1,7 @@
 from collections import defaultdict
 from game_constants import gc
 from typing import Tuple, Optional, List
+import random
 
 import pygame
 import pygame_gui
@@ -56,6 +57,7 @@ class CampaignScene(Scene):
         self.corruption_icon = None
         self.upgrade_tutorial = None
         self.progress_details_window = None
+        self.package_selection_panel = None
 
         # Create camera with desired initial settings
         self.hovered_hex: Optional[Tuple[int, int]] = None
@@ -172,6 +174,22 @@ class CampaignScene(Scene):
             progress_manager.mark_upgrade_tutorial_shown()
     
     def check_panels(self) -> None:
+        # Check if we should show package selection
+        if progress_manager.should_show_package_selection():
+            from ui_components.package_selection_panel import PackageSelectionPanel
+            
+            # Use the stored packages from progress manager
+            packages = progress_manager.pending_packages
+            
+            self.package_selection_panel = PackageSelectionPanel(
+                manager=self.manager,
+                packages=packages,
+                on_selection=self._on_package_selected
+            )
+            return
+        else:
+            self.package_selection_panel = None
+        
         # Check if we should show congratulations
         if progress_manager.should_show_congratulations():
             self.congratulations_panel = CongratulationsPanel(
@@ -202,6 +220,20 @@ class CampaignScene(Scene):
                 # Rebuild corrupted battles
                 self.world_map_view.rebuild(self.world_map_view.battles.values())
 
+    def _on_package_selected(self, package) -> None:
+        """Handle package selection callback.
+        
+        Args:
+            package: The selected package containing items or spells.
+        """
+        from progress_manager import progress_manager
+        
+        # Handle package selection (adds items/spells and marks complete)
+        progress_manager.select_package(package)
+        
+        # Rebuild barracks to show new items/spells
+        if hasattr(self, 'barracks') and self.barracks is not None:
+            self.barracks._rebuild()
 
     def create_ui(self) -> None:
         """Create the UI elements for the world map scene."""
@@ -343,6 +375,11 @@ class CampaignScene(Scene):
                 
             # Handle corruption master panel events if it exists
             if self.corruption_congratulations_panel is not None and self.corruption_congratulations_panel.handle_event(event):
+                self.check_panels()
+                continue
+            
+            # Handle package selection panel events if it exists
+            if self.package_selection_panel is not None and self.package_selection_panel.handle_event(event):
                 self.check_panels()
                 continue
 

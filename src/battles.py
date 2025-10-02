@@ -29,15 +29,9 @@ starting_units: Dict[UnitType, int] = {
     UnitType.CORE_DUELIST: 1
 }
 
-starting_items: Dict[ItemType, int] = {
-    item_type: 5
-    for item_type in ItemType
-}
+acquired_items: Dict[ItemType, int] = {}
 
-starting_spells: Dict[SpellType, int] = {
-    spell_type: 5
-    for spell_type in SpellType
-}
+acquired_spells: Dict[SpellType, int] = {}
 
 
 

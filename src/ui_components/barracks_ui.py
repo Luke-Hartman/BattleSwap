@@ -28,16 +28,16 @@ class BarracksUI(UITabContainer):
             self,
             manager: pygame_gui.UIManager,
             starting_units: Dict[UnitType, int],
-            starting_items: Dict[ItemType, int],
-            starting_spells: Dict[SpellType, int],
+            acquired_items: Dict[ItemType, int],
+            acquired_spells: Dict[SpellType, int],
             interactive: bool,
             sandbox_mode: bool,
             current_battle: Optional[battles.Battle] = None,
     ):
         self.manager = manager
         self._units = starting_units.copy()
-        self._items = starting_items.copy()
-        self._spells = starting_spells.copy()
+        self._items = acquired_items.copy()
+        self._spells = acquired_spells.copy()
         self.interactive = interactive
         self.sandbox_mode = sandbox_mode
         self.current_battle = current_battle
@@ -104,11 +104,17 @@ class BarracksUI(UITabContainer):
             tab_index = self.add_tab(faction.name, "faction_tab")
             self.faction_to_tab_index[faction] = tab_index
         
-        items_tab_index = self.add_tab("ITEMS", "items_tab")
-        self.items_tab_index = items_tab_index
+        # Only show items/spells tabs if they have been acquired
+        self.items_tab_index = None
+        self.spells_tab_index = None
         
-        spells_tab_index = self.add_tab("SPELLS", "spells_tab")
-        self.spells_tab_index = spells_tab_index
+        if self._has_acquired_items():
+            items_tab_index = self.add_tab("ITEMS", "items_tab")
+            self.items_tab_index = items_tab_index
+        
+        if self._has_acquired_spells():
+            spells_tab_index = self.add_tab("SPELLS", "spells_tab")
+            self.spells_tab_index = spells_tab_index
         
         # Unified container system
         self.containers: Dict[str, UIScrollingContainer] = {}
@@ -129,6 +135,18 @@ class BarracksUI(UITabContainer):
 
         # Set "ALL" tab as default
         self.switch_current_container(all_tab_index)
+    
+    def _has_acquired_items(self) -> bool:
+        """Check if any items have been acquired (count > 0)."""
+        if self.sandbox_mode:
+            return True  # Always show in sandbox mode
+        return any(count > 0 for count in self._items.values())
+    
+    def _has_acquired_spells(self) -> bool:
+        """Check if any spells have been acquired (count > 0)."""
+        if self.sandbox_mode:
+            return True  # Always show in sandbox mode
+        return any(count > 0 for count in self._spells.values())
 
     def _create_containers(self, padding: int, panel_width: int, content_height: int) -> None:
         """Create all tab containers."""
@@ -159,25 +177,27 @@ class BarracksUI(UITabContainer):
             )
             self.containers[faction.name] = container
         
-        # Create ITEMS tab container
-        items_tab_panel = self.get_tab_container(self.items_tab_index)
-        items_container = UIScrollingContainer(
-            relative_rect=container_rect,
-            manager=self.manager,
-            container=items_tab_panel,
-            allow_scroll_y=False,
-        )
-        self.containers["ITEMS"] = items_container
+        # Create ITEMS tab container (only if tab exists)
+        if self.items_tab_index is not None:
+            items_tab_panel = self.get_tab_container(self.items_tab_index)
+            items_container = UIScrollingContainer(
+                relative_rect=container_rect,
+                manager=self.manager,
+                container=items_tab_panel,
+                allow_scroll_y=False,
+            )
+            self.containers["ITEMS"] = items_container
         
-        # Create SPELLS tab container
-        spells_tab_panel = self.get_tab_container(self.spells_tab_index)
-        spells_container = UIScrollingContainer(
-            relative_rect=container_rect,
-            manager=self.manager,
-            container=spells_tab_panel,
-            allow_scroll_y=False,
-        )
-        self.containers["SPELLS"] = spells_container
+        # Create SPELLS tab container (only if tab exists)
+        if self.spells_tab_index is not None:
+            spells_tab_panel = self.get_tab_container(self.spells_tab_index)
+            spells_container = UIScrollingContainer(
+                relative_rect=container_rect,
+                manager=self.manager,
+                container=spells_tab_panel,
+                allow_scroll_y=False,
+            )
+            self.containers["SPELLS"] = spells_container
 
     def _calculate_panel_dimensions(self, panel_width: int, tab_name: str = "ALL") -> tuple[bool, int]:
         """Calculate panel dimensions based on content for the given tab."""
@@ -221,11 +241,13 @@ class BarracksUI(UITabContainer):
         # Populate faction tabs - all units in each faction
         self._populate_faction_tabs(padding, needs_scrollbar)
         
-        # Populate ITEMS tab - all items regardless of count
-        self._populate_items_tab(padding, needs_scrollbar)
+        # Populate ITEMS tab - only if tab exists
+        if self.items_tab_index is not None:
+            self._populate_items_tab(padding, needs_scrollbar)
         
-        # Populate SPELLS tab - all spells regardless of count
-        self._populate_spells_tab(padding, needs_scrollbar)
+        # Populate SPELLS tab - only if tab exists
+        if self.spells_tab_index is not None:
+            self._populate_spells_tab(padding, needs_scrollbar)
 
     def _populate_all_tab(self, padding: int, needs_scrollbar: bool) -> None:
         """Populate the ALL tab with units and items that have count > 0."""
@@ -371,18 +393,20 @@ class BarracksUI(UITabContainer):
                 x_position += item.size + padding // 2
 
     def _populate_items_tab(self, padding: int, needs_scrollbar: bool) -> None:
-        """Populate the ITEMS tab with all items regardless of count."""
+        """Populate the ITEMS tab with only acquired items (count > 0)."""
         container = self.containers["ITEMS"]
         container_height = container.rect.height
         y_offset = (container_height - ItemCount.size) // 2 if not needs_scrollbar else 0
         
         x_position = 0
-        all_items = sorted(
-            [(item_type, count) for item_type, count in self._items.items()],
+        # Only show items that have been acquired (count > 0) or in sandbox mode
+        acquired_items = sorted(
+            [(item_type, count) for item_type, count in self._items.items() 
+             if count > 0 or self.sandbox_mode],
             key=lambda x: x[0].value
         )
         
-        for index, (item_type, count) in enumerate(all_items):
+        for index, (item_type, count) in enumerate(acquired_items):
             hotkey = str((index + 1) % 10) if index < 10 else None
             item_count = ItemCount(
                 x_pos=x_position,
@@ -407,18 +431,20 @@ class BarracksUI(UITabContainer):
             x_position += item_count.size + padding // 2
 
     def _populate_spells_tab(self, padding: int, needs_scrollbar: bool) -> None:
-        """Populate the SPELLS tab with all spells regardless of count."""
+        """Populate the SPELLS tab with only acquired spells (count > 0)."""
         container = self.containers["SPELLS"]
         container_height = container.rect.height
         y_offset = (container_height - SpellCount.size) // 2 if not needs_scrollbar else 0
         
         x_position = 0
-        all_spells = sorted(
-            [(spell_type, count) for spell_type, count in self._spells.items()],
+        # Only show spells that have been acquired (count > 0) or in sandbox mode
+        acquired_spells = sorted(
+            [(spell_type, count) for spell_type, count in self._spells.items() 
+             if count > 0 or self.sandbox_mode],
             key=lambda x: x[0].value
         )
         
-        for index, (spell_type, count) in enumerate(all_spells):
+        for index, (spell_type, count) in enumerate(acquired_spells):
             hotkey = str((index + 1) % 10) if index < 10 else None
             spell_count = SpellCount(
                 x_pos=x_position,
@@ -441,6 +467,37 @@ class BarracksUI(UITabContainer):
             
             self.entity_items["SPELLS"].append(spell_count)
             x_position += spell_count.size + padding // 2
+
+    def _full_rebuild(self) -> None:
+        """Completely rebuild the barracks UI (including tabs)."""
+        # Store current state
+        current_tab_name = self.get_tab(self.current_container_index)["text"] if hasattr(self, 'current_container_index') else "ALL"
+        
+        # Kill all existing UI elements
+        self.kill()
+        
+        # Recreate the entire barracks UI
+        self.__init__(
+            manager=self.manager,
+            starting_units=self._units,
+            acquired_items=self._items,
+            acquired_spells=self._spells,
+            interactive=self.interactive,
+            sandbox_mode=self.sandbox_mode,
+            current_battle=self.current_battle
+        )
+        
+        # Try to switch back to the same tab if it still exists
+        try:
+            if current_tab_name == "ITEMS" and self.items_tab_index is not None:
+                self.switch_current_container(self.items_tab_index)
+            elif current_tab_name == "SPELLS" and self.spells_tab_index is not None:
+                self.switch_current_container(self.spells_tab_index)
+            else:
+                self.switch_current_container(self.all_tab_index)
+        except:
+            # Fallback to ALL tab if switching fails
+            self.switch_current_container(self.all_tab_index)
 
     def _rebuild(self) -> None:
         """Rebuild the UI when dimensions or content changes."""
@@ -675,12 +732,18 @@ class BarracksUI(UITabContainer):
 
     def add_item(self, item_type: ItemType) -> None:
         """Add an item of the specified type to the barracks."""
+        # Check if this is the first item acquired (need to show items tab)
+        had_no_items = not self._has_acquired_items() and not self.sandbox_mode
+        
         self._items[item_type] += 1
         
         # Check if item needs to be added to ALL tab (was count 0 before)
         was_zero = self._items[item_type] == 1 and not self.sandbox_mode
         
-        if was_zero:
+        if had_no_items:
+            # Need to completely rebuild to add items tab
+            self._full_rebuild()
+        elif was_zero:
             # Need to rebuild to add item to ALL tab
             self._rebuild()
         else:
@@ -712,12 +775,18 @@ class BarracksUI(UITabContainer):
     
     def add_spell(self, spell_type: SpellType) -> None:
         """Add a spell of the specified type to the barracks."""
+        # Check if this is the first spell acquired (need to show spells tab)
+        had_no_spells = not self._has_acquired_spells() and not self.sandbox_mode
+        
         self._spells[spell_type] += 1
         
         # Check if spell needs to be added to ALL tab (was count 0 before)
         was_zero = self._spells[spell_type] == 1 and not self.sandbox_mode
         
-        if was_zero:
+        if had_no_spells:
+            # Need to completely rebuild to add spells tab
+            self._full_rebuild()
+        elif was_zero:
             # Need to rebuild to add spell to ALL tab
             self._rebuild()
         else:
