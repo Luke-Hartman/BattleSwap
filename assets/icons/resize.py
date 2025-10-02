@@ -13,7 +13,8 @@ filenames = [
     'InfectingAreaIcon',
     'SlowingAreaIcon',
     'SummonSkeletonSwordsmenIcon',
-    'HealingAreaIcon'
+    'HealingAreaIcon',
+    'CorruptionIcon'
 ]
 original_size = 16
 for filename in filenames:

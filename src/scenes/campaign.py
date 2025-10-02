@@ -242,10 +242,10 @@ class CampaignScene(Scene):
         
         # Create upgrade button in top right
         button_width = 140
-        button_height = 40
+        button_height = 30
         screen_rect = self.screen.get_rect()
-        upgrade_button_x = screen_rect.width - button_width - 20
-        upgrade_button_y = 20
+        upgrade_button_x = screen_rect.width - button_width - 10
+        upgrade_button_y = 10
         
         self.upgrade_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(upgrade_button_x, upgrade_button_y, button_width, button_height),
