@@ -26,7 +26,7 @@ class SelectedUnitManager:
 
     def __init__(self):
         """Initialize the stats card manager."""
-        self.cards: List[Union[UnitCard, ItemCard, GlossaryEntry]] = []  # Unified list for all cards
+        self.cards: List[Union[UnitCard, ItemCard, SpellCard, GlossaryEntry]] = []  # Unified list for all cards
         self._selected_unit_type: Optional[UnitType] = None
         self._selected_unit_tier: Optional[UnitTier] = None
         self._selected_item_type: Optional[ItemType] = None
@@ -82,6 +82,14 @@ class SelectedUnitManager:
     def create_unit_card_from_link(self, unit_type_str: str, unit_tier: UnitTier) -> bool:
         """Create a unit card from a link click with proper positioning."""
         return self._create_or_focus_unit_card(unit_type_str, unit_tier)
+
+    def create_item_card_from_link(self, item_type: ItemType) -> bool:
+        """Create an item card from a link click with proper positioning."""
+        return self._create_or_focus_item_card(item_type)
+
+    def create_spell_card_from_link(self, spell_type: SpellType) -> bool:
+        """Create a spell card from a link click with proper positioning."""
+        return self._create_or_focus_spell_card(spell_type)
 
     def get_next_card_position(self) -> tuple[int, int]:
         """Get the next available position for a new card, avoiding overlaps and mouse."""
@@ -260,17 +268,14 @@ class SelectedUnitManager:
         
         existing_card = self._find_existing_item_card(item_type)
         if existing_card is not None:
-            if info_mode_manager.info_mode:
-                self.bring_card_to_front_by_index(existing_card.creation_index)
-            else:
-                self.bring_card_to_front(existing_card)
+            self.bring_card_to_front(existing_card)
             return True
         
-        # Create new card
-        position = self.get_next_card_position()
+        card_index = self._get_card_index_for_new_card()
+        position = self._calculate_position_from_index(card_index)
+        
         new_card = self._create_item_card(item_type, position)
         
-        card_index = self._get_next_card_index()
         new_card.creation_index = card_index
         self.cards.append(new_card)
             
@@ -278,7 +283,16 @@ class SelectedUnitManager:
 
     def _cleanup_dead_cards(self) -> None:
         """Remove any dead cards from the cards list."""
-        self.cards = [card for card in self.cards if card.window.alive()]
+        self.cards = [card for card in self.cards if self._is_card_alive(card)]
+    
+    def _is_card_alive(self, card) -> bool:
+        """Check if a card is still alive (not killed)."""
+        if hasattr(card, 'window') and card.window is not None:
+            return card.window.alive()
+        elif hasattr(card, 'card_container') and card.card_container is not None:
+            return card.card_container.alive()
+        else:
+            return True  # Assume alive if we can't determine
 
     def _get_next_card_index(self) -> int:
         """Get the next available index that doesn't overlap existing cards or mouse."""
@@ -408,14 +422,18 @@ class SelectedUnitManager:
         else:
             # Kill all cards
             for card in self.cards:
-                if card.window.alive():
+                if self._is_card_alive(card):
                     card.kill()
             self.cards.clear()
 
-    def bring_card_to_front(self, card: Union[UnitCard, ItemCard, GlossaryEntry]) -> None:
-        """Bring a specific unit card, item card, or glossary entry to the front."""
-        if card.window.alive():
+    def bring_card_to_front(self, card: Union[UnitCard, ItemCard, SpellCard, GlossaryEntry]) -> None:
+        """Bring a specific unit card, item card, spell card, or glossary entry to the front."""
+        if hasattr(card, 'window') and card.window is not None and card.window.alive():
             card.bring_to_front()
+        elif hasattr(card, 'card_container') and card.card_container is not None and card.card_container.alive():
+            # For cards using containers, try to bring the container to front if possible
+            if hasattr(card.card_container, 'bring_to_front'):
+                card.card_container.bring_to_front()
 
     def bring_card_to_front_by_index(self, index: int) -> None:
         """Bring a card to the front by its index in the cards list."""
@@ -472,22 +490,8 @@ class SelectedUnitManager:
                     card.kill()
                     self.cards.remove(card)
         else:
-            # Create or update the item card
-            self._cleanup_dead_cards()
-            
-            existing_card = self._find_existing_item_card(item_type)
-            if existing_card is not None:
-                self.bring_card_to_front(existing_card)
-                return
-            
-            # Calculate position for the item card
-            card_index = self._get_card_index_for_new_card()
-            position = self._calculate_position_from_index(card_index)
-            
-            new_card = self._create_item_card(item_type, position)
-            
-            new_card.creation_index = card_index
-            self.cards.append(new_card)
+            # Use the standardized create or focus method
+            self._create_or_focus_item_card(item_type)
 
     def _create_item_card(self, item_type: ItemType, position: Tuple[float, float]) -> ItemCard:
         """Create an item card with all information populated."""
@@ -505,6 +509,25 @@ class SelectedUnitManager:
             if isinstance(card, SpellCard) and card.spell_type == spell_type:
                 return card
         return None
+
+    def _create_or_focus_spell_card(self, spell_type: SpellType) -> bool:
+        """Create a new spell card or bring existing one to front."""
+        self._cleanup_dead_cards()
+        
+        existing_card = self._find_existing_spell_card(spell_type)
+        if existing_card is not None:
+            self.bring_card_to_front(existing_card)
+            return True
+        
+        card_index = self._get_card_index_for_new_card()
+        position = self._calculate_position_from_index(card_index)
+        
+        new_card = self._create_spell_card(spell_type, position)
+        
+        new_card.creation_index = card_index
+        self.cards.append(new_card)
+            
+        return True
 
     def _create_spell_card(self, spell_type: SpellType, position: Tuple[float, float]) -> SpellCard:
         """Create a spell card with all information populated."""
@@ -531,23 +554,7 @@ class SelectedUnitManager:
                     card.kill()
                     self.cards.remove(card)
         else:
-            # Create or update the spell card
-            self._cleanup_dead_cards()
-            
-            existing_card = self._find_existing_spell_card(spell_type)
-            if existing_card is not None:
-                if info_mode_manager.info_mode:
-                    self.bring_card_to_front_by_index(existing_card.creation_index)
-                else:
-                    self.bring_card_to_front(existing_card)
-                return
-            
-            # Create new card
-            position = self.get_next_card_position()
-            new_card = self._create_spell_card(spell_type, position)
-            
-            card_index = self._get_next_card_index()
-            new_card.creation_index = card_index
-            self.cards.append(new_card)
+            # Use the standardized create or focus method
+            self._create_or_focus_spell_card(spell_type)
 
 selected_unit_manager = SelectedUnitManager()

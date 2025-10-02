@@ -61,8 +61,7 @@ class SpellCount(BaseCountButton):
             selected_unit_manager.set_selected_spell_type(self.spell_type)
             return True
         elif event.type == pygame_gui.UI_BUTTON_ON_UNHOVERED and event.ui_element == self.button:
-            # Clear hover preview if not actually selected
-            if selected_unit_manager._selected_spell_type == self.spell_type:
-                selected_unit_manager.set_selected_spell_type(None)
+            # Clear hover preview
+            selected_unit_manager.set_selected_spell_type(None)
             return True
         return False
