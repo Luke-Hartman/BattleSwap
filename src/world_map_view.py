@@ -34,7 +34,7 @@ from hex_grid import (
 )
 from processors.targetting_processor import TargettingProcessor
 from processors.transparency_processor import TransparencyProcessor
-from scene_utils import draw_polygon, use_world, get_hovered_unit
+from scene_utils import draw_polygon, use_world, get_hovered_unit, get_hovered_spell
 from events import PLAY_SOUND, PlaySoundEvent, emit_event
 import timing
 from components.focus import Focus
@@ -169,13 +169,15 @@ class WorldMapView:
         return next((battle for battle in self.battles.values() if battle.hex_coords == hex_coords), None)
 
     def focus_hovered_unit(self) -> None:
-        """Focus the unit under the mouse cursor."""
+        """Focus the unit or spell under the mouse cursor."""
         if not self.manager.get_hovering_any_element():
             battle = self.get_battle_from_hex(self.get_hex_at_mouse_pos())
             if battle is None:
                 return
             with use_world(battle.id):
                 hovered_unit = get_hovered_unit(self.camera)
+                hovered_spell = get_hovered_spell(self.camera)
+                
                 if hovered_unit is not None:
                     esper.add_component(hovered_unit, Focus())
                     unit_type = esper.component_for_entity(hovered_unit, UnitTypeComponent).type
@@ -189,8 +191,13 @@ class WorldMapView:
                         items = item_component.items
                     
                     selected_unit_manager.set_selected_unit(unit_type, unit_tier, items)
+                elif hovered_spell is not None:
+                    esper.add_component(hovered_spell, Focus())
+                    spell_type = esper.component_for_entity(hovered_spell, SpellComponent).spell_type
+                    selected_unit_manager.set_selected_spell_type(spell_type)
                 else:
                     selected_unit_manager.set_selected_unit(None, None, None)
+                    selected_unit_manager.set_selected_spell_type(None)
 
     # ------------------------------
     # Public API

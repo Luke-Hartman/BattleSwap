@@ -165,6 +165,33 @@ def get_hovered_unit(camera: Camera) -> Optional[int]:
                 pass
     return candidate_unit_id
 
+def get_hovered_spell(camera: Camera) -> Optional[int]:
+    """Return the entity ID of the spell under the mouse cursor.
+    
+    Args:
+        camera: Camera instance for coordinate transforms
+        
+    Returns:
+        Entity ID of the hovered spell, or None if no spell is hovered
+    """
+    mouse_pos = pygame.mouse.get_pos()
+    world_mouse_pos = camera.screen_to_world(*mouse_pos)
+    candidate_spell_id = None
+    highest_y = -float('inf')
+    
+    for ent, (pos, spell_component) in esper.get_components(Position, SpellComponent):
+        if esper.has_component(ent, Placing):
+            continue
+            
+        # Check if mouse is within the spell's handle (not the full radius)
+        distance = ((world_mouse_pos[0] - pos.x) ** 2 + (world_mouse_pos[1] - pos.y) ** 2) ** 0.5
+        if distance <= gc.SPELL_HANDLE_SIZE:
+            if pos.y > highest_y:
+                highest_y = pos.y
+                candidate_spell_id = ent
+                
+    return candidate_spell_id
+
 def get_placement_pos(
     mouse_pos: Tuple[int, int],
     battle_id: str,
