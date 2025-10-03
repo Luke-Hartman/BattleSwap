@@ -83,22 +83,9 @@ ALLOWED_UNIT_TYPES = [
     UnitType.ZOMBIE_FIGHTER,
 ]
 
-ALLOWED_ITEM_TYPES = [
-    ItemType.EXTRA_HEALTH,
-    ItemType.EXPLODE_ON_DEATH,
-    ItemType.UPGRADE_ARMOR,
-    ItemType.DAMAGE_AURA,
-    ItemType.EXTRA_MOVEMENT_SPEED,
-    ItemType.HEAL_ON_KILL,
-    ItemType.INFECT_ON_HIT,
-    ItemType.HUNTER,
-]
+ALLOWED_ITEM_TYPES = list(ItemType)
 
-ALLOWED_SPELL_TYPES = [
-    SpellType.METEOR_SHOWER,
-    SpellType.SUMMON_SKELETON_SWORDSMEN,
-    SpellType.INFECTING_AREA,
-]
+ALLOWED_SPELL_TYPES = list(SpellType)
 
 
 
@@ -171,6 +158,16 @@ class Individual:
     ) -> Fitness:
         battle = get_battle_id(self.battle_id)
         enemy_placements = battle.enemies
+        
+        # Convert hex coordinates to world coordinates if hex_coords is available
+        if battle.hex_coords is not None:
+            from hex_grid import axial_to_world
+            world_x, world_y = axial_to_world(*battle.hex_coords)
+            # Convert enemy placements from relative to world coordinates
+            enemy_placements = [
+                (unit_type, (position[0] + world_x, position[1] + world_y), items)
+                for unit_type, position, items in enemy_placements
+            ]
         def _get_team_health(team_type: TeamType) -> float:
             total_health = 0
             for ent, (health, team, unit_state) in esper.get_components(Health, Team, UnitState):
@@ -182,7 +179,9 @@ class Individual:
             ally_placements=self.unit_placements,
             enemy_placements=enemy_placements,
             max_duration=max_duration,
+            hex_coords=battle.hex_coords if battle.hex_coords is not None else (0, 0),
             corruption_powers=battle.corruption_powers if use_powers else [],
+            spell_placements=self.spell_placements,
             post_battle_callback=lambda outcome: Fitness(
                 outcome=outcome,
                 points=self.points,
@@ -309,19 +308,21 @@ class Population:
             str += f"\t{unit_type:<20}: {count:<5}\n"
         return str
 
-def _get_random_legal_position(team_type: TeamType) -> Tuple[float, float]:
+def _get_random_legal_position(team_type: TeamType, hex_coords: Tuple[int, int], battle_id: str) -> Tuple[float, float]:
     """Generate a random position within the legal placement area.
     
     Args:
         team_type: The team type to get legal area for.
+        hex_coords: The hex coordinates to use for the legal area.
+        battle_id: The battle ID to use for the legal area.
         
     Returns:
         A tuple of (x, y) coordinates within the legal area.
     """
     # Get the legal placement area for the team
     legal_area = get_legal_placement_area(
-        battle_id="unused",
-        hex_coords=(0, 0),
+        battle_id=battle_id,
+        hex_coords=hex_coords,
         required_team=team_type,
         include_units=False,
     )
@@ -358,6 +359,48 @@ def _get_random_spell_position(battle_id: str, hex_coords: Tuple[int, int]) -> T
     # If we can't find a valid position, return center of battlefield
     hex_center_x, hex_center_y = axial_to_world(*hex_coords)
     return (hex_center_x, hex_center_y)
+
+def _validate_team1_positions(individual: 'Individual') -> bool:
+    """Validate that all team 1 units and spells are in legal positions.
+    
+    Args:
+        individual: The individual to validate
+        
+    Returns:
+        True if all positions are legal, False otherwise
+    """
+    # Get the same battle context as the mutation functions
+    battle = get_battle_id(individual.battle_id)
+    hex_coords = battle.hex_coords or (0, 0)
+    
+    # Get legal placement areas for team 1 (without considering existing units as obstacles)
+    unit_legal_area = get_legal_placement_area(
+        battle_id=individual.battle_id,
+        hex_coords=hex_coords,
+        required_team=TeamType.TEAM1,
+        include_units=False,
+        additional_unit_positions=None
+    )
+    
+    spell_legal_area = get_legal_spell_placement_area(
+        battle_id=individual.battle_id,
+        hex_coords=hex_coords
+    )
+    
+    # Check all unit positions
+    for unit_type, position, _ in individual.unit_placements:
+        point = shapely.Point(position[0], position[1])
+        if not unit_legal_area.covers(point):
+            return False
+    
+    # Check all spell positions for team 1 spells
+    for spell_type, position, team_value in individual.spell_placements:
+        if team_value == TeamType.TEAM1.value:
+            point = shapely.Point(position[0], position[1])
+            if not spell_legal_area.covers(point):
+                return False
+    
+    return True
 
 def generate_random_army(target_cost: int, battle_id: str, hex_coords: Tuple[int, int], max_decrease: int = 100) -> Tuple[List[Tuple[UnitType, Tuple[float, float], List[ItemType]]], List[Tuple[SpellType, Tuple[float, float], int]]]:
     current_cost = 0
@@ -396,7 +439,7 @@ def generate_random_army(target_cost: int, battle_id: str, hex_coords: Tuple[int
             unit_placements = unit_placements[:delete_index] + unit_placements[delete_index + 1:]
         else:
             unit_type = _get_random_legal_unit_type()
-            position = _get_random_legal_position(TeamType.TEAM1)
+            position = _get_random_legal_position(TeamType.TEAM1, hex_coords, battle_id)
             
             # Randomly add 0-2 items to the unit
             items = []
@@ -421,8 +464,10 @@ class Mutation(ABC):
 class AddRandomUnit(Mutation):
 
     def __call__(self, individual: Individual) -> Individual:
+        battle = get_battle_id(individual.battle_id)
+        hex_coords = battle.hex_coords or (0, 0)
         new_unit = _get_random_legal_unit_type()
-        new_position = _get_random_legal_position(TeamType.TEAM1)
+        new_position = _get_random_legal_position(TeamType.TEAM1, hex_coords, individual.battle_id)
         index = random.randint(0, len(individual.unit_placements))
         
         # Randomly add items to the new unit
@@ -444,7 +489,9 @@ class RemoveRandomUnit(Mutation):
         index = random.randint(0, len(individual.unit_placements) - 1)
         new_unit_placements = individual.unit_placements[:index] + individual.unit_placements[index + 1:]
         if len(new_unit_placements) == 0:
-            return Individual(individual.battle_id, [(_get_random_legal_unit_type(), _get_random_legal_position(TeamType.TEAM1), [])], individual.spell_placements)
+            battle = get_battle_id(individual.battle_id)
+            hex_coords = battle.hex_coords or (0, 0)
+            return Individual(individual.battle_id, [(_get_random_legal_unit_type(), _get_random_legal_position(TeamType.TEAM1, hex_coords, individual.battle_id), [])], individual.spell_placements)
         return Individual(individual.battle_id, new_unit_placements, individual.spell_placements)
 
 class RandomizeUnitPosition(Mutation):
@@ -452,7 +499,9 @@ class RandomizeUnitPosition(Mutation):
     def __call__(self, individual: Individual) -> Individual:
         if len(individual.unit_placements) == 0:
             return individual
-        new_position = _get_random_legal_position(TeamType.TEAM1)
+        battle = get_battle_id(individual.battle_id)
+        hex_coords = battle.hex_coords or (0, 0)
+        new_position = _get_random_legal_position(TeamType.TEAM1, hex_coords, individual.battle_id)
         index = random.randint(0, len(individual.unit_placements) - 1)
         unit_to_mutate = individual.unit_placements[index]
         new_unit_placements = individual.unit_placements[:index] + [(unit_to_mutate[0], new_position, unit_to_mutate[2])] + individual.unit_placements[index + 1:]
@@ -468,16 +517,44 @@ class RandomizeUnitType(Mutation):
             return individual
         index = random.randint(0, len(individual.unit_placements) - 1)
         unit_to_mutate = individual.unit_placements[index]
-        current_value = unit_values[unit_to_mutate[0]]
+        original_unit_type, position, original_items = unit_to_mutate
+        
+        # Calculate total cost of original unit + items
+        original_cost = unit_values[original_unit_type] + sum(item_values[item_type] for item_type in original_items)
+        
+        # Find legal unit options within the cost constraint
         legal_options = [
             unit_type
             for unit_type in ALLOWED_UNIT_TYPES
-            if unit_type != unit_to_mutate[0] and current_value - self.max_decrease <= unit_values[unit_type] <= current_value
+            if unit_type != original_unit_type and unit_values[unit_type] <= original_cost
         ]
         if not legal_options:
             return individual
+        
         new_unit = random.choice(legal_options)
-        new_unit_placements = individual.unit_placements[:index] + [(new_unit, unit_to_mutate[1], unit_to_mutate[2])] + individual.unit_placements[index + 1:]
+        remaining_budget = original_cost - unit_values[new_unit]
+        
+        # Generate random items up to the remaining budget
+        new_items = []
+        if remaining_budget > 0:
+            # Randomly choose how many items to add (0-3 items)
+            max_items = min(3, remaining_budget // min(item_values.values()) if item_values else 0)
+            num_items = random.randint(0, max_items)
+            
+            for _ in range(num_items):
+                # Get affordable items
+                affordable_items = [
+                    item_type for item_type in ALLOWED_ITEM_TYPES
+                    if item_values[item_type] <= remaining_budget
+                ]
+                if not affordable_items:
+                    break
+                
+                item_type = random.choice(affordable_items)
+                new_items.append(item_type)
+                remaining_budget -= item_values[item_type]
+        
+        new_unit_placements = individual.unit_placements[:index] + [(new_unit, position, new_items)] + individual.unit_placements[index + 1:]
         return Individual(individual.battle_id, new_unit_placements, individual.spell_placements)
 
 class ApplyRandomMutations(Mutation):
@@ -586,6 +663,34 @@ class RemoveRandomSpell(Mutation):
         return Individual(individual.battle_id, individual.unit_placements, new_spell_placements)
 
 
+class RemoveRandomItem(Mutation):
+
+    def __call__(self, individual: Individual) -> Individual:
+        # Find all units that have items
+        units_with_items = [
+            (i, unit_type, position, items) 
+            for i, (unit_type, position, items) in enumerate(individual.unit_placements)
+            if items
+        ]
+        
+        if not units_with_items:
+            return individual
+        
+        # Select a random unit with items
+        unit_index, unit_type, position, items = random.choice(units_with_items)
+        
+        # Remove the first instance of a random item from this unit
+        item_to_remove = random.choice(items)
+        new_items = list(items)  # Create a copy
+        new_items.remove(item_to_remove)  # Remove only the first instance
+        
+        # Create new unit placements with the updated items
+        new_unit_placements = list(individual.unit_placements)
+        new_unit_placements[unit_index] = (unit_type, position, new_items)
+        
+        return Individual(individual.battle_id, new_unit_placements, individual.spell_placements)
+
+
 class ReplaceSubarmy(Mutation):
 
     def __init__(self, max_decrease: int = 100):
@@ -599,12 +704,34 @@ class ReplaceSubarmy(Mutation):
         random.shuffle(kept_unit_placements)
         index = random.randint(0, len(kept_unit_placements) - 1)
         kept_unit_placements = kept_unit_placements[:index]
-        new_score = sum(unit_values[unit_type] for unit_type, _, _ in kept_unit_placements)
+
+        if individual.spell_placements:
+            kept_spell_placements = list(individual.spell_placements)
+            random.shuffle(kept_spell_placements)
+            index = random.randint(0, len(kept_spell_placements) - 1)
+            kept_spell_placements = kept_spell_placements[:index]
+        else:
+            kept_spell_placements = []
+        
+        # Calculate cost of kept units including items
+        kept_unit_cost = sum(
+            unit_values[unit_type] + sum(item_values[item_type] for item_type in items)
+            for unit_type, _, items in kept_unit_placements
+        )
+
+        kept_spell_cost = sum(spell_values[spell_type] for spell_type, _, _ in kept_spell_placements)
+        
+        # Replacement budget = original total - kept unit cost
+        # This allows the new subarmy to include both units and spells
+        replacement_budget = original_score - kept_unit_cost - kept_spell_cost
 
         battle = get_battle_id(individual.battle_id)
         hex_coords = battle.hex_coords or (0, 0)  # Default to (0,0) if no hex coords
-        new_subarmy_unit_placements, new_subarmy_spell_placements = generate_random_army(original_score - new_score, individual.battle_id, hex_coords, self.max_decrease)
-        return Individual(individual.battle_id, kept_unit_placements + new_subarmy_unit_placements, individual.spell_placements + new_subarmy_spell_placements)
+        new_subarmy_unit_placements, new_subarmy_spell_placements = generate_random_army(replacement_budget, individual.battle_id, hex_coords, self.max_decrease)
+        
+        # Return with kept units + new subarmy units, and new subarmy spells
+        # The new subarmy spells replace the original spells
+        return Individual(individual.battle_id, kept_unit_placements + new_subarmy_unit_placements, kept_spell_placements + new_subarmy_spell_placements)
 
 
 class MoveNextToAlly(Mutation):
@@ -629,9 +756,19 @@ class MoveNextToAlly(Mutation):
                 random.gauss(random_other_ally[1][0], self.noise_scale),
                 random.gauss(random_other_ally[1][1], self.noise_scale)
             )
+        # Clip to legal placement area for Team 1 to avoid illegal positions
+        battle = get_battle_id(individual.battle_id)
+        hex_coords = battle.hex_coords or (0, 0)
+        legal_area = get_legal_placement_area(
+            battle_id=individual.battle_id,
+            hex_coords=hex_coords,
+            required_team=TeamType.TEAM1,
+            include_units=False,
+        )
+        clipped_position = clip_to_polygon(legal_area, new_position[0], new_position[1])
         return Individual(
             individual.battle_id,
-            individual.unit_placements[:random_ally_index] + [(random_ally[0], new_position, random_ally[2])] + individual.unit_placements[random_ally_index + 1:],
+            individual.unit_placements[:random_ally_index] + [(random_ally[0], clipped_position, random_ally[2])] + individual.unit_placements[random_ally_index + 1:],
             individual.spell_placements
         )
 
@@ -803,6 +940,10 @@ class EvolutionStrategy(Evolution):
             child = parent
             for mutation in mutations:
                 child = mutation(child)
+                # Validate that all team 1 units/spells are in legal positions after mutation
+                if not _validate_team1_positions(child):
+                    print(f"Validation failed after mutation: {mutation.__class__.__name__}")
+                    assert False, f"Mutation {mutation.__class__.__name__} resulted in illegal positions for team 1"
             if child not in next_generation:
                 mutation_pairs.extend((mutation, parent, child) for mutation in mutations)
                 next_generation.add(child)
@@ -1329,6 +1470,7 @@ def main():
             ReplaceSubarmy(),
             RandomizeUnitType(),
             MoveNextToAlly(noise_scale=20),
+            RemoveRandomItem(),
         ],
         selector=TournamentSelection(tournament_size=TOURNAMENT_SIZE) if TOURNAMENT_SIZE is not None else UniformSelection(),
         parents_per_generation=PARENTS_PER_GENERATION,

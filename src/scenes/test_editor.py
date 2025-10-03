@@ -430,6 +430,7 @@ class TestEditorScene(Scene):
             ally_placements=test.allies,
             enemy_placements=test.enemies,
             max_duration=60,  # 60 second timeout
+            hex_coords=test.hex_coords if test.hex_coords is not None else (0, 0),
         )
 
         if outcome == BattleOutcome.TEAM1_VICTORY:

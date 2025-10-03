@@ -24,7 +24,7 @@ from components.status_effect import DamageOverTime, ZombieInfection
 from game_constants import gc
 from unit_condition import UnitCondition
 
-class ItemType(Enum):
+class ItemType(str, Enum):
     """Types of items that can be equipped to units."""
     EXTRA_HEALTH = "extra_health"
     EXPLODE_ON_DEATH = "EXPLODE_ON_DEATH"

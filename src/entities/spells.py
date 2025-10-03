@@ -282,8 +282,8 @@ def create_healing_area_spell(
 ) -> int:
     """Create a Healing Area spell entity.
     
-    This spell creates a temporary aura on the ground that heals all living units
-    in the area, both allies and enemies.
+    This spell creates a temporary aura on the ground that heals all living allies
+    in the area.
     
     Args:
         x: X coordinate to place the spell at
@@ -298,7 +298,7 @@ def create_healing_area_spell(
     
     # Import the effects we need
     from effects import CreatesTemporaryAura, AppliesStatusEffect, Recipient
-    from unit_condition import Alive
+    from unit_condition import All, Alive, OnTeam
     from components.status_effect import Healing
     
     # Create the healing area effect
@@ -318,7 +318,7 @@ def create_healing_area_spell(
         color=(0, 255, 0),  # Green color for healing aura
         period=gc.DEFAULT_AURA_PERIOD,
         owner_condition=Always(),  # Always active (no owner condition needed)
-        unit_condition=Alive(),  # Only affect living units
+        unit_condition=All([Alive(), OnTeam(team=team)]),  # Only affect living allies
         recipient=Recipient.PARENT,  # Create aura at the spell's position
     )
     

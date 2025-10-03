@@ -24,6 +24,7 @@ from shapely.ops import nearest_points
 from progress_manager import HexLifecycleState, progress_manager
 
 LARGE_NUMBER = 10000
+SMALL_GEOMETRY_TOLERANCE = 1e-6
 
 def draw_grid(
     screen: pygame.Surface,
@@ -367,9 +368,12 @@ def clip_to_polygon(
     y: float,
 ) -> Tuple[float, float]:
     point = shapely.Point(x, y)
-    if polygon.contains(point):
+    if polygon.covers(point):
         return (x, y)
-    result = nearest_points(point, polygon)[1]
+    # Shrink slightly to avoid snapping exactly to boundaries due to precision
+    shrunk_polygon = polygon.buffer(-SMALL_GEOMETRY_TOLERANCE)
+    result = nearest_points(point, shrunk_polygon)[1]
+    assert polygon.covers(shapely.Point(result.x, result.y))
     return (result.x, result.y)
 
 def is_drawable(polygon: shapely.Polygon) -> bool:

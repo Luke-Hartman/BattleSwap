@@ -1256,6 +1256,7 @@ class SetupBattleScene(Scene):
                             ally_placements=get_unit_placements(TeamType.TEAM1, self.battle),
                             enemy_placements=get_unit_placements(TeamType.TEAM2, self.battle),
                             max_duration=60,  # 60 second timeout
+                            hex_coords=self.battle.hex_coords if self.battle.hex_coords is not None else (0, 0),
                             corruption_powers=self.battle.corruption_powers,
                             spell_placements=self.battle.spells,
                         )

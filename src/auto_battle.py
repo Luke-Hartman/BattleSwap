@@ -137,6 +137,7 @@ def simulate_battle(
     ally_placements: List[Tuple[UnitType, Tuple[float, float], List]],
     enemy_placements: List[Tuple[UnitType, Tuple[float, float], List]],
     max_duration: float,
+    hex_coords: Tuple[int, int],
     corruption_powers: Optional[List[CorruptionPower]] = None,
     spell_placements: Optional[List[Tuple]] = None,
     post_battle_callback: Optional[Callable[[BattleOutcome], Any]] = None,
@@ -147,6 +148,7 @@ def simulate_battle(
         ally_placements: List of (unit_type, position, items) tuples for team 1.
         enemy_placements: List of (unit_type, position, items) tuples for team 2.
         max_duration: Maximum duration for the battle in seconds.
+        hex_coords: Hex coordinates (q, r) for the battle location.
         corruption_powers: Optional list of corruption powers to apply to units.
         spell_placements: Optional list of (spell_type, position, team) tuples for spells.
         post_battle_callback: Optional callback to be called after the battle.
@@ -174,7 +176,7 @@ def simulate_battle(
     
     # Run the battle simulation
     outcome = None
-    auto_battle = AutoBattle(max_duration, hex_coords=(0, 0))
+    auto_battle = AutoBattle(max_duration, hex_coords=hex_coords)
     while outcome is None:
         esper.process(1/30)
         outcome = auto_battle.update(1/30)
@@ -197,6 +199,7 @@ def simulate_battle_with_dependencies(
     ally_placements: List[Tuple[UnitType, Tuple[float, float], List]],
     enemy_placements: List[Tuple[UnitType, Tuple[float, float], List]],
     max_duration: float,
+    hex_coords: Tuple[int, int],
     corruption_powers: Optional[List[CorruptionPower]] = None,
     spell_placements: Optional[List[Tuple]] = None,
     post_battle_callback: Optional[Callable[[BattleOutcome], Any]] = None,
@@ -219,4 +222,4 @@ def simulate_battle_with_dependencies(
     load_visual_sheets()
     combat_handler = CombatHandler()
     state_machine = StateMachine()
-    return simulate_battle(ally_placements, enemy_placements, max_duration, corruption_powers, spell_placements, post_battle_callback)
+    return simulate_battle(ally_placements, enemy_placements, max_duration, hex_coords, corruption_powers, spell_placements, post_battle_callback)

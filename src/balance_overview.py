@@ -1,16 +1,67 @@
 from collections import Counter
 import multiprocessing
 import os
-from typing import Dict
+from typing import Dict, List, Tuple
 
 from battles import get_battle_id, get_battles
 from battle_solver import (
     ALLOWED_UNIT_TYPES, EvolutionStrategy, AddRandomUnit, MoveNextToAlly, PlotGroup, Plotter, Population, RemoveRandomUnit, 
     PerturbPosition, RandomizeUnitPosition, RandomizeUnitType, ReplaceSubarmy, TournamentSelection, UniformSelection,
     AllCountsPlotter, AllValuesPlotter,
-    RandomizeSpellPosition, PerturbSpellPosition, AddRandomSpell, RemoveRandomSpell, random_population
+    RandomizeSpellPosition, PerturbSpellPosition, AddRandomSpell, RemoveRandomSpell, RemoveRandomItem, random_population, Individual
 )
 from point_values import unit_values
+from components.unit_type import UnitType
+from entities.items import ItemType
+from components.spell_type import SpellType
+
+
+def create_detailed_solution_description(individual: Individual) -> str:
+    """
+    Create a detailed description of a solution showing units with their items and spells used.
+    Aggregates multiple units of the same type with the same items.
+    """
+    # Group units by type and items
+    unit_groups: Dict[Tuple[UnitType, Tuple[ItemType, ...]], int] = {}
+    
+    for unit_type, _, items in individual.unit_placements:
+        # Sort items for consistent grouping
+        items_tuple = tuple(sorted(items))
+        key = (unit_type, items_tuple)
+        unit_groups[key] = unit_groups.get(key, 0) + 1
+    
+    # Create unit descriptions
+    unit_descriptions = []
+    for (unit_type, items_tuple), count in sorted(unit_groups.items(), key=lambda x: (x[0][0].name, x[1])):
+        if items_tuple:
+            items_str = " with " + ", ".join(item.value.replace("_", " ").title() for item in items_tuple)
+        else:
+            items_str = ""
+        
+        if count > 1:
+            unit_descriptions.append(f"{count} {unit_type.value.replace('_', ' ').title()}{items_str}")
+        else:
+            unit_descriptions.append(f"{unit_type.value.replace('_', ' ').title()}{items_str}")
+    
+    # Create spell descriptions
+    spell_descriptions = []
+    if individual.spell_placements:
+        spell_counts = Counter(spell_type for spell_type, _, _ in individual.spell_placements)
+        for spell_type, count in sorted(spell_counts.items(), key=lambda x: x[0].name):
+            if count > 1:
+                spell_descriptions.append(f"{count} {spell_type.value.replace('_', ' ').title()}")
+            else:
+                spell_descriptions.append(spell_type.value.replace('_', ' ').title())
+    
+    # Combine descriptions
+    parts = []
+    if unit_descriptions:
+        parts.append(", ".join(unit_descriptions))
+    if spell_descriptions:
+        parts.append("Spells: " + ", ".join(spell_descriptions))
+    
+    return " | ".join(parts)
+
 
 class AllBattlesPlotter:
 
@@ -82,6 +133,7 @@ def run_balance_overview():
             PerturbSpellPosition(noise_scale=10),
             PerturbSpellPosition(noise_scale=100),
             RemoveRandomSpell(),
+            RemoveRandomItem(),
         ],
         selector=TournamentSelection(tournament_size=TOURNAMENT_SIZE) if TOURNAMENT_SIZE is not None else UniformSelection(),
         parents_per_generation=PARENTS_PER_GENERATION,
@@ -93,6 +145,7 @@ def run_balance_overview():
     )
     # Get all non-test battles
     battles = [b for b in get_battles() if not b.is_test and sum(unit_values[unit_type] for unit_type, _, _ in b.enemies) >= MINIMUM_POINTS]
+    # battles = [get_battle_id("Behold the Wizard's Power!")]
     print(f"Initializing populations for {len(battles)} non-test battles")
     
     # Initialize populations for all battles
@@ -160,7 +213,9 @@ def run_balance_overview():
                 # Get solution points
                 points_used = best_individual.points
                 
-                print(f"  Best solution: {best_individual}")
+                # Create detailed solution description
+                solution_description = create_detailed_solution_description(best_individual)
+                print(f"  Best solution: {solution_description}")
                 print(f"  Points: {points_used}")
             else:
                 print("  No solution found")

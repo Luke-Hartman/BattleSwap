@@ -72,7 +72,7 @@ class SpellCard(BaseCard):
         elif spell_type == SpellType.HEALING_AREA:
             return SpellData(
                 name="Healing Area",
-                description=f"Creates a {gc.SPELL_HEALING_AREA_DURATION}-second aura with radius {gc.SPELL_HEALING_AREA_RADIUS} that heals all living units for {gc.SPELL_HEALING_AREA_HEALING_DPS} HP per second."
+                description=f"Creates a {gc.SPELL_HEALING_AREA_DURATION}-second aura with radius {gc.SPELL_HEALING_AREA_RADIUS} that heals all living allies for {gc.SPELL_HEALING_AREA_HEALING_DPS} HP per second."
             )
         elif spell_type == SpellType.SLOWING_AREA:
             return SpellData(

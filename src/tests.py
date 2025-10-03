@@ -29,7 +29,7 @@ def run_tests() -> bool:
     failed = []
     for battle in get_battles():
         if battle.is_test:
-            outcome = simulate_battle(battle.allies, battle.enemies, max_duration=60)
+            outcome = simulate_battle(battle.allies, battle.enemies, max_duration=60, hex_coords=battle.hex_coords if battle.hex_coords is not None else (0, 0))
             print(f"{battle.id}: {outcome}")
             if outcome != BattleOutcome.TEAM1_VICTORY:
                 failed.append(battle.id)
@@ -43,7 +43,7 @@ def run_tests() -> bool:
         if battle.best_solution is not None:
             points_used = sum(unit_values[unit_type] for unit_type, _ in battle.best_solution)
             # Run a simulation to check that the best_solution is a valid solution
-            outcome = simulate_battle(battle.best_solution, battle.enemies, max_duration=float("inf"))
+            outcome = simulate_battle(battle.best_solution, battle.enemies, max_duration=float("inf"), hex_coords=battle.hex_coords if battle.hex_coords is not None else (0, 0))
             print(f"{battle.id}: {outcome}")
             if outcome != BattleOutcome.TEAM1_VICTORY:
                 print(f"Battle {battle.id} has a best_solution that doesn't win.")
