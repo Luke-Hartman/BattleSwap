@@ -8,6 +8,8 @@ from components.team import Team, TeamType
 from components.unit_state import State, UnitState
 from components.unit_tier import UnitTier
 from components.unit_type import UnitType, UnitTypeComponent
+from components.corpse_timer import CorpseTimer
+from game_constants import gc
 from entities.items import ItemType
 
 from corruption_powers import CorruptionPower
@@ -94,20 +96,48 @@ class AutoBattle:
 
         team1_alive = False
         team2_alive = False
+        team1_all_dead_long_enough = True
+        team2_all_dead_long_enough = True
+        
+        # Check each unit to determine alive status and if teams have been dead long enough
         for ent, (unit_state, team) in esper.get_components(UnitState, Team):
-            if team.type == TeamType.TEAM1 and unit_state.state != State.DEAD:
-                team1_alive = True
-            elif team.type == TeamType.TEAM2 and unit_state.state != State.DEAD:
-                team2_alive = True
-            if team1_alive and team2_alive:
-                break
+            if team.type == TeamType.TEAM1:
+                if unit_state.state != State.DEAD:
+                    team1_alive = True
+                    team1_all_dead_long_enough = False
+                elif esper.has_component(ent, CorpseTimer):
+                    corpse_timer = esper.component_for_entity(ent, CorpseTimer)
+                    if corpse_timer.time_dead < gc.CORPSE_TIMER_DURATION:
+                        team1_all_dead_long_enough = False
+            elif team.type == TeamType.TEAM2:
+                if unit_state.state != State.DEAD:
+                    team2_alive = True
+                    team2_all_dead_long_enough = False
+                elif esper.has_component(ent, CorpseTimer):
+                    corpse_timer = esper.component_for_entity(ent, CorpseTimer)
+                    if corpse_timer.time_dead < gc.CORPSE_TIMER_DURATION:
+                        team2_all_dead_long_enough = False
 
-        if team1_alive and not team2_alive:
-            self.battle_outcome = BattleOutcome.TEAM1_VICTORY
-        elif not team1_alive and team2_alive:
-            self.battle_outcome = BattleOutcome.TEAM2_VICTORY
-        elif not team1_alive and not team2_alive:
-            self.battle_outcome = BattleOutcome.TEAM1_VICTORY
+        # Check if battle should end (either team has been dead long enough)
+        if team1_all_dead_long_enough or team2_all_dead_long_enough:
+            print(f"Team 1 alive: {team1_alive}, Team 2 alive: {team2_alive}")
+            print(f"Team 1 all dead long enough: {team1_all_dead_long_enough}, Team 2 all dead long enough: {team2_all_dead_long_enough}")
+            # Print out the corpse timers and the team for every unit with a corpse timer
+            for ent, (unit_state, team) in esper.get_components(UnitState, Team):
+                if esper.has_component(ent, CorpseTimer):
+                    corpse_timer = esper.component_for_entity(ent, CorpseTimer)
+                    print(f"Corpse timer: {corpse_timer.time_dead}, Team: {team.type}")
+            # Case 1: Team with living units wins
+            if team2_alive:
+                assert not team1_alive
+                self.battle_outcome = BattleOutcome.TEAM2_VICTORY
+            elif team1_alive:
+                assert not team2_alive
+                self.battle_outcome = BattleOutcome.TEAM1_VICTORY
+            # Case 2: Team 1 wins if both teams are dead
+            else:
+                assert not team1_alive and not team2_alive
+                self.battle_outcome = BattleOutcome.TEAM1_VICTORY
         return self.battle_outcome
 
 def simulate_battle(

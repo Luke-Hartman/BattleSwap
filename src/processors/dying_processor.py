@@ -1,6 +1,7 @@
 """Processor for units that are dying."""
 
 import esper
+from components.corpse_timer import CorpseTimer
 from components.dying import Dying
 from components.on_death_effects import OnDeathEffect
 from components.forced_movement import ForcedMovement
@@ -26,6 +27,7 @@ class DyingProcessor(esper.Processor):
         for ent, (_, unit_type) in esper.get_components(Dying, UnitTypeComponent):
             if esper.has_component(ent, ForcedMovement):
                 continue
+            esper.add_component(ent, CorpseTimer())
             emit_event(DEATH, event=DeathEvent(ent))
             play_death(unit_type.type)
             

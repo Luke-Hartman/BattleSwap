@@ -732,6 +732,9 @@ class GameConstants(BaseModel):
     # Explosion Visual Scaling
     EXPLOSION_VISUAL_SCALE_RATIO: float
 
+    # Battle Logic
+    CORPSE_TIMER_DURATION: float
+
     class Config:
         frozen = False
 
