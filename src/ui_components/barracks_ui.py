@@ -64,7 +64,9 @@ class BarracksUI(UITabContainer):
         if sandbox_mode:
             self._items = {item_type: float('inf') for item_type in ItemType}
         else:
-            for item_type in ItemType:
+            # Include all items that have been acquired (have entries in progress manager) even if 0 copies
+            acquired_item_types = set(progress_manager.acquired_items.keys())
+            for item_type in acquired_item_types:
                 if item_type not in self._items:
                     self._items[item_type] = 0
         
@@ -72,7 +74,9 @@ class BarracksUI(UITabContainer):
         if sandbox_mode:
             self._spells = {spell_type: float('inf') for spell_type in SpellType}
         else:
-            for spell_type in SpellType:
+            # Include all spells that have been acquired (have entries in progress manager) even if 0 copies
+            acquired_spell_types = set(progress_manager.acquired_spells.keys())
+            for spell_type in acquired_spell_types:
                 if spell_type not in self._spells:
                     self._spells[spell_type] = 0
         
@@ -393,16 +397,16 @@ class BarracksUI(UITabContainer):
                 x_position += item.size + padding // 2
 
     def _populate_items_tab(self, padding: int, needs_scrollbar: bool) -> None:
-        """Populate the ITEMS tab with only acquired items (count > 0)."""
+        """Populate the ITEMS tab with items that have been acquired ever."""
         container = self.containers["ITEMS"]
         container_height = container.rect.height
         y_offset = (container_height - ItemCount.size) // 2 if not needs_scrollbar else 0
         
         x_position = 0
-        # Only show items that have been acquired (count > 0) or in sandbox mode
+        # Show items that have been acquired (have entries in progress manager) or in sandbox mode
         acquired_items = sorted(
             [(item_type, count) for item_type, count in self._items.items() 
-             if count > 0 or self.sandbox_mode],
+             if item_type in progress_manager.acquired_items or self.sandbox_mode],
             key=lambda x: x[0].value
         )
         
@@ -431,16 +435,16 @@ class BarracksUI(UITabContainer):
             x_position += item_count.size + padding // 2
 
     def _populate_spells_tab(self, padding: int, needs_scrollbar: bool) -> None:
-        """Populate the SPELLS tab with only acquired spells (count > 0)."""
+        """Populate the SPELLS tab with spells that have been acquired ever."""
         container = self.containers["SPELLS"]
         container_height = container.rect.height
         y_offset = (container_height - SpellCount.size) // 2 if not needs_scrollbar else 0
         
         x_position = 0
-        # Only show spells that have been acquired (count > 0) or in sandbox mode
+        # Show spells that have been acquired (have entries in progress manager) or in sandbox mode
         acquired_spells = sorted(
             [(spell_type, count) for spell_type, count in self._spells.items() 
-             if count > 0 or self.sandbox_mode],
+             if spell_type in progress_manager.acquired_spells or self.sandbox_mode],
             key=lambda x: x[0].value
         )
         
