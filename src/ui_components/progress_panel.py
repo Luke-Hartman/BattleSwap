@@ -44,6 +44,8 @@ class ProgressPanel(UIPanel):
 
     def create_ui_elements(self, current_battle: Optional[battles.Battle]) -> None:
         """Create all UI elements with the current battle information."""
+        player_points = "-"
+        enemy_points = "-"
         
         # Battle points information
         if current_battle:
@@ -60,9 +62,6 @@ class ProgressPanel(UIPanel):
             elif hex_state != HexLifecycleState.FOGGED:
                 player_points = "-"
                 enemy_points = calculate_points_for_units(current_battle.enemies or [])
-        else:
-            player_points = "-"
-            enemy_points = "-"
 
         # Barracks info - calculate unused points for units, items, and spells
         barracks_units = []
