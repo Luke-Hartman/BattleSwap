@@ -40,8 +40,6 @@ class CollisionProcessor(esper.Processor):
                     team1_projectiles.add(sprite)
                 else:
                     team2_projectiles.add(sprite)
-            elif esper.has_component(ent, VisualAoE):
-                visual_aoe_sprites.add(sprite)
             elif esper.has_component(ent, UnitState):
                 unit_state = esper.component_for_entity(ent, UnitState)
                 if unit_state.state != State.DEAD:
@@ -49,6 +47,12 @@ class CollisionProcessor(esper.Processor):
                         team1_units.add(sprite)
                     else:
                         team2_units.add(sprite)
+        
+        # Handle Visual AoEs separately (they don't need Team component)
+        for ent, (sprite_sheet,) in esper.get_components(SpriteSheet):
+            if esper.has_component(ent, VisualAoE):
+                sprite_to_ent[sprite_sheet] = ent
+                visual_aoe_sprites.add(sprite_sheet)
         
         for ent, (_) in esper.get_components(CircleAoE):
             circle_aoe_ents.append(ent)
