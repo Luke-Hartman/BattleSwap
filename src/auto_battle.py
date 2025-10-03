@@ -120,13 +120,6 @@ class AutoBattle:
 
         # Check if battle should end (either team has been dead long enough)
         if team1_all_dead_long_enough or team2_all_dead_long_enough:
-            print(f"Team 1 alive: {team1_alive}, Team 2 alive: {team2_alive}")
-            print(f"Team 1 all dead long enough: {team1_all_dead_long_enough}, Team 2 all dead long enough: {team2_all_dead_long_enough}")
-            # Print out the corpse timers and the team for every unit with a corpse timer
-            for ent, (unit_state, team) in esper.get_components(UnitState, Team):
-                if esper.has_component(ent, CorpseTimer):
-                    corpse_timer = esper.component_for_entity(ent, CorpseTimer)
-                    print(f"Corpse timer: {corpse_timer.time_dead}, Team: {team.type}")
             # Case 1: Team with living units wins
             if team2_alive:
                 assert not team1_alive
