@@ -5,7 +5,7 @@ import pygame_gui
 
 from components.unit_type import UnitType
 from components.unit_tier import UnitTier
-from entities.items import ItemType
+from components.item import ItemType
 from components.spell_type import SpellType
 from ui_components.unit_card import UnitCard
 from ui_components.item_card import ItemCard

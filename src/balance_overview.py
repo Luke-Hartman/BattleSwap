@@ -12,7 +12,7 @@ from battle_solver import (
 )
 from point_values import unit_values
 from components.unit_type import UnitType
-from entities.items import ItemType
+from components.item import ItemType
 from components.spell_type import SpellType
 
 

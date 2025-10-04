@@ -137,7 +137,7 @@ class Damages(Effect):
         # Handle reflect damage for melee attacks
         if (self.is_melee and owner and owner != recipient):
             # Check if the recipient has the reflect damage item
-            from entities.items import ItemType
+            from components.item import ItemType
             from components.item import ItemComponent
             
             if esper.has_component(recipient, ItemComponent):
@@ -545,29 +545,6 @@ class AppliesStatusEffect(Effect):
         recipient_status_effects = esper.component_for_entity(recipient, StatusEffects)
         recipient_status_effects.add(self.status_effect)
     
-@dataclass
-class RemoveInvisible(Effect):
-    """Effect that removes the invisible status effect from the target."""
-
-    recipient: Recipient
-    """The recipient of the effect."""
-
-    def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
-        if self.recipient == Recipient.OWNER:
-            assert owner is not None
-            recipient = owner
-        elif self.recipient == Recipient.PARENT:
-            assert parent is not None
-            recipient = parent
-        elif self.recipient == Recipient.TARGET:
-            assert target is not None
-            recipient = target
-        else:
-            raise ValueError(f"Invalid recipient: {self.recipient}")
-        
-        recipient_status_effects = esper.component_for_entity(recipient, StatusEffects)
-        # Remove all invisible effects
-        recipient_status_effects._status_by_type[Invisible].clear()
     
 @dataclass
 class IncreasesMaxHealthFromTarget(Effect):

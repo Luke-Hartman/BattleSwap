@@ -10,8 +10,8 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 from pydantic import BaseModel
-from entities.units import UnitType
-from entities.items import ItemType
+from components.unit_type import UnitType
+from components.item import ItemType
 from components.spell_type import SpellType
 from corruption_powers import CorruptionPowerUnion
 

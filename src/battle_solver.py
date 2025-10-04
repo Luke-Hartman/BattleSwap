@@ -12,7 +12,7 @@ from components.health import Health
 from components.team import Team, TeamType
 from components.unit_state import State, UnitState
 from components.unit_type import UnitType
-from entities.items import ItemType
+from components.item import ItemType
 from components.spell_type import SpellType
 from scene_utils import get_legal_placement_area, get_legal_spell_placement_area, axial_to_world, clip_to_polygon
 from point_values import unit_values, item_values, spell_values

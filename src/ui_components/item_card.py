@@ -4,7 +4,8 @@ import pygame
 import pygame_gui
 import pygame_gui.core
 from typing import Tuple, Optional
-from entities.items import ItemType, item_icon_surfaces
+from components.item import ItemType
+from entities.items import item_icon_surfaces
 from ui_components.game_data import get_item_data
 from ui_components.base_card import BaseCard
 

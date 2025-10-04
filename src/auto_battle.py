@@ -10,7 +10,6 @@ from components.unit_tier import UnitTier
 from components.unit_type import UnitType, UnitTypeComponent
 from components.corpse_timer import CorpseTimer
 from game_constants import gc
-from entities.items import ItemType
 
 from corruption_powers import CorruptionPower
 from processors.ability_processor import AbilityProcessor

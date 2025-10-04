@@ -9,7 +9,7 @@ from pygame_gui.elements import UIPanel, UIScrollingContainer, UIButton, UILabel
 import battles
 from components.unit_type import UnitType
 from entities.units import unit_theme_ids, Faction
-from entities.items import ItemType
+from components.item import ItemType
 from components.spell_type import SpellType
 from selected_unit_manager import selected_unit_manager
 from progress_manager import progress_manager

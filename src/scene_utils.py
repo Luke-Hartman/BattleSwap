@@ -17,7 +17,7 @@ from components.item import ItemComponent
 from components.spell import SpellComponent
 from components.spell_type import SpellType
 from components.team import Team, TeamType
-from entities.items import ItemType
+from components.item import ItemType
 from game_constants import gc
 from hex_grid import get_hex_vertices, axial_to_world
 from shapely.ops import nearest_points

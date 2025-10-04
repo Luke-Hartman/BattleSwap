@@ -1,5 +1,5 @@
 from components.unit_type import UnitType
-from entities.items import ItemType
+from components.item import ItemType
 from components.spell_type import SpellType
 from typing import Dict
 from game_constants import gc
@@ -65,6 +65,7 @@ item_values: Dict[ItemType, int] = {
     ItemType.INFECT_ON_HIT: gc.ITEM_INFECT_ON_HIT_POINTS,
     ItemType.HUNTER: gc.ITEM_HUNTER_POINTS,
     ItemType.REFLECT_DAMAGE: gc.ITEM_REFLECT_DAMAGE_POINTS,
+    ItemType.START_INVISIBLE: gc.ITEM_START_INVISIBLE_POINTS,
 }
 
 # Spell point values

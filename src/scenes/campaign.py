@@ -13,7 +13,7 @@ from components.position import Position
 from components.team import Team, TeamType
 from components.unit_type import UnitTypeComponent, UnitType
 from components.item import ItemComponent
-from entities.items import ItemType
+from components.item import ItemType
 from components.unit_tier import UnitTier
 from events import CHANGE_MUSIC, ChangeMusicEvent, emit_event, PLAY_SOUND, PlaySoundEvent
 from progress_manager import progress_manager, HexLifecycleState

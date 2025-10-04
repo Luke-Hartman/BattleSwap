@@ -5,7 +5,8 @@ import pygame_gui
 from pygame_gui.elements import UIPanel, UILabel, UIButton, UITextBox, UIImage
 from typing import List, Optional, Callable, Dict, Union, Tuple
 
-from entities.items import ItemType, item_theme_ids
+from components.item import ItemType
+from entities.items import item_theme_ids
 from components.spell_type import SpellType
 from entities.spells import spell_theme_ids
 from point_values import item_values, spell_values

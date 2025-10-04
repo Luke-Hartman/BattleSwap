@@ -4,7 +4,8 @@ import pygame
 import pygame_gui
 from typing import Optional
 from ui_components.base_count_button import BaseCountButton
-from entities.items import ItemType, item_registry
+from components.item import ItemType
+from entities.items import item_registry
 from point_values import item_values
 from ui_components.game_data import get_item_data
 from selected_unit_manager import selected_unit_manager

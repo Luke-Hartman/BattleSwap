@@ -1,6 +1,5 @@
 """Module for handling items in the game."""
 
-from enum import Enum
 from abc import ABC, abstractmethod
 from typing import Dict
 import esper
@@ -17,24 +16,17 @@ from components.expiration import Expiration
 from components.movement import Movement
 from components.corruption import IncreasedMovementSpeedComponent
 from components.team import Team
-from unit_condition import All, Alive, Grounded, Always, HasComponent, NotHeavilyArmored, HasDefaultTargetingStrategies
+from components.instant_ability import InstantAbilities, InstantAbility
+from components.ability import TargetStrategy, Cooldown
+from components.status_effect import Invisible
+from unit_condition import All, Alive, Grounded, Always, HasComponent, NotHeavilyArmored, HasDefaultTargetingStrategies, Not, IsUnitType, HasItem
 from effects import CreatesCircleAoE, CreatesVisual, Damages, PlaySound, Recipient, SoundEffect, Effect, AppliesStatusEffect, OnKillEffects, HealPercentageMax, CreatesAttachedVisual
 from visuals import Visual
 from components.status_effect import DamageOverTime, ZombieInfection
+from components.unit_type import UnitType
+from components.item import ItemType
 from game_constants import gc
 from unit_condition import UnitCondition
-
-class ItemType(str, Enum):
-    """Types of items that can be equipped to units."""
-    EXTRA_HEALTH = "extra_health"
-    EXPLODE_ON_DEATH = "EXPLODE_ON_DEATH"
-    UPGRADE_ARMOR = "upgrade_armor"
-    DAMAGE_AURA = "damage_aura"
-    EXTRA_MOVEMENT_SPEED = "extra_movement_speed"
-    HEAL_ON_KILL = "heal_on_kill"
-    INFECT_ON_HIT = "infect_on_hit"
-    HUNTER = "hunter"
-    REFLECT_DAMAGE = "reflect_damage"
 
 class Item(ABC):
     """Base class for all items."""
@@ -273,6 +265,45 @@ class ReflectDamage(Item):
         return Always()
 
 
+class StartInvisible(Item):
+    """Grants invisibility at the start of combat."""
+    
+    def apply(self, entity: int) -> None:
+        """Apply start invisible effect to the entity."""
+        from target_strategy import TargetingGroup, TargetStrategy, ByDistance
+        from unit_condition import Never
+        if not esper.has_component(entity, InstantAbilities):
+            esper.add_component(entity, InstantAbilities(abilities=[]))
+        instant_abilities = esper.component_for_entity(entity, InstantAbilities)
+        instant_abilities.abilities.append(
+            InstantAbility(
+                target_strategy=TargetStrategy(
+                    rankings=[ByDistance(entity=entity, y_bias=2, ascending=True)],
+                    unit_condition=Never(),
+                    targetting_group=TargetingGroup.EMPTY
+                ),
+                trigger_conditions=[
+                    Cooldown(duration=float("inf")),
+                ],
+                effects=[
+                    AppliesStatusEffect(
+                        status_effect=Invisible(time_remaining=gc.ITEM_START_INVISIBLE_DURATION, owner=entity),
+                        recipient=Recipient.OWNER
+                    ),
+                    PlaySound(SoundEffect(filename="start_invisible.wav", volume=0.30))
+                ]
+            )
+        )
+
+    @classmethod
+    def get_unit_condition(cls) -> UnitCondition:
+        """Return the unit condition for this item."""
+        return All([
+            Not(IsUnitType(UnitType.ORC_GOBLIN)),
+            Not(HasItem(ItemType.START_INVISIBLE))
+        ])
+
+
 # Item theme IDs for UI styling
 item_theme_ids: Dict[ItemType, str] = {
     ItemType.EXTRA_HEALTH: "#extra_health_icon",
@@ -283,7 +314,8 @@ item_theme_ids: Dict[ItemType, str] = {
     ItemType.HEAL_ON_KILL: "#heal_on_kill_icon",
     ItemType.INFECT_ON_HIT: "#infect_on_hit_icon",
     ItemType.HUNTER: "#hunter_icon",
-    ItemType.REFLECT_DAMAGE: "#reflect_damage_icon"
+    ItemType.REFLECT_DAMAGE: "#reflect_damage_icon",
+    ItemType.START_INVISIBLE: "#start_invisible_icon"
 }
 
 # Item icon surfaces for rendering
@@ -299,7 +331,8 @@ item_registry: Dict[ItemType, Item] = {
     ItemType.HEAL_ON_KILL: HealOnKill(),
     ItemType.INFECT_ON_HIT: InfectOnHit(),
     ItemType.HUNTER: Hunter(),
-    ItemType.REFLECT_DAMAGE: ReflectDamage()
+    ItemType.REFLECT_DAMAGE: ReflectDamage(),
+    ItemType.START_INVISIBLE: StartInvisible()
 }
 
 
@@ -314,7 +347,8 @@ def load_item_icons() -> None:
         ItemType.HEAL_ON_KILL: "HealOnKillIcon.png",
         ItemType.INFECT_ON_HIT: "InfectOnHitIcon.png",
         ItemType.HUNTER: "HunterIcon.png",
-        ItemType.REFLECT_DAMAGE: "ReflectDamageIcon.png"
+        ItemType.REFLECT_DAMAGE: "ReflectDamageIcon.png",
+        ItemType.START_INVISIBLE: "StartInvisibleIcon.png"
     }
     
     for item_type, filename in item_icon_paths.items():

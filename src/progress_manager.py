@@ -13,7 +13,7 @@ from events import PLAY_SOUND, PlaySoundEvent, emit_event
 import battles
 from components.unit_type import UnitType
 from components.unit_tier import UnitTier
-from entities.items import ItemType
+from components.item import ItemType
 from components.spell_type import SpellType
 from point_values import unit_values, item_values, spell_values
 from hex_grid import hex_neighbors

@@ -21,6 +21,7 @@ from components.unit_state import State, UnitState
 from components.unit_type import UnitType, UnitTypeComponent
 from components.airborne import Airborne
 from components.armor import Armor, ArmorLevel
+from components.item import ItemComponent, ItemType
 
 class UnitCondition(ABC):
     """A condition that a unit may or may not meet."""
@@ -305,6 +306,19 @@ class IsUnitType(UnitCondition):
     def check(self, entity: int) -> bool:
         unit_type = esper.try_component(entity, UnitTypeComponent)
         return unit_type is not None and unit_type.type == self.unit_type
+
+@dataclass
+class HasItem(UnitCondition):
+    """The unit has the given item."""
+
+    item_type: ItemType
+    """The item type to check against."""
+
+    def check(self, entity: int) -> bool:
+        if not esper.has_component(entity, ItemComponent):
+            return False
+        item_component = esper.component_for_entity(entity, ItemComponent)
+        return self.item_type in item_component.items
 
 @dataclass
 class Infected(UnitCondition):

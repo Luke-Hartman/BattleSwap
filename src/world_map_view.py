@@ -16,7 +16,7 @@ from components.unit_type import UnitType, UnitTypeComponent
 from components.unit_tier import UnitTier, UnitTierComponent
 from components.spell import SpellComponent
 from components.spell_type import SpellType
-from entities.items import ItemType
+from components.item import ItemType
 from entities.units import create_unit
 from processors.animation_processor import AnimationProcessor
 from processors.orientation_processor import OrientationProcessor

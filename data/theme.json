@@ -647,6 +647,13 @@
             }
         }
     },
+    "#start_invisible_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/StartInvisibleIcon.png"
+            }
+        }
+    },
     "#summon_skeleton_swordsmen_icon": {
         "images": {
             "normal_image": {

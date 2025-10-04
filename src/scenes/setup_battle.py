@@ -14,7 +14,7 @@ from components.unit_type import UnitType, UnitTypeComponent
 from components.item import ItemComponent
 from components.can_have_item import CanHaveItem
 from components.spell import SpellComponent
-from entities.items import ItemType
+from components.item import ItemType
 from entities.units import create_unit
 from events import CHANGE_MUSIC, PLAY_SOUND, ChangeMusicEvent, PlaySoundEvent, emit_event, UNMUTE_DRUMS, UnmuteDrumsEvent
 from hex_grid import axial_to_world

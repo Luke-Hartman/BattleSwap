@@ -7,6 +7,7 @@ from components.ability import Abilities, Ability, Condition, Cooldown, HasTarge
 from components.instant_ability import InstantAbilities, InstantAbility
 from components.orientation import FacingDirection, Orientation
 from components.position import Position
+from components.status_effect import Invisible, StatusEffects
 from components.unit_state import State, UnitState
 from components.velocity import Velocity
 from events import ABILITY_INTERRUPTED, ABILITY_TRIGGERED, AbilityInterruptedEvent, AbilityTriggeredEvent, emit_event, INSTANT_ABILITY_TRIGGERED, InstantAbilityTriggeredEvent
@@ -21,6 +22,8 @@ class AbilityProcessor(esper.Processor):
                 if not all(check_condition(ent, condition, ability, ability.target_strategy.target) for condition in ability.trigger_conditions):
                     continue
                 ability.time_since_last_use = 0
+                # Remove invisibility when any instant ability is triggered
+                self._remove_invisibility(ent)
                 emit_event(INSTANT_ABILITY_TRIGGERED, event=InstantAbilityTriggeredEvent(ent, i))
                 break
 
@@ -33,6 +36,8 @@ class AbilityProcessor(esper.Processor):
                     if not all(check_condition(ent, condition, ability, ability.target) for condition in ability.trigger_conditions):
                         continue
                     ability.time_since_last_use = 0
+                    # Remove invisibility when any ability is triggered
+                    self._remove_invisibility(ent)
                     emit_event(ABILITY_TRIGGERED, event=AbilityTriggeredEvent(ent, i))
                     break
             if unit_state.state == State.ABILITY1:
@@ -71,6 +76,12 @@ class AbilityProcessor(esper.Processor):
                 dx = target_pos.x - pos.x
                 orientation.facing = FacingDirection.LEFT if dx < 0 else FacingDirection.RIGHT
                 
+    def _remove_invisibility(self, entity: int) -> None:
+        """Remove invisibility status effect from the entity."""
+        if esper.has_component(entity, StatusEffects):
+            status_effects = esper.component_for_entity(entity, StatusEffects)
+            # Remove all invisible effects
+            status_effects._status_by_type[Invisible].clear()
 
 def check_condition(entity: int, condition: Condition, ability: Union[Ability, InstantAbility], target: Optional[int] = None) -> bool:
     """Check if the condition is met for the given ability."""

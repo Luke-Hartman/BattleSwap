@@ -1,7 +1,7 @@
 import enum
 from components.unit_tier import UnitTier
 from components.unit_type import UnitType
-from entities.items import ItemType
+from components.item import ItemType
 from game_constants import gc
 from typing import Dict, List, Optional
 from dataclasses import dataclass
@@ -2431,6 +2431,16 @@ def get_item_data(item_type: ItemType) -> ItemData:
             tips={
                 "Strong when": ["Against melee attackers", "Unit has high health", "Unit is supported by healing"],
                 "Weak when": ["Against ranged attackers", "Attackers have armor"],
+            }
+        )
+    
+    if item_type == ItemType.START_INVISIBLE:
+        return ItemData(
+            name="Start Invisible",
+            description=f"Grants {int(gc.ITEM_START_INVISIBLE_DURATION)} seconds of <a href='{GlossaryEntryType.INVISIBLE.value}'>Invisibility</a> at the start of combat.",
+            tips={
+                "Strong when": ["Unit has high melee damage", "Against ranged enemies", "Unit is a hunter", "Unit is fast"],
+                "Weak when": ["Unit is overwhelmed after revealing itself"],
             }
         )
     

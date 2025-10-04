@@ -38,7 +38,7 @@ from target_strategy import ByCurrentHealth, ByDistance, ByMissingHealth, Condit
 from components.destination import Destination
 from components.team import Team, TeamType
 from components.item import ItemComponent
-from entities.items import ItemType
+from components.item import ItemType
 from components.unit_state import State, UnitState
 from components.movement import Movement
 from components.unit_type import UnitType, UnitTypeComponent
@@ -47,7 +47,7 @@ from components.health import Health
 from components.orientation import Orientation, FacingDirection
 from components.status_effect import Immobilized
 from effects import (
-    AddsForcedMovement, AppliesStatusEffect, CreatesRepeat, CreatesUnit, CreatesVisual, RemoveInvisible,
+    AddsForcedMovement, AppliesStatusEffect, CreatesRepeat, CreatesUnit, CreatesVisual,
     CreatesAttachedVisual, CreatesLobbed, CreatesProjectile, CreatesVisualLink, Damages, 
     Heals, HealToFull, HealPercentageMax, IncreaseAmmo, IncreasesMaxHealthFromTarget, Jump, PlaySound, Recipient, 
     SoundEffect, StanceChange, RememberTarget, CreatesVisualAoE, CreatesCircleAoE, Revive
@@ -2317,9 +2317,6 @@ def create_orc_goblin(
                         )
                     ],
                     effects={
-                        0: [
-                            RemoveInvisible(recipient=Recipient.OWNER)
-                        ],
                         2: [
                             Damages(
                                 damage=gc.ORC_GOBLIN_ATTACK_DAMAGE, 
