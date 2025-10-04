@@ -640,6 +640,13 @@
             }
         }
     },
+    "#reflect_damage_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/ReflectDamageIcon.png"
+            }
+        }
+    },
     "#summon_skeleton_swordsmen_icon": {
         "images": {
             "normal_image": {

@@ -174,7 +174,7 @@ def create_meteor_shower_spell(
     meteor_effects = [
         CreatesCircleAoE(
             effects=[
-                Damages(damage=gc.SPELL_METEOR_SHOWER_DAMAGE, recipient=Recipient.TARGET),
+                Damages(damage=gc.SPELL_METEOR_SHOWER_DAMAGE, recipient=Recipient.TARGET, is_melee=False),
             ],
             radius=gc.SPELL_METEOR_SHOWER_AOE_RADIUS,
             unit_condition=All([Alive(), Grounded()]),

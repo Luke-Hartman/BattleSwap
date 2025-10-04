@@ -84,6 +84,9 @@ class Damages(Effect):
     recipient: Recipient
     """The recipient of the effect."""
 
+    is_melee: bool = False
+    """Whether this damage comes from a melee attack."""
+
     def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
         if self.recipient == Recipient.OWNER:
             assert owner is not None
@@ -130,6 +133,26 @@ class Damages(Effect):
         # Apply the damage
         previous_health = recipient_health.current
         recipient_health.current = max(recipient_health.current - damage, 0)
+        
+        # Handle reflect damage for melee attacks
+        if (self.is_melee and owner and owner != recipient):
+            # Check if the recipient has the reflect damage item
+            from entities.items import ItemType
+            from components.item import ItemComponent
+            
+            if esper.has_component(recipient, ItemComponent):
+                item_component = esper.component_for_entity(recipient, ItemComponent)
+                for item in item_component.items:
+                    if item == ItemType.REFLECT_DAMAGE:
+                        # Calculate reflect damage (25% of damage taken, after armor)
+                        reflect_damage = damage * gc.ITEM_REFLECT_DAMAGE_PERCENTAGE
+                        
+                        # Apply reflect damage to the attacker.
+                        # Note this is not consider melee damage so it doesn't recurse. It also
+                        # doesn't include owner so it won't scale with increased/reduced damage effects.
+                        Damages(damage=reflect_damage, recipient=Recipient.TARGET, is_melee=False).apply(
+                            None, None, owner
+                        )
         
         # Check for OnHitEffects component on the owner (including self-hits)
         if owner and esper.has_component(owner, OnHitEffects):

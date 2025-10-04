@@ -601,7 +601,7 @@ def create_core_archer(
                             CreatesProjectile(
                                 projectile_speed=projectile_speed,
                                 effects=[
-                                    Damages(damage=arrow_damage, recipient=Recipient.TARGET),
+                                    Damages(damage=arrow_damage, recipient=Recipient.TARGET, is_melee=False),
                                 ],
                                 visual=Visual.Arrow,
                                 projectile_offset_x=5*gc.MINIFOLKS_SCALE,
@@ -706,7 +706,7 @@ def create_core_veteran(
                         5: [
                             CreatesVisualAoE(
                                 effects=[
-                                    Damages(damage=veteran_damage, recipient=Recipient.TARGET),
+                                    Damages(damage=veteran_damage, recipient=Recipient.TARGET, is_melee=True),
                                 ],
                                 duration=gc.CORE_VETERAN_ANIMATION_ATTACK_DURATION*3/10,
                                 scale=gc.MINIFOLKS_SCALE,
@@ -817,7 +817,7 @@ def create_core_cavalry(
                         )
                     ],
                     effects={3: [
-                        Damages(damage=cavalry_damage, recipient=Recipient.TARGET),
+                        Damages(damage=cavalry_damage, recipient=Recipient.TARGET, is_melee=True),
                         PlaySound([
                             (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
                         ]),
@@ -919,25 +919,25 @@ def create_core_duelist(
                         )
                     ],
                     effects={
-                        5: [Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE, recipient=Recipient.TARGET)] * hits_per_frame + [
+                        5: [Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE, recipient=Recipient.TARGET, is_melee=True)] * hits_per_frame + [
                             PlaySound(sound_effects),
                         ],
-                        6: [Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE, recipient=Recipient.TARGET)] * hits_per_frame + [
+                        6: [Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE, recipient=Recipient.TARGET, is_melee=True)] * hits_per_frame + [
                             PlaySound(sound_effects),
                         ],
-                        7: [Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE, recipient=Recipient.TARGET)] * hits_per_frame + [
+                        7: [Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE, recipient=Recipient.TARGET, is_melee=True)] * hits_per_frame + [
                             PlaySound(sound_effects),
                         ],
-                        8: [Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE, recipient=Recipient.TARGET)] * hits_per_frame + [
+                        8: [Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE, recipient=Recipient.TARGET, is_melee=True)] * hits_per_frame + [
                             PlaySound(sound_effects),
                         ],
-                        9: [Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE, recipient=Recipient.TARGET)] * hits_per_frame + [
+                        9: [Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE, recipient=Recipient.TARGET, is_melee=True)] * hits_per_frame + [
                             PlaySound(sound_effects),
                         ],
-                        10: [Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE, recipient=Recipient.TARGET)] * hits_per_frame + [
+                        10: [Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE, recipient=Recipient.TARGET, is_melee=True)] * hits_per_frame + [
                             PlaySound(sound_effects),
                         ],
-                        11: [Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE, recipient=Recipient.TARGET)] * hits_per_frame + [
+                        11: [Damages(damage=gc.CORE_DUELIST_ATTACK_DAMAGE, recipient=Recipient.TARGET, is_melee=True)] * hits_per_frame + [
                             PlaySound(sound_effects),
                         ],
                     },
@@ -1053,7 +1053,7 @@ def create_core_longbowman(
                             CreatesProjectile(
                                 projectile_speed=gc.CORE_LONGBOWMAN_PROJECTILE_SPEED,
                                 effects=[
-                                    Damages(damage=longbowman_damage, recipient=Recipient.TARGET),
+                                    Damages(damage=longbowman_damage, recipient=Recipient.TARGET, is_melee=False),
                                 ],
                                 visual=Visual.LongbowArrow,
                                 projectile_offset_x=5*gc.MINIFOLKS_SCALE,
@@ -1166,7 +1166,7 @@ def create_core_swordsman(
                     ],
                     effects={
                         2: [
-                            Damages(damage=swordsman_damage, recipient=Recipient.TARGET),
+                            Damages(damage=swordsman_damage, recipient=Recipient.TARGET, is_melee=True),
                             PlaySound([
                                 (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
                             ]),
@@ -1286,7 +1286,7 @@ def create_skeleton_archer(
                             CreatesProjectile(
                                 projectile_speed=projectile_speed,
                                 effects=[
-                                    Damages(damage=skeleton_archer_damage, recipient=Recipient.TARGET),
+                                    Damages(damage=skeleton_archer_damage, recipient=Recipient.TARGET, is_melee=False),
                                 ],
                                 visual=Visual.Arrow,
                                 projectile_offset_x=5*gc.MINIFOLKS_SCALE,
@@ -1410,7 +1410,7 @@ def create_skeleton_mage(
                                 effects=[
                                     CreatesVisualAoE(
                                         effects=[
-                                            Damages(damage=skeleton_mage_damage, recipient=Recipient.TARGET),
+                                            Damages(damage=skeleton_mage_damage, recipient=Recipient.TARGET, is_melee=False),
                                             PlaySound(SoundEffect(filename="skeleton_mage_aoe.wav", volume=1.0)),
                                         ],
                                         duration=0.5,
@@ -1527,7 +1527,7 @@ def create_skeleton_swordsman(
                     ],
                     effects={
                         2: [
-                            Damages(damage=skeleton_swordsman_damage, recipient=Recipient.TARGET),
+                            Damages(damage=skeleton_swordsman_damage, recipient=Recipient.TARGET, is_melee=True),
                             PlaySound([
                                 (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
                             ]),
@@ -1626,7 +1626,7 @@ def create_skeleton_horseman(
                         )
                     ],
                     effects={4: [
-                        Damages(damage=skeleton_horseman_damage, recipient=Recipient.TARGET),
+                        Damages(damage=skeleton_horseman_damage, recipient=Recipient.TARGET, is_melee=True),
                         PlaySound([
                             (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
                         ]),
@@ -1823,11 +1823,13 @@ def create_orc_berserker(
                         2: [
                             Damages(
                                 damage=orc_berserker_melee_damage, 
-                                recipient=Recipient.TARGET
+                                recipient=Recipient.TARGET,
+                                is_melee=True
                             ),
                             Damages(
                                 damage=orc_berserker_melee_damage, 
-                                recipient=Recipient.TARGET
+                                recipient=Recipient.TARGET,
+                                is_melee=True
                             ),
                             PlaySound([
                                 (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
@@ -1880,7 +1882,8 @@ def create_orc_berserker(
                                 effects=[
                                     Damages(
                                         damage=orc_berserker_ranged_damage, 
-                                        recipient=Recipient.TARGET
+                                        recipient=Recipient.TARGET,
+                                        is_melee=False
                                     ),
                                 ],
                                 visual=Visual.OrcThrowingAxe,
@@ -2049,7 +2052,8 @@ def create_orc_warrior(
                         2: [
                             Damages(
                                 damage=orc_warrior_damage, 
-                                recipient=Recipient.TARGET
+                                recipient=Recipient.TARGET,
+                                is_melee=True
                             ),
                             PlaySound([
                                 (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
@@ -2190,7 +2194,8 @@ def create_orc_warchief(
                         2: [
                             Damages(
                                 damage=orc_warchief_damage, 
-                                recipient=Recipient.TARGET
+                                recipient=Recipient.TARGET,
+                                is_melee=True
                             ),
                             PlaySound([
                                 (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
@@ -2318,7 +2323,8 @@ def create_orc_goblin(
                         2: [
                             Damages(
                                 damage=gc.ORC_GOBLIN_ATTACK_DAMAGE, 
-                                recipient=Recipient.TARGET
+                                recipient=Recipient.TARGET,
+                                is_melee=True
                             ),
                             PlaySound([
                                 (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
@@ -2495,11 +2501,13 @@ def create_orc_warg_rider(
                         2: [
                             Damages(
                                 damage=warg_rider_damage * 2/3, 
-                                recipient=Recipient.TARGET
+                                recipient=Recipient.TARGET,
+                                is_melee=True
                             ),
                             Damages(
                                 damage=warg_rider_damage * 1/3, 
-                                recipient=Recipient.TARGET
+                                recipient=Recipient.TARGET,
+                                is_melee=True
                             ),
                             PlaySound([
                                 (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
@@ -2617,7 +2625,7 @@ def create_core_wizard(
                                 effects=[
                                     CreatesCircleAoE(
                                         effects=[
-                                            Damages(damage=wizard_damage, recipient=Recipient.TARGET),
+                                            Damages(damage=wizard_damage, recipient=Recipient.TARGET, is_melee=False),
                                         ],
                                         radius=gc.CORE_WIZARD_FIREBALL_AOE_RADIUS,
                                         unit_condition=All([Alive(), Grounded()]),
@@ -3280,7 +3288,7 @@ def create_infantry_catapult(
                                 effects=[
                                     CreatesCircleAoE(
                                         effects=[
-                                            Damages(damage=catapult_damage, recipient=Recipient.TARGET)
+                                            Damages(damage=catapult_damage, recipient=Recipient.TARGET, is_melee=False)
                                         ],
                                         radius=10 * gc.INFANTRY_CATAPULT_AOE_SCALE,
                                         unit_condition=All([Alive(), Grounded()]),
@@ -3557,7 +3565,7 @@ def create_misc_commander(
                         )
                     ],
                     effects={4: [
-                        Damages(damage=gc.MISC_COMMANDER_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                        Damages(damage=gc.MISC_COMMANDER_ATTACK_DAMAGE, recipient=Recipient.TARGET, is_melee=True),
                         PlaySound([
                             (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
                         ]),
@@ -3706,7 +3714,7 @@ def create_infantry_crossbowman(
                         CreatesProjectile(
                             projectile_speed=gc.INFANTRY_CROSSBOWMAN_PROJECTILE_SPEED,
                             effects=[
-                                Damages(damage=crossbowman_damage, recipient=Recipient.TARGET),        
+                                Damages(damage=crossbowman_damage, recipient=Recipient.TARGET, is_melee=False),        
                             ],
                             visual=Visual.Arrow,
                             projectile_offset_x=5*gc.MINIFOLKS_SCALE,
@@ -3917,7 +3925,7 @@ def create_core_defender(
                         )
                     ],
                     effects={4: [
-                        Damages(damage=gc.CORE_DEFENDER_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                        Damages(damage=gc.CORE_DEFENDER_ATTACK_DAMAGE, recipient=Recipient.TARGET, is_melee=True),
                         PlaySound([
                             (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
                         ]),
@@ -4017,7 +4025,7 @@ def create_crusader_gold_knight(
                         0: [
                             CreatesVisualAoE(
                                 effects=[
-                                    Damages(damage=gold_knight_damage, recipient=Recipient.TARGET),
+                                    Damages(damage=gold_knight_damage, recipient=Recipient.TARGET, is_melee=True),
                                     Heals(amount=gold_knight_healing, recipient=Recipient.OWNER)
                                 ],
                                 duration=gc.CRUSADER_GOLD_KNIGHT_ANIMATION_ATTACK_DURATION,
@@ -4301,7 +4309,7 @@ def create_crusader_paladin(
                         )
                     ],
                     effects={3: [
-                        Damages(damage=paladin_damage, recipient=Recipient.TARGET),
+                        Damages(damage=paladin_damage, recipient=Recipient.TARGET, is_melee=True),
                         PlaySound([
                             (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
                         ]),
@@ -4433,7 +4441,7 @@ def create_infantry_pikeman(
                         SatisfiesUnitCondition(unit_condition=InStance(stance=PIKE_DOWN))
                     ],
                     effects={3: [
-                        Damages(damage=pikeman_damage, recipient=Recipient.TARGET),
+                        Damages(damage=pikeman_damage, recipient=Recipient.TARGET, is_melee=True),
                         PlaySound([
                             (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
                         ]),
@@ -4528,7 +4536,7 @@ def create_misc_red_knight(
                     effects={7: [
                         CreatesVisualAoE(
                             effects=[
-                                Damages(damage=gc.MISC_RED_KNIGHT_SKILL_DAMAGE, recipient=Recipient.TARGET),
+                                Damages(damage=gc.MISC_RED_KNIGHT_SKILL_DAMAGE, recipient=Recipient.TARGET, is_melee=True),
                                 AppliesStatusEffect(
                                     status_effect=DamageOverTime(
                                         dps=gc.MISC_RED_KNIGHT_SKILL_IGNITE_DAMAGE/gc.MISC_RED_KNIGHT_SKILL_IGNITED_DURATION,
@@ -4578,13 +4586,13 @@ def create_misc_red_knight(
                     ],
                     effects={
                         3: [
-                            Damages(damage=gc.MISC_RED_KNIGHT_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                            Damages(damage=gc.MISC_RED_KNIGHT_ATTACK_DAMAGE, recipient=Recipient.TARGET, is_melee=True),
                             PlaySound([
                                 (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
                             ]),
                         ],
                         7: [
-                            Damages(damage=gc.MISC_RED_KNIGHT_ATTACK_DAMAGE, recipient=Recipient.TARGET),
+                            Damages(damage=gc.MISC_RED_KNIGHT_ATTACK_DAMAGE, recipient=Recipient.TARGET, is_melee=True),
                             PlaySound([
                                 (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
                             ]),
@@ -4753,7 +4761,7 @@ def create_infantry_soldier(
                     ],
                     effects={
                         3: [
-                            Damages(damage=soldier_melee_damage, recipient=Recipient.TARGET),
+                            Damages(damage=soldier_melee_damage, recipient=Recipient.TARGET, is_melee=True),
                             PlaySound([
                                 (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
                             ]),
@@ -4803,7 +4811,7 @@ def create_infantry_soldier(
                             CreatesProjectile(
                                 projectile_speed=gc.CORE_ARCHER_PROJECTILE_SPEED,
                                 effects=[
-                                    Damages(damage=soldier_ranged_damage, recipient=Recipient.TARGET),
+                                    Damages(damage=soldier_ranged_damage, recipient=Recipient.TARGET, is_melee=False),
                                 ],
                                 visual=Visual.Arrow,
                                 projectile_offset_x=5*gc.MINIFOLKS_SCALE,
@@ -4918,7 +4926,7 @@ def create_pirate_crew(
                     ],
                     effects={
                         2: [
-                            Damages(damage=pirate_crew_damage, recipient=Recipient.TARGET),
+                            Damages(damage=pirate_crew_damage, recipient=Recipient.TARGET, is_melee=True),
                             PlaySound([
                                 (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
                             ]),
@@ -4970,7 +4978,7 @@ def create_pirate_crew(
                                 CreatesCircleAoE(
                                     radius=gc.PIRATE_CREW_JUMP_RADIUS,
                                     effects=[
-                                        Damages(damage=gc.PIRATE_CREW_JUMP_DAMAGE, recipient=Recipient.TARGET),
+                                        Damages(damage=gc.PIRATE_CREW_JUMP_DAMAGE, recipient=Recipient.TARGET, is_melee=True),
                                     ],
                                     unit_condition=All([OnTeam(team=team.other()), Alive(), Grounded()]),
                                     location=Recipient.OWNER,
@@ -5128,7 +5136,7 @@ def create_pirate_gunner(
                     ],
                     effects={
                         2: [
-                            Damages(damage=pirate_gunner_gun_damage, recipient=Recipient.TARGET),
+                            Damages(damage=pirate_gunner_gun_damage, recipient=Recipient.TARGET, is_melee=False),
                             PlaySound(SoundEffect(filename="pirate_gunner_gun.wav", volume=0.75)),
                         ]
                     },
@@ -5163,7 +5171,7 @@ def create_pirate_gunner(
                     ],
                     effects={
                         3: [
-                            Damages(damage=gc.PIRATE_GUNNER_MELEE_DAMAGE, recipient=Recipient.TARGET),
+                            Damages(damage=gc.PIRATE_GUNNER_MELEE_DAMAGE, recipient=Recipient.TARGET, is_melee=True),
                             PlaySound([
                                 (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
                             ]),
@@ -5271,7 +5279,7 @@ def create_pirate_cannon(
                             CreatesProjectile(
                                 projectile_speed=gc.PIRATE_CANNON_PROJECTILE_SPEED,
                                 effects=[
-                                    Damages(damage=cannon_damage, recipient=Recipient.TARGET),
+                                    Damages(damage=cannon_damage, recipient=Recipient.TARGET, is_melee=False),
                                 ],
                                 visual=Visual.PirateCannonBall,
                                 projectile_offset_x=5*gc.MINIFOLKS_SCALE,
@@ -5387,7 +5395,7 @@ def create_pirate_captain(
                     ],
                     effects={
                         3: [
-                            Damages(damage=pirate_captain_gun_damage, recipient=Recipient.TARGET),
+                            Damages(damage=pirate_captain_gun_damage, recipient=Recipient.TARGET, is_melee=False),
                             PlaySound(SoundEffect(filename="pirate_captain_pistol.wav", volume=0.75)),
                         ]
                     },
@@ -5421,7 +5429,7 @@ def create_pirate_captain(
                     ],
                     effects={
                         2: [
-                            Damages(damage=pirate_captain_melee_damage, recipient=Recipient.TARGET),
+                            Damages(damage=pirate_captain_melee_damage, recipient=Recipient.TARGET, is_melee=True),
                             PlaySound([
                                 (SoundEffect(filename=f"sword_swoosh{i+1}.wav", volume=0.50), 1.0) for i in range(3)
                             ]),
@@ -5512,7 +5520,7 @@ def create_werebear(
                             ])
                         )
                     ],
-                    effects={5: [Damages(damage=gc.WEREBEAR_ATTACK_DAMAGE, recipient=Recipient.TARGET)]},
+                    effects={5: [Damages(damage=gc.WEREBEAR_ATTACK_DAMAGE, recipient=Recipient.TARGET, is_melee=True)]},
                 )
             ]
         )
@@ -5613,7 +5621,7 @@ def create_zombie_basic_zombie(
                         )
                     ],
                     effects={1: [
-                        Damages(damage=gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_DAMAGE, recipient=Recipient.TARGET)
+                        Damages(damage=gc.ZOMBIE_BASIC_ZOMBIE_ATTACK_DAMAGE, recipient=Recipient.TARGET, is_melee=True)
                     ]},
                 )
             ]
@@ -5728,7 +5736,7 @@ def create_zombie_fighter(
                         )
                     ],
                     effects={3: [
-                        Damages(damage=fighter_damage, recipient=Recipient.TARGET)
+                        Damages(damage=fighter_damage, recipient=Recipient.TARGET, is_melee=True)
                     ]},
                 )
             ]
@@ -5892,7 +5900,7 @@ def create_misc_brute(
                         )
                     ],
                     effects={3: [
-                        Damages(damage=brute_damage, recipient=Recipient.TARGET),
+                        Damages(damage=brute_damage, recipient=Recipient.TARGET, is_melee=True),
                         AppliesStatusEffect(
                             status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers, owner=entity),
                             recipient=Recipient.TARGET
@@ -6014,7 +6022,7 @@ def create_zombie_jumper(
                         )
                     ],
                     effects={2: [
-                        Damages(damage=gc.ZOMBIE_JUMPER_ATTACK_DAMAGE, recipient=Recipient.TARGET)
+                        Damages(damage=gc.ZOMBIE_JUMPER_ATTACK_DAMAGE, recipient=Recipient.TARGET, is_melee=True)
                     ]},
                 ),
                 Ability(
@@ -6244,8 +6252,8 @@ def create_zombie_spitter(
                         )
                     ],
                     effects={1: [
-                        Damages(damage=melee_damage/2, recipient=Recipient.TARGET),
-                        Damages(damage=melee_damage/2, recipient=Recipient.TARGET)
+                        Damages(damage=melee_damage/2, recipient=Recipient.TARGET, is_melee=True),
+                        Damages(damage=melee_damage/2, recipient=Recipient.TARGET, is_melee=True)
                     ]},
                 )
             ]
@@ -6345,7 +6353,7 @@ def create_zombie_tank(
                         )
                     ],
                     effects={3: [
-                        Damages(damage=gc.ZOMBIE_TANK_ATTACK_DAMAGE, recipient=Recipient.TARGET)
+                        Damages(damage=gc.ZOMBIE_TANK_ATTACK_DAMAGE, recipient=Recipient.TARGET, is_melee=True)
                     ]},
                 )
             ]
@@ -6491,7 +6499,7 @@ def create_misc_grabber(
                                 projectile_speed=gc.MISC_GRABBER_GRAB_PROJECTILE_SPEED,
                                 effects=[
                                     RememberTarget(recipient=Recipient.OWNER),
-                                    Damages(damage=grab_damage, recipient=Recipient.TARGET),
+                                    Damages(damage=grab_damage, recipient=Recipient.TARGET, is_melee=True),
                                     AppliesStatusEffect(
                                         status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers, owner=entity),
                                         recipient=Recipient.TARGET
@@ -6557,7 +6565,7 @@ def create_misc_grabber(
                         )
                     ],
                     effects={3: [
-                        Damages(damage=melee_damage, recipient=Recipient.TARGET),
+                        Damages(damage=melee_damage, recipient=Recipient.TARGET, is_melee=True),
                         AppliesStatusEffect(
                             status_effect=ZombieInfection(time_remaining=gc.ZOMBIE_INFECTION_DURATION, team=team, corruption_powers=corruption_powers, owner=entity),
                             recipient=Recipient.TARGET
@@ -6687,7 +6695,7 @@ def create_pirate_harpooner(
                                 projectile_speed=gc.PIRATE_HARPOONER_HARPOON_PROJECTILE_SPEED,
                                 effects=[
                                     RememberTarget(recipient=Recipient.OWNER),
-                                    Damages(damage=harpoon_damage, recipient=Recipient.TARGET),
+                                    Damages(damage=harpoon_damage, recipient=Recipient.TARGET, is_melee=False),
                                     AddsForcedMovement(
                                         recipient=Recipient.TARGET,
                                         destination=Recipient.OWNER,
@@ -6771,7 +6779,7 @@ def create_pirate_harpooner(
                         )
                     ],
                     effects={2: [
-                        Damages(damage=melee_damage, recipient=Recipient.TARGET),
+                        Damages(damage=melee_damage, recipient=Recipient.TARGET, is_melee=True),
                     ]},
                 )
             ]

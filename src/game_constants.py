@@ -134,6 +134,8 @@ class GameConstants(BaseModel):
     ITEM_HEAL_ON_KILL_POINTS: int
     ITEM_INFECT_ON_HIT_POINTS: int
     ITEM_HUNTER_POINTS: int
+    ITEM_REFLECT_DAMAGE_POINTS: int
+    ITEM_REFLECT_DAMAGE_PERCENTAGE: float
     
     # Spell Point Values
     SPELL_SUMMON_SKELETON_SWORDSMEN_POINTS: int

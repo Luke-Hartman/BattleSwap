@@ -2424,4 +2424,14 @@ def get_item_data(item_type: ItemType) -> ItemData:
             }
         )
     
+    if item_type == ItemType.REFLECT_DAMAGE:
+        return ItemData(
+            name="Reflect Damage",
+            description=f"Reflects {int(gc.ITEM_REFLECT_DAMAGE_PERCENTAGE * 100)}% of melee damage taken back to the attacker.",
+            tips={
+                "Strong when": ["Against melee attackers", "Unit has high health", "Unit is supported by healing"],
+                "Weak when": ["Against ranged attackers", "Attackers have armor"],
+            }
+        )
+    
     raise ValueError(f"Unknown item type: {item_type}")

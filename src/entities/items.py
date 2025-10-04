@@ -34,6 +34,7 @@ class ItemType(str, Enum):
     HEAL_ON_KILL = "heal_on_kill"
     INFECT_ON_HIT = "infect_on_hit"
     HUNTER = "hunter"
+    REFLECT_DAMAGE = "reflect_damage"
 
 class Item(ABC):
     """Base class for all items."""
@@ -75,7 +76,7 @@ class ExplodeOnDeath(Item):
         death_effect.effects.extend([
             CreatesCircleAoE(
                 effects=[
-                    Damages(damage=gc.ITEM_EXPLODE_ON_DEATH_DAMAGE, recipient=Recipient.TARGET),
+                    Damages(damage=gc.ITEM_EXPLODE_ON_DEATH_DAMAGE, recipient=Recipient.TARGET, is_melee=False),
                 ],
                 radius=gc.ITEM_EXPLODE_ON_DEATH_AOE_RADIUS,
                 unit_condition=All([Alive(), Grounded()]),  # Hits both allies and enemies
@@ -258,6 +259,20 @@ class HealOnKill(Item):
         return Always()
 
 
+class ReflectDamage(Item):
+    """Reflects a percentage of melee damage taken back to the attacker."""
+    
+    def apply(self, entity: int) -> None:
+        """Apply reflect damage effect to the entity."""
+        # pass
+        # This is handled in the Damages effect.
+    
+    @classmethod
+    def get_unit_condition(cls) -> UnitCondition:
+        """Return the unit condition for this item."""
+        return Always()
+
+
 # Item theme IDs for UI styling
 item_theme_ids: Dict[ItemType, str] = {
     ItemType.EXTRA_HEALTH: "#extra_health_icon",
@@ -267,7 +282,8 @@ item_theme_ids: Dict[ItemType, str] = {
     ItemType.EXTRA_MOVEMENT_SPEED: "#extra_movement_speed_icon",
     ItemType.HEAL_ON_KILL: "#heal_on_kill_icon",
     ItemType.INFECT_ON_HIT: "#infect_on_hit_icon",
-    ItemType.HUNTER: "#hunter_icon"
+    ItemType.HUNTER: "#hunter_icon",
+    ItemType.REFLECT_DAMAGE: "#reflect_damage_icon"
 }
 
 # Item icon surfaces for rendering
@@ -282,7 +298,8 @@ item_registry: Dict[ItemType, Item] = {
     ItemType.EXTRA_MOVEMENT_SPEED: ExtraMovementSpeed(),
     ItemType.HEAL_ON_KILL: HealOnKill(),
     ItemType.INFECT_ON_HIT: InfectOnHit(),
-    ItemType.HUNTER: Hunter()
+    ItemType.HUNTER: Hunter(),
+    ItemType.REFLECT_DAMAGE: ReflectDamage()
 }
 
 
@@ -297,6 +314,7 @@ def load_item_icons() -> None:
         ItemType.HEAL_ON_KILL: "HealOnKillIcon.png",
         ItemType.INFECT_ON_HIT: "InfectOnHitIcon.png",
         ItemType.HUNTER: "HunterIcon.png",
+        ItemType.REFLECT_DAMAGE: "ReflectDamageIcon.png"
     }
     
     for item_type, filename in item_icon_paths.items():

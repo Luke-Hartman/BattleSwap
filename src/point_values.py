@@ -64,6 +64,7 @@ item_values: Dict[ItemType, int] = {
     ItemType.HEAL_ON_KILL: gc.ITEM_HEAL_ON_KILL_POINTS,
     ItemType.INFECT_ON_HIT: gc.ITEM_INFECT_ON_HIT_POINTS,
     ItemType.HUNTER: gc.ITEM_HUNTER_POINTS,
+    ItemType.REFLECT_DAMAGE: gc.ITEM_REFLECT_DAMAGE_POINTS,
 }
 
 # Spell point values
