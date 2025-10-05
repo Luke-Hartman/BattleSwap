@@ -25,6 +25,7 @@ from visuals import Visual
 from components.status_effect import DamageOverTime, ZombieInfection
 from components.unit_type import UnitType
 from components.item import ItemType
+from components.static import StaticComponent
 from game_constants import gc
 from unit_condition import UnitCondition
 
@@ -218,32 +219,31 @@ class HealOnKill(Item):
     def apply(self, entity: int) -> None:
         """Apply heal on kill effect to the entity."""
         # Add OnKillEffects component for healing on kill
-        esper.add_component(
-            entity,
-            OnKillEffects(
-                effects=[
-                    HealPercentageMax(
-                        recipient=Recipient.OWNER,
-                        percentage=0.5,
-                        duration=1.0
-                    ),
-                    PlaySound([
-                        (SoundEffect(filename=f"heal.wav", volume=0.50), 1.0)
-                    ]),
-                    CreatesAttachedVisual(
-                        recipient=Recipient.OWNER,
-                        visual=Visual.Healing,
-                        animation_duration=1,
-                        expiration_duration=1,
-                        scale=2,
-                        random_starting_frame=True,
-                        layer=1,
-                        on_death=lambda e: esper.delete_entity(e),
-                    )
-                ]
-            )
+        if not esper.has_component(entity, OnKillEffects):
+            esper.add_component(entity, OnKillEffects(effects=[]))
+        on_kill_effects = esper.component_for_entity(entity, OnKillEffects)
+        on_kill_effects.effects.extend(
+            [
+                HealPercentageMax(
+                    recipient=Recipient.OWNER,
+                    percentage=0.5,
+                    duration=1.0
+                ),
+                PlaySound([
+                    (SoundEffect(filename=f"heal.wav", volume=0.50), 1.0)
+                ]),
+                CreatesAttachedVisual(
+                    recipient=Recipient.OWNER,
+                    visual=Visual.Healing,
+                    animation_duration=1,
+                    expiration_duration=1,
+                    scale=2,
+                    random_starting_frame=True,
+                    layer=1,
+                    on_death=lambda e: esper.delete_entity(e),
+                )
+            ]
         )
-    
     
     @classmethod
     def get_unit_condition(cls) -> UnitCondition:
@@ -304,6 +304,23 @@ class StartInvisible(Item):
         ])
 
 
+class StaticDischarge(Item):
+    """Grants static buildup that discharges as extra damage when dealing damage."""
+    
+    def apply(self, entity: int) -> None:
+        """Apply static discharge effect to the entity."""
+        if not esper.has_component(entity, StaticComponent):
+            esper.add_component(entity, StaticComponent())
+        else:
+            static_component = esper.component_for_entity(entity, StaticComponent)
+            static_component.stacks += 1
+    
+    @classmethod
+    def get_unit_condition(cls) -> UnitCondition:
+        """Return the unit condition for this item."""
+        return Always()
+
+
 # Item theme IDs for UI styling
 item_theme_ids: Dict[ItemType, str] = {
     ItemType.EXTRA_HEALTH: "#extra_health_icon",
@@ -315,7 +332,8 @@ item_theme_ids: Dict[ItemType, str] = {
     ItemType.INFECT_ON_HIT: "#infect_on_hit_icon",
     ItemType.HUNTER: "#hunter_icon",
     ItemType.REFLECT_DAMAGE: "#reflect_damage_icon",
-    ItemType.START_INVISIBLE: "#start_invisible_icon"
+    ItemType.START_INVISIBLE: "#start_invisible_icon",
+    ItemType.STATIC_DISCHARGE: "#static_discharge_icon"
 }
 
 # Item icon surfaces for rendering
@@ -332,7 +350,8 @@ item_registry: Dict[ItemType, Item] = {
     ItemType.INFECT_ON_HIT: InfectOnHit(),
     ItemType.HUNTER: Hunter(),
     ItemType.REFLECT_DAMAGE: ReflectDamage(),
-    ItemType.START_INVISIBLE: StartInvisible()
+    ItemType.START_INVISIBLE: StartInvisible(),
+    ItemType.STATIC_DISCHARGE: StaticDischarge()
 }
 
 
@@ -348,7 +367,8 @@ def load_item_icons() -> None:
         ItemType.INFECT_ON_HIT: "InfectOnHitIcon.png",
         ItemType.HUNTER: "HunterIcon.png",
         ItemType.REFLECT_DAMAGE: "ReflectDamageIcon.png",
-        ItemType.START_INVISIBLE: "StartInvisibleIcon.png"
+        ItemType.START_INVISIBLE: "StartInvisibleIcon.png",
+        ItemType.STATIC_DISCHARGE: "StaticDischargeIcon.png"
     }
     
     for item_type, filename in item_icon_paths.items():

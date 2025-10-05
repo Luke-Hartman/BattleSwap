@@ -66,6 +66,7 @@ item_values: Dict[ItemType, int] = {
     ItemType.HUNTER: gc.ITEM_HUNTER_POINTS,
     ItemType.REFLECT_DAMAGE: gc.ITEM_REFLECT_DAMAGE_POINTS,
     ItemType.START_INVISIBLE: gc.ITEM_START_INVISIBLE_POINTS,
+    ItemType.STATIC_DISCHARGE: gc.ITEM_STATIC_DISCHARGE_POINTS,
 }
 
 # Spell point values

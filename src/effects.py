@@ -44,6 +44,7 @@ from components.unique import Unique
 from components.unit_type import UnitType, UnitTypeComponent
 from components.velocity import Velocity
 from components.visual_link import VisualLink
+from components.static import StaticComponent
 from corruption_powers import CorruptionPower
 from events import PLAY_SOUND, PlaySoundEvent, emit_event
 from visuals import Visual, create_visual_spritesheet
@@ -148,17 +149,16 @@ class Damages(Effect):
                         reflect_damage = damage * gc.ITEM_REFLECT_DAMAGE_PERCENTAGE
                         
                         # Apply reflect damage to the attacker.
-                        # Note this is not consider melee damage so it doesn't recurse. It also
-                        # doesn't include owner so it won't scale with increased/reduced damage effects.
+                        # Note this is not consider melee damage so it doesn't recurse.
                         Damages(damage=reflect_damage, recipient=Recipient.TARGET, is_melee=False).apply(
-                            None, None, owner
+                            recipient, None, owner
                         )
         
         # Check for OnHitEffects component on the owner (including self-hits)
         if owner and esper.has_component(owner, OnHitEffects):
             on_hit_effects = esper.component_for_entity(owner, OnHitEffects)
             for effect in on_hit_effects.effects:
-                effect.apply(owner, parent, recipient)
+                effect.apply(owner, parent, recipient)                
         
         if recipient_health.current == 0 and previous_health > 0:
             esper.add_component(recipient, Dying())
@@ -167,6 +167,21 @@ class Damages(Effect):
                 on_kill_effects = esper.component_for_entity(owner, OnKillEffects)
                 for effect in on_kill_effects.effects:
                     effect.apply(owner, parent, recipient)
+
+        # Handle static discharge - deal extra damage based on accumulated static
+        if owner and esper.has_component(owner, StaticComponent):
+            static_component = esper.component_for_entity(owner, StaticComponent)
+            static_damage = static_component.static_charge * gc.ITEM_STATIC_DISCHARGE_DAMAGE_MULTIPLIER
+            # Reset static charge to 0
+            static_component.static_charge = 0.0
+            if static_damage > gc.ITEM_STATIC_DISCHARGE_MINIMUM_DAMAGE:
+                # Apply static damage as a separate hit
+                Damages(damage=static_damage, recipient=self.recipient, is_melee=self.is_melee).apply(
+                    owner, parent, target
+                )
+                # Play sound for static discharge
+                volume = max(0.3, min(3.0, 0.3 + (static_damage - 100) * (3.0 - 0.3) / 200))
+                emit_event(PLAY_SOUND, event=PlaySoundEvent(filename="static_discharge.wav", volume=volume))
 
 
 @dataclass

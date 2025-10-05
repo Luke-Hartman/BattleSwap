@@ -1891,7 +1891,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             tooltips={
                 StatType.DEFENSE: f"{zombie_jumper_health:.0f} maximum health",
                 StatType.SPEED: f"{zombie_jumper_movement_speed:.1f} units per second, can jump {gc.ZOMBIE_JUMPER_MAXIMUM_JUMP_RANGE} units every {gc.ZOMBIE_JUMPER_JUMP_COOLDOWN} seconds",
-                StatType.DAMAGE: f"{gc.ZOMBIE_JUMPER_ATTACK_DAMAGE} per hit ({gc.ZOMBIE_JUMPER_ATTACK_DAMAGE / attack_animation_duration:.1f} per second). Jump deals {gc.ZOMBIE_JUMPER_JUMP_DAMAGE} damage with a {gc.ZOMBIE_JUMPER_JUMP_COOLDOWN} second cooldown",
+                StatType.DAMAGE: f"{gc.ZOMBIE_JUMPER_ATTACK_DAMAGE} per hit ({gc.ZOMBIE_JUMPER_ATTACK_DAMAGE / attack_animation_duration:.1f} per second)",
                 StatType.RANGE: f"Melee: {gc.ZOMBIE_JUMPER_ATTACK_RANGE} units, Jump: {gc.ZOMBIE_JUMPER_MINIMUM_JUMP_RANGE} to {gc.ZOMBIE_JUMPER_MAXIMUM_JUMP_RANGE} units",
                 StatType.UTILITY: f"Infects enemies on hit"
             },
@@ -2444,4 +2444,13 @@ def get_item_data(item_type: ItemType) -> ItemData:
             }
         )
     
+    if item_type == ItemType.STATIC_DISCHARGE:
+        return ItemData(
+            name="Static Discharge",
+            description=f"Builds up static charge as the unit moves. When dealing damage, discharges all accumulated static as extra damage (minimum {gc.ITEM_STATIC_DISCHARGE_MINIMUM_DAMAGE} damage required).",
+            tips={
+                "Strong when": ["Unit has high movement speed", "Unit is a hunter"],
+                "Weak when": ["Against high health enemies", "Unit dies quickly"],
+            }
+        )
     raise ValueError(f"Unknown item type: {item_type}")

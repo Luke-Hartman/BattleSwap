@@ -12,6 +12,7 @@ from components.forced_movement import ForcedMovement
 from components.position import Position
 from components.velocity import Velocity
 from components.status_effect import StatusEffects, Immobilized
+from components.static import StaticComponent
 
 class VelocityProcessor(esper.Processor):
     """Processor responsible for translating entities."""
@@ -25,6 +26,14 @@ class VelocityProcessor(esper.Processor):
                 is_immobilized = any(isinstance(effect, Immobilized) for effect in status_effects.active_effects())
             
             if not is_immobilized and not esper.has_component(ent, ForcedMovement):
+                # Calculate distance moved for static buildup
+                distance_moved = math.sqrt((velocity.x * dt) ** 2 + (velocity.y * dt) ** 2)
+                
+                # Build up static if the entity has the StaticComponent
+                if esper.has_component(ent, StaticComponent):
+                    static_component = esper.component_for_entity(ent, StaticComponent)
+                    static_component.static_charge += distance_moved * static_component.stacks
+                
                 pos.x += velocity.x * dt
                 pos.y += velocity.y * dt
         
@@ -45,9 +54,21 @@ class VelocityProcessor(esper.Processor):
             if distance == 0:
                 continue
             if distance < forced_movement.speed * dt:
+                # Movement distance for static buildup
+                movement_distance = distance
+                if esper.has_component(ent, StaticComponent):
+                    static_component = esper.component_for_entity(ent, StaticComponent)
+                    static_component.static_charge += movement_distance * static_component.stacks
+                
                 pos.x = forced_movement.destination_x
                 pos.y = forced_movement.destination_y
                 esper.remove_component(ent, ForcedMovement)
             else:
+                # Movement distance for static buildup
+                movement_distance = forced_movement.speed * dt
+                if esper.has_component(ent, StaticComponent):
+                    static_component = esper.component_for_entity(ent, StaticComponent)
+                    static_component.static_charge += movement_distance * static_component.stacks
+                
                 pos.x += forced_movement.speed * dt * dx / distance
                 pos.y += forced_movement.speed * dt * dy / distance

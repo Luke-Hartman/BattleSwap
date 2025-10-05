@@ -654,6 +654,13 @@
             }
         }
     },
+    "#static_discharge_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/StaticDischargeIcon.png"
+            }
+        }
+    },
     "#summon_skeleton_swordsmen_icon": {
         "images": {
             "normal_image": {

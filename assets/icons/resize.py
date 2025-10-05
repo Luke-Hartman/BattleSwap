@@ -16,7 +16,8 @@ filenames = [
     'HealingAreaIcon',
     'CorruptionIcon',
     'ReflectDamageIcon',
-    'StartInvisibleIcon'
+    'StartInvisibleIcon',
+    'StaticDischargeIcon'
 ]
 original_size = 16
 for filename in filenames:

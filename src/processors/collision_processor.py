@@ -143,9 +143,23 @@ class CollisionProcessor(esper.Processor):
         """Handle collisions between projectiles and units of opposing teams."""
         collisions = self.check_sprite_group_collisions(p_sprites, u_sprites)
 
+        # Sort collisions by distance from unit to projectile to ensure deterministic behavior
+        sorted_collisions = []
+        for p_sprite, u_sprite in collisions:
+            p_ent = sprite_to_ent[p_sprite]
+            u_ent = sprite_to_ent[u_sprite]
+            p_pos = esper.component_for_entity(p_ent, Position)
+            u_pos = esper.component_for_entity(u_ent, Position)
+            # Calculate distance from unit to projectile
+            distance = ((u_pos.x - p_pos.x) ** 2 + (u_pos.y - p_pos.y) ** 2) ** 0.5
+            sort_key = (distance, u_pos.x, u_pos.y, p_pos.x, p_pos.y)
+            sorted_collisions.append((sort_key, p_sprite, u_sprite))
+        
+        sorted_collisions.sort(key=lambda x: x[0])
+
         # This is to skip checking collisions for a projectile that has already hit a unit
         collided_projectiles = set()
-        for p_sprite, u_sprite in collisions:
+        for _, p_sprite, u_sprite in sorted_collisions:
             if p_sprite in collided_projectiles:
                 continue
             
@@ -183,7 +197,21 @@ class CollisionProcessor(esper.Processor):
         """Handle collisions between visual AOEs and units."""
         collisions = self.check_sprite_group_collisions(aoe_sprites, u_sprites)
 
+        # Sort collisions by distance from unit to AOE to ensure deterministic behavior
+        sorted_collisions = []
         for aoe_sprite, u_sprite in collisions:
+            aoe_ent = sprite_to_ent[aoe_sprite]
+            u_ent = sprite_to_ent[u_sprite]
+            aoe_pos = esper.component_for_entity(aoe_ent, Position)
+            u_pos = esper.component_for_entity(u_ent, Position)
+            # Calculate distance from unit to AOE
+            distance = ((u_pos.x - aoe_pos.x) ** 2 + (u_pos.y - aoe_pos.y) ** 2) ** 0.5
+            sort_key = (distance, u_pos.x, u_pos.y, aoe_pos.x, aoe_pos.y)
+            sorted_collisions.append((sort_key, aoe_sprite, u_sprite))
+        
+        sorted_collisions.sort(key=lambda x: x[0])
+
+        for _, aoe_sprite, u_sprite in sorted_collisions:
             aoe_ent = sprite_to_ent[aoe_sprite]
             u_ent = sprite_to_ent[u_sprite]
             aoe = esper.component_for_entity(aoe_ent, VisualAoE)
@@ -207,8 +235,11 @@ class CollisionProcessor(esper.Processor):
         # Process all CircleAoEs
         for aoe_ent in circle_aoe_ents:
             aoe = esper.component_for_entity(aoe_ent, CircleAoE)
+            aoe_pos = esper.component_for_entity(aoe_ent, Position)
             range_condition = MaximumDistanceFromEntity(aoe_ent, distance=aoe.radius, y_bias=None, use_hitbox=True)
-            # Check all units
+            
+            # Collect all units that are in range and meet conditions
+            valid_collisions = []
             for u_sprite in u_sprites:
                 u_ent = sprite_to_ent[u_sprite]
                 # Check unit condition
@@ -216,4 +247,16 @@ class CollisionProcessor(esper.Processor):
                     continue
                 if not range_condition.check(u_ent):
                     continue
+                
+                u_pos = esper.component_for_entity(u_ent, Position)
+                # Calculate distance from unit to CircleAoE
+                distance = ((u_pos.x - aoe_pos.x) ** 2 + (u_pos.y - aoe_pos.y) ** 2) ** 0.5
+                sort_key = (distance, u_pos.x, u_pos.y, aoe_pos.x, aoe_pos.y)
+                valid_collisions.append((sort_key, u_ent))
+            
+            # Sort by distance to ensure deterministic behavior
+            valid_collisions.sort(key=lambda x: x[0])
+            
+            # Process collisions in sorted order
+            for _, u_ent in valid_collisions:
                 emit_event(CIRCLE_AOE_HIT, event=CircleAoEHitEvent(entity=aoe_ent, target=u_ent))

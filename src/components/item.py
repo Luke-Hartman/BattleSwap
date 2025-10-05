@@ -16,6 +16,7 @@ class ItemType(str, Enum):
     HUNTER = "hunter"
     REFLECT_DAMAGE = "reflect_damage"
     START_INVISIBLE = "start_invisible"
+    STATIC_DISCHARGE = "static_discharge"
 
 
 class ItemComponent:
