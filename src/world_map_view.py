@@ -566,7 +566,7 @@ class WorldMapView:
             points.append((x, y))
         
         # Draw the star
-        pygame.draw.polygon(self.screen, (255, 255, 0), points)  # Yellow color
+        pygame.draw.polygon(self.screen, tuple(gc.UI_UPGRADE_STAR_COLOR), points)
 
     def _draw_visible_edges(self) -> None:
         """Draw edges between adjacent hexes."""
@@ -591,10 +591,10 @@ class WorldMapView:
         # Get the most prominent border state of the two hexes
         border_states = [self.hex_states.get(coords, HexState()).border for coords in edge]
         if BorderState.YELLOW_BORDER in border_states:
-            color = (255, 255, 0)
+            color = tuple(gc.UI_UPGRADE_STAR_COLOR)
             width = 2
         elif BorderState.GREEN_BORDER in border_states:
-            color = (0, 255, 0)
+            color = tuple(gc.UI_SELECTION_COLOR)
             width = 2
         elif is_battle_edge:
             color = gc.MAP_BATTLEFIELD_EDGE_COLOR

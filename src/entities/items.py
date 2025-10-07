@@ -135,7 +135,7 @@ class DamageAura(Item):
                     recipient=Recipient.TARGET
                 )
             ],
-            color=(255, 0, 0),  # Red color
+            color=tuple(gc.AURA_DAMAGE_COLOR),
             period=gc.DEFAULT_AURA_PERIOD,
             owner_condition=Alive(),
             unit_condition=Alive(),

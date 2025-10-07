@@ -3024,7 +3024,7 @@ def create_infantry_banner_bearer(
             OnTeam(team=team),
             Alive()
         ]),
-        color=(255, 215, 0),
+        color=tuple(gc.AURA_BANNER_COLOR),
         duration=float('inf')  # Permanent
     )
     auras.auras.append(banner_aura)
@@ -3589,7 +3589,7 @@ def create_misc_commander(
             OnTeam(team=team),
             Alive()
         ]),
-        color=(255, 215, 0),
+        color=tuple(gc.AURA_BANNER_COLOR),
         duration=float('inf')  # Permanent
     )
     auras.auras.append(commander_aura)

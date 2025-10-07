@@ -1088,7 +1088,7 @@ class SetupBattleScene(Scene):
         
         # Draw selection rectangle
         selection_rect = pygame.Rect(rect_x, rect_y, rect_w, rect_h)
-        pygame.draw.rect(self.screen, (0, 255, 0), selection_rect, 2)
+        pygame.draw.rect(self.screen, tuple(gc.UI_SELECTION_COLOR), selection_rect, 2)
         
         # Draw semi-transparent fill
         selection_surface = pygame.Surface((rect_w, rect_h), pygame.SRCALPHA)
@@ -1417,7 +1417,7 @@ class SetupBattleScene(Scene):
                     include_units=False,
                 )
             for polygon in legal_area.geoms if isinstance(legal_area, shapely.MultiPolygon) else [legal_area]:
-                pygame.draw.lines(self.screen, (175, 175, 175), False, 
+                pygame.draw.lines(self.screen, tuple(gc.UI_LEGAL_AREA_COLOR), False, 
                     [self.camera.world_to_screen(x, y) for x, y in polygon.exterior.coords], 
                     width=2)
         if self.selected_spell is not None:
@@ -1426,7 +1426,7 @@ class SetupBattleScene(Scene):
                 battle_coords,
             )
             for polygon in legal_area.geoms if isinstance(legal_area, shapely.MultiPolygon) else [legal_area]:
-                pygame.draw.lines(self.screen, (175, 175, 175), False, 
+                pygame.draw.lines(self.screen, tuple(gc.UI_LEGAL_AREA_COLOR), False, 
                     [self.camera.world_to_screen(x, y) for x, y in polygon.exterior.coords], 
                     width=2)
         # Draw white line down the middle of the hexagon

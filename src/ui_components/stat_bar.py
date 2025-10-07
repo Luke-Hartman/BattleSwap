@@ -2,18 +2,21 @@ import pygame
 import pygame_gui
 from typing import Optional
 from ui_components.game_data import StatType
+from game_constants import gc
 
 class StatBar:
     """A UI component that displays a named stat with a value from 0-20 as segmented bars with text titles."""
     
     # Define colors for each stat type
-    STAT_COLORS = {
-        StatType.DAMAGE: (200, 50, 50),
-        StatType.DEFENSE: (50, 100, 200),
-        StatType.SPEED: (200, 200, 50),
-        StatType.RANGE: (194, 178, 128),
-        StatType.UTILITY: (170, 0, 255)
-    }
+    @staticmethod
+    def get_stat_colors():
+        return {
+            StatType.DAMAGE: tuple(gc.UI_STAT_DAMAGE_COLOR),
+            StatType.DEFENSE: tuple(gc.UI_STAT_DEFENSE_COLOR),
+            StatType.SPEED: tuple(gc.UI_STAT_SPEED_COLOR),
+            StatType.RANGE: tuple(gc.UI_STAT_RANGE_COLOR),
+            StatType.UTILITY: tuple(gc.UI_STAT_UTILITY_COLOR)
+        }
     
     # Text titles for each stat type
     STAT_TITLES = {
@@ -144,7 +147,7 @@ class StatBar:
             quarter_level = 0.25
         
         # Get the stat color
-        stat_color = self.STAT_COLORS[self.stat_type]
+        stat_color = self.get_stat_colors()[self.stat_type]
         
         # Colors for filled and unfilled segments
         if self.disabled:
@@ -155,8 +158,8 @@ class StatBar:
             if self.modification_level > 0:
                 fill_color = tuple(min(255, int(c * 1.2)) for c in stat_color)
         
-        # Unfilled segment color (dark gray)
-        unfilled_color = (60, 60, 60)
+        # Unfilled segment color
+        unfilled_color = tuple(gc.UI_STAT_UNFILLED_COLOR)
         
         # Draw each segment
         for i in range(self.NUM_SEGMENTS):
@@ -168,7 +171,7 @@ class StatBar:
                 pygame.draw.rect(self.segments_surface, fill_color, segment_rect)
                 # Add a subtle border for modified stats
                 if self.modification_level > 0:
-                    pygame.draw.rect(self.segments_surface, (255, 255, 255), segment_rect, 1)
+                    pygame.draw.rect(self.segments_surface, tuple(gc.UI_STAT_BORDER_COLOR), segment_rect, 1)
             elif i == full_segments and quarter_level > 0:
                 # Partially filled segment
                 # Draw the unfilled background first

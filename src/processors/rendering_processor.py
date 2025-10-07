@@ -369,7 +369,7 @@ class RenderingProcessor(esper.Processor):
         bar_pos = pygame.Rect(bar_x, bar_y, bar_width, bar_height)
 
         # Draw the background (empty health bar)
-        pygame.draw.rect(self.screen, (64, 64, 64), bar_pos)
+        pygame.draw.rect(self.screen, tuple(gc.UI_HEALTHBAR_BG_COLOR), bar_pos)
 
         # Draw the filled portion of the health bar
         fill_width = int(bar_width * health.current / health.maximum)
@@ -377,7 +377,7 @@ class RenderingProcessor(esper.Processor):
         pygame.draw.rect(self.screen, fill_color, (bar_pos.x, bar_pos.y, fill_width, bar_height))
 
         # Draw the border of the health bar
-        pygame.draw.rect(self.screen, (192, 192, 192), bar_pos, 1)
+        pygame.draw.rect(self.screen, tuple(gc.UI_HEALTHBAR_BORDER_COLOR), bar_pos, 1)
 
     def draw_item_indicators(self, pos: Position, item_component: 'ItemComponent', hitbox: 'Hitbox', team: 'Team', health: 'Health') -> None:
         """Draw small indicators showing that a unit has items equipped."""
@@ -444,10 +444,10 @@ class RenderingProcessor(esper.Processor):
         
         # Choose color based on hover state
         if is_hovered:
-            color = (255, 255, 0)  # Bright yellow for hovered unit
+            color = tuple(gc.UI_HOVER_COLOR)
             width = 3
         else:
-            color = (0, 255, 0)  # Green for valid targets
+            color = tuple(gc.UI_SELECTION_COLOR)
             width = 2
         
         # Draw a single circle to indicate valid target

@@ -257,7 +257,7 @@ def create_infecting_area_spell(
                 recipient=Recipient.TARGET
             )
         ],
-        color=(100, 50, 100),  # Purple color for infection aura
+        color=tuple(gc.AURA_INFECTION_COLOR),
         period=gc.DEFAULT_AURA_PERIOD,
         owner_condition=Always(),  # Always active (no owner condition needed)
         unit_condition=Alive(),  # Only affect living, non-infected units
@@ -315,7 +315,7 @@ def create_healing_area_spell(
                 recipient=Recipient.TARGET
             )
         ],
-        color=(0, 255, 0),  # Green color for healing aura
+        color=tuple(gc.AURA_HEALING_COLOR),
         period=gc.DEFAULT_AURA_PERIOD,
         owner_condition=Always(),  # Always active (no owner condition needed)
         unit_condition=All([Alive(), OnTeam(team=team)]),  # Only affect living allies
@@ -373,7 +373,7 @@ def create_slowing_area_spell(
                 recipient=Recipient.TARGET
             )
         ],
-        color=(0, 100, 255),  # Blue color for slowing aura
+        color=tuple(gc.AURA_SLOWING_COLOR),
         period=gc.DEFAULT_AURA_PERIOD,
         owner_condition=Always(),  # Always active (no owner condition needed)
         unit_condition=Alive(),  # Only affect living units

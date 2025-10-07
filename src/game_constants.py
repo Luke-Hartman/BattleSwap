@@ -52,6 +52,32 @@ class GameConstants(BaseModel):
     MAP_CORRUPTED_COLOR: list[int]
     MAP_RECLAIMED_COLOR: list[int]
 
+    # Aura Colors
+    AURA_DAMAGE_COLOR: list[int]
+    AURA_BANNER_COLOR: list[int]
+    AURA_INFECTION_COLOR: list[int]
+    AURA_HEALING_COLOR: list[int]
+    AURA_SLOWING_COLOR: list[int]
+
+    # UI Colors
+    UI_UPGRADE_STAR_COLOR: list[int]
+    UI_SELECTION_COLOR: list[int]
+    UI_HOVER_COLOR: list[int]
+    UI_LEGAL_AREA_COLOR: list[int]
+    UI_GRID_MAJOR_COLOR: list[int]
+    UI_GRID_MINOR_COLOR: list[int]
+    UI_HEALTHBAR_BG_COLOR: list[int]
+    UI_HEALTHBAR_BORDER_COLOR: list[int]
+    UI_PAUSED_TEXT_COLOR: list[int]
+    UI_PAUSED_SHADOW_COLOR: list[int]
+    UI_STAT_DAMAGE_COLOR: list[int]
+    UI_STAT_DEFENSE_COLOR: list[int]
+    UI_STAT_SPEED_COLOR: list[int]
+    UI_STAT_RANGE_COLOR: list[int]
+    UI_STAT_UTILITY_COLOR: list[int]
+    UI_STAT_UNFILLED_COLOR: list[int]
+    UI_STAT_BORDER_COLOR: list[int]
+
     # Target Preview Settings
     TARGET_PREVIEW_SHIFT: float
     TARGET_PREVIEW_GAP_DISTANCE: float

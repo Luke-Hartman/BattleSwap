@@ -66,7 +66,7 @@ def draw_grid(
             if isinstance(intersection, shapely.LineString):
                 # Check if this is a major grid line
                 is_major = ((x - center_x) // gc.GRID_SIZE) % gc.MAJOR_GRID_INTERVAL == 0
-                color = (150, 150, 150) if is_major else (75, 75, 75)
+                color = tuple(gc.UI_GRID_MAJOR_COLOR) if is_major else tuple(gc.UI_GRID_MINOR_COLOR)
                 width = 2 if is_major else 1
                 
                 # Convert intersection coordinates to screen space
@@ -84,7 +84,7 @@ def draw_grid(
             if isinstance(intersection, shapely.LineString):
                 # Check if this is a major grid line
                 is_major = ((y - center_y) // gc.GRID_SIZE) % gc.MAJOR_GRID_INTERVAL == 0
-                color = (150, 150, 150) if is_major else (75, 75, 75)
+                color = tuple(gc.UI_GRID_MAJOR_COLOR) if is_major else tuple(gc.UI_GRID_MINOR_COLOR)
                 width = 2 if is_major else 1
                 
                 # Convert intersection coordinates to screen space

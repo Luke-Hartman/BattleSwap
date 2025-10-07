@@ -315,11 +315,11 @@ class BattleScene(Scene):
             large_font = pygame.font.SysFont('Arial', 72, bold=True)
             
             # Render PAUSED text
-            paused_text = large_font.render("PAUSED", True, (255, 255, 255))
+            paused_text = large_font.render("PAUSED", True, tuple(gc.UI_PAUSED_TEXT_COLOR))
             text_rect = paused_text.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() // 2))
             
             # Add shadow effect for better visibility
-            shadow_text = large_font.render("PAUSED", True, (0, 0, 0))
+            shadow_text = large_font.render("PAUSED", True, tuple(gc.UI_PAUSED_SHADOW_COLOR))
             shadow_rect = shadow_text.get_rect(center=(text_rect.centerx + 3, text_rect.centery + 3))
             self.screen.blit(shadow_text, shadow_rect)
             
