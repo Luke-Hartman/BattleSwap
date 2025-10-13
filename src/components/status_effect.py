@@ -120,6 +120,16 @@ class Slowed(StatusEffect):
     speed_reduction_percent: float
     """The percentage reduction in movement speed (0.0 to 1.0)."""
 
+@dataclass
+class ExplodeOnDeath(StatusEffect):
+    """Status effect that makes a unit explode when it dies, damaging nearby units."""
+    
+    damage: float
+    """The amount of damage dealt by the explosion."""
+    
+    radius: float
+    """The radius of the explosion."""
+
 class StatusEffects:
     """Component that stores the status effects of a unit."""
     # TODO: This not really a following ECS best practice
@@ -138,6 +148,7 @@ class StatusEffects:
             WontPursue: [],
             ReviveProgress: [],
             Slowed: [],
+            ExplodeOnDeath: [],
         }
 
     def add(self, status_effect: StatusEffect) -> None:
@@ -186,6 +197,9 @@ class StatusEffects:
         if self._status_by_type[Slowed]:
             strongest_slowed = max(self._status_by_type[Slowed], key=lambda e: e.speed_reduction_percent)
             active_effects.append(strongest_slowed)
+        if self._status_by_type[ExplodeOnDeath]:
+            strongest_explode = max(self._status_by_type[ExplodeOnDeath], key=lambda e: e.damage)
+            active_effects.append(strongest_explode)
         active_effects.extend(self._status_by_type[Healing])
         active_effects.extend(self._status_by_type[ReviveProgress])
         return active_effects

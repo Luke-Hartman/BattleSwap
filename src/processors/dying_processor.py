@@ -19,6 +19,7 @@ from progress_manager import progress_manager
 from unit_condition import Infected
 from voice import play_death
 from components.summoned import SummonedBy
+from components.status_effect import StatusEffects, ExplodeOnDeath as ExplodeOnDeathEffect
 
 class DyingProcessor(esper.Processor):
     """Processor for units that are dying."""
@@ -80,5 +81,38 @@ class DyingProcessor(esper.Processor):
                 PlaySound([
                     (SoundEffect(filename=f"zombie_grunt_{i+1}.wav", volume=0.5), 1.0) for i in range(3)
                 ]).apply(owner=None, parent=None, target=None)
+            
+            # Handle explode on death status effect
+            if esper.has_component(ent, StatusEffects):
+                status_effects = esper.component_for_entity(ent, StatusEffects)
+                active_effects = status_effects.active_effects()
+                explode_effect = next((e for e in active_effects if isinstance(e, ExplodeOnDeathEffect)), None)
+                
+                if explode_effect:
+                    from effects import CreatesCircleAoE, Damages, CreatesVisual, PlaySound, Recipient, SoundEffect
+                    from unit_condition import All, Alive, Grounded
+                    from visuals import Visual
+                    from game_constants import gc
+                    
+                    # Create explosion effects
+                    CreatesCircleAoE(
+                        effects=[
+                            Damages(damage=explode_effect.damage, recipient=Recipient.TARGET, is_melee=False),
+                        ],
+                        radius=explode_effect.radius,
+                        unit_condition=All([Alive(), Grounded()]),
+                        location=Recipient.OWNER,
+                    ).apply(owner=ent, parent=ent, target=None)
+                    
+                    CreatesVisual(
+                        recipient=Recipient.OWNER,
+                        visual=Visual.Explosion,
+                        animation_duration=gc.CORE_WIZARD_FIREBALL_AOE_DURATION,
+                        scale=explode_effect.radius * gc.EXPLOSION_VISUAL_SCALE_RATIO,
+                        duration=gc.CORE_WIZARD_FIREBALL_AOE_DURATION,
+                        layer=2,
+                    ).apply(owner=ent, parent=ent, target=None)
+                    
+                    PlaySound(SoundEffect(filename="fireball_impact.wav", volume=0.50)).apply(owner=None, parent=None, target=None)
             
             esper.remove_component(ent, Dying)

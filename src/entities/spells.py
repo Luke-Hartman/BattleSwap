@@ -23,7 +23,8 @@ spell_theme_ids: Dict[SpellType, str] = {
     SpellType.METEOR_SHOWER: "#meteor_shower_icon",
     SpellType.INFECTING_AREA: "#infecting_area_icon",
     SpellType.HEALING_AREA: "#healing_area_icon",
-    SpellType.SLOWING_AREA: "#slowing_area_icon"
+    SpellType.SLOWING_AREA: "#slowing_area_icon",
+    SpellType.CHAIN_EXPLODE_ON_DEATH: "#chain_explode_on_death_icon"
 }
 
 spell_icon_surfaces: Dict[SpellType, pygame.Surface] = {}
@@ -37,6 +38,7 @@ def load_spell_icons() -> None:
         SpellType.INFECTING_AREA: "InfectingAreaIcon.png",
         SpellType.HEALING_AREA: "HealingAreaIcon.png",
         SpellType.SLOWING_AREA: "SlowingAreaIcon.png",
+        SpellType.CHAIN_EXPLODE_ON_DEATH: "ChainExplodeOnDeathIcon.png",
     }
     
     for spell_type, filename in spell_icon_paths.items():
@@ -71,6 +73,7 @@ def create_spell(
         SpellType.INFECTING_AREA: create_infecting_area_spell,
         SpellType.HEALING_AREA: create_healing_area_spell,
         SpellType.SLOWING_AREA: create_slowing_area_spell,
+        SpellType.CHAIN_EXPLODE_ON_DEATH: create_chain_explode_on_death_spell,
     }
     
     if spell_type not in spell_creators:
@@ -385,6 +388,66 @@ def create_slowing_area_spell(
         team=team.value,
         effects=[slowing_area_effect],
         radius=gc.SPELL_SLOWING_AREA_RADIUS
+    ))
+    
+    return entity
+
+
+def create_chain_explode_on_death_spell(
+    x: float,
+    y: float,
+    team: TeamType,
+    corruption_powers: List = None,
+) -> int:
+    """Create a Chain Explode On Death spell entity.
+    
+    This spell creates a temporary aura on the ground that applies an explode-on-death
+    status effect to all living units in the area. When affected units die, they explode,
+    damaging nearby units.
+    
+    Args:
+        x: X coordinate to place the spell at
+        y: Y coordinate to place the spell at
+        team: Team that is casting the spell
+        corruption_powers: Optional corruption powers to apply
+        
+    Returns:
+        Entity ID of the created spell
+    """
+    entity = create_base_spell(x, y, team, corruption_powers)
+    
+    # Import the effects we need
+    from effects import CreatesTemporaryAura, AppliesStatusEffect, Recipient
+    from unit_condition import Alive
+    from components.status_effect import ExplodeOnDeath
+    
+    # Create the chain explode on death effect
+    chain_explode_effect = CreatesTemporaryAura(
+        radius=gc.SPELL_CHAIN_EXPLODE_ON_DEATH_RADIUS,
+        duration=gc.SPELL_CHAIN_EXPLODE_ON_DEATH_DURATION,
+        effects=[
+            AppliesStatusEffect(
+                status_effect=ExplodeOnDeath(
+                    damage=gc.SPELL_CHAIN_EXPLODE_ON_DEATH_DAMAGE,
+                    radius=gc.SPELL_CHAIN_EXPLODE_ON_DEATH_EXPLOSION_RADIUS,
+                    time_remaining=gc.SPELL_CHAIN_EXPLODE_ON_DEATH_EFFECT_DURATION,
+                    owner=None  # The aura itself is the source
+                ),
+                recipient=Recipient.TARGET
+            )
+        ],
+        color=(255, 100, 0),  # Orange/red color for explosive aura
+        period=gc.DEFAULT_AURA_PERIOD,
+        owner_condition=Always(),  # Always active (no owner condition needed)
+        unit_condition=Alive(),  # Only affect living units
+        recipient=Recipient.PARENT,  # Create aura at the spell's position
+    )
+    
+    esper.add_component(entity, SpellComponent(
+        spell_type=SpellType.CHAIN_EXPLODE_ON_DEATH,
+        team=team.value,
+        effects=[chain_explode_effect],
+        radius=gc.SPELL_CHAIN_EXPLODE_ON_DEATH_RADIUS
     ))
     
     return entity

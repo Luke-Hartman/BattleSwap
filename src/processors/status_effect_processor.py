@@ -3,7 +3,7 @@
 from components.dying import Dying
 from components.on_kill_effects import OnKillEffects
 from components.health import Health
-from components.status_effect import InfantryBannerBearerEmpowered, InfantryBannerBearerMovementSpeedBuff, InfantryBannerBearerAbilitySpeedBuff, Fleeing, Healing, DamageOverTime, Slowed, StatusEffects, WontPursue, ZombieInfection, Invisible, Immobilized, ReviveProgress
+from components.status_effect import ExplodeOnDeath, InfantryBannerBearerEmpowered, InfantryBannerBearerMovementSpeedBuff, InfantryBannerBearerAbilitySpeedBuff, Fleeing, Healing, DamageOverTime, Slowed, StatusEffects, WontPursue, ZombieInfection, Invisible, Immobilized, ReviveProgress
 from components.unit_type import UnitTypeComponent
 from effects import Revive
 from game_constants import gc
@@ -63,6 +63,8 @@ class StatusEffectProcessor(esper.Processor):
                     pass
                 elif isinstance(status_effect, Slowed):
                     pass # Handled in the pursuing processor
+                elif isinstance(status_effect, ExplodeOnDeath):
+                    pass # Handled in the dying processor
                 else:
                     raise ValueError(f"Unknown status effect: {status_effect}")
         

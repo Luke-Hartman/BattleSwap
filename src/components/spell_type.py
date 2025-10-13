@@ -11,3 +11,4 @@ class SpellType(Enum):
     INFECTING_AREA = "infecting_area"
     HEALING_AREA = "healing_area"
     SLOWING_AREA = "slowing_area"
+    CHAIN_EXPLODE_ON_DEATH = "chain_explode_on_death"

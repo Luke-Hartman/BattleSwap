@@ -57,27 +57,32 @@ class SpellCard(BaseCard):
         if spell_type == SpellType.SUMMON_SKELETON_SWORDSMEN:
             return SpellData(
                 name="Summon Skeleton Swordsmen",
-                description=f"Summons {gc.SPELL_SUMMON_SKELETON_SWORDSMEN_COUNT} skeleton swordsmen in a circle with radius {gc.SPELL_SUMMON_SKELETON_SWORDSMEN_RADIUS}."
+                description=f"Summons {gc.SPELL_SUMMON_SKELETON_SWORDSMEN_COUNT} skeleton swordsmen in a circle with a radius of {gc.SPELL_SUMMON_SKELETON_SWORDSMEN_RADIUS}."
             )
         elif spell_type == SpellType.METEOR_SHOWER:
             return SpellData(
                 name="Meteor Shower",
-                description=f"Summons {gc.SPELL_METEOR_SHOWER_METEOR_COUNT} meteors that rain down from above, dealing {gc.SPELL_METEOR_SHOWER_DAMAGE} damage in a {gc.SPELL_METEOR_SHOWER_AOE_RADIUS} radius around each impact point."
+                description=f"Summons {gc.SPELL_METEOR_SHOWER_METEOR_COUNT} meteors that rain down from above, dealing {gc.SPELL_METEOR_SHOWER_DAMAGE} damage in a radius of {gc.SPELL_METEOR_SHOWER_AOE_RADIUS} around each impact point."
             )
         elif spell_type == SpellType.INFECTING_AREA:
             return SpellData(
                 name="Infecting Area",
-                description=f"Creates a {gc.SPELL_INFECTING_AREA_DURATION}-second aura with radius {gc.SPELL_INFECTING_AREA_RADIUS} that infects all living units with zombie infection."
+                description=f"Creates a {gc.SPELL_INFECTING_AREA_DURATION}-second aura with a radius of {gc.SPELL_INFECTING_AREA_RADIUS} that infects all living units with zombie infection."
             )
         elif spell_type == SpellType.HEALING_AREA:
             return SpellData(
                 name="Healing Area",
-                description=f"Creates a {gc.SPELL_HEALING_AREA_DURATION}-second aura with radius {gc.SPELL_HEALING_AREA_RADIUS} that heals all living allies for {gc.SPELL_HEALING_AREA_HEALING_DPS} HP per second."
+                description=f"Creates a {gc.SPELL_HEALING_AREA_DURATION}-second aura with a radius of {gc.SPELL_HEALING_AREA_RADIUS} that heals all living allies for {gc.SPELL_HEALING_AREA_HEALING_DPS} HP per second."
             )
         elif spell_type == SpellType.SLOWING_AREA:
             return SpellData(
                 name="Slowing Area",
-                description=f"Creates a {gc.SPELL_SLOWING_AREA_DURATION}-second aura with radius {gc.SPELL_SLOWING_AREA_RADIUS} that slows all living units by {gc.SPELL_SLOWING_AREA_SPEED_REDUCTION_PERCENT * 100:.0f}%."
+                description=f"Creates a {gc.SPELL_SLOWING_AREA_DURATION}-second aura with a radius of {gc.SPELL_SLOWING_AREA_RADIUS} that slows all living units by {gc.SPELL_SLOWING_AREA_SPEED_REDUCTION_PERCENT * 100:.0f}%."
+            )
+        elif spell_type == SpellType.CHAIN_EXPLODE_ON_DEATH:
+            return SpellData(
+                name="Chain Explode On Death",
+                description=f"Applies an explode-on-death effect to all living units in a radius of {gc.SPELL_CHAIN_EXPLODE_ON_DEATH_RADIUS}. Affected units explode when they die, dealing {gc.SPELL_CHAIN_EXPLODE_ON_DEATH_DAMAGE} damage in a radius of {gc.SPELL_CHAIN_EXPLODE_ON_DEATH_EXPLOSION_RADIUS}."
             )
         else:
             raise ValueError(f"Unknown spell type: {spell_type}")
