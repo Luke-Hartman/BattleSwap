@@ -703,6 +703,13 @@
             }
         }
     },
+    "#summon_lich_icon": {
+        "images": {
+            "normal_image": {
+                "path": "assets/icons/SummonLichIcon.png"
+            }
+        }
+    },
     "#text_box": {
         "misc": {
             "text_horiz_alignment": "center"

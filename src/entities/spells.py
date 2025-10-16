@@ -24,7 +24,8 @@ spell_theme_ids: Dict[SpellType, str] = {
     SpellType.INFECTING_AREA: "#infecting_area_icon",
     SpellType.HEALING_AREA: "#healing_area_icon",
     SpellType.SLOWING_AREA: "#slowing_area_icon",
-    SpellType.CHAIN_EXPLODE_ON_DEATH: "#chain_explode_on_death_icon"
+    SpellType.CHAIN_EXPLODE_ON_DEATH: "#chain_explode_on_death_icon",
+    SpellType.SUMMON_LICH: "#summon_lich_icon"
 }
 
 spell_icon_surfaces: Dict[SpellType, pygame.Surface] = {}
@@ -39,6 +40,7 @@ def load_spell_icons() -> None:
         SpellType.HEALING_AREA: "HealingAreaIcon.png",
         SpellType.SLOWING_AREA: "SlowingAreaIcon.png",
         SpellType.CHAIN_EXPLODE_ON_DEATH: "ChainExplodeOnDeathIcon.png",
+        SpellType.SUMMON_LICH: "SummonLichIcon.png",
     }
     
     for spell_type, filename in spell_icon_paths.items():
@@ -74,6 +76,7 @@ def create_spell(
         SpellType.HEALING_AREA: create_healing_area_spell,
         SpellType.SLOWING_AREA: create_slowing_area_spell,
         SpellType.CHAIN_EXPLODE_ON_DEATH: create_chain_explode_on_death_spell,
+        SpellType.SUMMON_LICH: create_summon_lich_spell,
     }
     
     if spell_type not in spell_creators:
@@ -448,6 +451,89 @@ def create_chain_explode_on_death_spell(
         team=team.value,
         effects=[chain_explode_effect],
         radius=gc.SPELL_CHAIN_EXPLODE_ON_DEATH_RADIUS
+    ))
+    
+    return entity
+
+
+def create_summon_lich_spell(
+    x: float,
+    y: float,
+    team: TeamType,
+    corruption_powers: List = None,
+) -> int:
+    """Create a Summon Lich spell entity.
+    
+    This spell monitors an area for corpses. When enough corpse HP has accumulated
+    in the area, a Skeleton Lich is summoned at the spell's location. The corpses are
+    not removed when counting.
+    
+    Args:
+        x: X coordinate to place the spell at
+        y: Y coordinate to place the spell at
+        team: Team that is casting the spell
+        corruption_powers: Optional corruption powers to apply
+        
+    Returns:
+        Entity ID of the created spell
+    """
+    entity = create_base_spell(x, y, team, corruption_powers)
+    
+    # Import needed components
+    from components.position import Position
+    from components.health import Health
+    from components.unit_state import State, UnitState
+    from components.unusable_corpse import UnusableCorpse
+    from effects import PlaySound, SoundEffect
+    
+    def check_corpse_threshold(spell_ent: int) -> bool:
+        """Check if enough corpse HP is present in the area to summon the lich."""
+        import math
+        
+        spell_pos = esper.component_for_entity(spell_ent, Position)
+        total_corpse_hp = 0.0
+        
+        # Sum up HP of all corpses in the area
+        for corpse_ent, (corpse_state, corpse_pos, health) in esper.get_components(UnitState, Position, Health):
+            # Skip if not a corpse
+            if corpse_state.state != State.DEAD:
+                continue
+            
+            # Skip if unusable corpse
+            if esper.has_component(corpse_ent, UnusableCorpse):
+                continue
+            
+            # Check if corpse is within radius
+            dx = corpse_pos.x - spell_pos.x
+            dy = corpse_pos.y - spell_pos.y
+            distance = math.sqrt(dx * dx + dy * dy)
+            
+            if distance <= gc.SPELL_SUMMON_LICH_RADIUS:
+                total_corpse_hp += health.maximum
+        
+        # Return True if we've reached the threshold
+        return total_corpse_hp >= gc.SPELL_SUMMON_LICH_HP_THRESHOLD
+    
+    # Create the summon effect
+    summon_lich_effect = CreatesUnit(
+        recipient=Recipient.PARENT,
+        unit_type=UnitType.SKELETON_LICH,
+        team=team,
+        offset=(0, 0),
+        corruption_powers=corruption_powers,
+        play_spawning=True,
+    )
+    
+    # Add SpellComponent with ready_to_trigger callback
+    esper.add_component(entity, SpellComponent(
+        spell_type=SpellType.SUMMON_LICH,
+        team=team.value,
+        effects=[
+            summon_lich_effect,
+            PlaySound(SoundEffect(filename="skeleton_lich_ability.wav", volume=0.4)),
+        ],
+        radius=gc.SPELL_SUMMON_LICH_RADIUS,
+        ready_to_trigger=check_corpse_threshold
     ))
     
     return entity

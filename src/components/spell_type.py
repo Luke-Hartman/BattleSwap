@@ -12,3 +12,4 @@ class SpellType(Enum):
     HEALING_AREA = "healing_area"
     SLOWING_AREA = "slowing_area"
     CHAIN_EXPLODE_ON_DEATH = "chain_explode_on_death"
+    SUMMON_LICH = "summon_lich"

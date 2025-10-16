@@ -84,6 +84,11 @@ class SpellCard(BaseCard):
                 name="Chain Explode On Death",
                 description=f"Applies an explode-on-death effect to all living units in a radius of {gc.SPELL_CHAIN_EXPLODE_ON_DEATH_RADIUS}. Affected units explode when they die, dealing {gc.SPELL_CHAIN_EXPLODE_ON_DEATH_DAMAGE} damage in a radius of {gc.SPELL_CHAIN_EXPLODE_ON_DEATH_EXPLOSION_RADIUS}."
             )
+        elif spell_type == SpellType.SUMMON_LICH:
+            return SpellData(
+                name="Summon Lich",
+                description=f"Summons a Skeleton Lich once {gc.SPELL_SUMMON_LICH_HP_THRESHOLD} HP worth of usable corpses have died in a radius of {gc.SPELL_SUMMON_LICH_RADIUS}. Corpses are not removed when counted."
+            )
         else:
             raise ValueError(f"Unknown spell type: {spell_type}")
     

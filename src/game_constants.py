@@ -743,6 +743,11 @@ class GameConstants(BaseModel):
     SPELL_CHAIN_EXPLODE_ON_DEATH_DAMAGE: float
     SPELL_CHAIN_EXPLODE_ON_DEATH_EXPLOSION_RADIUS: float
 
+    # Summon Lich Spell
+    SPELL_SUMMON_LICH_POINTS: int
+    SPELL_SUMMON_LICH_RADIUS: float
+    SPELL_SUMMON_LICH_HP_THRESHOLD: float
+
     # Explosion Visual Scaling
     EXPLOSION_VISUAL_SCALE_RATIO: float
 
