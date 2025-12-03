@@ -26,7 +26,9 @@ def get_resource_path(relative_path: str) -> Path:
     return Path(base_path) / relative_path
 
 starting_units: Dict[UnitType, int] = {
-    UnitType.CORE_DUELIST: 1
+    UnitType.CORE_SWORDSMAN: 3,
+    UnitType.CORE_CAVALRY: 3,
+    UnitType.CORE_ARCHER: 3
 }
 
 acquired_items: Dict[ItemType, int] = {}

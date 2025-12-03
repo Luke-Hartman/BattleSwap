@@ -1,12 +1,28 @@
 [
   {
-    "id": "Defeat the Swordsman!",
+    "id": "Defeat the Swordsmen!",
     "enemies": [
       [
         "CORE_SWORDSMAN",
         [
           75.0,
           0.0
+        ],
+        []
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          75.0,
+          -250.0
+        ],
+        []
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          75.0,
+          250.0
         ],
         []
       ]
@@ -49,7 +65,8 @@
         "required_team": 2,
         "increase_percent": 100.0
       }
-    ]
+    ],
+    "spells": []
   },
   {
     "id": "Defeat the Cavalry!",
@@ -57,7 +74,23 @@
       [
         "CORE_CAVALRY",
         [
-          625.0,
+          75.0,
+          -325.0
+        ],
+        []
+      ],
+      [
+        "CORE_CAVALRY",
+        [
+          75.0,
+          325.0
+        ],
+        []
+      ],
+      [
+        "CORE_CAVALRY",
+        [
+          75.0,
           0.0
         ],
         []
@@ -66,7 +99,7 @@
     "allies": null,
     "hex_coords": [
       1,
-      0
+      -1
     ],
     "is_test": false,
     "tip_voice_filename": null,
@@ -109,7 +142,8 @@
         "required_team": 2,
         "increase_percent": 100.0
       }
-    ]
+    ],
+    "spells": []
   },
   {
     "id": "Defeat the Archers!",
@@ -129,12 +163,20 @@
           -375.0
         ],
         []
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          300.0,
+          0.0
+        ],
+        []
       ]
     ],
     "allies": null,
     "hex_coords": [
-      2,
-      0
+      0,
+      1
     ],
     "is_test": false,
     "tip_voice_filename": null,
@@ -169,7 +211,8 @@
         "required_team": 2,
         "increase_percent": 100.0
       }
-    ]
+    ],
+    "spells": []
   },
   {
     "id": "Defeat the Wizard!",
@@ -185,7 +228,7 @@
     ],
     "allies": null,
     "hex_coords": [
-      3,
+      1,
       0
     ],
     "is_test": false,
@@ -221,7 +264,8 @@
         "required_team": 2,
         "increase_percent": 500.0
       }
-    ]
+    ],
+    "spells": null
   },
   {
     "id": "Behold the Wizard's Power!",
@@ -277,7 +321,7 @@
     ],
     "allies": null,
     "hex_coords": [
-      4,
+      2,
       0
     ],
     "is_test": false,
@@ -316,10 +360,11 @@
         "required_team": 2,
         "increase_percent": 300.0
       }
-    ]
+    ],
+    "spells": null
   },
   {
-    "id": "Line of Swordsmen",
+    "id": "Swordsmen and Duelists",
     "enemies": [
       [
         "CORE_SWORDSMAN",
@@ -344,11 +389,35 @@
           0.0
         ],
         []
+      ],
+      [
+        "CORE_DUELIST",
+        [
+          275.0,
+          300.0
+        ],
+        []
+      ],
+      [
+        "CORE_DUELIST",
+        [
+          275.0,
+          0.0
+        ],
+        []
+      ],
+      [
+        "CORE_DUELIST",
+        [
+          275.0,
+          -300.0
+        ],
+        []
       ]
     ],
     "allies": null,
     "hex_coords": [
-      5,
+      3,
       0
     ],
     "is_test": false,
@@ -395,7 +464,8 @@
         "required_team": 2,
         "increase_percent": 125.0
       }
-    ]
+    ],
+    "spells": []
   },
   {
     "id": "Let's Ride!",
@@ -431,11 +501,27 @@
           -25.0
         ],
         []
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          175.0,
+          -75.0
+        ],
+        []
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          175.0,
+          75.0
+        ],
+        []
       ]
     ],
     "allies": null,
     "hex_coords": [
-      4,
+      2,
       1
     ],
     "is_test": false,
@@ -482,7 +568,8 @@
         "required_team": 2,
         "increase_percent": 100.0
       }
-    ]
+    ],
+    "spells": []
   },
   {
     "id": "Two Squads",
@@ -538,7 +625,7 @@
     ],
     "allies": null,
     "hex_coords": [
-      3,
+      1,
       1
     ],
     "is_test": false,
@@ -593,7 +680,8 @@
         "required_team": 2,
         "increase_percent": 100.0
       }
-    ]
+    ],
+    "spells": null
   },
   {
     "id": "Double Duelists",
@@ -625,7 +713,7 @@
     ],
     "allies": null,
     "hex_coords": [
-      5,
+      3,
       1
     ],
     "is_test": false,
@@ -677,7 +765,8 @@
         "required_team": 2,
         "increase_percent": 50.0
       }
-    ]
+    ],
+    "spells": null
   },
   {
     "id": "A Balanced Army",
@@ -757,7 +846,7 @@
     ],
     "allies": null,
     "hex_coords": [
-      7,
+      5,
       0
     ],
     "is_test": false,
@@ -878,7 +967,8 @@
         "required_team": 2,
         "increase_percent": 30.0
       }
-    ]
+    ],
+    "spells": null
   },
   {
     "id": "Defenders and Rangers",
@@ -926,7 +1016,7 @@
     ],
     "allies": null,
     "hex_coords": [
-      8,
+      6,
       1
     ],
     "is_test": false,
@@ -997,7 +1087,8 @@
         "required_team": 2,
         "increase_percent": 100.0
       }
-    ]
+    ],
+    "spells": null
   },
   {
     "id": "Pikemen and Healers",
@@ -1045,7 +1136,7 @@
     ],
     "allies": null,
     "hex_coords": [
-      8,
+      6,
       -1
     ],
     "is_test": false,
@@ -1089,7 +1180,8 @@
         "required_team": 2,
         "increase_percent": 100.0
       }
-    ]
+    ],
+    "spells": null
   },
   {
     "id": "Defeat the Paladin!",
@@ -1121,7 +1213,7 @@
     ],
     "allies": null,
     "hex_coords": [
-      9,
+      7,
       -1
     ],
     "is_test": false,
@@ -1181,7 +1273,8 @@
         "required_team": 2,
         "increase_percent": 50.0
       }
-    ]
+    ],
+    "spells": null
   },
   {
     "id": "Defeat the Banner Bearer",
@@ -1221,7 +1314,7 @@
     ],
     "allies": null,
     "hex_coords": [
-      10,
+      8,
       1
     ],
     "is_test": false,
@@ -1265,7 +1358,8 @@
         "required_team": 2,
         "increase_percent": 30.0
       }
-    ]
+    ],
+    "spells": null
   },
   {
     "id": "The Crusade",
@@ -1297,7 +1391,7 @@
     ],
     "allies": null,
     "hex_coords": [
-      10,
+      8,
       -1
     ],
     "is_test": false,
@@ -1365,7 +1459,8 @@
         "required_team": 2,
         "increase_percent": 100.0
       }
-    ]
+    ],
+    "spells": null
   },
   {
     "id": "Shield and Spear",
@@ -1429,7 +1524,7 @@
     ],
     "allies": null,
     "hex_coords": [
-      9,
+      7,
       0
     ],
     "is_test": false,
@@ -1508,7 +1603,8 @@
         "required_team": 2,
         "increase_percent": 100.0
       }
-    ]
+    ],
+    "spells": null
   },
   {
     "id": "Defeat the Gold Knight!",
@@ -1548,7 +1644,7 @@
     ],
     "allies": null,
     "hex_coords": [
-      7,
+      5,
       1
     ],
     "is_test": false,
@@ -1587,7 +1683,8 @@
         "required_team": 2,
         "increase_percent": 100.0
       }
-    ]
+    ],
+    "spells": null
   },
   {
     "id": "Reinforcements",
@@ -1635,7 +1732,7 @@
     ],
     "allies": null,
     "hex_coords": [
-      7,
+      5,
       2
     ],
     "is_test": false,
@@ -1687,7 +1784,8 @@
         "required_team": 2,
         "increase_percent": 100.0
       }
-    ]
+    ],
+    "spells": null
   },
   {
     "id": "I need a medic!",
@@ -1783,7 +1881,7 @@
     ],
     "allies": null,
     "hex_coords": [
-      11,
+      9,
       0
     ],
     "is_test": false,
@@ -1878,7 +1976,8 @@
         "required_team": 2,
         "increase_percent": 100.0
       }
-    ]
+    ],
+    "spells": null
   },
   {
     "id": "Strong Leadership",
@@ -1950,7 +2049,7 @@
     ],
     "allies": null,
     "hex_coords": [
-      11,
+      9,
       1
     ],
     "is_test": false,
@@ -2013,7 +2112,8 @@
         "required_team": 2,
         "increase_percent": 25.0
       }
-    ]
+    ],
+    "spells": null
   },
   {
     "id": "The Meat Grinder",
@@ -2045,7 +2145,7 @@
     ],
     "allies": null,
     "hex_coords": [
-      9,
+      7,
       1
     ],
     "is_test": false,
@@ -2126,7 +2226,8 @@
         "required_team": 2,
         "increase_percent": 50.0
       }
-    ]
+    ],
+    "spells": null
   },
   {
     "id": "Fear Him.",
@@ -2142,7 +2243,7 @@
     ],
     "allies": null,
     "hex_coords": [
-      11,
+      9,
       -1
     ],
     "is_test": false,
@@ -2197,7 +2298,8 @@
         "required_team": 2,
         "increase_percent": 100.0
       }
-    ]
+    ],
+    "spells": null
   },
   {
     "id": "1Archer vs 1Swordsman",
@@ -2226,7 +2328,8 @@
     "tip_voice_filename": null,
     "best_solution": null,
     "best_corrupted_solution": null,
-    "corruption_powers": []
+    "corruption_powers": [],
+    "spells": null
   },
   {
     "id": "1Duelist vs 3 Consecutive Swordsman",
@@ -2271,7 +2374,8 @@
     "tip_voice_filename": null,
     "best_solution": null,
     "best_corrupted_solution": null,
-    "corruption_powers": []
+    "corruption_powers": [],
+    "spells": null
   },
   {
     "id": "1Pikeman, 1Defender vs 2Swordsman",
@@ -2316,7 +2420,8 @@
     "tip_voice_filename": null,
     "best_solution": null,
     "best_corrupted_solution": null,
-    "corruption_powers": []
+    "corruption_powers": [],
+    "spells": null
   },
   {
     "id": "1Cavalry vs 2Archer",
@@ -2353,7 +2458,8 @@
     "tip_voice_filename": null,
     "best_solution": null,
     "best_corrupted_solution": null,
-    "corruption_powers": []
+    "corruption_powers": [],
+    "spells": null
   },
   {
     "id": "1Swordsman vs 1Cavalry",
@@ -2382,7 +2488,8 @@
     "tip_voice_filename": null,
     "best_solution": null,
     "best_corrupted_solution": null,
-    "corruption_powers": []
+    "corruption_powers": [],
+    "spells": null
   },
   {
     "id": "1Cavalry vs 1Wizard",
@@ -2411,7 +2518,8 @@
     "tip_voice_filename": null,
     "best_solution": null,
     "best_corrupted_solution": null,
-    "corruption_powers": []
+    "corruption_powers": [],
+    "spells": null
   },
   {
     "id": "1Wizard vs 6Archer Group",
@@ -2480,7 +2588,8 @@
     "tip_voice_filename": null,
     "best_solution": null,
     "best_corrupted_solution": null,
-    "corruption_powers": []
+    "corruption_powers": [],
+    "spells": null
   },
   {
     "id": "2Gold Knight vs 12Swordsman",
@@ -2605,7 +2714,8 @@
     "tip_voice_filename": null,
     "best_solution": null,
     "best_corrupted_solution": null,
-    "corruption_powers": []
+    "corruption_powers": [],
+    "spells": null
   },
   {
     "id": "The Wizards",
@@ -2661,7 +2771,7 @@
     ],
     "allies": null,
     "hex_coords": [
-      6,
+      4,
       -1
     ],
     "is_test": false,
@@ -2716,7 +2826,8 @@
         "required_team": 2,
         "increase_percent": 300.0
       }
-    ]
+    ],
+    "spells": null
   },
   {
     "id": "Preview",
@@ -2764,7 +2875,7 @@
     ],
     "allies": null,
     "hex_coords": [
-      13,
+      11,
       0
     ],
     "is_test": false,
@@ -2819,7 +2930,8 @@
         "required_team": 2,
         "increase_percent": 100.0
       }
-    ]
+    ],
+    "spells": null
   },
   {
     "id": "Longbowmen",
@@ -2851,7 +2963,7 @@
     ],
     "allies": null,
     "hex_coords": [
-      4,
+      2,
       -1
     ],
     "is_test": false,
@@ -2911,7 +3023,8 @@
         "required_team": 2,
         "increase_percent": 900.0
       }
-    ]
+    ],
+    "spells": null
   },
   {
     "id": "Guarded Longbowmen",
@@ -2959,7 +3072,7 @@
     ],
     "allies": null,
     "hex_coords": [
-      5,
+      3,
       -2
     ],
     "is_test": false,
@@ -3006,7 +3119,8 @@
         "required_team": null,
         "increase_percent": -70.0
       }
-    ]
+    ],
+    "spells": null
   },
   {
     "id": "Guardian Angels",
@@ -3046,7 +3160,7 @@
     ],
     "allies": null,
     "hex_coords": [
-      9,
+      7,
       -2
     ],
     "is_test": false,
@@ -3098,7 +3212,8 @@
         "required_team": null,
         "increase_percent": -50.0
       }
-    ]
+    ],
+    "spells": null
   },
   {
     "id": "Soldiers",
@@ -3138,7 +3253,7 @@
     ],
     "allies": null,
     "hex_coords": [
-      11,
+      9,
       -2
     ],
     "is_test": false,
@@ -3190,7 +3305,8 @@
         "required_team": 1,
         "increase_percent": -50.0
       }
-    ]
+    ],
+    "spells": null
   },
   {
     "id": "Dark Knight Rises",
@@ -3302,7 +3418,7 @@
     ],
     "allies": null,
     "hex_coords": [
-      13,
+      11,
       -3
     ],
     "is_test": false,
@@ -3506,7 +3622,8 @@
         "required_team": 2,
         "increase_percent": 50.0
       }
-    ]
+    ],
+    "spells": null
   },
   {
     "id": "Catapult",
@@ -3562,7 +3679,7 @@
     ],
     "allies": null,
     "hex_coords": [
-      9,
+      7,
       2
     ],
     "is_test": false,
@@ -3646,7 +3763,8 @@
         "required_team": 2,
         "increase_percent": 100.0
       }
-    ]
+    ],
+    "spells": null
   },
   {
     "id": "More Catapults",
@@ -3718,7 +3836,7 @@
     ],
     "allies": null,
     "hex_coords": [
-      10,
+      8,
       3
     ],
     "is_test": false,
@@ -3805,7 +3923,8 @@
         "required_team": 1,
         "increase_percent": -80.0
       }
-    ]
+    ],
+    "spells": null
   },
   {
     "id": "Phalanx",
@@ -3957,7 +4076,7 @@
     ],
     "allies": null,
     "hex_coords": [
-      12,
+      10,
       -1
     ],
     "is_test": false,
@@ -4177,6 +4296,7 @@
         "required_team": 2,
         "increase_percent": 100.0
       }
-    ]
+    ],
+    "spells": null
   }
 ]

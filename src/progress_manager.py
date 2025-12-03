@@ -24,6 +24,9 @@ import random
 # Increment this when making breaking changes to save file format
 CURRENT_VERSION = 3
 
+# Starting hex coordinates that are initially available
+STARTING_HEXES = [(0, 0), (1, -1), (0, 1)]
+
 
 class Package(BaseModel):
     """Represents a package of items or spells with a total value of 300 points."""
@@ -489,11 +492,11 @@ class ProgressManager(BaseModel):
             ]
             valid_targets = []
             
-            # Always include the starting hex (0, 0) if it's claimed
-            starting_hex = (0, 0)
-            if (starting_hex in self.hex_states and 
-                self.hex_states[starting_hex] == HexLifecycleState.CLAIMED):
-                valid_targets.append(starting_hex)
+            # Always include starting hexes if they're claimed
+            for starting_hex in STARTING_HEXES:
+                if (starting_hex in self.hex_states and 
+                    self.hex_states[starting_hex] == HexLifecycleState.CLAIMED):
+                    valid_targets.append(starting_hex)
             
             # Add all claimed hexes that are adjacent to any corrupted hex
             for coords, state in self.hex_states.items():
@@ -565,6 +568,12 @@ class ProgressManager(BaseModel):
         """Set the lifecycle state of a hex."""
         self.hex_states[hex_coords] = state
         save_progress()
+
+    def clear_hex_state(self, hex_coords: Tuple[int, int]) -> None:
+        """Clear the lifecycle state of a hex."""
+        if hex_coords in self.hex_states:
+            del self.hex_states[hex_coords]
+            save_progress()
 
     def is_hex_claimable(self, hex_coords: Tuple[int, int]) -> bool:
         """Check if a hex can be claimed."""
@@ -729,7 +738,8 @@ def reset_progress() -> None:
     progress_manager.hex_states = {
         hex_coords: HexLifecycleState.FOGGED for hex_coords in upgrade_hexes.get_upgrade_hexes() + [battle.hex_coords for battle in battles.get_battles() if not battle.is_test]
     }
-    progress_manager.hex_states[(0, 0)] = HexLifecycleState.UNCLAIMED
+    for starting_hex in STARTING_HEXES:
+        progress_manager.hex_states[starting_hex] = HexLifecycleState.UNCLAIMED
     progress_manager.upgrade_tutorial_shown = False
     progress_manager.pending_packages = None
     progress_manager.acquired_items.clear()

@@ -57,17 +57,17 @@ class CampaignEditorScene(Scene):
     def get_unique_unit_types_count(self) -> int:
         """Get the count of unique unit types across all battles."""
         unique_unit_types = set()
-        
+
         for battle in get_battles():
             # Count enemy unit types
-            for unit_type, _ in battle.enemies:
+            for unit_type, _, _ in battle.enemies:
                 unique_unit_types.add(unit_type)
-            
+
             # Count allied unit types if they exist
             if battle.allies:
-                for unit_type, _ in battle.allies:
+                for unit_type, _, _ in battle.allies:
                     unique_unit_types.add(unit_type)
-        
+
         return len(unique_unit_types)
 
     def create_ui(self) -> None:
@@ -318,6 +318,9 @@ class CampaignEditorScene(Scene):
                         # Delete the selected battle
                         battle = self.world_map_view.get_battle_from_hex(self.selected_hex)
                         if battle:
+                            # Clear hex lifecycle state
+                            if battle.hex_coords is not None:
+                                progress_manager.clear_hex_state(battle.hex_coords)
                             battles.delete_battle(battle.id)
                             self.selected_hex = None
                             self.world_map_view.rebuild(get_battles())
@@ -346,7 +349,34 @@ class CampaignEditorScene(Scene):
                     # Handle save battle dialog events
                     elif hasattr(self, 'save_battle_dialog'):
                         if event.ui_element == self.save_battle_dialog.save_battle_button:
+                            is_new_battle = self.save_battle_dialog.existing_battle_id is None
+                            old_hex_coords = None
+                            new_battle_id = self.save_battle_dialog.id_entry.get_text()
+                            hex_coords = self.save_battle_dialog.hex_coords
+                            
+                            if not is_new_battle:
+                                old_battle = battles.get_battle_id(self.save_battle_dialog.existing_battle_id)
+                                old_hex_coords = old_battle.hex_coords
+                            
                             self.save_battle_dialog.save_battle(is_test=False)
+                            
+                            # Update hex lifecycle state
+                            if is_new_battle:
+                                # New battle: set to UNCLAIMED if hex_coords exists
+                                if hex_coords is not None:
+                                    if progress_manager.get_hex_state(hex_coords) is None:
+                                        progress_manager.set_hex_state(hex_coords, HexLifecycleState.UNCLAIMED)
+                            else:
+                                # Existing battle: handle hex coords change
+                                new_battle = battles.get_battle_id(new_battle_id)
+                                if old_hex_coords != new_battle.hex_coords:
+                                    # Battle was moved: clear old hex, set new hex
+                                    if old_hex_coords is not None:
+                                        progress_manager.clear_hex_state(old_hex_coords)
+                                    if new_battle.hex_coords is not None:
+                                        if progress_manager.get_hex_state(new_battle.hex_coords) is None:
+                                            progress_manager.set_hex_state(new_battle.hex_coords, HexLifecycleState.UNCLAIMED)
+                            
                             self.save_battle_dialog.kill()
                             delattr(self, 'save_battle_dialog')
                             self.world_map_view.rebuild(get_battles())
@@ -374,8 +404,17 @@ class CampaignEditorScene(Scene):
                         not upgrade_hexes.is_upgrade_hex(clicked_hex)):
                         # Then move the battle to the clicked hex
                         battle = self.world_map_view.get_battle_from_hex(self.selected_hex)
+                        old_hex_coords = battle.hex_coords
                         updated_battle = battle.model_copy(update={'hex_coords': clicked_hex})
                         update_battle(battle, updated_battle)
+                        
+                        # Update hex lifecycle state: clear old hex, set new hex
+                        if old_hex_coords is not None:
+                            progress_manager.clear_hex_state(old_hex_coords)
+                        if clicked_hex is not None:
+                            if progress_manager.get_hex_state(clicked_hex) is None:
+                                progress_manager.set_hex_state(clicked_hex, HexLifecycleState.UNCLAIMED)
+                        
                         self.world_map_view.rebuild(get_battles())
                         self.selected_hex = None
                         self.move_target_hex = None

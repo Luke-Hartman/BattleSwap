@@ -72,7 +72,9 @@ class HexState:
 
 def hex_lifecycle_to_fill_state(hex_lifecycle_state: Optional[HexLifecycleState]) -> FillState:
     """Convert a HexLifecycleState to the corresponding FillState."""
-    if hex_lifecycle_state == HexLifecycleState.CORRUPTED:
+    if hex_lifecycle_state is None:
+        return FillState.UNCLAIMED  # Default to unclaimed if no state is set
+    elif hex_lifecycle_state == HexLifecycleState.CORRUPTED:
         return FillState.CORRUPTED
     elif hex_lifecycle_state == HexLifecycleState.RECLAIMED:
         return FillState.RECLAIMED

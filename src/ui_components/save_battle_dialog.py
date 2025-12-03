@@ -1,9 +1,10 @@
 """Dialog for saving battles."""
 import pygame
 import pygame_gui
-from typing import List, Tuple, Optional, Protocol, Callable
+from typing import List, Tuple, Optional, Protocol, Callable, Any
 from components.unit_type import UnitType
 from components.spell_type import SpellType
+from components.item import ItemType
 import battles
 
 class SaveBattleCallback(Protocol):
@@ -16,8 +17,8 @@ class SaveBattleDialog:
     def __init__(
         self,
         manager: pygame_gui.UIManager,
-        ally_placements: Optional[List[Tuple[UnitType, Tuple[float, float]]]],
-        enemy_placements: List[Tuple[UnitType, Tuple[float, float]]],
+        ally_placements: Optional[List[Tuple[UnitType, Tuple[float, float], List[ItemType]]]],
+        enemy_placements: List[Tuple[UnitType, Tuple[float, float], List[ItemType]]],
         existing_battle_id: Optional[str],
         hex_coords: Optional[Tuple[int, int]] = None,
         show_battle_button: bool = True,
