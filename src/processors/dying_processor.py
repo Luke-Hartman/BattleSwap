@@ -89,7 +89,7 @@ class DyingProcessor(esper.Processor):
                 explode_effect = next((e for e in active_effects if isinstance(e, ExplodeOnDeathEffect)), None)
                 
                 if explode_effect:
-                    from effects import CreatesCircleAoE, Damages, CreatesVisual, PlaySound, Recipient, SoundEffect
+                    from effects import CreatesCircleAoE, Damages, CreatesVisual, Recipient
                     from unit_condition import All, Alive, Grounded
                     from visuals import Visual
                     from game_constants import gc
