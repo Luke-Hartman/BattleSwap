@@ -63,22 +63,10 @@ class BarracksUI(UITabContainer):
         # Initialize items
         if sandbox_mode:
             self._items = {item_type: float('inf') for item_type in ItemType}
-        else:
-            # Include all items that have been acquired (have entries in progress manager) even if 0 copies
-            acquired_item_types = set(progress_manager.acquired_items.keys())
-            for item_type in acquired_item_types:
-                if item_type not in self._items:
-                    self._items[item_type] = 0
         
         # Initialize spells
         if sandbox_mode:
             self._spells = {spell_type: float('inf') for spell_type in SpellType}
-        else:
-            # Include all spells that have been acquired (have entries in progress manager) even if 0 copies
-            acquired_spell_types = set(progress_manager.acquired_spells.keys())
-            for spell_type in acquired_spell_types:
-                if spell_type not in self._spells:
-                    self._spells[spell_type] = 0
         
         self.available_factions = {
             Faction.faction_of(unit_type)
@@ -485,13 +473,22 @@ class BarracksUI(UITabContainer):
         
         # Kill all existing UI elements
         self.kill()
-        
+
+        # Update items and spells from available items/spells (not all acquired)
+        if not self.sandbox_mode and self.current_battle is not None:
+            available_items_dict = progress_manager.available_items(self.current_battle)
+            available_spells_dict = progress_manager.available_spells(self.current_battle)
+        else:
+            # In sandbox mode or when current_battle is None, use current values
+            available_items_dict = self._items
+            available_spells_dict = self._spells
+
         # Recreate the entire barracks UI
         self.__init__(
             manager=self.manager,
             starting_units=self._units,
-            acquired_items=self._items,
-            acquired_spells=self._spells,
+            acquired_items=available_items_dict,
+            acquired_spells=available_spells_dict,
             interactive=self.interactive,
             sandbox_mode=self.sandbox_mode,
             current_battle=self.current_battle
@@ -511,8 +508,11 @@ class BarracksUI(UITabContainer):
 
     def _rebuild(self) -> None:
         """Rebuild the UI when dimensions or content changes."""
-        self._spells = {spell_type: count for spell_type, count in progress_manager.acquired_spells.items()}
-        self._items = {item_type: count for item_type, count in progress_manager.acquired_items.items()}
+        # Update items and spells from available items/spells (not all acquired)
+        if not self.sandbox_mode and self.current_battle is not None:
+            self._spells = progress_manager.available_spells(self.current_battle).copy()
+            self._items = progress_manager.available_items(self.current_battle).copy()
+        # In sandbox mode or when current_battle is None, keep current values
 
         if not hasattr(self, '_previous_dimensions'):
             self._previous_dimensions = None
