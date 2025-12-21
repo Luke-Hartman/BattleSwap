@@ -1154,6 +1154,9 @@ class CreatesUnit(Effect):
     play_spawning: bool = False
     """Whether to play the spawning animation when the unit is created."""
     
+    tier: Optional[UnitTier] = None
+    """Optional tier override. If provided, this tier will be used instead of the default tier logic."""
+    
     def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
         if self.recipient == Recipient.OWNER:
             assert owner is not None
@@ -1174,7 +1177,10 @@ class CreatesUnit(Effect):
         position = esper.component_for_entity(recipient, Position)
         
         # Determine the appropriate tier for the unit
-        if self.team == TeamType.TEAM1 and progress_manager:
+        # Use tier override if provided, otherwise use default logic
+        if self.tier is not None:
+            tier = self.tier
+        elif self.team == TeamType.TEAM1 and progress_manager:
             # Player units should use their upgraded tier
             tier = progress_manager.get_unit_tier(self.unit_type)
         else:

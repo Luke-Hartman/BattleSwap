@@ -137,6 +137,7 @@ def create_summon_skeleton_swordsmen_spell(
             offset=(int(offset_x), int(offset_y)),
             corruption_powers=corruption_powers,
             play_spawning=True,
+            tier=UnitTier.BASIC,
         )
         effects.append(effect)
 
@@ -522,6 +523,7 @@ def create_summon_lich_spell(
         offset=(0, 0),
         corruption_powers=corruption_powers,
         play_spawning=True,
+        tier=UnitTier.BASIC,
     )
     
     # Add SpellComponent with ready_to_trigger callback

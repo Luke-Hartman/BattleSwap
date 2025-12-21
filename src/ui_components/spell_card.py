@@ -57,7 +57,7 @@ class SpellCard(BaseCard):
         if spell_type == SpellType.SUMMON_SKELETON_SWORDSMEN:
             return SpellData(
                 name="Summon Skeleton Swordsmen",
-                description=f"Summons {gc.SPELL_SUMMON_SKELETON_SWORDSMEN_COUNT} skeleton swordsmen in a circle with a radius of {gc.SPELL_SUMMON_SKELETON_SWORDSMEN_RADIUS}."
+                description=f"Summons {gc.SPELL_SUMMON_SKELETON_SWORDSMEN_COUNT} basic tier skeleton swordsmen in a circle with a radius of {gc.SPELL_SUMMON_SKELETON_SWORDSMEN_RADIUS}."
             )
         elif spell_type == SpellType.METEOR_SHOWER:
             return SpellData(
@@ -87,7 +87,7 @@ class SpellCard(BaseCard):
         elif spell_type == SpellType.SUMMON_LICH:
             return SpellData(
                 name="Summon Lich",
-                description=f"Summons a Skeleton Lich once {gc.SPELL_SUMMON_LICH_HP_THRESHOLD} HP worth of usable corpses have died in a radius of {gc.SPELL_SUMMON_LICH_RADIUS}. Corpses are not removed when counted."
+                description=f"Summons a basic tier Skeleton Lich once {gc.SPELL_SUMMON_LICH_HP_THRESHOLD} HP worth of usable corpses have died in a radius of {gc.SPELL_SUMMON_LICH_RADIUS}. Corpses are not removed when counted."
             )
         else:
             raise ValueError(f"Unknown spell type: {spell_type}")
