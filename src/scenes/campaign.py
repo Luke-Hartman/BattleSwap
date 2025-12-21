@@ -600,6 +600,18 @@ class CampaignScene(Scene):
                 states[hex_coords].fill = FillState.UNCLAIMED
                 states[hex_coords].fogged = True
 
+        # Add flashing borders to unlocked battles before first battle completion
+        no_battles_completed = len(progress_manager.solutions) == 0
+        if no_battles_completed:
+            for battle in self.world_map_view.battles.values():
+                hex_coords = battle.hex_coords
+                hex_state = progress_manager.get_hex_state(hex_coords)
+                # Unlocked battles are those that are not FOGGED
+                if hex_state is not None and hex_state != HexLifecycleState.FOGGED:
+                    # Don't override selected hex border
+                    if hex_coords != self.selected_hex:
+                        states[hex_coords].border = BorderState.FLASHING_BORDER
+
         if self.selected_hex is not None:
             states[self.selected_hex].border = BorderState.YELLOW_BORDER
         if self.hovered_hex is not None:

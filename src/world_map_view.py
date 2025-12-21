@@ -55,6 +55,7 @@ class BorderState(Enum):
     NORMAL = auto()
     GREEN_BORDER = auto()
     YELLOW_BORDER = auto()
+    FLASHING_BORDER = auto()
 
 class HexState:
     """Combined state for fill and border of a hex."""
@@ -597,6 +598,17 @@ class WorldMapView:
             width = 2
         elif BorderState.GREEN_BORDER in border_states:
             color = (0, 255, 0)
+            width = 2
+        elif BorderState.FLASHING_BORDER in border_states:
+            # Animated flashing border: pulse between bright yellow and darker yellow
+            # Matches BaseCard flash frequency: 3 cycles per second (6 alternations in 1.0 second)
+            import math
+            current_time_ms = pygame.time.get_ticks()
+            hz = 1.5
+            flash_cycle = (current_time_ms / 1000.0 * hz * 2.0 * math.pi) % (2.0 * math.pi)
+            flash_intensity = (1.0 + 0.5 * (1.0 + math.sin(flash_cycle))) / 2.0  # Pulse between 0.5 and 1.0
+            base_color = (255, 255, 255)  # White
+            color = tuple(int(c * flash_intensity) for c in base_color)
             width = 2
         elif is_battle_edge:
             color = gc.MAP_BATTLEFIELD_EDGE_COLOR
