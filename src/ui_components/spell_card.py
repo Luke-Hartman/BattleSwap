@@ -5,9 +5,11 @@ import pygame_gui
 import pygame_gui.core
 from typing import Tuple, Optional
 from components.spell_type import SpellType
+from components.unit_type import UnitType
 from entities.spells import spell_icon_surfaces
 from ui_components.base_card import BaseCard
 from game_constants import gc
+from ui_components.game_data import GlossaryEntryType
 
 
 class SpellCard(BaseCard):
@@ -57,37 +59,37 @@ class SpellCard(BaseCard):
         if spell_type == SpellType.SUMMON_SKELETON_SWORDSMEN:
             return SpellData(
                 name="Summon Skeleton Swordsmen",
-                description=f"Summons {gc.SPELL_SUMMON_SKELETON_SWORDSMEN_COUNT} basic tier skeleton swordsmen in a circle with a radius of {gc.SPELL_SUMMON_SKELETON_SWORDSMEN_RADIUS}."
+                description=f"Summons {gc.SPELL_SUMMON_SKELETON_SWORDSMEN_COUNT} <a href='{GlossaryEntryType.UPGRADE.value}'>Basic tier</a> <br><a href='{UnitType.SKELETON_SWORDSMAN.value}'>Skeleton Swordsmen</a> in a circle with a radius of {gc.SPELL_SUMMON_SKELETON_SWORDSMEN_RADIUS}."
             )
         elif spell_type == SpellType.METEOR_SHOWER:
             return SpellData(
                 name="Meteor Shower",
-                description=f"Summons {gc.SPELL_METEOR_SHOWER_METEOR_COUNT} meteors that rain down from above, dealing {gc.SPELL_METEOR_SHOWER_DAMAGE} damage in a radius of {gc.SPELL_METEOR_SHOWER_AOE_RADIUS} around each impact point."
+                description=f"Summons {gc.SPELL_METEOR_SHOWER_METEOR_COUNT} meteors that rain down from above, dealing {gc.SPELL_METEOR_SHOWER_DAMAGE} damage in an <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a> of {gc.SPELL_METEOR_SHOWER_AOE_RADIUS} around each impact point."
             )
         elif spell_type == SpellType.INFECTING_AREA:
             return SpellData(
                 name="Infecting Area",
-                description=f"Creates a {gc.SPELL_INFECTING_AREA_DURATION}-second aura with a radius of {gc.SPELL_INFECTING_AREA_RADIUS} that infects all living units with zombie infection."
+                description=f"Creates a {gc.SPELL_INFECTING_AREA_DURATION}-second <a href='{GlossaryEntryType.AURA.value}'>Aura</a> with a radius of {gc.SPELL_INFECTING_AREA_RADIUS} that <a href='{GlossaryEntryType.INFECTION.value}'>Infects</a> ALL living units."
             )
         elif spell_type == SpellType.HEALING_AREA:
             return SpellData(
                 name="Healing Area",
-                description=f"Creates a {gc.SPELL_HEALING_AREA_DURATION}-second aura with a radius of {gc.SPELL_HEALING_AREA_RADIUS} that heals all living allies for {gc.SPELL_HEALING_AREA_HEALING_DPS} HP per second."
+                description=f"Creates a {gc.SPELL_HEALING_AREA_DURATION}-second <a href='{GlossaryEntryType.AURA.value}'>Aura</a> with a radius of {gc.SPELL_HEALING_AREA_RADIUS} that heals ALL living allies for {gc.SPELL_HEALING_AREA_HEALING_DPS} HP per second."
             )
         elif spell_type == SpellType.SLOWING_AREA:
             return SpellData(
                 name="Slowing Area",
-                description=f"Creates a {gc.SPELL_SLOWING_AREA_DURATION}-second aura with a radius of {gc.SPELL_SLOWING_AREA_RADIUS} that slows all living units by {gc.SPELL_SLOWING_AREA_SPEED_REDUCTION_PERCENT * 100:.0f}%."
+                description=f"Creates a {gc.SPELL_SLOWING_AREA_DURATION}-second <a href='{GlossaryEntryType.AURA.value}'>Aura</a> with a radius of {gc.SPELL_SLOWING_AREA_RADIUS} that slows ALL living units by {gc.SPELL_SLOWING_AREA_SPEED_REDUCTION_PERCENT * 100:.0f}%."
             )
         elif spell_type == SpellType.CHAIN_EXPLODE_ON_DEATH:
             return SpellData(
                 name="Chain Explode On Death",
-                description=f"Applies an explode-on-death effect to all living units in a radius of {gc.SPELL_CHAIN_EXPLODE_ON_DEATH_RADIUS}. Affected units explode when they die, dealing {gc.SPELL_CHAIN_EXPLODE_ON_DEATH_DAMAGE} damage in a radius of {gc.SPELL_CHAIN_EXPLODE_ON_DEATH_EXPLOSION_RADIUS}."
+                description=f"Applies an explode-on-death effect to ALL living units in an <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a> of {gc.SPELL_CHAIN_EXPLODE_ON_DEATH_RADIUS}. Affected units explode when they die, dealing {gc.SPELL_CHAIN_EXPLODE_ON_DEATH_DAMAGE} damage in an <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a> of {gc.SPELL_CHAIN_EXPLODE_ON_DEATH_EXPLOSION_RADIUS}."
             )
         elif spell_type == SpellType.SUMMON_LICH:
             return SpellData(
                 name="Summon Lich",
-                description=f"Summons a basic tier Skeleton Lich once {gc.SPELL_SUMMON_LICH_HP_THRESHOLD} HP worth of usable corpses have died in a radius of {gc.SPELL_SUMMON_LICH_RADIUS}. Corpses are not removed when counted."
+                description=f"Summons a <a href='{GlossaryEntryType.UPGRADE.value}'>Basic tier</a> <a href='{UnitType.SKELETON_LICH.value}'>Skeleton Lich</a> once {gc.SPELL_SUMMON_LICH_HP_THRESHOLD} HP worth of <a href='{GlossaryEntryType.UNUSABLE_CORPSE.value}'>Usable Corpses</a> have died in an <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a> of {gc.SPELL_SUMMON_LICH_RADIUS}. Corpses are not removed when counted."
             )
         else:
             raise ValueError(f"Unknown spell type: {spell_type}")

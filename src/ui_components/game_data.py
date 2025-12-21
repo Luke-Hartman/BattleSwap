@@ -483,7 +483,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         
         return UnitData(
             name="Skeleton Horseman",
-            description="Fast undead melee units with <a href='{GlossaryEntryType.UNUSABLE_CORPSE.value}'>Unusable Corpses</a> that deal low damage.",
+            description=f"Fast undead melee units with <a href='{GlossaryEntryType.UNUSABLE_CORPSE.value}'>Unusable Corpses</a> that deal low damage.",
             tier=unit_tier,
             stats={
                 StatType.DEFENSE: defense_stat(skeleton_horseman_health),
@@ -730,7 +730,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         
         return UnitData(
             name="Skeleton Archer",
-            description="Skeleton Archers are ranged units with <a href='{GlossaryEntryType.UNUSABLE_CORPSE.value}'>Unusable Corpses</a> that deal low damage.",
+            description=f"Skeleton Archers are ranged units with <a href='{GlossaryEntryType.UNUSABLE_CORPSE.value}'>Unusable Corpses</a> that deal low damage.",
             tier=unit_tier,
             stats={
                 StatType.DEFENSE: defense_stat(gc.SKELETON_ARCHER_HP),
@@ -773,7 +773,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         
         return UnitData(
             name="Skeleton Mage",
-            description="Skeleton Mages are ranged units with <a href='{GlossaryEntryType.UNUSABLE_CORPSE.value}'>Unusable Corpses</a> that deal area damage with exploding projectiles.",
+            description=f"Skeleton Mages are ranged units with <a href='{GlossaryEntryType.UNUSABLE_CORPSE.value}'>Unusable Corpses</a> that deal area damage with exploding projectiles.",
             tier=unit_tier,
             stats={
                 StatType.DEFENSE: defense_stat(gc.SKELETON_MAGE_HP),
@@ -819,7 +819,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         
         return UnitData(
             name="Skeleton Swordsman",
-            description="Skeleton Swordsmen are melee units with <a href='{GlossaryEntryType.UNUSABLE_CORPSE.value}'>Unusable Corpses</a> that deal moderate damage.",
+            description=f"Skeleton Swordsmen are melee units with <a href='{GlossaryEntryType.UNUSABLE_CORPSE.value}'>Unusable Corpses</a> that deal moderate damage.",
             tier=unit_tier,
             stats={
                 StatType.DEFENSE: defense_stat(skeleton_swordsman_health),
@@ -868,7 +868,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         
         return UnitData(
             name="Orc Berserker",
-            description="Orc Berserkers can throwing axes at short range and use melee attacks. They start at half health and heal for half of their maximum health from <a href='{GlossaryEntryType.KILLING_BLOW.value}'>Killing Blows</a>.",
+            description=f"Orc Berserkers can throwing axes at short range and use melee attacks. They start at half health and heal for half of their maximum health from <a href='{GlossaryEntryType.KILLING_BLOW.value}'>Killing Blows</a>.",
             tier=unit_tier,
             stats={
                 StatType.DEFENSE: defense_stat(orc_berserker_health),
@@ -916,7 +916,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         
         return UnitData(
             name="Orc Warrior",
-            description="Orc Warriors are balanced melee units that deal high damage. They start at half health and heal for half of their maximum health from Killing Blows.",
+            description=f"Orc Warriors are balanced melee units that deal high damage. They start at half health and heal for half of their maximum health from <a href='{GlossaryEntryType.KILLING_BLOW.value}'>Killing Blows</a>.",
             tier=unit_tier,
             stats={
                 StatType.DEFENSE: defense_stat(orc_warrior_health),
@@ -960,7 +960,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         
         return UnitData(
             name="Orc Warchief",
-            description="Orc Warchiefs are powerful melee units with high health and damage. They start at half health and heal for half of their maximum health from <a href='{GlossaryEntryType.KILLING_BLOW.value}'>Killing Blows</a>, while also gaining additional maximum health equal to the target's maximum health.",
+            description=f"Orc Warchiefs are powerful melee units with high health and damage. They start at half health and heal for half of their maximum health from <a href='{GlossaryEntryType.KILLING_BLOW.value}'>Killing Blows</a>, while also gaining additional maximum health equal to the target's maximum health.",
             tier=unit_tier,
             stats={
                 StatType.DEFENSE: defense_stat(orc_warchief_health + 2000),
@@ -2184,7 +2184,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         
         return UnitData(
             name="Pirate Crew",
-            description="Pirate Crew are balanced melee units with a <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a> jump attack on a long cooldown.",
+            description=f"Pirate Crew are balanced melee units with a <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a> jump attack on a long cooldown.",
             tier=unit_tier,
             stats={
                 StatType.DEFENSE: defense_stat(pirate_crew_health),
@@ -2377,7 +2377,7 @@ def get_item_data(item_type: ItemType) -> ItemData:
     if item_type == ItemType.DAMAGE_AURA:
         return ItemData(
             name="Damage Aura",
-            description=f"Grants the unit an aura that deals {gc.ITEM_DAMAGE_AURA_DAMAGE_PER_SECOND} damage per second to all units within {gc.ITEM_DAMAGE_AURA_RADIUS} range, including itself. Only active while the unit is alive.",
+            description=f"Grants the unit an <a href='{GlossaryEntryType.AURA.value}'>Aura</a> that deals {gc.ITEM_DAMAGE_AURA_DAMAGE_PER_SECOND} damage per second to all units within {gc.ITEM_DAMAGE_AURA_RADIUS} range, including itself. Only active while the unit is alive.",
             tips={
                 "Strong when": ["Unit has high health", "Enemy units are grouped together", "Unit is tanky", "Unit is supported by healing"],
                 "Weak when": ["Unit dies quickly", "Allies are nearby", "Unit has low health"],
@@ -2397,7 +2397,7 @@ def get_item_data(item_type: ItemType) -> ItemData:
     if item_type == ItemType.HEAL_ON_KILL:
         return ItemData(
             name="Heal On Kill",
-            description="Grants the unit ability to heal for half of its maximum health on killing blows.",
+            description=f"Grants the unit ability to heal for half of its maximum health on <a href='{GlossaryEntryType.KILLING_BLOW.value}'>Killing Blows</a>.",
             tips={
                 "Strong when": ["Granted to powerful units", "Unit has high health", "Unit is tanking damage", "Unit is in prolonged fights", "Against weak units"],
                 "Weak when": ["Unit dies quickly"],
@@ -2407,7 +2407,7 @@ def get_item_data(item_type: ItemType) -> ItemData:
     if item_type == ItemType.INFECT_ON_HIT:
         return ItemData(
             name="Infect On Hit",
-            description="Grants the unit ability to infect enemies with zombie infection on hit.",
+            description=f"Grants the unit ability to <a href='{GlossaryEntryType.INFECTION.value}'>Infect</a> enemies on hit.",
             tips={
                 "Strong when": ["Against multiple weak enemies", "Unit kills multiple enemies", "Unit deals area of effect damage"],
                 "Weak when": ["Unit dies quickly", "Against strong enemies"],
@@ -2417,7 +2417,7 @@ def get_item_data(item_type: ItemType) -> ItemData:
     if item_type == ItemType.HUNTER:
         return ItemData(
             name="Hunter",
-            description="Grants <a href='Hunter'>Hunter</a>.",
+            description=f"Grants <a href='Hunter'>Hunter</a>.",
             tips={
                 "Strong when": ["Enemy has high value targets behind other units.", "Unit has on kill effects"],
                 "Weak when": ["Default targeting works better."],
