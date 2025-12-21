@@ -511,6 +511,9 @@ class BarracksUI(UITabContainer):
 
     def _rebuild(self) -> None:
         """Rebuild the UI when dimensions or content changes."""
+        self._spells = {spell_type: count for spell_type, count in progress_manager.acquired_spells.items()}
+        self._items = {item_type: count for item_type, count in progress_manager.acquired_items.items()}
+
         if not hasattr(self, '_previous_dimensions'):
             self._previous_dimensions = None
             

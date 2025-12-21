@@ -770,6 +770,7 @@ def reset_progress() -> None:
     progress_manager.pending_packages = None
     progress_manager.acquired_items.clear()
     progress_manager.acquired_spells.clear()
+    progress_manager.packages_given = 0
     save_progress()
 
 def has_incompatible_save() -> bool:
