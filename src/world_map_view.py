@@ -604,7 +604,7 @@ class WorldMapView:
             # Matches BaseCard flash frequency: 3 cycles per second (6 alternations in 1.0 second)
             import math
             current_time_ms = pygame.time.get_ticks()
-            hz = 1.5
+            hz = 3.0
             flash_cycle = (current_time_ms / 1000.0 * hz * 2.0 * math.pi) % (2.0 * math.pi)
             flash_intensity = (1.0 + 0.5 * (1.0 + math.sin(flash_cycle))) / 2.0  # Pulse between 0.5 and 1.0
             base_color = (255, 255, 255)  # White

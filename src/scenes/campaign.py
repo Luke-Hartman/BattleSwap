@@ -611,6 +611,13 @@ class CampaignScene(Scene):
                     # Don't override selected hex border
                     if hex_coords != self.selected_hex:
                         states[hex_coords].border = BorderState.FLASHING_BORDER
+        
+        # Add flashing borders to upgrade hexes that are available to claim
+        for upgrade_hex_coords in upgrade_hexes.get_upgrade_hexes():
+            if progress_manager.is_hex_claimable(upgrade_hex_coords):
+                # Don't override selected hex border
+                if upgrade_hex_coords != self.selected_hex:
+                    states[upgrade_hex_coords].border = BorderState.FLASHING_BORDER
 
         if self.selected_hex is not None:
             states[self.selected_hex].border = BorderState.YELLOW_BORDER
