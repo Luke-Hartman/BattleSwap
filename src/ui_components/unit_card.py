@@ -104,24 +104,74 @@ class UnitCard(BaseCard):
             container=self.point_value_bg
         )
         
-        # Add faction label in upper left corner
+        # Add faction label in upper left corner (first, with background panel)
         faction_name = Faction.faction_of(self.unit_type).name.title()
-        self.faction_label = UILabel(
-            relative_rect=pygame.Rect((self.padding + 10, self.padding + 5), (150, 20)),
-            text=f"Faction: {faction_name}",
+        faction_text = f"Faction: {faction_name}"
+        left_padding = 5  # Add a few pixels of padding on the left inside the box
+        right_padding = 5
+        
+        # Calculate box width by creating a temporary label to measure text
+        temp_faction_label = UILabel(
+            relative_rect=pygame.Rect((0, 0), (-1, -1)),
+            text=faction_text,
             manager=self.manager,
             container=self.card_container,
             object_id=ObjectID(class_id='@left_aligned_text')
         )
+        temp_faction_label.rebuild()
+        faction_box_width = temp_faction_label.rect.width + left_padding + right_padding
+        faction_box_height = 25
+        temp_faction_label.kill()
         
-        # Add tier label below faction label with tier-specific color
-        from entities.units import get_tier_label_theme_class
-        tier_theme_class = get_tier_label_theme_class(self.unit_tier)
-        self.tier_label = UILabel(
-            relative_rect=pygame.Rect((self.padding + 10, self.padding + 25), (150, 20)),
-            text=f"Tier: {self.unit_tier.value}",
+        # Create a background panel for the faction label
+        self.faction_bg = UIPanel(
+            relative_rect=pygame.Rect((self.padding, self.padding), (faction_box_width, faction_box_height)),
             manager=self.manager,
             container=self.card_container,
+            margins={'left': 0, 'right': 0, 'top': 0, 'bottom': 0},
+            object_id=ObjectID(object_id='#point_value_box')
+        )
+        
+        self.faction_label = UILabel(
+            relative_rect=pygame.Rect((left_padding, 0), (faction_box_width - left_padding - right_padding, faction_box_height)),
+            text=faction_text,
+            manager=self.manager,
+            container=self.faction_bg,
+            object_id=ObjectID(class_id='@left_aligned_text')
+        )
+        
+        # Add tier label below faction label (second, with background panel)
+        from entities.units import get_tier_label_theme_class
+        tier_theme_class = get_tier_label_theme_class(self.unit_tier)
+        tier_text = f"Tier: {self.unit_tier.value}"
+        
+        # Calculate box width by creating a temporary label to measure text
+        temp_tier_label = UILabel(
+            relative_rect=pygame.Rect((0, 0), (-1, -1)),
+            text=tier_text,
+            manager=self.manager,
+            container=self.card_container,
+            object_id=ObjectID(class_id=tier_theme_class)
+        )
+        temp_tier_label.rebuild()
+        tier_box_width = temp_tier_label.rect.width + left_padding + right_padding
+        tier_box_height = 25
+        temp_tier_label.kill()
+        
+        # Create a background panel for the tier label
+        self.tier_bg = UIPanel(
+            relative_rect=pygame.Rect((self.padding, self.padding + faction_box_height), (tier_box_width, tier_box_height)),
+            manager=self.manager,
+            container=self.card_container,
+            margins={'left': 0, 'right': 0, 'top': 0, 'bottom': 0},
+            object_id=ObjectID(object_id='#point_value_box')
+        )
+        
+        self.tier_label = UILabel(
+            relative_rect=pygame.Rect((left_padding, 0), (tier_box_width - left_padding - right_padding, tier_box_height)),
+            text=tier_text,
+            manager=self.manager,
+            container=self.tier_bg,
             object_id=ObjectID(class_id=tier_theme_class)
         )
         
@@ -262,8 +312,12 @@ class UnitCard(BaseCard):
         self.point_value_bg.kill()
         if self.faction_label:
             self.faction_label.kill()
+        if self.faction_bg:
+            self.faction_bg.kill()
         if self.tier_label:
             self.tier_label.kill()
+        if self.tier_bg:
+            self.tier_bg.kill()
         
     def update(self, time_delta: float):
         """Update all stat bars and animations."""
