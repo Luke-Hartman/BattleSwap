@@ -62,16 +62,9 @@ class SelectedUnitManager:
             content=tips_content
         )
         
-        if info_mode_manager.info_mode:
-            card_index = self._get_next_card_index()
-            new_entry.creation_index = card_index
-            self.glossary_entries.append(new_entry)
-        else:
-            # In normal mode, we should still track tips entries for duplicate detection
-            # but they don't need to be in the main list
-            card_index = self._get_next_card_index()
-            new_entry.creation_index = card_index
-            self.glossary_entries.append(new_entry)
+        card_index = self._get_next_card_index()
+        new_entry.creation_index = card_index
+        self.cards.append(new_entry)
         
         return new_entry
 
