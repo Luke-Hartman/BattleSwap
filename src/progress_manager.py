@@ -516,10 +516,14 @@ class ProgressManager(BaseModel):
             # Immediately corrupt this hex so it can be used for adjacency in next iteration
             self.set_hex_state(hex_to_corrupt, HexLifecycleState.CORRUPTED)
         
-        # Fog all unclaimed hexes to prevent new claims during corruption
+        # Fog all unclaimed battle hexes to prevent new battle claims during corruption
+        # (but allow upgrade hexes to still be claimed)
+        from upgrade_hexes import is_upgrade_hex
         unclaimed_hexes = [coord for coord in self.hex_states if self.hex_states[coord] == HexLifecycleState.UNCLAIMED]
         for coords in unclaimed_hexes:
-            self.set_hex_state(coords, HexLifecycleState.FOGGED)
+            # Only fog battle hexes, not upgrade hexes
+            if not is_upgrade_hex(coords):
+                self.set_hex_state(coords, HexLifecycleState.FOGGED)
         
         save_progress()
         return hexes_to_corrupt
