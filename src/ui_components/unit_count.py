@@ -63,6 +63,32 @@ class UnitCount(BaseCountButton):
         )
         self.button.change_object_id(new_object_id)
     
+    def set_flash_state(self, flash: bool) -> None:
+        """Set the flash border state for this unit button."""
+        if flash:
+            # Use flash theme (white border)
+            new_object_id = pygame_gui.core.ObjectID(
+                class_id="@unit_count_flash",
+                object_id=unit_theme_ids[self.unit_type]
+            )
+        else:
+            # Use no border theme (for flash OFF state)
+            new_object_id = pygame_gui.core.ObjectID(
+                class_id="@unit_count_no_border",
+                object_id=unit_theme_ids[self.unit_type]
+            )
+        self.button.change_object_id(new_object_id)
+    
+    def restore_normal_theme(self) -> None:
+        """Restore the normal tier-based theme for this unit button."""
+        unit_tier = progress_manager.get_unit_tier(self.unit_type)
+        tier_theme_class = get_unit_icon_theme_class(unit_tier)
+        new_object_id = pygame_gui.core.ObjectID(
+            class_id=tier_theme_class,
+            object_id=unit_theme_ids[self.unit_type]
+        )
+        self.button.change_object_id(new_object_id)
+    
     def handle_event(self, event: pygame.event.Event) -> bool:
         """Handle UI events for the unit button."""
         if event.type == pygame_gui.UI_BUTTON_ON_HOVERED and event.ui_element == self.button:

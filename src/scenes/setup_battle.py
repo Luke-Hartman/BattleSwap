@@ -1442,6 +1442,7 @@ class SetupBattleScene(Scene):
         self.world_map_view.update_battles(time_delta)
         self.barracks.select_unit_type(self.selected_unit_type)
         self.barracks.select_item_type(self.selected_item_type)
+        self.barracks.update(time_delta)
         
         # Update selected unit manager for card animations
         selected_unit_manager.update(time_delta)

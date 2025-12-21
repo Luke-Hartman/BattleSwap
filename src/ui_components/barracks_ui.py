@@ -139,6 +139,12 @@ class BarracksUI(UITabContainer):
 
         # Set "ALL" tab as default
         self.switch_current_container(all_tab_index)
+        
+        # Flash animation state for unit buttons (3 Hz - 3 cycles per second, continuously)
+        self.unit_flash_time = 0.0
+        hz = 2.0
+        self.unit_flash_interval = 1.0 / (2 * hz)
+        self.unit_flash_state = False  # False = no border, True = white border
     
     def _has_acquired_items(self) -> bool:
         """Check if any items have been acquired (count > 0)."""
@@ -605,6 +611,7 @@ class BarracksUI(UITabContainer):
 
     def select_unit_type(self, unit_type: Optional[UnitType]) -> None:
         """Select a unit type across all tabs."""
+        self.selected_unit_type = unit_type
         for items in self.entity_items.values():
             for item in items:
                 if isinstance(item, UnitCount) and item.unit_type == unit_type:
@@ -880,3 +887,71 @@ class BarracksUI(UITabContainer):
             return item.spell_type
         
         return None
+    
+    def _should_flash_units(self) -> bool:
+        """Check if unit buttons should flash (no battles completed + all units still in barracks + no unit selected)."""
+        # Check if no battles have been completed
+        if len(progress_manager.solutions) > 0:
+            return False
+        
+        # Check if we're in setup mode with a current battle
+        if self.current_battle is None:
+            return False
+        
+        # Stop flashing if a unit is selected (player has unit on cursor)
+        if self.selected_unit_type is not None:
+            return False
+        
+        # Check if any units have been placed by checking if available_units is less than starting units
+        # If units have been placed, available_units will be less than starting_units
+        available = progress_manager.available_units(self.current_battle)
+        starting = battles.starting_units
+        
+        # If any unit type has fewer available than starting, units have been placed
+        for unit_type in starting:
+            if available.get(unit_type, 0) < starting[unit_type]:
+                return False
+        
+        return True
+    
+    def update(self, time_delta: float) -> None:
+        """Update the flash animation for unit buttons."""
+        should_flash = self._should_flash_units()
+        
+        if should_flash:
+            # Update flash animation continuously at 3 Hz
+            self.unit_flash_time += time_delta
+            
+            # Calculate current alternation (3 Hz = 6 alternations per second)
+            current_alternation = int(self.unit_flash_time / self.unit_flash_interval)
+            new_flash_state = (current_alternation % 2) == 1
+            
+            # Update theme if state changed
+            if new_flash_state != self.unit_flash_state:
+                self.unit_flash_state = new_flash_state
+                self._update_unit_flash_themes()
+            
+            # Wrap time to prevent overflow (keep it within one cycle)
+            if self.unit_flash_time >= self.unit_flash_interval * 2:
+                self.unit_flash_time -= self.unit_flash_interval * 2
+        else:
+            # Stop flashing if conditions no longer met - restore normal themes
+            was_flashing = self.unit_flash_state or self.unit_flash_time > 0
+            if was_flashing:
+                self._restore_normal_themes()
+            self.unit_flash_state = False
+            self.unit_flash_time = 0.0
+    
+    def _update_unit_flash_themes(self) -> None:
+        """Update flash themes for all unit count buttons."""
+        for items in self.entity_items.values():
+            for item in items:
+                if isinstance(item, UnitCount):
+                    item.set_flash_state(self.unit_flash_state)
+    
+    def _restore_normal_themes(self) -> None:
+        """Restore normal tier-based themes for all unit count buttons."""
+        for items in self.entity_items.values():
+            for item in items:
+                if isinstance(item, UnitCount):
+                    item.restore_normal_theme()
