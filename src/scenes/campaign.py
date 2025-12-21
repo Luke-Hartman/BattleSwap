@@ -459,6 +459,8 @@ class CampaignScene(Scene):
                             progress_manager.claim_hex(self.selected_hex)
                             self.create_context_buttons()
                             self._update_upgrade_button_state()  # Update upgrade button state
+                            # Check if packages should be shown (in case a battle hex was reclaimed)
+                            self.check_panels()
                 
                 # Handle upgrade tutorial panel events
                 if self.upgrade_tutorial is not None:
@@ -737,6 +739,9 @@ class CampaignScene(Scene):
             self.progress_details_window.kill()
             self.progress_details_window = None
             windows_closed = True
-            
+        
+        # Note: package_selection_panel is intentionally not closed here - it should persist
+        # when exiting the campaign scene so players must complete package selection
+        
         # Fall back to base class behavior and combine results
         return super()._close_scene_windows() or windows_closed

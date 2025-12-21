@@ -178,6 +178,7 @@ class ProgressManager(BaseModel):
     upgrade_tutorial_shown: bool = False
     acquired_items: Dict[ItemType, int] = {}
     acquired_spells: Dict[SpellType, int] = {}
+    packages_given: int = 0
 
     @field_serializer('solutions')
     def serialize_solutions(self, solutions: Dict[Tuple[int, int], Solution]) -> Dict[str, Any]:
@@ -340,9 +341,38 @@ class ProgressManager(BaseModel):
             if not battle.is_test
         ) and not self.game_completed_corruption
     
+    def count_reclaimed_corrupted_battles(self) -> int:
+        """Count the number of reclaimed corrupted battle hexes (not upgrade hexes).
+        
+        Returns:
+            The number of battle hexes that have been reclaimed (solved corrupted).
+        """
+        from upgrade_hexes import is_upgrade_hex
+        reclaimed_count = 0
+        for coords, state in self.hex_states.items():
+            if state == HexLifecycleState.RECLAIMED:
+                # Only count battle hexes, not upgrade hexes
+                if not is_upgrade_hex(coords):
+                    reclaimed_count += 1
+        return reclaimed_count
+    
     def should_show_package_selection(self) -> bool:
-        """Check if package selection should be shown after reclaiming all corrupted maps."""
-        return self.pending_packages is not None
+        """Check if package selection should be shown based on reclaimed corrupted battles.
+        
+        Returns:
+            True if the player has reclaimed corrupted battles but hasn't received enough packages.
+        """
+        reclaimed_battles = self.count_reclaimed_corrupted_battles()
+        # Player should get 1 package per reclaimed corrupted battle
+        expected_packages = reclaimed_battles // gc.CORRUPTION_BATTLE_COUNT
+        # If player is short on packages, show the selection panel
+        if expected_packages > self.packages_given:
+            # Generate packages if we don't have pending ones
+            if self.pending_packages is None:
+                self.pending_packages = self._generate_packages()
+                save_progress()
+            return True
+        return False
 
     def mark_congratulations_shown(self) -> None:
         self.game_completed = True
@@ -352,16 +382,10 @@ class ProgressManager(BaseModel):
         self.game_completed_corruption = True
         save_progress()
     
-    def mark_package_selection_needed(self) -> None:
-        """Mark that package selection is needed after reclaiming all corrupted battles."""
-        # Generate 3 random packages (avoiding duplicates)
-        self.pending_packages = self._generate_packages()
-        
-        save_progress()
-    
     def mark_package_selection_completed(self) -> None:
         """Mark that package selection has been completed."""
         self.pending_packages = None  # Clear the packages
+        self.packages_given += 1  # Increment the count of packages given
         save_progress()
     
     def _generate_packages(self) -> List[Package]:
@@ -609,11 +633,9 @@ class ProgressManager(BaseModel):
             if is_upgrade_hex(hex_coords):
                 emit_event(PLAY_SOUND, event=PlaySoundEvent(filename="reclaim_upgrade.wav", volume=0.5))
             
-            # Check if this was the last corrupted hex - if so, restore fogged hexes and trigger package selection
+            # Check if this was the last corrupted hex - if so, restore fogged hexes
             if not self.has_uncompleted_corrupted_battles():
                 self._restore_fogged_hexes_after_corruption()
-                # Mark that package selection is needed after reclaiming all corrupted battles
-                self.mark_package_selection_needed()
 
     def _restore_fogged_hexes_after_corruption(self) -> None:
         """Restore fogged hexes that are adjacent to claimed/reclaimed hexes back to unclaimed state."""

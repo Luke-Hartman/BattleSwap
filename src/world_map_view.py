@@ -110,6 +110,8 @@ class WorldMapView:
     def _initialize_battle_world(self, battle: Battle) -> None:
         """Initialize the battle world for a specific battle."""
         if battle.id in esper.list_worlds():
+            # Switch to default world before deleting to avoid PermissionError
+            esper.switch_world(self.default_world)
             esper.delete_world(battle.id)
         with use_world(battle.id):
             esper.add_processor(TransparencyProcessor())
