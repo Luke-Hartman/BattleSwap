@@ -694,12 +694,12 @@ class BarracksUI(UITabContainer):
 
     def cycle_to_next_faction(self) -> None:
         """Cycle to the next faction tab."""
-        # Total tabs = 1 ("ALL") + number of faction tabs + 1 ("ITEMS") + 1 ("SPELLS")
-        total_tabs = 1 + len(self.available_factions) + 1 + 1
+        # Use the actual number of tabs (which may not include ITEMS/SPELLS if not unlocked)
+        total_tabs = len(self.tabs)
         if total_tabs == 0:
             return
         
-        # Since tabs are added in order: "ALL" (index 0), then factions (indices 1, 2, 3, ...), then "ITEMS", then "SPELLS" (last)
+        # Cycle to the next tab
         next_tab_index = (self.current_container_index + 1) % total_tabs
         
         # Switch the container (this will automatically trigger resizing)
