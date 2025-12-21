@@ -2964,7 +2964,7 @@
     "allies": null,
     "hex_coords": [
       2,
-      -1
+      2
     ],
     "is_test": false,
     "tip_voice_filename": null,
@@ -3072,8 +3072,8 @@
     ],
     "allies": null,
     "hex_coords": [
-      3,
-      -2
+      2,
+      3
     ],
     "is_test": false,
     "tip_voice_filename": null,
