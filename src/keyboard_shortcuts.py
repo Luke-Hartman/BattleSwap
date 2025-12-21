@@ -38,7 +38,7 @@ def format_button_text(text: str, key: str) -> str:
     Examples:
         >>> format_button_text("Return", KeyboardShortcuts.ESCAPE)
         "[Esc] Return"
-        >>> format_button_text("Start Battle", KeyboardShortcuts.ENTER)
-        "[Enter] Start Battle"
+        >>> format_button_text("Start Battle", KeyboardShortcuts.SPACE)
+        "[Space] Start Battle"
     """
     return SHORTCUT_FORMAT.format(key=key, text=text)

@@ -87,7 +87,7 @@ class MainMenuScene(Scene):
                 (button_x, y),
                 (button_width, button_height)
             ),
-            text=format_button_text("Play Campaign", KeyboardShortcuts.ENTER),
+            text=format_button_text("Play Campaign", KeyboardShortcuts.SPACE),
             manager=self.manager
         )
         y += button_height + button_spacing
@@ -141,7 +141,7 @@ class MainMenuScene(Scene):
             manager=self.manager,
             window_title="Quit Game",
             action_long_desc="Are you sure you want to quit the game?",
-            action_short_name=format_button_text("Quit", KeyboardShortcuts.ENTER),
+            action_short_name=format_button_text("Quit", KeyboardShortcuts.SPACE),
             blocking=True
         )
 
@@ -171,7 +171,7 @@ class MainMenuScene(Scene):
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 return self.handle_quit()
 
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 emit_event(PLAY_SOUND, event=PlaySoundEvent(
                     filename="ui_click.wav",
                     volume=0.5

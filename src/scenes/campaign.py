@@ -307,15 +307,15 @@ class CampaignScene(Scene):
             if hex_state == HexLifecycleState.FOGGED:
                 button_text = "Explore more"
             elif hex_state == HexLifecycleState.UNCLAIMED:
-                button_text = format_button_text("Claim", KeyboardShortcuts.ENTER)
+                button_text = format_button_text("Claim", KeyboardShortcuts.SPACE)
             elif hex_state == HexLifecycleState.CLAIMED:
                 button_text = "Claimed"
             elif hex_state == HexLifecycleState.CORRUPTED:
-                button_text = format_button_text("Reclaim", KeyboardShortcuts.ENTER)
+                button_text = format_button_text("Reclaim", KeyboardShortcuts.SPACE)
             elif hex_state == HexLifecycleState.RECLAIMED:
                 button_text = "Reclaimed"
             else:
-                button_text = format_button_text("Claim", KeyboardShortcuts.ENTER)
+                button_text = format_button_text("Claim", KeyboardShortcuts.SPACE)
             
             self.context_buttons["claim"] = pygame_gui.elements.UIButton(
                 relative_rect=pygame.Rect(
@@ -344,7 +344,7 @@ class CampaignScene(Scene):
                         (start_x, y),
                         (button_width, button_height)
                     ),
-                    text=format_button_text("Improve", KeyboardShortcuts.ENTER),
+                    text=format_button_text("Improve", KeyboardShortcuts.SPACE),
                     manager=self.manager
                 )
             else:
@@ -353,7 +353,7 @@ class CampaignScene(Scene):
                         (start_x, y),
                         (button_width, button_height)
                     ),
-                    text=format_button_text("Battle", KeyboardShortcuts.ENTER),
+                    text=format_button_text("Battle", KeyboardShortcuts.SPACE),
                     manager=self.manager
                 )
 
@@ -389,9 +389,9 @@ class CampaignScene(Scene):
 
             self.handle_escape(event)
 
-            # Add enter key handling
+            # Add space key handling
             if (event.type == pygame.KEYDOWN and 
-                event.key == pygame.K_RETURN and 
+                event.key == pygame.K_SPACE and 
                 self.selected_hex is not None):
                 # Simulate clicking the appropriate button
                 button = (self.context_buttons.get("battle") or 

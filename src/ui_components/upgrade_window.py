@@ -225,7 +225,7 @@ class UpgradeWindow:
         upgrade_button_x = self.start_x + self.card_width - upgrade_button_width
         self.upgrade_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(upgrade_button_x, controls_y, upgrade_button_width, self.description_height),
-            text=format_button_text("Upgrade", KeyboardShortcuts.ENTER),
+            text=format_button_text("Upgrade", KeyboardShortcuts.SPACE),
             manager=self.manager,
             container=bottom_section,
             anchors={'left': 'left',
@@ -622,8 +622,8 @@ class UpgradeWindow:
         
         # Handle keyboard events
         if event.type == pygame.KEYDOWN:
-            # Handle Enter key
-            if event.key == pygame.K_RETURN:
+            # Handle Space key
+            if event.key == pygame.K_SPACE:
                 # Check if we have an active upgrade dialog
                 if hasattr(self.manager, 'upgrade_dialogs') and self.manager.upgrade_dialogs:
                     # Simulate clicking the confirm button on the first dialog
@@ -811,7 +811,7 @@ class UpgradeWindow:
         # Add confirm and cancel buttons - positioned higher up
         confirm_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(10, 80, 85, 30),
-            text=format_button_text("Yes", KeyboardShortcuts.ENTER),
+            text=format_button_text("Yes", KeyboardShortcuts.SPACE),
             manager=self.manager,
             container=dialog
         )

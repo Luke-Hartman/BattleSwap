@@ -230,7 +230,7 @@ class SettingsScene(Scene):
                                 manager=self.manager,
                                 window_title="Unsaved Changes",
                                 action_long_desc="You have unsaved changes. Are you sure you want to leave?",
-                                action_short_name=format_button_text("Leave", KeyboardShortcuts.ENTER),
+                                action_short_name=format_button_text("Leave", KeyboardShortcuts.SPACE),
                                 blocking=True
                             )
                         else:

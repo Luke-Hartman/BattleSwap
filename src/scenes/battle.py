@@ -157,9 +157,9 @@ class BattleScene(Scene):
         has_changes = has_unsaved_changes(self.battle, self.current_placements, self.current_spell_placements)
         save_text = "Save" if has_changes else "No changes"
         
-        # Add Enter shortcut to save button if it's enabled
+        # Add Space shortcut to save button if it's enabled
         if has_changes:
-            save_text = format_button_text(save_text, KeyboardShortcuts.ENTER)
+            save_text = format_button_text(save_text, KeyboardShortcuts.SPACE)
         
         # Prepare tooltip with score information
         current_points = calculate_points_for_units(self.current_placements)
@@ -202,10 +202,10 @@ class BattleScene(Scene):
         )
 
         # Continue button (bottom right)
-        # Only show Enter shortcut if save button is disabled
+        # Only show Space shortcut if save button is disabled
         continue_text = "Continue"
         if not has_changes:
-            continue_text = format_button_text("Continue", KeyboardShortcuts.ENTER)
+            continue_text = format_button_text("Continue", KeyboardShortcuts.SPACE)
             
         self.continue_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(
@@ -275,7 +275,7 @@ class BattleScene(Scene):
                 (left_button_x + button_width + button_spacing, start_y),
                 (button_width, button_height)
             ),
-            text=format_button_text("Try Again", KeyboardShortcuts.ENTER),
+            text=format_button_text("Try Again", KeyboardShortcuts.SPACE),
             manager=self.manager,
             container=self.defeat_panel
         )
@@ -287,7 +287,7 @@ class BattleScene(Scene):
             manager=self.manager,
             window_title="Confirmation",
             action_long_desc="You have unsaved changes. Are you sure you want to continue?",
-            action_short_name=format_button_text("Continue", KeyboardShortcuts.ENTER),
+            action_short_name=format_button_text("Continue", KeyboardShortcuts.SPACE),
             blocking=True
         )
 
@@ -298,7 +298,7 @@ class BattleScene(Scene):
             manager=self.manager,
             window_title="Exit Battle",
             action_long_desc="Are you sure you want to exit?",
-            action_short_name=format_button_text("Exit", KeyboardShortcuts.ENTER),
+            action_short_name=format_button_text("Exit", KeyboardShortcuts.SPACE),
             blocking=True
         )
 
@@ -340,8 +340,8 @@ class BattleScene(Scene):
             
             # Handle keyboard shortcuts for victory/defeat panels
             if event.type == pygame.KEYDOWN:
-                # Handle Enter key
-                if event.key == pygame.K_RETURN:
+                # Handle Space key for buttons (only when panels are open, otherwise let it fall through to pause)
+                if event.key == pygame.K_SPACE:
                     # In victory panel
                     if hasattr(self, 'victory_panel') and self.victory_panel is not None:
                         has_changes = has_unsaved_changes(self.battle, self.current_placements, self.current_spell_placements)
@@ -365,6 +365,7 @@ class BattleScene(Scene):
                                 filename="ui_click.wav",
                                 volume=0.5
                             ))
+                        continue  # Don't let space fall through to pause when panel is open
                     # In defeat panel
                     elif hasattr(self, 'defeat_panel') and self.defeat_panel is not None:
                         if hasattr(self, 'try_again_button'):
@@ -376,6 +377,8 @@ class BattleScene(Scene):
                                 filename="ui_click.wav",
                                 volume=0.5
                             ))
+                        continue  # Don't let space fall through to pause when panel is open
+                    # If no panels are open, let space fall through to time_controls for pausing
                 
                 # Handle Escape key
                 elif event.key == pygame.K_ESCAPE:

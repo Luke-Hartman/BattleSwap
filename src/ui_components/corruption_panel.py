@@ -88,7 +88,7 @@ class CorruptionPanel(UIPanel):
                 ((panel_width - button_width) // 2, button_y),
                 (button_width, button_height)
             ),
-            text=format_button_text("Continue", KeyboardShortcuts.ENTER),
+            text=format_button_text("Continue", KeyboardShortcuts.SPACE),
             manager=manager,
             container=self
         )
@@ -102,8 +102,8 @@ class CorruptionPanel(UIPanel):
         Returns:
             bool: True if the event was handled, False otherwise.
         """
-        # Handle Enter key
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+        # Handle Space key
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
             # Play UI click sound
             emit_event(PLAY_SOUND, event=PlaySoundEvent(
                 filename="ui_click.wav",

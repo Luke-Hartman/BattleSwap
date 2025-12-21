@@ -63,7 +63,7 @@ class Scene(ABC):
             hasattr(self, 'confirmation_dialog') and 
             self.confirmation_dialog is not None):
 
-            if event.key == pygame.K_RETURN:
+            if event.key == pygame.K_SPACE:
                 # Simulate clicking the confirm button
                 pygame.event.post(pygame.event.Event(pygame.USEREVENT, {
                     'user_type': pygame_gui.UI_CONFIRMATION_DIALOG_CONFIRMED,

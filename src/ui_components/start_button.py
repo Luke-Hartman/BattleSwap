@@ -28,6 +28,6 @@ class StartButton(UIButton):
         
         super().__init__(
             relative_rect=button_rect,
-            text=format_button_text("Start", KeyboardShortcuts.ENTER),
+            text=format_button_text("Start", KeyboardShortcuts.SPACE),
             manager=manager
         )

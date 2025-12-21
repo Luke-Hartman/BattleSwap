@@ -619,7 +619,7 @@ class SetupBattleScene(Scene):
             manager=self.manager,
             window_title="Unsaved Changes",
             action_long_desc="You have unsaved changes. Are you sure you want to exit?" if not self.sandbox_mode else "Are you sure you want to exit?",
-            action_short_name=format_button_text("Exit", KeyboardShortcuts.ENTER),
+            action_short_name=format_button_text("Exit", KeyboardShortcuts.SPACE),
             blocking=True
         )
 
@@ -1143,8 +1143,8 @@ class SetupBattleScene(Scene):
 
             self.handle_escape(event)
             
-            # Handle Enter key to start battle
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+            # Handle Space key to start battle
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 # Only start battle if there are allied units placed
                 if self._has_allied_units_placed():
                     emit_event(PLAY_SOUND, event=PlaySoundEvent(
