@@ -15,7 +15,7 @@ from components.unit_type import UnitType
 from components.unit_tier import UnitTier
 from components.item import ItemType
 from components.spell_type import SpellType
-from point_values import unit_values, item_values, spell_values
+from point_values import unit_values, item_values, spell_values, get_unit_point_value
 from hex_grid import hex_neighbors
 from game_constants import gc
 import random
@@ -85,24 +85,46 @@ class HexLifecycleState(Enum):
     RECLAIMED = "reclaimed"  # Claimed/solved twice (once normal, once corrupted)
 
 def calculate_points_for_units(units: List[Tuple[UnitType, Tuple[float, float], List[ItemType]]]) -> int:
-    """Calculate total points for a list of unit placements."""
+    """Calculate total points for a list of unit placements.
+    
+    Uses tier-adjusted point values for player units (from progress_manager.unit_tiers).
+    Enemy units default to BASIC tier since they are not in the player's unit_tiers.
+    """
     total_points = 0
     for unit_type, _, items in units:
-        total_points += unit_values[unit_type]
+        # Get tier from progress_manager (defaults to BASIC for enemy units)
+        unit_tier = progress_manager.get_unit_tier(unit_type) if progress_manager else UnitTier.BASIC
+        total_points += get_unit_point_value(unit_type, unit_tier)
         total_points += sum(item_values[item_type] for item_type in items)
     return total_points
 
 
 def calculate_total_available_points() -> int:
-    """Calculate total points available from starting units, items, spells and completed battles."""
-    points = sum(unit_values[unit_type] * count for unit_type, count in battles.starting_units.items())
+    """Calculate total points available from starting units, items, spells and completed battles.
+    
+    Uses tier-adjusted point values for player units (from progress_manager.unit_tiers).
+    Enemy units default to BASIC tier since they are not in the player's unit_tiers.
+    """
+    # Starting units - use tier-adjusted values
+    points = sum(
+        get_unit_point_value(unit_type, progress_manager.get_unit_tier(unit_type) if progress_manager else UnitTier.BASIC) * count
+        for unit_type, count in battles.starting_units.items()
+    )
     points += sum(item_values[item_type] * count for item_type, count in progress_manager.acquired_items.items())
     points += sum(spell_values[spell_type] * count for spell_type, count in progress_manager.acquired_spells.items())
     for battle in battles.get_battles():
         if battle.hex_coords in progress_manager.solutions:
             solution = progress_manager.solutions[battle.hex_coords]
-            points += sum(unit_values[unit_type] + sum(item_values[item_type] for item_type in items) for unit_type, _, items in battle.enemies)
-            points -= sum(unit_values[unit_type] + sum(item_values[item_type] for item_type in items) for unit_type, _, items in solution.unit_placements)
+            # Enemy units
+            points += sum(
+                get_unit_point_value(unit_type, progress_manager.get_unit_tier(unit_type)) + sum(item_values[item_type] for item_type in items)
+                for unit_type, _, items in battle.enemies
+            )
+            # Player units in solution
+            points -= sum(
+                get_unit_point_value(unit_type, progress_manager.get_unit_tier(unit_type)) + sum(item_values[item_type] for item_type in items)
+                for unit_type, _, items in solution.unit_placements
+            )
             points -= sum(spell_values[spell_type] for spell_type, _, _ in solution.spell_placements)
     return points
 

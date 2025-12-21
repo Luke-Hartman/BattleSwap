@@ -6,7 +6,7 @@ from ui_components.stat_bar import StatBar
 from components.unit_type import UnitType
 from entities.units import Faction, get_unit_sprite_sheet
 from ui_components.game_data import StatType, get_unit_data, UnitTier
-from point_values import unit_values
+from point_values import unit_values, get_unit_point_value
 from pygame_gui.elements import UILabel, UIButton, UIImage, UIPanel
 from pygame_gui.core import ObjectID
 from info_mode_manager import info_mode_manager
@@ -80,7 +80,7 @@ class UnitCard(BaseCard):
         )
         
         # Add point value box in upper right corner
-        point_value = unit_values.get(self.unit_type, 0)
+        point_value = get_unit_point_value(self.unit_type, self.unit_tier)
         point_value_text = str(point_value)
         
         # Calculate box size based on text

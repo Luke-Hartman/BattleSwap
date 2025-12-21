@@ -1,6 +1,7 @@
 from components.unit_type import UnitType
 from components.item import ItemType
 from components.spell_type import SpellType
+from components.unit_tier import UnitTier
 from typing import Dict
 from game_constants import gc
 
@@ -79,3 +80,27 @@ spell_values: Dict[SpellType, int] = {
     SpellType.CHAIN_EXPLODE_ON_DEATH: gc.SPELL_CHAIN_EXPLODE_ON_DEATH_POINTS,
     SpellType.SUMMON_LICH: gc.SPELL_SUMMON_LICH_POINTS,
 }
+
+
+def get_unit_point_value(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> int:
+    """Get the point value for a unit based on its type and tier.
+    
+    Args:
+        unit_type: The type of unit
+        unit_tier: The tier of the unit (Basic, Advanced, or Elite)
+        
+    Returns:
+        The point value for the unit. Basic units use base value, Advanced units
+        use 1.5x base value (50% increase), Elite units use 2.0x base value (100% increase).
+        All values are rounded to integers.
+    """
+    base_value = unit_values.get(unit_type, 0)
+    if unit_tier == UnitTier.BASIC:
+        return base_value
+    elif unit_tier == UnitTier.ADVANCED:
+        # 50% increase = 1.5x
+        return int(base_value * 1.5)
+    elif unit_tier == UnitTier.ELITE:
+        # 100% increase = 2.0x
+        return base_value * 2
+    return base_value

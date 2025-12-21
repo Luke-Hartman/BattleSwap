@@ -6,7 +6,7 @@ from typing import Optional
 from ui_components.base_count_button import BaseCountButton
 from components.unit_type import UnitType
 from entities.units import get_unit_icon_theme_class, unit_theme_ids
-from point_values import unit_values
+from point_values import unit_values, get_unit_point_value
 from selected_unit_manager import selected_unit_manager
 from progress_manager import progress_manager
 
@@ -48,20 +48,26 @@ class UnitCount(BaseCountButton):
     
     def _get_point_value(self) -> int:
         """Get the point value for this unit."""
-        return unit_values[self.unit_type]
+        unit_tier = progress_manager.get_unit_tier(self.unit_type)
+        return get_unit_point_value(self.unit_type, unit_tier)
     
     def refresh_tier_styling(self) -> None:
-        """Update the tier-specific styling for this unit icon."""
+        """Update the tier-specific styling and point value for this unit icon."""
         unit_tier = progress_manager.get_unit_tier(self.unit_type)
         tier_theme_class = get_unit_icon_theme_class(unit_tier)
-        if tier_theme_class in self.button.class_ids:
-            return
+        
         # Update the button's object ID with the new tier theme class
-        new_object_id = pygame_gui.core.ObjectID(
-            class_id=tier_theme_class, 
-            object_id=unit_theme_ids[self.unit_type]
-        )
-        self.button.change_object_id(new_object_id)
+        if tier_theme_class not in self.button.class_ids:
+            new_object_id = pygame_gui.core.ObjectID(
+                class_id=tier_theme_class, 
+                object_id=unit_theme_ids[self.unit_type]
+            )
+            self.button.change_object_id(new_object_id)
+        
+        # Update the point value label with the new tier-adjusted value
+        new_point_value = get_unit_point_value(self.unit_type, unit_tier)
+        if self.value_label:
+            self.value_label.set_text(str(new_point_value))
     
     def set_flash_state(self, flash: bool) -> None:
         """Set the flash border state for this unit button."""

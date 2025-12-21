@@ -89,7 +89,9 @@ class StatusEffectProcessor(esper.Processor):
             winning_team = max(team_stacks.keys(), key=lambda t: team_stacks[t])
             total_stacks = team_stacks[winning_team]
             
-            # Get the unit's point value to determine if we have enough stacks
+            # Get the unit's base point value to determine if we have enough stacks
+            # Note: We use the base value (not tier-adjusted) so that all units of the same
+            # type take the same time to revive regardless of their tier (Basic/Advanced/Elite)
             unit_type = esper.component_for_entity(ent, UnitTypeComponent).type
             point_value = unit_values[unit_type]
 
