@@ -4,7 +4,7 @@ import pygame
 import pygame_gui
 from pygame_gui.elements import UIPanel, UILabel, UIButton, UIDropDownMenu, UISelectionList, UITextEntryLine
 from typing import List, Callable
-from corruption_powers import CorruptionPower, IncreasedMaxHealth, IncreasedDamage, IncreasedMovementSpeed, IncreasedAbilitySpeed
+from corruption_powers import CorruptionPower, IncreasedMaxHealth, IncreasedDamage, IncreasedMovementSpeed, IncreasedAttackSpeed
 from components.team import TeamType
 
 class CorruptionPowerEditorDialog(UIPanel):
@@ -83,7 +83,7 @@ class CorruptionPowerEditorDialog(UIPanel):
                 "increased_max_health",
                 "increased_damage",
                 "increased_movement_speed",
-                "increased_ability_speed"
+                "increased_attack_speed"
             ],
             starting_option="increased_max_health",
             manager=manager,
@@ -186,8 +186,8 @@ class CorruptionPowerEditorDialog(UIPanel):
             power = IncreasedDamage(required_team=team, increase_percent=increase_percent)
         elif power_type == "increased_movement_speed":
             power = IncreasedMovementSpeed(required_team=team, increase_percent=increase_percent)
-        elif power_type == "increased_ability_speed":
-            power = IncreasedAbilitySpeed(required_team=team, increase_percent=increase_percent)
+        elif power_type == "increased_attack_speed":
+            power = IncreasedAttackSpeed(required_team=team, increase_percent=increase_percent)
         else:
             raise NotImplementedError(f"Power type {power_type} not implemented")
         

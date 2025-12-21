@@ -61,7 +61,7 @@
         "increase_percent": 100.0
       },
       {
-        "name": "increased_ability_speed",
+        "name": "increased_attack_speed",
         "required_team": 2,
         "increase_percent": 100.0
       }
@@ -202,7 +202,7 @@
     ],
     "corruption_powers": [
       {
-        "name": "increased_ability_speed",
+        "name": "increased_attack_speed",
         "required_team": 2,
         "increase_percent": 100.0
       },
@@ -260,7 +260,7 @@
         "increase_percent": 200.0
       },
       {
-        "name": "increased_ability_speed",
+        "name": "increased_attack_speed",
         "required_team": 2,
         "increase_percent": 500.0
       }
@@ -1269,7 +1269,7 @@
         "increase_percent": 100.0
       },
       {
-        "name": "increased_ability_speed",
+        "name": "increased_attack_speed",
         "required_team": 2,
         "increase_percent": 50.0
       }
@@ -2222,7 +2222,7 @@
         "increase_percent": 25.0
       },
       {
-        "name": "increased_ability_speed",
+        "name": "increased_attack_speed",
         "required_team": 2,
         "increase_percent": 50.0
       }
@@ -3019,7 +3019,7 @@
         "increase_percent": -80.0
       },
       {
-        "name": "increased_ability_speed",
+        "name": "increased_attack_speed",
         "required_team": 2,
         "increase_percent": 900.0
       }

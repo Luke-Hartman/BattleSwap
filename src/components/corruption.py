@@ -5,7 +5,7 @@ class IncreasedMovementSpeedComponent:
     increase_percent: float
 
 @dataclass
-class IncreasedAbilitySpeedComponent:
+class IncreasedAttackSpeedComponent:
     increase_percent: float
 
 @dataclass

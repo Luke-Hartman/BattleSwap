@@ -74,21 +74,21 @@ class IncreasedMovementSpeed(CorruptionPower):
         return f"{_get_team_str(self.required_team)} units have {_get_increase_str(self.increase_percent)} movement speed"
 
 
-class IncreasedAbilitySpeed(CorruptionPower):
-    """Power that increases the ability speed of enemy units."""
-    name: Literal["increased_ability_speed"] = Field("increased_ability_speed", description="The name of the power")
+class IncreasedAttackSpeed(CorruptionPower):
+    """Power that increases the attack speed of enemy units."""
+    name: Literal["increased_attack_speed"] = Field("increased_attack_speed", description="The name of the power")
     increase_percent: float = Field(
         ..., 
-        description="Percentage to increase ability speed by",
+        description="Percentage to increase attack speed by",
     )
 
     @property
     def description(self) -> str:
         """Generate a description based on the increase percentage."""
-        return f"{_get_team_str(self.required_team)} units have {_get_increase_str(self.increase_percent)} ability speed"
+        return f"{_get_team_str(self.required_team)} units have {_get_increase_str(self.increase_percent)} attack speed"
 
 
 CorruptionPowerUnion = Annotated[
-    Union[IncreasedMaxHealth, IncreasedDamage, IncreasedMovementSpeed, IncreasedAbilitySpeed],
+    Union[IncreasedMaxHealth, IncreasedDamage, IncreasedMovementSpeed, IncreasedAttackSpeed],
     Field(discriminator='name')
 ] 

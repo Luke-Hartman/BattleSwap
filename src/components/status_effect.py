@@ -32,10 +32,10 @@ class InfantryBannerBearerMovementSpeedBuff(StatusEffect):
     movement_speed = gc.INFANTRY_BANNER_BEARER_AURA_MOVEMENT_SPEED
 
 @dataclass
-class InfantryBannerBearerAbilitySpeedBuff(StatusEffect):
-    """Status effect that increases ability speed."""
+class InfantryBannerBearerAttackSpeedBuff(StatusEffect):
+    """Status effect that increases attack speed."""
 
-    ability_speed_increase_percent: float = 25.0
+    attack_speed_increase_percent: float = 25.0
 
 @dataclass
 class DamageOverTime(StatusEffect):
@@ -139,7 +139,7 @@ class StatusEffects:
             DamageOverTime: [],
             InfantryBannerBearerEmpowered: [],
             InfantryBannerBearerMovementSpeedBuff: [],
-            InfantryBannerBearerAbilitySpeedBuff: [],
+            InfantryBannerBearerAttackSpeedBuff: [],
             Fleeing: [],
             Healing: [],
             ZombieInfection: [],
@@ -177,8 +177,8 @@ class StatusEffects:
             active_effects.append(self._status_by_type[InfantryBannerBearerEmpowered][0])
         if self._status_by_type[InfantryBannerBearerMovementSpeedBuff]:
             active_effects.append(self._status_by_type[InfantryBannerBearerMovementSpeedBuff][0])
-        if self._status_by_type[InfantryBannerBearerAbilitySpeedBuff]:
-            active_effects.append(self._status_by_type[InfantryBannerBearerAbilitySpeedBuff][0])
+        if self._status_by_type[InfantryBannerBearerAttackSpeedBuff]:
+            active_effects.append(self._status_by_type[InfantryBannerBearerAttackSpeedBuff][0])
         if self._status_by_type[Fleeing]:
             longest_fleeing = max(self._status_by_type[Fleeing], key=lambda e: e.time_remaining)
             active_effects.append(longest_fleeing)

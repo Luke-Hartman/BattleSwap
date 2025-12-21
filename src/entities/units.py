@@ -11,7 +11,7 @@ import os
 from typing import Dict, List, Optional, Type
 from components.ammo import Ammo
 from components.attached import Attached
-from components.corruption import IncreasedAbilitySpeedComponent, IncreasedDamageComponent, IncreasedMovementSpeedComponent
+from components.corruption import IncreasedAttackSpeedComponent, IncreasedDamageComponent, IncreasedMovementSpeedComponent
 from components.entity_memory import EntityMemory
 from components.follower import Follower
 from components.forced_movement import ForcedMovement
@@ -33,7 +33,7 @@ from components.aura import Auras, Aura
 from components.position import Position
 from components.animation import AnimationState, AnimationType
 from components.sprite_sheet import SpriteSheet
-from components.status_effect import InfantryBannerBearerEmpowered, Fleeing, Healing, DamageOverTime, Invisible, StatusEffects, WontPursue, ZombieInfection, InfantryBannerBearerMovementSpeedBuff, InfantryBannerBearerAbilitySpeedBuff, ReviveProgress
+from components.status_effect import InfantryBannerBearerEmpowered, Fleeing, Healing, DamageOverTime, Invisible, StatusEffects, WontPursue, ZombieInfection, InfantryBannerBearerMovementSpeedBuff, InfantryBannerBearerAttackSpeedBuff, ReviveProgress
 from target_strategy import ByCurrentHealth, ByDistance, ByMissingHealth, ConditionPenalty, TargetStrategy, TargetingGroup, WeightedRanking
 from components.destination import Destination
 from components.team import Team, TeamType
@@ -60,7 +60,7 @@ from visuals import Visual
 from components.on_death_effects import OnDeathEffect
 from components.on_kill_effects import OnKillEffects
 from components.on_hit_effects import OnHitEffects
-from corruption_powers import CorruptionPower, IncreasedAbilitySpeed, IncreasedDamage, IncreasedMaxHealth, IncreasedMovementSpeed
+from corruption_powers import CorruptionPower, IncreasedAttackSpeed, IncreasedDamage, IncreasedMaxHealth, IncreasedMovementSpeed
 
 unit_theme_ids: Dict[UnitType, str] = {
     UnitType.CORE_ARCHER: "#core_archer_icon", 
@@ -500,9 +500,9 @@ def unit_base_entity(
     movement_power = _get_corruption_power(corruption_powers, IncreasedMovementSpeed, team)
     if movement_power is not None:
         esper.add_component(entity, IncreasedMovementSpeedComponent(increase_percent=movement_power.increase_percent))
-    animation_power = _get_corruption_power(corruption_powers, IncreasedAbilitySpeed, team)
+    animation_power = _get_corruption_power(corruption_powers, IncreasedAttackSpeed, team)
     if animation_power is not None:
-        esper.add_component(entity, IncreasedAbilitySpeedComponent(increase_percent=animation_power.increase_percent))
+        esper.add_component(entity, IncreasedAttackSpeedComponent(increase_percent=animation_power.increase_percent))
     damage_power = _get_corruption_power(corruption_powers, IncreasedDamage, team)
     if damage_power is not None:
         esper.add_component(entity, IncreasedDamageComponent(increase_percent=damage_power.increase_percent))
@@ -2232,7 +2232,7 @@ def create_orc_goblin(
     orc_goblin_movement_speed = gc.ORC_GOBLIN_MOVEMENT_SPEED
     orc_goblin_invisible_duration = gc.ORC_GOBLIN_INVISIBLE_DURATION
     
-    # Elite tier: 25% increased movement speed and ability speed
+    # Elite tier: 25% increased movement speed and attack speed
     if tier == UnitTier.ELITE:
         orc_goblin_movement_speed = orc_goblin_movement_speed * 1.25
     
@@ -3003,11 +3003,11 @@ def create_infantry_banner_bearer(
             )
         )
     
-    # Elite tier gets ability speed buff
+    # Elite tier gets attack speed buff
     if tier == UnitTier.ELITE:
         aura_effects.append(
             AppliesStatusEffect(
-                status_effect=InfantryBannerBearerAbilitySpeedBuff(time_remaining=gc.DEFAULT_AURA_PERIOD, owner=entity),
+                status_effect=InfantryBannerBearerAttackSpeedBuff(time_remaining=gc.DEFAULT_AURA_PERIOD, owner=entity),
                 recipient=Recipient.TARGET
             )
         )
@@ -7330,7 +7330,7 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
             }
         )
     if unit_type == UnitType.CORE_DEFENDER:
-        # Advanced tier (and Elite): 35% increased ability speed
+        # Advanced tier (and Elite): 35% increased attack speed
         attack_animation_duration = gc.CORE_DEFENDER_ANIMATION_ATTACK_DURATION
         if tier == UnitTier.ADVANCED or tier == UnitTier.ELITE:
             attack_animation_duration = attack_animation_duration / 1.35  # 35% faster
@@ -7391,7 +7391,7 @@ def get_unit_sprite_sheet(unit_type: UnitType, tier: UnitTier) -> SpriteSheet:
             }
         )
     if unit_type == UnitType.CRUSADER_PALADIN:
-        # Elite tier: 25% increased ability speed (idle, healing, and attack animation)
+        # Elite tier: 25% increased attack speed (idle, healing, and attack animation)
         idle_animation_duration = gc.CRUSADER_PALADIN_ANIMATION_IDLE_DURATION
         healing_animation_duration = gc.CRUSADER_PALADIN_ANIMATION_SKILL_DURATION
         attack_animation_duration = gc.CRUSADER_PALADIN_ANIMATION_ATTACK_DURATION

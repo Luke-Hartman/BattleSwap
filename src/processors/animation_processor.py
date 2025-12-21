@@ -10,8 +10,8 @@ Also triggers events based on frame changes.
 import esper
 from components.ability import Abilities
 from components.animation import AnimationState, AnimationType
-from components.corruption import IncreasedAbilitySpeedComponent
-from components.status_effect import StatusEffects, InfantryBannerBearerAbilitySpeedBuff
+from components.corruption import IncreasedAttackSpeedComponent
+from components.status_effect import StatusEffects, InfantryBannerBearerAttackSpeedBuff
 from components.destination import Destination
 from components.forced_movement import ForcedMovement
 from components.movement import Movement
@@ -160,16 +160,16 @@ class AnimationProcessor(esper.Processor):
                     scale = 1
                 anim_state.time_elapsed += dt * scale
             else:
-                # Check for ability speed increases from corruption powers or status effects
+                # Check for attack speed increases from corruption powers or status effects
                 speed_multiplier = 1.0
                 
-                if esper.has_component(ent, IncreasedAbilitySpeedComponent):
-                    speed_multiplier *= (1 + esper.component_for_entity(ent, IncreasedAbilitySpeedComponent).increase_percent / 100)
+                if esper.has_component(ent, IncreasedAttackSpeedComponent):
+                    speed_multiplier *= (1 + esper.component_for_entity(ent, IncreasedAttackSpeedComponent).increase_percent / 100)
                 
                 if esper.has_component(ent, StatusEffects):
                     status_effects = esper.component_for_entity(ent, StatusEffects)
                     for status_effect in status_effects.active_effects():
-                        if isinstance(status_effect, InfantryBannerBearerAbilitySpeedBuff):
-                            speed_multiplier *= (1 + status_effect.ability_speed_increase_percent / 100)
+                        if isinstance(status_effect, InfantryBannerBearerAttackSpeedBuff):
+                            speed_multiplier *= (1 + status_effect.attack_speed_increase_percent / 100)
                 
                 anim_state.time_elapsed += dt * speed_multiplier

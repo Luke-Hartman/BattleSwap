@@ -2037,7 +2037,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         orc_goblin_attack_duration = gc.ORC_GOBLIN_ANIMATION_ATTACK_DURATION
         orc_goblin_invisible_duration = gc.ORC_GOBLIN_INVISIBLE_DURATION
         
-        # Elite tier: 25% increased movement speed and ability speed
+        # Elite tier: 25% increased movement speed and attack speed
         if unit_tier == UnitTier.ELITE:
             orc_goblin_movement_speed = orc_goblin_movement_speed * 1.25
             orc_goblin_attack_duration = orc_goblin_attack_duration * 0.8  # 25% faster = 0.8x duration
