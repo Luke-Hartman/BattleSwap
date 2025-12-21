@@ -19,7 +19,7 @@ from entities.units import create_unit
 from events import CHANGE_MUSIC, PLAY_SOUND, ChangeMusicEvent, PlaySoundEvent, emit_event, UNMUTE_DRUMS, UnmuteDrumsEvent
 from hex_grid import axial_to_world
 from keyboard_shortcuts import format_button_text, KeyboardShortcuts
-from progress_manager import progress_manager
+from progress_manager import progress_manager, HexLifecycleState
 from scenes.scene import Scene
 from game_constants import gc
 from camera import Camera
@@ -38,6 +38,7 @@ from world_map_view import BorderState, FillState, HexState, WorldMapView, hex_l
 from scene_utils import draw_grid, get_center_line, get_placement_pos, get_hovered_unit, get_unit_placements, get_spell_placements, get_legal_placement_area, get_legal_spell_placement_area, has_unsaved_changes, mouse_over_ui, calculate_group_placement_positions, get_spell_placement_pos, clip_to_polygon
 from ui_components.progress_panel import ProgressPanel
 from ui_components.corruption_power_editor import CorruptionPowerEditorDialog
+from ui_components.upgrade_window import UpgradeWindow
 from corruption_powers import CorruptionPower
 from selected_unit_manager import selected_unit_manager
 from components.sprite_sheet import SpriteSheet
@@ -191,16 +192,43 @@ class SetupBattleScene(Scene):
             current_battle=battle,
         )
 
-        # Add clear button above the barracks
+        # Add upgrade button and clear button above the barracks
         barracks_x = self.barracks.rect.x
-        self.clear_button = pygame_gui.elements.UIButton(
+        button_width = 140
+        button_height = 30
+        button_spacing = 10
+        
+        self.upgrade_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(
                 (barracks_x, self.barracks.rect.y - 40),
+                (button_width, button_height)
+            ),
+            text=format_button_text("Upgrade Units", KeyboardShortcuts.U),
+            manager=self.manager
+        )
+        
+        self.clear_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect(
+                (barracks_x + button_width + button_spacing, self.barracks.rect.y - 40),
                 (100, 30)
             ),
             text='Clear All',
             manager=self.manager
         )
+        
+        # Initialize upgrade window
+        self.upgrade_window = None
+        
+        # Flash animation state for upgrade button
+        self.upgrade_button_flash_time = 0.0
+        self.upgrade_button_flash_duration = 1.0  # Total flash duration in seconds
+        self.upgrade_button_flash_alternations = 6  # Number of border switches (3 full cycles)
+        self.upgrade_button_flash_interval = self.upgrade_button_flash_duration / self.upgrade_button_flash_alternations
+        self.upgrade_button_is_flashing = False
+        self.upgrade_button_flash_state = False  # False = normal, True = flash theme
+        
+        # Set initial button state
+        self._update_upgrade_button_state()
 
         # Create grades panel to the right of barracks, aligned at the bottom
         barracks_bottom = self.barracks.rect.bottom
@@ -598,6 +626,46 @@ class SetupBattleScene(Scene):
         if self.progress_panel is not None:
             self.progress_panel.update_battle(self.battle)
 
+    def _replace_all_units_with_updated_tiers(self) -> None:
+        """Replace all units on the battlefield with updated tiers after upgrades."""
+        esper.switch_world(self.battle_id)
+        
+        # Collect all units that need to be replaced (not the "placing" preview units)
+        units_to_replace = []
+        for ent, (team, unit_type_comp) in esper.get_components(Team, UnitTypeComponent):
+            if not esper.has_component(ent, Placing):
+                # Get unit properties
+                pos = esper.component_for_entity(ent, Position)
+                unit_items = []
+                if esper.has_component(ent, ItemComponent):
+                    item_component = esper.component_for_entity(ent, ItemComponent)
+                    unit_items = item_component.items.copy()
+                
+                # Store unit data for recreation
+                units_to_replace.append({
+                    'entity': ent,
+                    'unit_type': unit_type_comp.type,
+                    'team': team.type,
+                    'x': pos.x,
+                    'y': pos.y,
+                    'items': unit_items,
+                })
+        
+        # Replace each unit
+        for unit_data in units_to_replace:
+            # Delete old unit (this removes it from battle.allies/enemies and deletes the entity)
+            if esper.entity_exists(unit_data['entity']):
+                self.world_map_view.remove_unit(self.battle_id, unit_data['entity'])
+            
+            # Add new unit with updated tier (add_unit creates the unit with the correct tier)
+            self.world_map_view.add_unit(
+                self.battle_id,
+                unit_data['unit_type'],
+                (unit_data['x'], unit_data['y']),
+                unit_data['team'],
+                items=unit_data['items'] if unit_data['items'] else None,
+            )
+    
     def clear_allied_units(self) -> None:
         """Remove all allied units from the battlefield."""
         # Get all allied units in the current world
@@ -1141,6 +1209,15 @@ class SetupBattleScene(Scene):
             if self.handle_confirmation_dialog_events(event):
                 continue
 
+            # Handle upgrade window events if it exists
+            if self.upgrade_window is not None and self.upgrade_window.handle_event(event):
+                # Upgrade happened - rebuild barracks and replace units with updated tiers
+                if self.barracks is not None:
+                    self.barracks._rebuild()
+                    self.barracks.refresh_all_tier_styling()
+                self._replace_all_units_with_updated_tiers()
+                continue
+
             self.handle_escape(event)
             
             # Handle Space key to start battle
@@ -1160,6 +1237,20 @@ class SetupBattleScene(Scene):
                         ).to_event()
                     )
                     return super().update(time_delta, events)
+            
+            # Handle U key for upgrade button
+            if (event.type == pygame.KEYDOWN and 
+                event.key == pygame.K_u and 
+                self.upgrade_button.is_enabled):
+                # Simulate clicking the upgrade button
+                pygame.event.post(pygame.event.Event(
+                    pygame.USEREVENT,
+                    {'user_type': pygame_gui.UI_BUTTON_PRESSED, 'ui_element': self.upgrade_button}
+                ))
+                emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                    filename="ui_click.wav",
+                    volume=0.5
+                ))
             
             # Handle number keys for unit selection from barracks
             if event.type == pygame.KEYDOWN and ((event.key >= pygame.K_1 and event.key <= pygame.K_9) or event.key == pygame.K_0):
@@ -1268,6 +1359,13 @@ class SetupBattleScene(Scene):
                             self.results_box.set_text('Team 2 Wins')
                         elif outcome == BattleOutcome.TIMEOUT:
                             self.results_box.set_text('Timeout')
+                    elif event.ui_element == self.upgrade_button:
+                        # Create a new upgrade window each time
+                        if self.upgrade_window is not None:
+                            self.upgrade_window.kill()
+                        self.upgrade_window = UpgradeWindow(self.manager)
+                        # Update button state in case units were upgraded
+                        self._update_upgrade_button_state()
                     elif event.ui_element == self.clear_button:
                         self.clear_allied_units()
                 elif event.user_type == pygame_gui.UI_CONFIRMATION_DIALOG_CONFIRMED:
@@ -1459,6 +1557,34 @@ class SetupBattleScene(Scene):
         
         self.manager.update(time_delta)
         self.manager.draw_ui(self.screen)
+        
+        # Update upgrade window if it exists
+        if self.upgrade_window is not None:
+            self.upgrade_window.update(time_delta)
+        
+        # Update upgrade button state (check for changes in upgrade hexes)
+        self._update_upgrade_button_state()
+        
+        # Update upgrade button flash animation
+        if self.upgrade_button_is_flashing:
+            self.upgrade_button_flash_time += time_delta
+            
+            # Calculate current alternation
+            current_alternation = int(self.upgrade_button_flash_time / self.upgrade_button_flash_interval)
+            new_flash_state = (current_alternation % 2) == 1
+            
+            # Update theme if state changed
+            if new_flash_state != self.upgrade_button_flash_state:
+                self.upgrade_button_flash_state = new_flash_state
+                self._update_upgrade_button_flash_theme()
+            
+            # End flash after all alternations
+            if self.upgrade_button_flash_time >= self.upgrade_button_flash_duration:
+                self.upgrade_button_is_flashing = False
+                self.upgrade_button_flash_time = 0.0
+                self.upgrade_button_flash_state = False
+                self._update_upgrade_button_flash_theme()  # Ensure we end on normal theme
+        
         return super().update(time_delta, events)
 
     def _save_corruption_powers(self, powers: list[CorruptionPower]) -> None:
@@ -1533,9 +1659,61 @@ class SetupBattleScene(Scene):
             self.start_button.disable()
             self.start_button.set_tooltip("Place at least one unit to start the battle")
 
+    def _has_claimed_upgrade_hexes(self) -> bool:
+        """Check if the player has any claimed upgrade hexes."""
+        for coords, state in progress_manager.hex_states.items():
+            if (upgrade_hexes.is_upgrade_hex(coords) and 
+                state in [HexLifecycleState.CLAIMED, HexLifecycleState.CORRUPTED, HexLifecycleState.RECLAIMED]):
+                return True
+        return False
+    
+    def _should_upgrade_button_flash(self) -> bool:
+        """Check if the upgrade button should flash (has unspent upgrade credits and upgrade window isn't open)."""
+        available_advanced, available_elite = progress_manager.calculate_available_credits()
+        has_unspent_credits = available_advanced > 0 or available_elite > 0
+        return has_unspent_credits and self.upgrade_window is None
+    
+    def _update_upgrade_button_flash_theme(self) -> None:
+        """Update the upgrade button theme based on flash state."""
+        if self.upgrade_button.alive():
+            if self.upgrade_button_flash_state:
+                # Switch to flash theme
+                self.upgrade_button.change_object_id(pygame_gui.core.ObjectID(object_id='#flash_button'))
+            else:
+                # Switch back to normal theme
+                self.upgrade_button.change_object_id(pygame_gui.core.ObjectID(class_id='button'))
+    
+    def _update_upgrade_button_state(self) -> None:
+        """Update the upgrade button enabled/disabled state and flashing."""
+        has_claimed_hexes = self._has_claimed_upgrade_hexes()
+        should_flash = self._should_upgrade_button_flash()
+        
+        # Enable/disable button
+        if has_claimed_hexes:
+            self.upgrade_button.enable()
+        else:
+            self.upgrade_button.disable()
+        
+        # Start/stop flashing
+        if should_flash and not self.upgrade_button_is_flashing:
+            self.upgrade_button_is_flashing = True
+            self.upgrade_button_flash_time = 0.0
+            self.upgrade_button_flash_state = False
+        elif not should_flash and self.upgrade_button_is_flashing:
+            self.upgrade_button_is_flashing = False
+            self.upgrade_button_flash_time = 0.0
+            self.upgrade_button_flash_state = False
+            self._update_upgrade_button_flash_theme()  # Ensure we end on normal theme
+
     def _close_scene_windows(self) -> bool:
         """Close any open windows specific to the setup battle scene."""
         windows_closed = False
+        
+        # Check for upgrade window
+        if hasattr(self, 'upgrade_window') and self.upgrade_window is not None:
+            self.upgrade_window.kill()
+            self.upgrade_window = None
+            windows_closed = True
         
         # Handle special escape logic for entity selections first
         if self.selected_group_partial_units or self.selected_group_partial_spells:

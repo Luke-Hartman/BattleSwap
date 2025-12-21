@@ -240,12 +240,17 @@ class CampaignScene(Scene):
         self.return_button = ReturnButton(self.manager)
         self.feedback_button = FeedbackButton(self.manager)
         
-        # Create upgrade button in top right
+        # Create upgrade button above the barracks (or top right if no barracks)
         button_width = 140
         button_height = 30
-        screen_rect = self.screen.get_rect()
-        upgrade_button_x = screen_rect.width - button_width - 10
-        upgrade_button_y = 10
+        if self.barracks is not None:
+            barracks_x = self.barracks.rect.x
+            upgrade_button_x = barracks_x
+            upgrade_button_y = self.barracks.rect.y - 40
+        else:
+            screen_rect = self.screen.get_rect()
+            upgrade_button_x = screen_rect.width - button_width - 10
+            upgrade_button_y = 10
         
         self.upgrade_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(upgrade_button_x, upgrade_button_y, button_width, button_height),
