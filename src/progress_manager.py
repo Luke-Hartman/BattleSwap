@@ -222,6 +222,7 @@ class ProgressManager(BaseModel):
     acquired_items: Dict[ItemType, int] = {}
     acquired_spells: Dict[SpellType, int] = {}
     packages_given: int = 0
+    levels_required_before_corruption: int = 0
 
     @field_serializer('solutions')
     def serialize_solutions(self, solutions: Dict[Tuple[int, int], Solution]) -> Dict[str, Any]:
@@ -541,14 +542,30 @@ class ProgressManager(BaseModel):
             state in [HexLifecycleState.CORRUPTED, HexLifecycleState.RECLAIMED]
             for state in self.hex_states.values()
         )
+        
+        # Check if all levels are claimed (exception case)
+        all_levels_claimed = all(
+            state in [HexLifecycleState.CLAIMED, HexLifecycleState.CORRUPTED, HexLifecycleState.RECLAIMED]
+            for state in self.hex_states.values()
+        )
+        
+        # If all levels are claimed, corruption can immediately re-trigger based on points
+        # Otherwise, require that enough levels have been claimed since last corruption
+        # Counter reaches 0 or below when enough levels are claimed
+        enough_levels_claimed = all_levels_claimed or self.levels_required_before_corruption == 0
+        
         return (
             enough_points and
             not_already_corrupted and
-            (enough_claimed_hexes or final_corruption)
+            (enough_claimed_hexes or final_corruption) and
+            enough_levels_claimed
         ) and not all_levels_already_corrupted
 
     def corrupt_battles(self) -> List[Tuple[int, int]]:
         """Corrupt a number of completed battles and claimed upgrade hexes with random selection."""
+        # Generate random number between 1 and 2 for levels required before next corruption
+        self.levels_required_before_corruption = random.randint(1, 2)
+        
         hexes_to_corrupt = []
         
         for _ in range(gc.CORRUPTION_BATTLE_COUNT):
@@ -666,6 +683,10 @@ class ProgressManager(BaseModel):
 
         from upgrade_hexes import is_upgrade_hex
         if current_state == HexLifecycleState.UNCLAIMED:
+            # Decrement counter for levels required before corruption (only count battle hexes, not upgrade hexes)
+            # Do this before set_hex_state so it gets saved together
+            if not is_upgrade_hex(hex_coords) and self.levels_required_before_corruption > 0:
+                self.levels_required_before_corruption -= 1
             # First claim - goes to CLAIMED state
             self.set_hex_state(hex_coords, HexLifecycleState.CLAIMED)
             if is_upgrade_hex(hex_coords):
@@ -814,6 +835,7 @@ def reset_progress() -> None:
     progress_manager.acquired_items.clear()
     progress_manager.acquired_spells.clear()
     progress_manager.packages_given = 0
+    progress_manager.levels_required_before_corruption = 0
     save_progress()
 
 def has_incompatible_save() -> bool:
