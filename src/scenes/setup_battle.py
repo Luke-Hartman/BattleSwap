@@ -419,7 +419,8 @@ class SetupBattleScene(Scene):
             placement_pos,
             team,
         )
-        self.barracks.remove_unit(self.selected_unit_type)
+        # Sync barracks with battle state
+        self.barracks._sync_from_battle_state()
         # Keep unit selected if there are more copies in the barracks
         if not self.barracks.has_unit_available(self.selected_unit_type):
             self.set_selected_unit_type(None, TeamType.TEAM1)
@@ -488,9 +489,6 @@ class SetupBattleScene(Scene):
         # Remove the unit from the battlefield
         self.world_map_view.remove_unit(self.battle_id, unit_id)
         
-        # Remove the item from the barracks
-        self.barracks.remove_item(item_type)
-        
         # Recreate the unit with the updated items list
         entity = self.world_map_view.add_unit(
             self.battle_id,
@@ -499,6 +497,9 @@ class SetupBattleScene(Scene):
             team.type,
             items=current_items
         )
+        
+        # Sync barracks with battle state
+        self.barracks._sync_from_battle_state()
         
         # Update CanHaveItem components - remove from all units first, then add back to eligible ones
         self._remove_can_have_item_from_units()
@@ -553,8 +554,8 @@ class SetupBattleScene(Scene):
         # Add the spell to the world map view
         self.world_map_view.add_spell(self.battle_id, spell_entity)
         
-        # Remove the spell from the barracks
-        self.barracks.remove_spell(spell_type)
+        # Sync barracks with battle state
+        self.barracks._sync_from_battle_state()
         
         # Play success sound
         emit_event(PLAY_SOUND, event=PlaySoundEvent(
@@ -588,8 +589,9 @@ class SetupBattleScene(Scene):
                 # Remove the spell from the world map view
                 self.world_map_view.remove_spell(self.battle_id, ent)
                 
-                # Add the spell back to the barracks
-                self.barracks.add_spell(spell_component.spell_type)
+                # Sync barracks with battle state (spell is automatically returned
+                # since it has been removed from the battle)
+                self.barracks._sync_from_battle_state()
                 
                 # Play sound
                 emit_event(PLAY_SOUND, event=PlaySoundEvent(
@@ -606,22 +608,14 @@ class SetupBattleScene(Scene):
         """Delete a unit of the selected type."""
         assert self.sandbox_mode or esper.component_for_entity(unit_id, Team).type == TeamType.TEAM1
         
-        # Get unit's items before removing the unit
-        unit_items = []
-        if esper.has_component(unit_id, ItemComponent):
-            item_component = esper.component_for_entity(unit_id, ItemComponent)
-            unit_items = item_component.items.copy()
-        
-        unit_type = esper.component_for_entity(unit_id, UnitTypeComponent).type
         self.world_map_view.remove_unit(
             self.battle_id,
             unit_id,
         )
-        self.barracks.add_unit(unit_type)
         
-        # Return items to barracks
-        for item_type in unit_items:
-            self.barracks.add_item(item_type)
+        # Sync barracks with battle state (units, items, and spells are automatically
+        # returned since the unit has been removed from the battle)
+        self.barracks._sync_from_battle_state()
         
         if self.progress_panel is not None:
             self.progress_panel.update_battle(self.battle)
@@ -938,6 +932,9 @@ class SetupBattleScene(Scene):
                 # Add the spell to the world map view
                 self.world_map_view.add_spell(self.battle_id, spell_entity)
         
+        # Sync barracks with battle state
+        self.barracks._sync_from_battle_state()
+        
         # Clear the group pickup
         self.clear_group_pickup()
         
@@ -949,18 +946,9 @@ class SetupBattleScene(Scene):
         if not (self.selected_group_partial_units or self.selected_group_partial_spells):
             return
             
-        # Return units to barracks inventory
-        for unit_type in self.group_unit_types:
-            self.barracks.add_unit(unit_type)
-        
-        # Return items to barracks inventory
-        for unit_items in self.group_unit_items:
-            for item_type in unit_items:
-                self.barracks.add_item(item_type)
-        
-        # Return spells to barracks inventory
-        for spell_type in self.group_spell_types:
-            self.barracks.add_spell(spell_type)
+        # Sync barracks with battle state (units, items, and spells are automatically
+        # returned since they have been removed from the battle)
+        self.barracks._sync_from_battle_state()
         
         # Clear the group pickup
         self.clear_group_pickup()

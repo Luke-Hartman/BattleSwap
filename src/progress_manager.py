@@ -386,7 +386,7 @@ class ProgressManager(BaseModel):
         """
         reclaimed_battles = self.count_reclaimed_corrupted_battles()
         # Player should get 1 package per reclaimed corrupted battle
-        expected_packages = reclaimed_battles // gc.CORRUPTION_BATTLE_COUNT
+        expected_packages = reclaimed_battles // gc.CORRUPTION_BATTLE_COUNT + 1
         # If player is short on packages, show the selection panel
         if expected_packages > self.packages_given:
             # Generate packages if we don't have pending ones

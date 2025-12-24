@@ -506,12 +506,24 @@ class BarracksUI(UITabContainer):
             # Fallback to ALL tab if switching fails
             self.switch_current_container(self.all_tab_index)
 
-    def _rebuild(self) -> None:
-        """Rebuild the UI when dimensions or content changes."""
-        # Update items and spells from available items/spells (not all acquired)
+    def _sync_from_battle_state(self) -> None:
+        """Sync units, items, and spells counts with the current battle state and rebuild UI."""
         if not self.sandbox_mode and self.current_battle is not None:
-            self._spells = progress_manager.available_spells(self.current_battle).copy()
+            self._units = progress_manager.available_units(self.current_battle).copy()
             self._items = progress_manager.available_items(self.current_battle).copy()
+            self._spells = progress_manager.available_spells(self.current_battle).copy()
+        # In sandbox mode or when current_battle is None, keep current values
+        
+        # Rebuild UI to reflect the synced counts
+        self._rebuild()
+
+    def _rebuild(self) -> None:
+        """Rebuild the UI when dimensions or content changes.
+        
+        This method preserves the current counts and only updates the UI display.
+        To sync with battle state, use _full_rebuild() instead.
+        """
+        # Preserve current counts - this is called after manual updates to counts
         # In sandbox mode or when current_battle is None, keep current values
 
         if not hasattr(self, '_previous_dimensions'):
