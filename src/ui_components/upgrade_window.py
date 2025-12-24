@@ -648,6 +648,10 @@ class UpgradeWindow:
                         volume=0.5
                     ))
                     return True
+                # If window is open but button is disabled/no dialog, still consume the event
+                # to prevent it from bubbling up to the scene
+                elif self.window is not None:
+                    return True
                     
             # Handle Escape key for confirmation dialogs only
             elif event.key == pygame.K_ESCAPE:
