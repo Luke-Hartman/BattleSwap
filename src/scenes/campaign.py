@@ -219,6 +219,8 @@ class CampaignScene(Scene):
                 self.corrupted_battles = corrupted_battles
                 # Rebuild corrupted battles
                 self.world_map_view.rebuild(self.world_map_view.battles.values())
+                # Move camera to the first corrupted battle
+                self.world_map_view.move_camera_to_fit()
 
     def _on_package_selected(self, package) -> None:
         """Handle package selection callback.
