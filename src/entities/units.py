@@ -2335,6 +2335,11 @@ def create_orc_goblin(
     
     # Add instant ability for advanced tier goblins to go invisible at combat start
     if tier == UnitTier.ADVANCED or tier == UnitTier.ELITE:
+        # Apply invisibility status effect directly so unit starts invisible
+        if esper.has_component(entity, StatusEffects):
+            status_effects = esper.component_for_entity(entity, StatusEffects)
+            status_effects.add(Invisible(time_remaining=orc_goblin_invisible_duration, owner=entity))
+        # Add instant ability to play sound when round starts
         esper.add_component(
             entity,
             InstantAbilities(

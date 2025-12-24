@@ -58,7 +58,6 @@ class AutoBattle:
                 esper.remove_processor(type(processor))
             esper.add_processor(processor)
 
-        _add_or_replace(TargettingProcessor())
         _add_or_replace(IdleProcessor())
         _add_or_replace(FleeingProcessor())
         _add_or_replace(AbilityProcessor())
@@ -82,6 +81,7 @@ class AutoBattle:
         _add_or_replace(DyingProcessor())
         _add_or_replace(SpellEffectsProcessor())
         _add_or_replace(VolleyProjectileProcessor())
+        _add_or_replace(TargettingProcessor())
         self.remaining_time = max_duration
         self.battle_outcome = None
 

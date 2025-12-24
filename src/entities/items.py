@@ -18,7 +18,7 @@ from components.corruption import IncreasedMovementSpeedComponent
 from components.team import Team
 from components.instant_ability import InstantAbilities, InstantAbility
 from components.ability import TargetStrategy, Cooldown
-from components.status_effect import Invisible
+from components.status_effect import Invisible, StatusEffects
 from unit_condition import All, Alive, Grounded, Always, HasComponent, NotHeavilyArmored, HasDefaultTargetingStrategies, Not, IsUnitType, HasItem
 from effects import CreatesCircleAoE, CreatesVisual, Damages, PlaySound, Recipient, SoundEffect, Effect, AppliesStatusEffect, OnKillEffects, HealPercentageMax, CreatesAttachedVisual
 from visuals import Visual
@@ -272,6 +272,11 @@ class StartInvisible(Item):
         """Apply start invisible effect to the entity."""
         from target_strategy import TargetingGroup, TargetStrategy, ByDistance
         from unit_condition import Never
+        # Apply invisibility status effect directly so unit starts invisible
+        if esper.has_component(entity, StatusEffects):
+            status_effects = esper.component_for_entity(entity, StatusEffects)
+            status_effects.add(Invisible(time_remaining=gc.ITEM_START_INVISIBLE_DURATION, owner=entity))
+        # Add instant ability to play sound when round starts
         if not esper.has_component(entity, InstantAbilities):
             esper.add_component(entity, InstantAbilities(abilities=[]))
         instant_abilities = esper.component_for_entity(entity, InstantAbilities)
