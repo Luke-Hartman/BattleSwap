@@ -472,6 +472,15 @@ class SetupBattleScene(Scene):
             ))
             return
         
+        # Check if the unit can have this item (same check as the indicator uses)
+        if not esper.has_component(unit_id, CanHaveItem):
+            # Unit cannot have this item, play error sound
+            emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                filename="ui_click.wav",
+                volume=0.3
+            ))
+            return
+        
         # Note: Removed restriction that prevented multiple items of the same type
         
         # Get unit data before removing it
