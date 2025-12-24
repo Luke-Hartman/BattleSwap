@@ -169,10 +169,18 @@ class BattleScene(Scene):
             hex_coords=self.battle.hex_coords
         )
 
+        # Check if current state is corrupted
+        current_is_corrupted = progress_manager.get_hex_state(self.battle.hex_coords) in [HexLifecycleState.CORRUPTED, HexLifecycleState.RECLAIMED]
+        
+        # Only show previous solution points if it exists and corruption states match
         if self.battle.hex_coords in progress_manager.solutions:
             previous_solution = progress_manager.solutions[self.battle.hex_coords]
-            previous_points = calculate_points_for_units(previous_solution.unit_placements, is_enemy=False)
-            tooltip = f"New: {current_points} pts vs {enemy_points} pts\nOld: {previous_points} pts vs {enemy_points} pts"
+            # Only show previous solution if corruption states match
+            if previous_solution.solved_corrupted == current_is_corrupted:
+                previous_points = calculate_points_for_units(previous_solution.unit_placements, is_enemy=False)
+                tooltip = f"New: {current_points} pts vs {enemy_points} pts\nOld: {previous_points} pts vs {enemy_points} pts"
+            else:
+                tooltip = f"{current_points} pts vs {enemy_points} pts"
         else:
             tooltip = f"{current_points} pts vs {enemy_points} pts"
 
