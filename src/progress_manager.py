@@ -84,16 +84,37 @@ class HexLifecycleState(Enum):
     CORRUPTED = "corrupted"  # Claimed/solved once, then corrupted (can be claimed/solved again)
     RECLAIMED = "reclaimed"  # Claimed/solved twice (once normal, once corrupted)
 
-def calculate_points_for_units(units: List[Tuple[UnitType, Tuple[float, float], List[ItemType]]]) -> int:
+def calculate_points_for_units(
+    units: List[Tuple[UnitType, Tuple[float, float], List[ItemType]]],
+    is_enemy: bool,
+    hex_coords: Optional[Tuple[int, int]] = None,
+) -> int:
     """Calculate total points for a list of unit placements.
     
     Uses tier-adjusted point values for player units (from progress_manager.unit_tiers).
     Enemy units default to BASIC tier since they are not in the player's unit_tiers.
+    For corrupted battles, enemy units use ELITE tier (2x points).
+    
+    Args:
+        units: List of unit placements (unit_type, position, items)
+        is_enemy: If True, these are enemy units. If False, these are player units.
+        hex_coords: Optional hex coordinates to check if the battle is corrupted.
     """
     total_points = 0
     for unit_type, _, items in units:
-        # Get tier from progress_manager (defaults to BASIC for enemy units)
-        unit_tier = progress_manager.get_unit_tier(unit_type) if progress_manager else UnitTier.BASIC
+        if is_enemy:
+            # For enemy units, check if battle is corrupted
+            if hex_coords is not None and progress_manager:
+                hex_state = progress_manager.get_hex_state(hex_coords)
+                if hex_state in [HexLifecycleState.CORRUPTED, HexLifecycleState.RECLAIMED]:
+                    unit_tier = UnitTier.ELITE
+                else:
+                    unit_tier = UnitTier.BASIC
+            else:
+                unit_tier = UnitTier.BASIC
+        else:
+            # For player units, get tier from progress_manager (defaults to BASIC)
+            unit_tier = progress_manager.get_unit_tier(unit_type) if progress_manager else UnitTier.BASIC
         total_points += get_unit_point_value(unit_type, unit_tier)
         total_points += sum(item_values[item_type] for item_type in items)
     return total_points

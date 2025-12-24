@@ -53,21 +53,33 @@ class ProgressPanel(UIPanel):
             if self.is_setup_mode:
                 # In setup mode, use currently deployed units
                 current_units = get_unit_placements(TeamType.TEAM1, current_battle)
-                player_points = calculate_points_for_units(current_units)
-                enemy_points = calculate_points_for_units(current_battle.enemies or [])
+                player_points = calculate_points_for_units(current_units, is_enemy=False)
+                enemy_points = calculate_points_for_units(
+                    current_battle.enemies or [],
+                    is_enemy=True,
+                    hex_coords=current_battle.hex_coords
+                )
             elif current_battle.hex_coords in progress_manager.solutions:
                 # In normal mode, use saved solution
-                player_points = calculate_points_for_units(current_battle.allies or [])
-                enemy_points = calculate_points_for_units(current_battle.enemies or [])
+                player_points = calculate_points_for_units(current_battle.allies or [], is_enemy=False)
+                enemy_points = calculate_points_for_units(
+                    current_battle.enemies or [],
+                    is_enemy=True,
+                    hex_coords=current_battle.hex_coords
+                )
             elif hex_state != HexLifecycleState.FOGGED:
                 player_points = "-"
-                enemy_points = calculate_points_for_units(current_battle.enemies or [])
+                enemy_points = calculate_points_for_units(
+                    current_battle.enemies or [],
+                    is_enemy=True,
+                    hex_coords=current_battle.hex_coords
+                )
 
         # Barracks info - calculate unused points for units, items, and spells
         barracks_units = []
         for unit_type, count in progress_manager.available_units(current_battle=current_battle).items():
             barracks_units.extend([(unit_type, (0, 0), [])] * count)
-        unit_points = calculate_points_for_units(barracks_units)
+        unit_points = calculate_points_for_units(barracks_units, is_enemy=False)
         
         available_items = progress_manager.available_items(current_battle=current_battle)
         item_points = sum(item_values[item_type] * count for item_type, count in available_items.items())

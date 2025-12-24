@@ -162,12 +162,16 @@ class BattleScene(Scene):
             save_text = format_button_text(save_text, KeyboardShortcuts.SPACE)
         
         # Prepare tooltip with score information
-        current_points = calculate_points_for_units(self.current_placements)
-        enemy_points = calculate_points_for_units(self.battle.enemies or [])
+        current_points = calculate_points_for_units(self.current_placements, is_enemy=False)
+        enemy_points = calculate_points_for_units(
+            self.battle.enemies or [],
+            is_enemy=True,
+            hex_coords=self.battle.hex_coords
+        )
 
         if self.battle.hex_coords in progress_manager.solutions:
             previous_solution = progress_manager.solutions[self.battle.hex_coords]
-            previous_points = calculate_points_for_units(previous_solution.unit_placements)
+            previous_points = calculate_points_for_units(previous_solution.unit_placements, is_enemy=False)
             tooltip = f"New: {current_points} pts vs {enemy_points} pts\nOld: {previous_points} pts vs {enemy_points} pts"
         else:
             tooltip = f"{current_points} pts vs {enemy_points} pts"
