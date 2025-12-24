@@ -9,7 +9,6 @@ from ui_components.game_data import StatType, get_unit_data, UnitTier
 from point_values import unit_values, get_unit_point_value
 from pygame_gui.elements import UILabel, UIButton, UIImage, UIPanel
 from pygame_gui.core import ObjectID
-from info_mode_manager import info_mode_manager
 from ui_components.glossary_entry import GlossaryEntry
 from components.animation import AnimationType
 from game_constants import gc
@@ -192,14 +191,8 @@ class UnitCard(BaseCard):
         elif hasattr(self.container, 'window'):
             self.text.ui_container.window = self.container.window
 
-        # Add bottom row with label and Tips button
+        # Add Tips button (bottom label is now handled by BaseCard)
         bottom_y = 410 + self.padding  # Move down if padding at top
-        self.bottom_label = UILabel(
-            relative_rect=pygame.Rect((self.padding + 10, bottom_y), (180, 30)),
-            text="",
-            manager=self.manager,
-            container=self.card_container
-        )
         self.tips_button = UIButton(
             relative_rect=pygame.Rect((self.width - 90 - self.padding, bottom_y), (80, 30)),
             text="Tips",
@@ -306,7 +299,6 @@ class UnitCard(BaseCard):
     
     def _kill_card_elements(self) -> None:
         """Kill unit card specific elements."""
-        self.bottom_label.kill()
         self.tips_button.kill()
         self.point_value_label.kill()
         self.point_value_bg.kill()
@@ -328,16 +320,6 @@ class UnitCard(BaseCard):
         time_delta = 1/30
         for stat_bar in self.stat_bars:
             stat_bar.update(time_delta)
-
-        # Only show the info mode text if this is a standalone window (not in a panel)
-        if self.window is not None:
-            if info_mode_manager.info_mode:
-                self.bottom_label.set_text(f"Press {info_mode_manager.modifier_key} to close")
-            else:
-                self.bottom_label.set_text(f"Press {info_mode_manager.modifier_key} to keep open")
-        else:
-            # When in a panel, leave the bottom label empty
-            self.bottom_label.set_text("")
         
         # Update animation
         self.animation_time += time_delta

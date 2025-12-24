@@ -5,6 +5,8 @@ import pygame_gui
 import pygame_gui.core
 from typing import Tuple, Optional
 from abc import ABC, abstractmethod
+from pygame_gui.elements import UILabel
+from info_mode_manager import info_mode_manager
 
 
 class BaseCard(ABC):
@@ -68,6 +70,15 @@ class BaseCard(ABC):
         
         # Initialize card-specific content
         self._create_card_content()
+        
+        # Add bottom row with hint text about cmd/alt to show/hide
+        bottom_y = 410 + self.padding
+        self.bottom_label = UILabel(
+            relative_rect=pygame.Rect((self.padding + 10, bottom_y), (180, 30)),
+            text="",
+            manager=self.manager,
+            container=self.card_container
+        )
     
     @abstractmethod
     def _create_card_content(self) -> None:
@@ -114,7 +125,7 @@ class BaseCard(ABC):
                 self.window.change_object_id(pygame_gui.core.ObjectID(class_id='window'))
     
     def update(self, time_delta: float) -> None:
-        """Update the flash animation."""
+        """Update the flash animation and bottom label."""
         # Update flash animation
         if self.is_flashing:
             self.flash_time += time_delta
@@ -134,6 +145,17 @@ class BaseCard(ABC):
                 self.flash_time = 0.0
                 self.flash_state = False
                 self._update_flash_theme()  # Ensure we end on normal theme
+        
+        # Update bottom label with info mode hint
+        # Only show the info mode text if this is a standalone window (not in a panel)
+        if self.window is not None:
+            if info_mode_manager.info_mode:
+                self.bottom_label.set_text(f"Press {info_mode_manager.modifier_key} to close")
+            else:
+                self.bottom_label.set_text(f"Press {info_mode_manager.modifier_key} to keep open")
+        else:
+            # When in a panel, leave the bottom label empty
+            self.bottom_label.set_text("")
     
     def kill(self) -> None:
         """Remove the card from the UI."""
@@ -141,4 +163,6 @@ class BaseCard(ABC):
             self.window.kill()
         else:
             # If using a container, we need to kill individual elements
+            if hasattr(self, 'bottom_label'):
+                self.bottom_label.kill()
             self._kill_card_elements()
