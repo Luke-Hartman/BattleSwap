@@ -1,5 +1,6 @@
 """Provides the BarracksUI component for managing available units and items."""
 import time
+from dataclasses import dataclass
 from typing import Dict, List, Optional, Union, Tuple
 import pygame
 import pygame_gui
@@ -19,6 +20,14 @@ from keyboard_shortcuts import format_button_text
 from ui_components.unit_count import UnitCount
 from ui_components.item_count import ItemCount
 from ui_components.spell_count import SpellCount
+
+
+@dataclass(frozen=True, slots=True)
+class _AllTabKey:
+    """Uniquely identifies an entry in the ALL tab."""
+
+    kind: str  # "unit" | "item" | "spell"
+    value: str  # Enum .value for stable ordering and hashing.
 
 
 class BarracksUI(UITabContainer):
@@ -124,6 +133,7 @@ class BarracksUI(UITabContainer):
         self._create_containers(padding, panel_width, content_height)
         
         self._populate_entities(padding, needs_scrollbar)
+        self._initialize_all_tab_index()
 
         # Set "ALL" tab as default
         self.switch_current_container(all_tab_index)
@@ -133,6 +143,15 @@ class BarracksUI(UITabContainer):
         hz = 2.0
         self.unit_flash_interval = 1.0 / (2 * hz)
         self.unit_flash_state = False  # False = no border, True = white border
+
+    def _initialize_all_tab_index(self) -> None:
+        """Initialize the ALL-tab index from the current UI state."""
+        self._all_tab_index: Dict[_AllTabKey, Union[UnitCount, ItemCount, SpellCount]] = {}
+        self._all_tab_order: List[_AllTabKey] = []
+        for item in self.entity_items.get("ALL", []):
+            key = self._key_for_all_item(item)
+            self._all_tab_index[key] = item
+            self._all_tab_order.append(key)
     
     def _has_acquired_items(self) -> bool:
         """Check if any items have been acquired (count > 0)."""
@@ -352,6 +371,145 @@ class BarracksUI(UITabContainer):
             x_position += spell_count.size + padding // 2
             index += 1
 
+    def _key_for_all_item(self, item: Union[UnitCount, ItemCount, SpellCount]) -> _AllTabKey:
+        """Build an ALL-tab key for an existing UI item."""
+        if isinstance(item, UnitCount):
+            return _AllTabKey(kind="unit", value=item.unit_type.value)
+        if isinstance(item, ItemCount):
+            return _AllTabKey(kind="item", value=item.item_type.value)
+        return _AllTabKey(kind="spell", value=item.spell_type.value)
+
+    def _compute_all_tab_order(self) -> List[_AllTabKey]:
+        """Compute the desired ALL-tab order based on current counts."""
+        if self.sandbox_mode:
+            units = sorted((_AllTabKey("unit", t.value) for t in UnitType), key=lambda k: k.value)
+            items = sorted((_AllTabKey("item", t.value) for t in ItemType), key=lambda k: k.value)
+            spells = sorted((_AllTabKey("spell", t.value) for t in SpellType), key=lambda k: k.value)
+            return list(units) + list(items) + list(spells)
+
+        units = sorted(
+            (_AllTabKey("unit", unit_type.value) for unit_type, count in self._units.items() if count > 0),
+            key=lambda k: k.value,
+        )
+        items = sorted(
+            (_AllTabKey("item", item_type.value) for item_type, count in self._items.items() if count > 0),
+            key=lambda k: k.value,
+        )
+        spells = sorted(
+            (_AllTabKey("spell", spell_type.value) for spell_type, count in self._spells.items() if count > 0),
+            key=lambda k: k.value,
+        )
+        return list(units) + list(items) + list(spells)
+
+    def _set_hotkey_and_tooltip(
+        self,
+        item: Union[UnitCount, ItemCount, SpellCount],
+        hotkey: Optional[str],
+    ) -> None:
+        """Apply hotkey label and tooltip text for an ALL-tab item."""
+        item.set_hotkey(hotkey)
+        if hotkey is None:
+            item.button.tool_tip_text = None
+            return
+
+        if isinstance(item, UnitCount):
+            display_name = item.unit_type.value.replace("_", " ").title()
+        elif isinstance(item, ItemCount):
+            display_name = item.item_type.value.replace("_", " ").title()
+        else:
+            display_name = item.spell_type.value.replace("_", " ").title()
+
+        item.button.tool_tip_text = format_button_text(display_name, hotkey)
+        item.button.tool_tip_delay = 0
+
+    def _ensure_all_tab_matches_state(self, padding: int) -> None:
+        """Incrementally update the ALL tab to match current counts (fast path)."""
+        desired_order = self._compute_all_tab_order()
+        desired_set = set(desired_order)
+
+        # Remove no-longer-present widgets.
+        for key in list(self._all_tab_order):
+            if key in desired_set:
+                continue
+            widget = self._all_tab_index.pop(key, None)
+            if widget is not None:
+                widget.kill()
+
+        # Add new widgets.
+        all_container = self.containers["ALL"]
+        for key in desired_order:
+            if key in self._all_tab_index:
+                continue
+            if key.kind == "unit":
+                unit_type = UnitType(key.value)
+                count = int(self._units.get(unit_type, 0))
+                widget: Union[UnitCount, ItemCount, SpellCount] = UnitCount(
+                    x_pos=0,
+                    y_pos=0,
+                    unit_type=unit_type,
+                    count=count,
+                    interactive=self.interactive and count > 0,
+                    manager=self.manager,
+                    container=all_container,
+                    infinite=self.sandbox_mode,
+                    hotkey=None,
+                )
+            elif key.kind == "item":
+                item_type = ItemType(key.value)
+                count = int(self._items.get(item_type, 0))
+                widget = ItemCount(
+                    x_pos=0,
+                    y_pos=0,
+                    item_type=item_type,
+                    count=count,
+                    interactive=self.interactive and count > 0,
+                    manager=self.manager,
+                    container=all_container,
+                    infinite=self.sandbox_mode,
+                    hotkey=None,
+                )
+            else:
+                spell_type = SpellType(key.value)
+                count = int(self._spells.get(spell_type, 0))
+                widget = SpellCount(
+                    x_pos=0,
+                    y_pos=0,
+                    spell_type=spell_type,
+                    count=count,
+                    interactive=self.interactive and count > 0,
+                    manager=self.manager,
+                    container=all_container,
+                    infinite=self.sandbox_mode,
+                    hotkey=None,
+                )
+            self._all_tab_index[key] = widget
+
+        # Reflow + hotkeys/tooltips.
+        needs_scrollbar, _ = self._calculate_panel_dimensions(self.rect.width, "ALL")
+        container_height = all_container.rect.height
+        y_offset = (container_height - UnitCount.size) // 2 if not needs_scrollbar else 0
+
+        for idx, key in enumerate(desired_order):
+            widget = self._all_tab_index[key]
+            x_pos = idx * (UnitCount.size + padding // 2)
+            widget.set_relative_position((x_pos, y_offset))
+
+            hotkey = str((idx + 1) % 10) if idx < 10 else None
+            self._set_hotkey_and_tooltip(widget, hotkey)
+
+        total_width = (
+            len(desired_order) * (UnitCount.size + padding // 2) - padding // 2
+            if desired_order
+            else 0
+        )
+        all_container.set_scrollable_area_dimensions(
+            (max(all_container.rect.width, total_width), all_container.rect.height),
+        )
+
+        # Update list used by event handling / selection logic.
+        self.entity_items["ALL"] = [self._all_tab_index[key] for key in desired_order]
+        self._all_tab_order = list(desired_order)
+
     def _populate_faction_tabs(self, padding: int, needs_scrollbar: bool) -> None:
         """Populate faction tabs with all units in each faction."""
         for faction in self.available_factions:
@@ -508,13 +666,20 @@ class BarracksUI(UITabContainer):
 
     def _sync_from_battle_state(self) -> None:
         """Sync units, items, and spells counts with the current battle state and rebuild UI."""
-        if not self.sandbox_mode and self.current_battle is not None:
-            self._units = progress_manager.available_units(self.current_battle).copy()
-            self._items = progress_manager.available_items(self.current_battle).copy()
-            self._spells = progress_manager.available_spells(self.current_battle).copy()
-        # In sandbox mode or when current_battle is None, keep current values
-        
-        # Rebuild UI to reflect the synced counts
+        if self.sandbox_mode or self.current_battle is None:
+            return
+
+        new_units = progress_manager.available_units(self.current_battle)
+        new_items = progress_manager.available_items(self.current_battle)
+        new_spells = progress_manager.available_spells(self.current_battle)
+
+        if self._units == new_units and self._items == new_items and self._spells == new_spells:
+            return
+
+        self._units = new_units
+        self._items = new_items
+        self._spells = new_spells
+
         self._rebuild()
 
     def _rebuild(self) -> None:
@@ -526,28 +691,14 @@ class BarracksUI(UITabContainer):
         # Preserve current counts - this is called after manual updates to counts
         # In sandbox mode or when current_battle is None, keep current values
 
-        if not hasattr(self, '_previous_dimensions'):
-            self._previous_dimensions = None
-            
-        # Get the current tab name
+        # Fast path: avoid destroying/recreating UI trees. Most changes are count-only.
         current_tab_name = self.get_tab(self.current_container_index)["text"]
-        needs_scrollbar, content_height = self._calculate_panel_dimensions(self.rect.width, current_tab_name)
-        current_dimensions = (self.rect.width, content_height)
+        if current_tab_name == "ALL":
+            # Only ALL tab's height/scrollbar can change based on available counts.
+            self._resize_for_current_tab()
 
-        # Kill all containers and items
-        for container in self.containers.values():
-            container.kill()
-        for items in self.entity_items.values():
-            for item in items:
-                item.kill()
-            items.clear()
-        
-        # Recreate all containers
-        self._create_containers(10, self.rect.width, content_height)
-        
-        # Repopulate all entities
-        self._populate_entities(10, needs_scrollbar)
-        self._previous_dimensions = current_dimensions
+        self._ensure_all_tab_matches_state(10)
+        self._update_entity_counts()
 
     def _update_entity_counts(self) -> None:
         """Update counts for all existing entities without rebuilding."""
@@ -555,17 +706,17 @@ class BarracksUI(UITabContainer):
         for item in self.entity_items["ALL"]:
             if isinstance(item, UnitCount):
                 unit_type = item.unit_type
-                count = self._units[unit_type]
+                count = self._units.get(unit_type, 0)
                 item.update_count(count)
                 item.set_interactive(self.interactive and count > 0)
             elif isinstance(item, ItemCount):
                 item_type = item.item_type
-                count = self._items[item_type]
+                count = self._items.get(item_type, 0)
                 item.update_count(count)
                 item.set_interactive(self.interactive and count > 0)
             elif isinstance(item, SpellCount):
                 spell_type = item.spell_type
-                count = self._spells[spell_type]
+                count = self._spells.get(spell_type, 0)
                 item.update_count(count)
                 item.set_interactive(self.interactive and count > 0)
         
@@ -574,7 +725,7 @@ class BarracksUI(UITabContainer):
             for item in self.entity_items[faction.name]:
                 if isinstance(item, UnitCount):
                     unit_type = item.unit_type
-                    count = self._units[unit_type]
+                    count = self._units.get(unit_type, 0)
                     item.update_count(count)
                     item.set_interactive(self.interactive and count > 0)
         
@@ -582,7 +733,7 @@ class BarracksUI(UITabContainer):
         for item in self.entity_items["ITEMS"]:
             if isinstance(item, ItemCount):
                 item_type = item.item_type
-                count = self._items[item_type]
+                count = self._items.get(item_type, 0)
                 item.update_count(count)
                 item.set_interactive(self.interactive and count > 0)
         
@@ -590,7 +741,7 @@ class BarracksUI(UITabContainer):
         for item in self.entity_items["SPELLS"]:
             if isinstance(item, SpellCount):
                 spell_type = item.spell_type
-                count = self._spells[spell_type]
+                count = self._spells.get(spell_type, 0)
                 item.update_count(count)
                 item.set_interactive(self.interactive and count > 0)
 

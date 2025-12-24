@@ -103,6 +103,29 @@ class BaseCountButton(UIPanel):
             self.button.enable()
         else:
             self.button.disable()
+
+    def set_hotkey(self, hotkey: Optional[str]) -> None:
+        """Update the hotkey label without recreating the element."""
+        if self.hotkey == hotkey:
+            return
+
+        self.hotkey = hotkey
+        if hotkey is None:
+            if self.hotkey_label is not None:
+                self.hotkey_label.kill()
+                self.hotkey_label = None
+            return
+
+        if self.hotkey_label is None:
+            self.hotkey_label = UILabel(
+                relative_rect=pygame.Rect((0, self.size - 25), (25, 25)),
+                text=hotkey,
+                manager=self.manager,
+                container=self,
+                object_id=pygame_gui.core.ObjectID(class_id="@unit_count_text"),
+            )
+        else:
+            self.hotkey_label.set_text(hotkey)
     
     def handle_event(self, event: pygame.event.Event) -> bool:
         """Handle UI events for the button. Must be implemented by subclasses."""
