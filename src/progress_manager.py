@@ -576,19 +576,27 @@ class ProgressManager(BaseModel):
             ]
             valid_targets = []
             
-            # Always include starting hexes if they're claimed
+            # Collect starting hexes separately to prioritize them
+            starting_hex_targets = []
             for starting_hex in STARTING_HEXES:
                 if (starting_hex in self.hex_states and 
                     self.hex_states[starting_hex] == HexLifecycleState.CLAIMED):
-                    valid_targets.append(starting_hex)
+                    starting_hex_targets.append(starting_hex)
             
             # Add all claimed hexes that are adjacent to any corrupted hex
+            adjacent_targets = []
             for coords, state in self.hex_states.items():
                 if state == HexLifecycleState.CLAIMED:
                     # Check if this hex is adjacent to any corrupted hex
                     neighbors = hex_neighbors(coords)
                     if any(neighbor in corrupted_hexes for neighbor in neighbors):
-                        valid_targets.append(coords)
+                        adjacent_targets.append(coords)
+            
+            # Prioritize starting hexes if any are available
+            if starting_hex_targets:
+                valid_targets = starting_hex_targets
+            else:
+                valid_targets = adjacent_targets
             
             if not valid_targets:
                 raise ValueError("No valid targets found for corruption")
