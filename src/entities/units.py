@@ -2554,6 +2554,17 @@ def create_core_wizard(
     elif tier == UnitTier.ELITE:
         wizard_damage = wizard_damage * 2.0
     
+    # Calculate tier-specific range
+    attack_range = gc.CORE_WIZARD_ATTACK_RANGE
+    
+    # Advanced tier: 15% more range
+    if tier == UnitTier.ADVANCED:
+        attack_range = attack_range * 1.15
+    
+    # Elite tier: 30% more range total (15% + 15%)
+    elif tier == UnitTier.ELITE:
+        attack_range = attack_range * 1.30
+    
     entity = unit_base_entity(
         x=x,
         y=y,
@@ -2581,7 +2592,7 @@ def create_core_wizard(
         entity,
         Destination(target_strategy=targetting_strategy, x_offset=0)
     )
-    esper.add_component(entity, RangeIndicator(ranges=[gc.CORE_WIZARD_ATTACK_RANGE]))
+    esper.add_component(entity, RangeIndicator(ranges=[attack_range]))
     esper.add_component(
         entity,
         Abilities(
@@ -2595,7 +2606,7 @@ def create_core_wizard(
                                 Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=gc.CORE_WIZARD_ATTACK_RANGE,
+                                    distance=attack_range,
                                     y_bias=None
                                 )
                             ])
@@ -2608,7 +2619,7 @@ def create_core_wizard(
                                 Grounded(),
                                 MaximumDistanceFromEntity(
                                     entity=entity,
-                                    distance=gc.CORE_WIZARD_ATTACK_RANGE + gc.TARGETTING_GRACE_DISTANCE,
+                                    distance=attack_range + gc.TARGETTING_GRACE_DISTANCE,
                                     y_bias=None
                                 )
                             ])

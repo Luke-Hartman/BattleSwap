@@ -169,8 +169,8 @@ UPGRADE_DESCRIPTIONS = {
         UnitTier.ELITE: "50% increased damage"
     },
     UnitType.CORE_WIZARD: {
-        UnitTier.ADVANCED: "50% increased damage",
-        UnitTier.ELITE: "50% increased damage"
+        UnitTier.ADVANCED: "50% increased damage\n15% increased range",
+        UnitTier.ELITE: "50% increased damage\n15% increased range"
     },
     UnitType.INFANTRY_BANNER_BEARER: {
         UnitTier.ADVANCED: "50% increased health\nAura grants 25% increased damage",
@@ -1001,6 +1001,17 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
         elif unit_tier == UnitTier.ELITE:
             wizard_damage = wizard_damage * 2.0
         
+        # Calculate tier-specific range
+        attack_range = gc.CORE_WIZARD_ATTACK_RANGE
+        
+        # Advanced tier: 15% more range
+        if unit_tier == UnitTier.ADVANCED:
+            attack_range = attack_range * 1.15
+        
+        # Elite tier: 30% more range total (15% + 15%)
+        elif unit_tier == UnitTier.ELITE:
+            attack_range = attack_range * 1.30
+        
         return UnitData(
             name="Wizard",
             description=f"Wizards shoot fireballs that damage allied and enemy units in a large <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a>.",
@@ -1009,14 +1020,14 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
                 StatType.DEFENSE: defense_stat(gc.CORE_WIZARD_HP),
                 StatType.SPEED: speed_stat(gc.CORE_WIZARD_MOVEMENT_SPEED),
                 StatType.DAMAGE: damage_stat(wizard_damage / gc.CORE_WIZARD_ANIMATION_ATTACK_DURATION, 2),
-                StatType.RANGE: range_stat(gc.CORE_WIZARD_ATTACK_RANGE),
+                StatType.RANGE: range_stat(attack_range),
                 StatType.UTILITY: None
             },
             tooltips={
                 StatType.DEFENSE: f"{gc.CORE_WIZARD_HP} maximum health",
                 StatType.SPEED: f"{gc.CORE_WIZARD_MOVEMENT_SPEED} units per second",
                 StatType.DAMAGE: f"{int(wizard_damage)} per hit ({wizard_damage / gc.CORE_WIZARD_ANIMATION_ATTACK_DURATION:.1f} per second) in a large area",
-                StatType.RANGE: f"{gc.CORE_WIZARD_ATTACK_RANGE} units",
+                StatType.RANGE: f"{attack_range:.0f} units",
                 StatType.UTILITY: None
             },
             tips={
@@ -1025,7 +1036,7 @@ def get_unit_data(unit_type: UnitType, unit_tier: UnitTier = UnitTier.BASIC) -> 
             },
             modification_levels={
                 StatType.DAMAGE: 1 if unit_tier == UnitTier.ADVANCED else 2 if unit_tier == UnitTier.ELITE else 0,
-                StatType.RANGE: 0,
+                StatType.RANGE: 1 if unit_tier == UnitTier.ADVANCED else 2 if unit_tier == UnitTier.ELITE else 0,
                 StatType.DEFENSE: 0,
                 StatType.SPEED: 0,
                 StatType.UTILITY: 0
