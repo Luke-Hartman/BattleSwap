@@ -703,6 +703,7 @@ class GameConstants(BaseModel):
     CAMERA_ANIMATION_EASE_POWER: float  # power parameter for ease out and in function
 
     # Corruption constants
+    FIRST_CORRUPTION_TRIGGER_POINTS: int
     CORRUPTION_TRIGGER_POINTS: int
     CORRUPTION_BATTLE_COUNT: int
 

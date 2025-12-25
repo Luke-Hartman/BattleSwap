@@ -408,7 +408,7 @@ class ProgressManager(BaseModel):
         """
         reclaimed_battles = self.count_reclaimed_corrupted_battles()
         # Player should get 1 package per reclaimed corrupted battle
-        expected_packages = reclaimed_battles // gc.CORRUPTION_BATTLE_COUNT + 1
+        expected_packages = reclaimed_battles // gc.CORRUPTION_BATTLE_COUNT
         # If player is short on packages, show the selection panel
         if expected_packages > self.packages_given:
             # Generate packages if we don't have pending ones
@@ -526,11 +526,13 @@ class ProgressManager(BaseModel):
     def should_trigger_corruption(self) -> bool:
         """Check if corruption should be triggered based on available unit points."""
         available_points = calculate_total_available_points()
-        enough_points = available_points >= gc.CORRUPTION_TRIGGER_POINTS
         not_already_corrupted = not any(
             state in [HexLifecycleState.CORRUPTED]
             for state in self.hex_states.values()
         )
+        # Use first corruption threshold if this is the first corruption, otherwise use regular threshold
+        corruption_threshold = gc.FIRST_CORRUPTION_TRIGGER_POINTS if not_already_corrupted else gc.CORRUPTION_TRIGGER_POINTS
+        enough_points = available_points >= corruption_threshold
         enough_claimed_hexes = sum(
             1 for hex_coords in self.hex_states if self.hex_states[hex_coords] == HexLifecycleState.CLAIMED
         ) >= gc.CORRUPTION_BATTLE_COUNT

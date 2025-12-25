@@ -58,12 +58,7 @@
       {
         "name": "increased_damage",
         "required_team": 2,
-        "increase_percent": 100.0
-      },
-      {
-        "name": "increased_attack_speed",
-        "required_team": 2,
-        "increase_percent": 100.0
+        "increase_percent": 25.0
       }
     ],
     "spells": []
@@ -133,14 +128,9 @@
     ],
     "corruption_powers": [
       {
-        "name": "increased_max_health",
-        "required_team": 2,
-        "increase_percent": 100.0
-      },
-      {
         "name": "increased_movement_speed",
         "required_team": 2,
-        "increase_percent": 100.0
+        "increase_percent": 25.0
       }
     ],
     "spells": []
@@ -202,14 +192,9 @@
     ],
     "corruption_powers": [
       {
-        "name": "increased_attack_speed",
-        "required_team": 2,
-        "increase_percent": 100.0
-      },
-      {
         "name": "increased_damage",
         "required_team": 2,
-        "increase_percent": 100.0
+        "increase_percent": 25.0
       }
     ],
     "spells": []
@@ -2822,9 +2807,9 @@
     ],
     "corruption_powers": [
       {
-        "name": "increased_max_health",
+        "name": "increased_damage",
         "required_team": 2,
-        "increase_percent": 300.0
+        "increase_percent": 50.0
       }
     ],
     "spells": null
