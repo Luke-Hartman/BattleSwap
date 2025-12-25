@@ -1165,7 +1165,7 @@ class SetupBattleScene(Scene):
         """Update the sandbox scene."""
         esper.switch_world(self.battle_id)
         keys = pygame.key.get_pressed()
-        show_grid = keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]
+        show_grid = keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL]
 
         # Get battle hex coordinates
         battle = self.world_map_view.battles[self.battle_id]

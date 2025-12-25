@@ -57,6 +57,27 @@ def decrease_game_speed() -> None:
         save_settings()
 
 
+def set_game_speed(speed: Fraction) -> None:
+    """Set the game speed to a specific value.
+    
+    Args:
+        speed: The desired game speed as a Fraction
+    """
+    if settings:
+        settings.GAME_SPEED = float(speed)
+        save_settings()
+
+
+def set_game_speed_1x() -> None:
+    """Set the game speed to 1x."""
+    set_game_speed(Fraction(1, 1))
+
+
+def set_game_speed_4x() -> None:
+    """Set the game speed to 4x."""
+    set_game_speed(Fraction(4, 1))
+
+
 def toggle_pause() -> None:
     """Toggle the pause state."""
     global _is_paused

@@ -18,6 +18,7 @@ class KeyboardShortcuts:
     
     # Time control shortcuts
     SPACE = "Space"
+    SHIFT = "Shift"
     PLUS = "+"
     MINUS = "-"
     

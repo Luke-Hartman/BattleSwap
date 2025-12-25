@@ -19,6 +19,8 @@ class Settings(BaseModel):
     
     # Gameplay Settings
     GAME_SPEED: float = 1.0
+    TOGGLE_FAST_FORWARD: bool = False
+    FAST_FORWARD_ENABLED: bool = False
 
     class Config:
         frozen = False
