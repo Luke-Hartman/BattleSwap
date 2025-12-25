@@ -10,6 +10,7 @@ from entities.spells import spell_icon_surfaces
 from ui_components.base_card import BaseCard
 from game_constants import gc
 from ui_components.game_data import GlossaryEntryType
+from number_format import format_number
 
 
 class SpellCard(BaseCard):
@@ -79,7 +80,7 @@ class SpellCard(BaseCard):
         elif spell_type == SpellType.SLOWING_AREA:
             return SpellData(
                 name="Slowing Area",
-                description=f"Creates a {gc.SPELL_SLOWING_AREA_DURATION}-second <a href='{GlossaryEntryType.AURA.value}'>Aura</a> with a radius of {gc.SPELL_SLOWING_AREA_RADIUS} that slows ALL living units by {gc.SPELL_SLOWING_AREA_SPEED_REDUCTION_PERCENT * 100:.0f}%."
+                description=f"Creates a {gc.SPELL_SLOWING_AREA_DURATION}-second <a href='{GlossaryEntryType.AURA.value}'>Aura</a> with a radius of {gc.SPELL_SLOWING_AREA_RADIUS} that slows ALL living units by {format_number(gc.SPELL_SLOWING_AREA_SPEED_REDUCTION_PERCENT * 100)}%."
             )
         elif spell_type == SpellType.CHAIN_EXPLODE_ON_DEATH:
             return SpellData(

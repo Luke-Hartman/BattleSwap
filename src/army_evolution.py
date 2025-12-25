@@ -12,6 +12,7 @@ from auto_battle import BattleOutcome, simulate_battle_with_dependencies
 from components.team import TeamType
 from components.unit_type import UnitType
 from point_values import unit_values
+from number_format import format_number
 
 class EloIndividual(Individual):
     def __init__(self, unit_placements: List[Tuple[UnitType, Tuple[float, float]]], elo: float = 1000.0):
@@ -23,7 +24,7 @@ class EloIndividual(Individual):
         self.matches_played = 0
 
     def __str__(self) -> str:
-        return f"{super().__str__()} (ELO: {self.elo:.1f}, W/L/D: {self.wins}/{self.losses}/{self.draws}, Matches: {self.matches_played})"
+        return f"{super().__str__()} (ELO: {format_number(self.elo)}, W/L/D: {self.wins}/{self.losses}/{self.draws}, Matches: {self.matches_played})"
 
 class EloPopulation:
     def __init__(self, individuals: List[EloIndividual]):
@@ -206,9 +207,9 @@ def run_army_evolution(
         generation = 0
         while True:
             print(f"\nGeneration {generation + 1}")
-            print(f"Best ELO: {population.get_best_individuals(1)[0].elo:.1f}")
-            print(f"Median ELO: {population.get_median_elo():.1f}")
-            print(f"Worst ELO: {population.get_worst_individuals(1)[0].elo:.1f}")
+            print(f"Best ELO: {format_number(population.get_best_individuals(1)[0].elo)}")
+            print(f"Median ELO: {format_number(population.get_median_elo())}")
+            print(f"Worst ELO: {format_number(population.get_worst_individuals(1)[0].elo)}")
             print("\nTop 3 armies:")
             for i, ind in enumerate(population.get_best_individuals(3), 1):
                 print(f"{i}. {ind}")

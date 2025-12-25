@@ -13,6 +13,7 @@ from scene_utils import get_unit_placements
 from game_constants import gc
 from ui_components.game_data import GlossaryEntryType
 from point_values import item_values, spell_values
+from number_format import format_number
 
 class ProgressPanel(UIPanel):
     """Panel showing progress information including battle points, completion stats, and barracks info."""
@@ -121,7 +122,7 @@ class ProgressPanel(UIPanel):
         else:
             enemy_points_text = f"{enemy_points} pts"
         
-        completion_link = f"<a href='progress_details'>{percentage}% completion</a>"
+        completion_link = f"<a href='progress_details'>{format_number(percentage)}% completion</a>"
         
         html_content = f"""{player_points_text} vs {enemy_points_text}
 {unused_points} pts unused

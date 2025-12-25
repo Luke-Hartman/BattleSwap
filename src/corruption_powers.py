@@ -4,6 +4,7 @@ from typing import Annotated, Optional, Union, Literal
 from abc import abstractmethod
 from pydantic import BaseModel, Field, ConfigDict
 from components.team import TeamType
+from number_format import format_number
 
 class CorruptionPower(BaseModel):
     """Base class for corruption powers."""
@@ -29,9 +30,9 @@ def _get_team_str(team: Optional[TeamType]) -> str:
 
 def _get_increase_str(increase_percent: float) -> str:
     if increase_percent > 0:
-        return f"{int(increase_percent)}% increased"
+        return f"{format_number(increase_percent)}% increased"
     else:
-        return f"{-int(increase_percent)}% decreased"
+        return f"{format_number(-increase_percent)}% decreased"
 
 class IncreasedMaxHealth(CorruptionPower):
     """Power that increases the maximum health of enemy units."""
