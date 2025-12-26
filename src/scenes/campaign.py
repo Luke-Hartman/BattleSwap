@@ -235,6 +235,9 @@ class CampaignScene(Scene):
         
         # Rebuild barracks to show new items/spells
         if hasattr(self, 'barracks') and self.barracks is not None:
+            self.barracks._units = progress_manager.available_units(None)
+            self.barracks._items = progress_manager.available_items(None)
+            self.barracks._spells = progress_manager.available_spells(None)
             self.barracks._rebuild()
 
     def create_ui(self) -> None:
