@@ -605,7 +605,7 @@ class ProgressManager(BaseModel):
                 valid_targets = adjacent_targets
             
             if not valid_targets:
-                raise ValueError("No valid targets found for corruption")
+                return []
             
             # Randomly select one hex to corrupt
             hex_to_corrupt = random.choice(valid_targets)
