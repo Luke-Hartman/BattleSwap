@@ -40,8 +40,8 @@ class PackageSelectionPanel(UIPanel):
         self.manager = manager  # Store manager for card creation
         
         # Panel sized for vertical layout with card slot on top
-        panel_width = 340  # Standard width
-        panel_height = 610
+        panel_width = 420
+        panel_height = 665
         screen_width = pygame.display.Info().current_w
         screen_height = pygame.display.Info().current_h
         
@@ -54,6 +54,18 @@ class PackageSelectionPanel(UIPanel):
             margins={'left': 0, 'right': 0, 'top': 0, 'bottom': 0}
         )
         
+        # Title
+        UILabel(
+            relative_rect=pygame.Rect((0, 10), (panel_width, 60)),
+            text="Choose a Reward",
+            manager=manager,
+            container=self,
+            object_id=pygame_gui.core.ObjectID(
+                class_id="@title_label",
+                object_id="#title_label"
+            )
+        )
+        
         # Create package selection buttons using count buttons
         self.package_buttons: List[Union[ItemCount, SpellCount]] = []
         
@@ -61,7 +73,7 @@ class PackageSelectionPanel(UIPanel):
         card_slot_width = 300  # BaseCard.WIDTH
         card_slot_height = 475  # BaseCard.HEIGHT
         card_slot_x = (panel_width - card_slot_width) // 2  # Center horizontally
-        card_slot_y = 20
+        card_slot_y = 80
         
         self.card_slot_panel = pygame_gui.elements.UIPanel(
             relative_rect=pygame.Rect(card_slot_x, card_slot_y, card_slot_width, card_slot_height),
