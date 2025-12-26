@@ -423,21 +423,6 @@ class UpgradeWindow:
         
         assert available_units, "No units available for upgrade"
         
-        # Auto-unlock basic zombies for upgrading when any zombie unit is available
-        zombie_units = {
-            UnitType.ZOMBIE_BASIC_ZOMBIE,
-            UnitType.MISC_BRUTE,
-            UnitType.ZOMBIE_FIGHTER,
-            UnitType.MISC_GRABBER,
-            UnitType.ZOMBIE_JUMPER,
-            UnitType.ZOMBIE_SPITTER,
-            UnitType.ZOMBIE_TANK
-        }
-            
-        # Check if any zombie unit is available
-        if available_units & zombie_units:
-            available_units.add(UnitType.ZOMBIE_BASIC_ZOMBIE)
-        
         # Calculate grid layout
         icon_size = UnitIconButton.size
         padding = 5  # Reduced from 10 to 5
