@@ -170,13 +170,28 @@ class CampaignScene(Scene):
         
         # Show upgrade tutorial if this is the first time upgrades are available
         if progress_manager.should_show_upgrade_tutorial() and self.upgrade_tutorial is None:
+            # Deselect battle before opening panel
+            self._deselect_battle()
+            
             self.upgrade_tutorial = UpgradeTutorialPanel(self.manager)
             progress_manager.mark_upgrade_tutorial_shown()
+    
+    def _deselect_battle(self) -> None:
+        """Deselect the currently selected battle and update UI accordingly."""
+        if self.selected_hex is not None:
+            self.selected_hex = None
+            self.create_context_buttons()
+            # Update grades panel with no battle
+            if self.progress_panel is not None:
+                self.progress_panel.update_battle(None)
     
     def check_panels(self) -> None:
         # Check if we should show package selection
         if progress_manager.should_show_package_selection():
             from ui_components.package_selection_panel import PackageSelectionPanel
+            
+            # Deselect battle before opening panel
+            self._deselect_battle()
             
             # Use the stored packages from progress manager
             packages = progress_manager.pending_packages
@@ -192,6 +207,9 @@ class CampaignScene(Scene):
         
         # Check if we should show congratulations
         if progress_manager.should_show_congratulations():
+            # Deselect battle before opening panel
+            self._deselect_battle()
+            
             self.congratulations_panel = CongratulationsPanel(
                 manager=self.manager,
             )
@@ -201,6 +219,9 @@ class CampaignScene(Scene):
             
         # Check if we should show corruption congratulations
         if progress_manager.should_show_corruption_congratulations():
+            # Deselect battle before opening panel
+            self._deselect_battle()
+            
             self.corruption_congratulations_panel = CorruptionCongratulationsPanel(
                 manager=self.manager,
             )
@@ -211,6 +232,9 @@ class CampaignScene(Scene):
         if progress_manager.should_trigger_corruption():
             corrupted_battles = progress_manager.corrupt_battles()
             if corrupted_battles:
+                # Deselect battle before opening panel
+                self._deselect_battle()
+                
                 self.corruption_dialog = CorruptionPanel(
                     manager=self.manager,
                     corrupted_battles=corrupted_battles,
