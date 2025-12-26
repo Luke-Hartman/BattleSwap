@@ -230,7 +230,7 @@ def create_infecting_area_spell(
 ) -> int:
     """Create an Infecting Area spell entity.
     
-    This spell creates a temporary aura on the ground that infects all units
+    This spell creates a permanent aura on the ground that infects all units
     in the area with zombie infection when they die.
     
     Args:
@@ -252,7 +252,7 @@ def create_infecting_area_spell(
     # Create the infecting area effect
     infecting_area_effect = CreatesTemporaryAura(
         radius=gc.SPELL_INFECTING_AREA_RADIUS,
-        duration=gc.SPELL_INFECTING_AREA_DURATION,
+        duration=float('inf'),
         effects=[
             AppliesStatusEffect(
                 status_effect=ZombieInfection(
@@ -289,7 +289,7 @@ def create_healing_area_spell(
 ) -> int:
     """Create a Healing Area spell entity.
     
-    This spell creates a temporary aura on the ground that heals all living allies
+    This spell creates a permanent aura on the ground that heals all living allies
     in the area.
     
     Args:
@@ -311,7 +311,7 @@ def create_healing_area_spell(
     # Create the healing area effect
     healing_area_effect = CreatesTemporaryAura(
         radius=gc.SPELL_HEALING_AREA_RADIUS,
-        duration=gc.SPELL_HEALING_AREA_DURATION,
+        duration=float('inf'),
         effects=[
             AppliesStatusEffect(
                 status_effect=Healing(
@@ -347,7 +347,7 @@ def create_slowing_area_spell(
 ) -> int:
     """Create a Slowing Area spell entity.
     
-    This spell creates a temporary aura on the ground that slows all living units
+    This spell creates a permanent aura on the ground that slows all living units
     in the area, both allies and enemies.
     
     Args:
@@ -369,7 +369,7 @@ def create_slowing_area_spell(
     # Create the slowing area effect
     slowing_area_effect = CreatesTemporaryAura(
         radius=gc.SPELL_SLOWING_AREA_RADIUS,
-        duration=gc.SPELL_SLOWING_AREA_DURATION,
+        duration=float('inf'),
         effects=[
             AppliesStatusEffect(
                 status_effect=Slowed(
@@ -405,7 +405,7 @@ def create_chain_explode_on_death_spell(
 ) -> int:
     """Create a Chain Explode On Death spell entity.
     
-    This spell creates a temporary aura on the ground that applies an explode-on-death
+    This spell creates a permanent aura on the ground that applies an explode-on-death
     status effect to all living units in the area. When affected units die, they explode,
     damaging nearby units.
     
@@ -428,7 +428,7 @@ def create_chain_explode_on_death_spell(
     # Create the chain explode on death effect
     chain_explode_effect = CreatesTemporaryAura(
         radius=gc.SPELL_CHAIN_EXPLODE_ON_DEATH_RADIUS,
-        duration=gc.SPELL_CHAIN_EXPLODE_ON_DEATH_DURATION,
+        duration=float('inf'),
         effects=[
             AppliesStatusEffect(
                 status_effect=ExplodeOnDeath(
