@@ -22,7 +22,7 @@ import random
 
 # Current version of the progress manager
 # Increment this when making breaking changes to save file format
-CURRENT_VERSION = 4
+CURRENT_VERSION = 5
 
 # Starting hex coordinates that are initially available
 STARTING_HEXES = [(0, 0), (1, -1), (0, 1)]
