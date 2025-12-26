@@ -16,6 +16,7 @@ from battles import Battle, update_battle
 from selected_unit_manager import selected_unit_manager
 import upgrade_hexes
 from keyboard_shortcuts import format_button_text, KeyboardShortcuts
+from number_format import format_number
 
 class BattleScene(Scene):
     """The scene for the battle."""
@@ -178,11 +179,11 @@ class BattleScene(Scene):
             # Only show previous solution if corruption states match
             if previous_solution.solved_corrupted == current_is_corrupted:
                 previous_points = calculate_points_for_units(previous_solution.unit_placements, is_enemy=False)
-                tooltip = f"New: {current_points} pts vs {enemy_points} pts\nOld: {previous_points} pts vs {enemy_points} pts"
+                tooltip = f"New: {format_number(current_points)} pts vs {format_number(enemy_points)} pts\nOld: {format_number(previous_points)} pts vs {format_number(enemy_points)} pts"
             else:
-                tooltip = f"{current_points} pts vs {enemy_points} pts"
+                tooltip = f"{format_number(current_points)} pts vs {format_number(enemy_points)} pts"
         else:
-            tooltip = f"{current_points} pts vs {enemy_points} pts"
+            tooltip = f"{format_number(current_points)} pts vs {format_number(enemy_points)} pts"
 
         self.save_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(

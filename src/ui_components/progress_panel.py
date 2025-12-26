@@ -115,12 +115,12 @@ class ProgressPanel(UIPanel):
         if player_points == "-":
             player_points_text = f"- pts"
         else:
-            player_points_text = f"{player_points} pts"
+            player_points_text = f"{format_number(player_points)} pts"
             
         if enemy_points == "-":
             enemy_points_text = f"- pts"
         else:
-            enemy_points_text = f"{enemy_points} pts"
+            enemy_points_text = f"{format_number(enemy_points)} pts"
         
         completion_link = f"<a href='progress_details'>{format_number(percentage)}% completion</a>"
         
