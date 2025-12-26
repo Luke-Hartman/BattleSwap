@@ -142,6 +142,9 @@ class PackageSelectionPanel(UIPanel):
             container=self,
         )
         self.confirm_button.disable()
+        
+        # Bring panel to front to ensure it appears above other UI elements
+        self.bring_to_front()
     
     def _get_package_theme_id(self, package: Package) -> str:
         """Get the theme ID for a package based on its contents.
