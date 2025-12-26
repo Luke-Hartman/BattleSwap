@@ -213,7 +213,9 @@ class PackageSelectionPanel(UIPanel):
                     self._confirm_selection()
                 return True
         
-        if event.type == pygame_gui.UI_BUTTON_PRESSED:
+        # Handle button presses (check both event patterns for compatibility)
+        if (event.type == pygame.USEREVENT and 
+            event.user_type == pygame_gui.UI_BUTTON_PRESSED):
             if event.ui_element == self.confirm_button:
                 if self.selected_package is not None:
                     self._confirm_selection()
