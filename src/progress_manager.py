@@ -530,8 +530,12 @@ class ProgressManager(BaseModel):
             state in [HexLifecycleState.CORRUPTED]
             for state in self.hex_states.values()
         )
+        first_corruption = not any(
+            state in [HexLifecycleState.CORRUPTED, HexLifecycleState.RECLAIMED]
+            for state in self.hex_states.values()
+        )
         # Use first corruption threshold if this is the first corruption, otherwise use regular threshold
-        corruption_threshold = gc.FIRST_CORRUPTION_TRIGGER_POINTS if not_already_corrupted else gc.CORRUPTION_TRIGGER_POINTS
+        corruption_threshold = gc.FIRST_CORRUPTION_TRIGGER_POINTS if first_corruption else gc.CORRUPTION_TRIGGER_POINTS
         enough_points = available_points >= corruption_threshold
         enough_claimed_hexes = sum(
             1 for hex_coords in self.hex_states if self.hex_states[hex_coords] == HexLifecycleState.CLAIMED
