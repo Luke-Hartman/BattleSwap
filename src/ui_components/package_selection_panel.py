@@ -2,8 +2,8 @@
 
 import pygame
 import pygame_gui
-from pygame_gui.elements import UIPanel, UILabel, UIButton, UITextBox, UIImage
-from typing import List, Optional, Callable, Dict, Union, Tuple
+from pygame_gui.elements import UIPanel, UILabel, UIButton
+from typing import Callable, List, Optional, Union
 
 from components.item import ItemType
 from entities.items import item_theme_ids
@@ -15,7 +15,6 @@ from ui_components.item_card import ItemCard
 from ui_components.spell_card import SpellCard
 from ui_components.item_count import ItemCount
 from ui_components.spell_count import SpellCount
-from ui_components.game_data import get_item_data
 
 
 class PackageSelectionPanel(UIPanel):
@@ -38,10 +37,12 @@ class PackageSelectionPanel(UIPanel):
         self.on_selection = on_selection
         self.selected_package: Optional[Package] = None
         self.manager = manager  # Store manager for card creation
+        self.confirmed = False
+        self._displayed_package_index: Optional[int] = None
         
         # Panel sized for vertical layout with card slot on top
         panel_width = 420
-        panel_height = 665
+        panel_height = 730
         screen_width = pygame.display.Info().current_w
         screen_height = pygame.display.Info().current_h
         
@@ -129,6 +130,18 @@ class PackageSelectionPanel(UIPanel):
             self.package_buttons.append(button)
             
             # No need for hover card placeholders - we use a single card slot
+
+        confirm_button_width = 200
+        confirm_button_height = 44
+        confirm_x = (panel_width - confirm_button_width) // 2
+        confirm_y = button_y + icon_size + 10
+        self.confirm_button = UIButton(
+            relative_rect=pygame.Rect((confirm_x, confirm_y), (confirm_button_width, confirm_button_height)),
+            text="Confirm (Space)",
+            manager=manager,
+            container=self,
+        )
+        self.confirm_button.disable()
     
     def _get_package_theme_id(self, package: Package) -> str:
         """Get the theme ID for a package based on its contents.
@@ -188,28 +201,28 @@ class PackageSelectionPanel(UIPanel):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_1 and len(self.packages) > 0:
                 self._select_package(0)
-                self.on_selection(self.selected_package)
-                self.kill()
                 return True
             elif event.key == pygame.K_2 and len(self.packages) > 1:
                 self._select_package(1)
-                self.on_selection(self.selected_package)
-                self.kill()
                 return True
             elif event.key == pygame.K_3 and len(self.packages) > 2:
                 self._select_package(2)
-                self.on_selection(self.selected_package)
-                self.kill()
+                return True
+            elif event.key == pygame.K_SPACE:
+                if self.selected_package is not None:
+                    self._confirm_selection()
                 return True
         
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
-            # Handle package selection - directly select and close
+            if event.ui_element == self.confirm_button:
+                if self.selected_package is not None:
+                    self._confirm_selection()
+                return True
+
+            # Handle package selection - select only (confirmation is separate)
             for i, button in enumerate(self.package_buttons):
                 if event.ui_element == button.button:  # Count buttons have a .button attribute
                     self._select_package(i)
-                    # Immediately call the selection callback and close panel
-                    self.on_selection(self.selected_package)
-                    self.kill()
                     return True
         
         # Handle mouse hover for card display
@@ -225,10 +238,14 @@ class PackageSelectionPanel(UIPanel):
             # Display card for hovered button
             if hovered_button_index is not None:
                 package = self.packages[hovered_button_index]
-                self._display_package_card(package)
+                self._display_package_card(package, package_index=hovered_button_index)
             else:
-                # No button hovered, clear the card slot
-                self._clear_card_slot()
+                # If a selection exists, keep showing it; otherwise clear the card slot.
+                if self.selected_package is not None:
+                    selected_index = self.packages.index(self.selected_package)
+                    self._display_package_card(self.selected_package, package_index=selected_index)
+                else:
+                    self._clear_card_slot()
         
         # No Enter key handling needed - clicking buttons directly selects
         
@@ -250,14 +267,28 @@ class PackageSelectionPanel(UIPanel):
                 button.button.unselect()
         
         # Display the selected package card
-        self._display_package_card(self.selected_package)
+        self._display_package_card(self.selected_package, package_index=package_index)
+        self.confirm_button.enable()
+
+    def _confirm_selection(self) -> None:
+        """Confirm the current selection, invoke callback, and close the panel."""
+        if self.selected_package is None:
+            return
+        self.confirmed = True
+        self.on_selection(self.selected_package)
+        self.kill()
     
-    def _display_package_card(self, package: Package) -> None:
+    def _display_package_card(self, package: Package, package_index: int) -> None:
         """Display a package card in the card slot.
         
         Args:
-            package: The package to display
+            package: The package to display.
+            package_index: Index of the package being displayed.
         """
+        if self._displayed_package_index == package_index:
+            return
+        self._displayed_package_index = package_index
+
         # Clear any existing card
         self._clear_card_slot()
         
@@ -289,12 +320,15 @@ class PackageSelectionPanel(UIPanel):
         if self.displayed_card is not None:
             self.displayed_card.kill()
             self.displayed_card = None
+        self._displayed_package_index = None
     
     def kill(self) -> None:
         """Clean up the panel and displayed card."""
         # Clean up count buttons
         for button in self.package_buttons:
             button.kill()
+
+        self.confirm_button.kill()
         
         # Clean up displayed card
         self._clear_card_slot()

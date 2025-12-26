@@ -387,7 +387,10 @@ class CampaignScene(Scene):
             
             # Handle package selection panel events if it exists
             if self.package_selection_panel is not None and self.package_selection_panel.handle_event(event):
-                self.check_panels()
+                # The package selection panel consumes events while open. Only refresh panels
+                # when a selection has actually been confirmed.
+                if getattr(self.package_selection_panel, "confirmed", False):
+                    self.check_panels()
                 continue
 
             # Handle upgrade window events if it exists
