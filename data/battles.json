@@ -1249,17 +1249,12 @@
     ],
     "corruption_powers": [
       {
-        "name": "increased_damage",
-        "required_team": 2,
-        "increase_percent": 100.0
-      },
-      {
         "name": "increased_attack_speed",
         "required_team": 2,
         "increase_percent": 50.0
       }
     ],
-    "spells": null
+    "spells": []
   },
   {
     "id": "Defeat the Banner Bearer",
