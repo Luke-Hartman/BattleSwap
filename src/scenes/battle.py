@@ -45,6 +45,10 @@ class BattleScene(Scene):
             filename="Battle Theme.wav",
         ))
         emit_event(UNMUTE_DRUMS, event=UnmuteDrumsEvent())
+        emit_event(PLAY_SOUND, event=PlaySoundEvent(
+            filename="battle_start.wav",
+            volume=0.25
+        ))
         self.screen = screen
         self.manager = manager
         self.world_map_view = world_map_view
