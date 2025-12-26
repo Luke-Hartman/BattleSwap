@@ -1666,9 +1666,21 @@ class SetupBattleScene(Scene):
     
     def _should_upgrade_button_flash(self) -> bool:
         """Check if the upgrade button should flash (has unspent upgrade credits and upgrade window isn't open)."""
+        if self.upgrade_window is not None:
+            return False
+        
         available_advanced, available_elite = progress_manager.calculate_available_credits()
         has_unspent_credits = available_advanced > 0 or available_elite > 0
-        return has_unspent_credits and self.upgrade_window is None
+        if not has_unspent_credits:
+            return False
+        
+        # Check if there are any units that can actually be upgraded
+        available_units = progress_manager.available_units(current_battle=self.battle)
+        for unit_type in available_units.keys():
+            if progress_manager.can_upgrade_unit(unit_type):
+                return True
+        
+        return False
     
     def _update_upgrade_button_flash_theme(self) -> None:
         """Update the upgrade button theme based on flash state."""
