@@ -472,7 +472,7 @@ class CampaignEditorScene(Scene):
         # Only update camera if no dialog is focused
         if not hasattr(self, 'save_battle_dialog'):
             self.world_map_view.camera.update(time_delta)
-        self.world_map_view.draw_map()
+        self.world_map_view.draw_map(time_delta=time_delta)
         self.world_map_view.update_battles(time_delta)
         
         selected_unit_manager.update(time_delta)

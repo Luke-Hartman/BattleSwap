@@ -4,6 +4,7 @@ from typing import Dict, List, Optional, Tuple
 import esper
 import pygame
 import pygame_gui
+import math
 from shapely import Polygon
 
 from game_constants import gc, reload_game_constants
@@ -105,6 +106,8 @@ class WorldMapView:
         self.camera = camera
         self.default_world = "__default__"
         self.hex_states: Dict[Tuple[int, int], HexState] = {}
+        self._overlay_opacity_progress: float = 0.0
+        self._previous_focused_hex_coords: Optional[Tuple[int, int]] = None
         self.rebuild(battles, cleanup=False)
     
     def _initialize_battle_world(self, battle: Battle) -> None:
@@ -239,20 +242,154 @@ class WorldMapView:
         x, y = axial_to_world(*hex_coords)
         self.camera.move(x, y, zoom=1/2)
 
-    def draw_map(self) -> None:
-        """Draw all visible battle hexes and edges."""
-        self._draw_hexes()
-        self._draw_visible_edges()
+    def draw_map(
+        self,
+        focused_hex_coords: Optional[Tuple[int, int]] = None,
+        time_delta: float = 0.0,
+    ) -> None:
+        """Draw all visible battle hexes and edges.
+        
+        Args:
+            focused_hex_coords: If provided, draws a focus overlay excluding everything
+                except this hexagon and its units. When None, draws normally (backward compatible).
+            time_delta: Time delta for updating battles. Only used when focused_hex_coords is provided.
+        """
+        # Manage overlay fade state
+        target_opacity = 1.0 if focused_hex_coords is not None else 0.0
+        
+        # Update fade animation - linearly interpolate progress towards target
+        self._update_overlay_fade(time_delta, target_opacity)
+        
+        # Determine which hex to use for overlay drawing:
+        # - If focused_hex_coords is set, use it
+        # - Otherwise, if overlay is still fading out, use the previous focused hex
+        hex_coords_for_overlay = focused_hex_coords if focused_hex_coords is not None else self._previous_focused_hex_coords
+        
+        # Update previous focused hex coords:
+        # - If focused_hex_coords is set, update it
+        # - If focused_hex_coords is None but overlay is still fading, keep the previous value
+        # - Only clear it when overlay has fully faded out
+        if focused_hex_coords is not None:
+            self._previous_focused_hex_coords = focused_hex_coords
+        elif self._overlay_opacity_progress <= 0.0:
+            # Overlay has fully faded out, safe to clear
+            self._previous_focused_hex_coords = None
+        
+        # Check if we should draw the overlay (we need a hex to exclude AND overlay should be visible)
+        should_draw_overlay = hex_coords_for_overlay is not None and (focused_hex_coords is not None or self._overlay_opacity_progress > 0.0)
+        
+        if not should_draw_overlay:
+            # Backward compatible behavior - scenes still call update_battles() separately
+            self._draw_hexes()
+            self._draw_visible_edges()
+        else:
+            # Assert that the hex for overlay exists
+            all_hex_coords = set(self.hex_states.keys()) | set(upgrade_hexes.get_upgrade_hexes())
+            assert hex_coords_for_overlay is not None, \
+                "hex_coords_for_overlay must not be None when drawing overlay"
+            assert hex_coords_for_overlay in all_hex_coords, \
+                f"Hex coordinates {hex_coords_for_overlay} do not exist"
+            
+            # Get the battle for the hex
+            battle = self.get_battle_from_hex(hex_coords_for_overlay)
+            assert battle is not None, \
+                f"No battle exists for hex coordinates {hex_coords_for_overlay}"
+            
+            battle_id = battle.id
+            
+            # Draw non-focused hexagons
+            self._draw_hexes(exclude_hex_coords=hex_coords_for_overlay)
+            # Draw non-focused units
+            self.update_battles(time_delta, exclude_battle_id=battle_id)
+            # Draw overlay
+            self._draw_overlay()
+            # Draw focused hexagon
+            self._draw_hexes(include_hex_coords=hex_coords_for_overlay)
+            # Draw edges after focused hexagon so borders (like yellow border) are visible on top
+            self._draw_visible_edges()
+            # Draw focused units
+            self.update_battles(time_delta, include_battle_id=battle_id)
 
-    def update_battles(self, time_delta: float) -> None:
+    def _update_overlay_fade(self, time_delta: float, target_opacity: float) -> None:
+        """Update the overlay fade animation.
+        
+        Args:
+            time_delta: Time delta for the current frame.
+            target_opacity: Target opacity progress (0.0 to 1.0).
+        """
+        duration = gc.MAP_FOCUS_OVERLAY_FADE_DURATION
+        
+        # Calculate maximum change per frame
+        max_change_per_frame = time_delta / duration if duration > 0 else 1.0
+        
+        # Linearly interpolate towards target, never jumping more than max_change_per_frame
+        if self._overlay_opacity_progress < target_opacity:
+            # Fading in - increase progress
+            self._overlay_opacity_progress = min(
+                target_opacity,
+                self._overlay_opacity_progress + max_change_per_frame
+            )
+        elif self._overlay_opacity_progress > target_opacity:
+            # Fading out - decrease progress
+            self._overlay_opacity_progress = max(
+                target_opacity,
+                self._overlay_opacity_progress - max_change_per_frame
+            )
+        
+        # Clamp to [0, 1] range
+        self._overlay_opacity_progress = max(0.0, min(1.0, self._overlay_opacity_progress))
+
+    def _draw_overlay(self) -> None:
+        """Draw a semi-transparent overlay over the entire screen."""
+        # Apply smootherstep to the opacity progress
+        def smootherstep(x: float) -> float:
+            return 6*x**5 - 15*x**4 + 10*x**3
+        
+        smoothed_progress = smootherstep(self._overlay_opacity_progress)
+        
+        # Map progress (0-1) to alpha (0 to target alpha from game constants)
+        target_alpha = gc.MAP_FOCUS_OVERLAY_COLOR[3]
+        current_alpha = smoothed_progress * target_alpha
+        
+        overlay = pygame.Surface((self.screen.get_width(), self.screen.get_height()), pygame.SRCALPHA)
+        overlay.fill((
+            gc.MAP_FOCUS_OVERLAY_COLOR[0],
+            gc.MAP_FOCUS_OVERLAY_COLOR[1],
+            gc.MAP_FOCUS_OVERLAY_COLOR[2],
+            int(current_alpha),
+        ))
+        self.screen.blit(overlay, (0, 0))
+
+    def update_battles(
+        self,
+        time_delta: float,
+        exclude_battle_id: Optional[str] = None,
+        include_battle_id: Optional[str] = None,
+    ) -> None:
         """
         Update and render the battles. Call after draw_map.
         
         Only processes battles that are not in a fogged state.
+        
+        Args:
+            time_delta: Time delta for processing.
+            exclude_battle_id: Battle ID to exclude from processing.
+            include_battle_id: Battle ID to include (only this battle will be processed).
+                Mutually exclusive with exclude_battle_id.
         """
+        assert not (exclude_battle_id is not None and include_battle_id is not None), \
+            "exclude_battle_id and include_battle_id are mutually exclusive"
+        
         self.focus_hovered_unit()
         
         for battle in self.battles.values():
+            # Skip if excluding this battle
+            if exclude_battle_id is not None and battle.id == exclude_battle_id:
+                continue
+            # Skip if including only a specific battle and this isn't it
+            if include_battle_id is not None and battle.id != include_battle_id:
+                continue
+            
             # Don't draw/update units for fogged battles
             if self.hex_states.get(battle.hex_coords, HexState()).fogged:
                 continue
@@ -467,12 +604,32 @@ class WorldMapView:
     # Drawing Helpers
     # ------------------------------
 
-    def _draw_hexes(self) -> None:
-        """Draw the fills and overlays of all hexes currently visible."""
+    def _draw_hexes(
+        self,
+        exclude_hex_coords: Optional[Tuple[int, int]] = None,
+        include_hex_coords: Optional[Tuple[int, int]] = None,
+    ) -> None:
+        """Draw the fills and overlays of all hexes currently visible.
+        
+        Args:
+            exclude_hex_coords: Hex coordinates to exclude from drawing.
+            include_hex_coords: Hex coordinates to include (only this hex will be drawn).
+                Mutually exclusive with exclude_hex_coords.
+        """
+        assert not (exclude_hex_coords is not None and include_hex_coords is not None), \
+            "exclude_hex_coords and include_hex_coords are mutually exclusive"
+        
         # Get all hex coordinates that have either a state or a type
         all_hex_coords = set(self.hex_states.keys()) | set(upgrade_hexes.get_upgrade_hexes())
         
         for coords in all_hex_coords:
+            # Skip if excluding this hex
+            if exclude_hex_coords is not None and coords == exclude_hex_coords:
+                continue
+            # Skip if including only a specific hex and this isn't it
+            if include_hex_coords is not None and coords != include_hex_coords:
+                continue
+            
             if not self._is_hex_off_screen(coords):
                 state = self.hex_states.get(coords, HexState())
                 self._draw_single_hex(coords, state)

@@ -473,8 +473,7 @@ class BattleScene(Scene):
 
         self.screen.fill(gc.MAP_BACKGROUND_COLOR)
         self.world_map_view.camera.update(time_delta)
-        self.world_map_view.draw_map()
-        self.world_map_view.update_battles(time_delta)
+        self.world_map_view.draw_map(focused_hex_coords=self.battle.hex_coords, time_delta=time_delta)
         with use_world(self.battle_id):
             self.auto_battle.update(time_delta)
         battle_outcome = self.auto_battle.battle_outcome

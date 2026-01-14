@@ -1485,7 +1485,7 @@ class SetupBattleScene(Scene):
 
         self.screen.fill(gc.MAP_BACKGROUND_COLOR)
         # Update and draw the world map view
-        self.world_map_view.draw_map()
+        self.world_map_view.draw_map(focused_hex_coords=battle_coords, time_delta=time_delta)
         # Draw the grid lines if shift is held
         if show_grid:
             draw_grid(self.screen, self.camera, battle_coords)
@@ -1533,8 +1533,6 @@ class SetupBattleScene(Scene):
             [self.camera.world_to_screen(x, y) for x, y in center_line.coords],
             width=2,
         )
-
-        self.world_map_view.update_battles(time_delta)
         self.barracks.select_unit_type(self.selected_unit_type)
         self.barracks.select_item_type(self.selected_item_type)
         self.barracks.update(time_delta)

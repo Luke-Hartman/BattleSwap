@@ -47,6 +47,8 @@ class GameConstants(BaseModel):
     MAP_HIGHLIGHT_COLOR: list[int]
     MAP_FOG_COLOR: list[int]
     MAP_FOG_OVERLAY_COLOR: list[int]
+    MAP_FOCUS_OVERLAY_COLOR: list[int]
+    MAP_FOCUS_OVERLAY_FADE_DURATION: float
     MAP_UNCLAIMED_COLOR: list[int]
     MAP_CLAIMED_COLOR: list[int]
     MAP_CORRUPTED_COLOR: list[int]

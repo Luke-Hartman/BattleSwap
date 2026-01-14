@@ -680,7 +680,7 @@ class CampaignScene(Scene):
         self.screen.fill(gc.MAP_BACKGROUND_COLOR)
         
         self.world_map_view.camera.update(time_delta)
-        self.world_map_view.draw_map()
+        self.world_map_view.draw_map(time_delta=time_delta)
         self.world_map_view.update_battles(time_delta)
         selected_unit_manager.update(time_delta)
 
