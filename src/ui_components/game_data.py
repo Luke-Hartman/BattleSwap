@@ -2439,10 +2439,10 @@ def get_item_data(item_type: ItemType) -> ItemData:
     if item_type == ItemType.REFLECT_DAMAGE:
         return ItemData(
             name="Reflect Damage",
-            description=f"Reflects {format_number(gc.ITEM_REFLECT_DAMAGE_PERCENTAGE * 100)}% of melee damage taken back to the attacker.",
+            description=f"Reflects {format_number(gc.ITEM_REFLECT_DAMAGE_PERCENTAGE * 100)}% of melee damage taken back to the attacker. Reflected damage is calculated before <a href='{GlossaryEntryType.ARMOR.value}'>Armor</a> is applied and is not mitigated by <a href='{GlossaryEntryType.ARMORED.value}'>Armor</a>.",
             tips={
-                "Strong when": ["Against melee attackers", "Unit has high health", "Unit is supported by healing"],
-                "Weak when": ["Against ranged attackers", "Attackers have armor"],
+                "Strong when": ["Against melee attackers", "Unit has high health", "Unit is supported by healing", "Against armored units"],
+                "Weak when": ["Against ranged attackers"],
             }
         )
     

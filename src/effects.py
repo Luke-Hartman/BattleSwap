@@ -88,6 +88,9 @@ class Damages(Effect):
     is_melee: bool = False
     """Whether this damage comes from a melee attack."""
 
+    bypass_armor: bool = False
+    """Whether this damage bypasses armor."""
+
     def apply(self, owner: Optional[int], parent: Optional[int], target: Optional[int]) -> None:
         if self.recipient == Recipient.OWNER:
             assert owner is not None
@@ -118,10 +121,13 @@ class Damages(Effect):
             if damage_component is not None:
                 damage *= 1 + damage_component.increase_percent / 100
 
-        # Apply armor to the damage
+        # Store pre-armor damage for reflect calculations
+        pre_armor_damage = damage
+
+        # Apply armor to the damage (unless bypassed)
         recipient_health = esper.component_for_entity(recipient, Health)
         recipient_armor = esper.try_component(recipient, Armor)
-        if recipient_armor:
+        if recipient_armor and not self.bypass_armor:
             damage = recipient_armor.calculate_damage_after_armor(damage)
             emit_event(PLAY_SOUND, event=PlaySoundEvent(filename=f"sword_hitting_armor{random.randint(1, 4)}.wav", volume=0.50))
         else:
@@ -145,12 +151,13 @@ class Damages(Effect):
                 item_component = esper.component_for_entity(recipient, ItemComponent)
                 for item in item_component.items:
                     if item == ItemType.REFLECT_DAMAGE:
-                        # Calculate reflect damage (25% of damage taken, after armor)
-                        reflect_damage = damage * gc.ITEM_REFLECT_DAMAGE_PERCENTAGE
+                        # Calculate reflect damage from pre-armor damage
+                        reflect_damage = pre_armor_damage * gc.ITEM_REFLECT_DAMAGE_PERCENTAGE
                         
                         # Apply reflect damage to the attacker.
                         # Note this is not consider melee damage so it doesn't recurse.
-                        Damages(damage=reflect_damage, recipient=Recipient.TARGET, is_melee=False).apply(
+                        # Bypass armor on the attacker as well.
+                        Damages(damage=reflect_damage, recipient=Recipient.TARGET, is_melee=False, bypass_armor=True).apply(
                             recipient, None, owner
                         )
         
