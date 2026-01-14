@@ -268,13 +268,6 @@ class CampaignScene(Scene):
         
         # Handle package selection (adds items/spells and marks complete)
         progress_manager.select_package(package)
-        
-        # Rebuild barracks to show new items/spells
-        if hasattr(self, 'barracks') and self.barracks is not None:
-            self.barracks._units = progress_manager.available_units(None)
-            self.barracks._items = progress_manager.available_items(None)
-            self.barracks._spells = progress_manager.available_spells(None)
-            self.barracks._rebuild()
 
     def create_ui(self) -> None:
         """Create the UI elements for the world map scene."""
@@ -716,15 +709,21 @@ class CampaignScene(Scene):
         self.manager.update(time_delta)
         self.manager.draw_ui(self.screen)
 
+        # Update barracks (ensures sync with progress_manager and updates tier styling)
+        if self.barracks is not None:
+            self.barracks.update(time_delta)
+
+        # Ensure all units in solved battles have correct tiers (check every frame)
+        for battle in self.world_map_view.battles.values():
+            if battle.hex_coords is not None and battle.hex_coords in progress_manager.solutions:
+                self.world_map_view.ensure_units_have_correct_tiers(battle.id)
+
         # Update upgrade window if it exists
         if self.upgrade_window is not None:
             self.upgrade_window.update(time_delta)
 
         # Update upgrade button state (check for changes in upgrade hexes or unit tiers)
         self._update_upgrade_button_state()
-
-        if self.barracks is not None:
-            self.barracks.refresh_all_tier_styling()
         
         # Update upgrade button flash animation
         if self.upgrade_button_is_flashing:

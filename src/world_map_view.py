@@ -10,14 +10,14 @@ from shapely import Polygon
 from game_constants import gc, reload_game_constants
 from auto_battle import AutoBattle
 from battles import Battle
-from components.item import ItemComponent
+from components.item import ItemComponent, ItemType
+from components.placing import Placing
 from components.position import Position
 from components.team import Team, TeamType
 from components.unit_type import UnitType, UnitTypeComponent
 from components.unit_tier import UnitTier, UnitTierComponent
 from components.spell import SpellComponent
 from components.spell_type import SpellType
-from components.item import ItemType
 from entities.units import create_unit
 from processors.animation_processor import AnimationProcessor
 from processors.orientation_processor import OrientationProcessor
@@ -420,15 +420,17 @@ class WorldMapView:
     
 
     
-    def add_unit(self, battle_id: str, unit_type: UnitType, position: Tuple[float, float], team: TeamType, items: Optional[List[ItemType]] = None) -> int:
+    def add_unit(self, battle_id: str, unit_type: UnitType, position: Tuple[float, float], team: TeamType, items: Optional[List[ItemType]] = None, play_sound: bool = True) -> int:
         """
-        Add a unit to the specified battle and play a sound effect.
+        Add a unit to the specified battle and optionally play a sound effect.
 
         Args:
             battle_id: ID of the battle to add the unit to
             unit_type: Type of unit to create
             position: Position to place the unit at
             team: Team the unit belongs to
+            items: Optional list of items to give the unit
+            play_sound: Whether to play the unit_placed sound effect (default: True)
         """
         esper.switch_world(battle_id)
         hex_coords = self.battles[battle_id].hex_coords
@@ -465,10 +467,11 @@ class WorldMapView:
             self.battles[battle_id].allies.append((unit_type, (position[0] - world_x, position[1] - world_y), items or []))
         else:
             self.battles[battle_id].enemies.append((unit_type, (position[0] - world_x, position[1] - world_y), items or []))
-        emit_event(PLAY_SOUND, event=PlaySoundEvent(
-            filename="unit_placed.wav",
-            volume=0.5
-        ))
+        if play_sound:
+            emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                filename="unit_placed.wav",
+                volume=0.5
+            ))
         return entity
     
     def add_spell(self, battle_id: str, spell_entity: int) -> None:
@@ -496,14 +499,15 @@ class WorldMapView:
             spell_component.team
         ))
     
-    def remove_unit(self, battle_id: str, unit_id: int, required_team: Optional[TeamType] = None) -> bool:
+    def remove_unit(self, battle_id: str, unit_id: int, required_team: Optional[TeamType] = None, play_sound: bool = True) -> bool:
         """
-        Remove a unit from the specified battle and play a sound effect.
+        Remove a unit from the specified battle and optionally play a sound effect.
         
         Args:
             battle_id: ID of the battle to remove the unit from
             unit_id: Entity ID of the unit to remove
             required_team: If provided, only remove units of this team
+            play_sound: Whether to play the unit_returned sound effect (default: True)
             
         Returns:
             True if the unit was removed, False if it wasn't (wrong team)
@@ -528,11 +532,64 @@ class WorldMapView:
             self.battles[battle_id].enemies.remove(found_unit)
 
         esper.delete_entity(unit_id, immediate=True)
-        emit_event(PLAY_SOUND, event=PlaySoundEvent(
-            filename="unit_returned.wav",
-            volume=0.5
-        ))
+        if play_sound:
+            emit_event(PLAY_SOUND, event=PlaySoundEvent(
+                filename="unit_returned.wav",
+                volume=0.5
+            ))
         return True
+    
+    def ensure_units_have_correct_tiers(self, battle_id: str) -> None:
+        """Check all player units in a battle and replace any that have incorrect tiers."""
+        esper.switch_world(battle_id)
+        
+        # Collect units that need to be replaced (tier mismatch, and not "placing" preview units)
+        units_to_replace = []
+        for ent, (team, unit_type_comp) in esper.get_components(Team, UnitTypeComponent):
+            if not esper.has_component(ent, Placing):
+                # Only player units can have upgraded tiers
+                if team.type == TeamType.TEAM1:
+                    # Get current tier from the entity
+                    current_tier_component = esper.component_for_entity(ent, UnitTierComponent)
+                    current_tier = current_tier_component.tier
+                    
+                    # Get what the tier should be from progress manager
+                    expected_tier = progress_manager.get_unit_tier(unit_type_comp.type)
+                    
+                    # Only replace if the tier doesn't match
+                    if current_tier != expected_tier:
+                        # Get unit properties
+                        pos = esper.component_for_entity(ent, Position)
+                        unit_items = []
+                        if esper.has_component(ent, ItemComponent):
+                            item_component = esper.component_for_entity(ent, ItemComponent)
+                            unit_items = item_component.items.copy()
+                        
+                        # Store unit data for recreation
+                        units_to_replace.append({
+                            'entity': ent,
+                            'unit_type': unit_type_comp.type,
+                            'team': team.type,
+                            'x': pos.x,
+                            'y': pos.y,
+                            'items': unit_items,
+                        })
+        
+        # Replace each unit that needs updating
+        for unit_data in units_to_replace:
+            # Delete old unit (suppress sound since we're replacing, not returning to barracks)
+            if esper.entity_exists(unit_data['entity']):
+                self.remove_unit(battle_id, unit_data['entity'], play_sound=False)
+            
+            # Add new unit with correct tier (suppress sound since we're replacing, not placing)
+            self.add_unit(
+                battle_id,
+                unit_data['unit_type'],
+                (unit_data['x'], unit_data['y']),
+                unit_data['team'],
+                items=unit_data['items'] if unit_data['items'] else None,
+                play_sound=False,
+            )
     
     def remove_spell(self, battle_id: str, spell_entity: int) -> bool:
         """

@@ -624,81 +624,97 @@ class BarracksUI(UITabContainer):
             self.entity_items["SPELLS"].append(spell_count)
             x_position += spell_count.size + padding // 2
 
-    def _full_rebuild(self) -> None:
-        """Completely rebuild the barracks UI (including tabs)."""
-        # Store current state
-        current_tab_name = self.get_tab(self.current_container_index)["text"] if hasattr(self, 'current_container_index') else "ALL"
+
+    def _ensure_barracks_is_synced(self) -> None:
+        """Check if barracks is in sync with progress_manager and update if needed."""
+        # In sandbox mode, don't sync (sandbox has infinite units)
+        if self.sandbox_mode:
+            return
         
-        # Kill all existing UI elements
-        self.kill()
-
-        # Update items and spells from available items/spells (not all acquired)
-        if not self.sandbox_mode and self.current_battle is not None:
-            available_items_dict = progress_manager.available_items(self.current_battle)
-            available_spells_dict = progress_manager.available_spells(self.current_battle)
+        # Get the correct state from progress_manager
+        if self.current_battle is not None:
+            new_units = progress_manager.available_units(self.current_battle)
+            new_items = progress_manager.available_items(self.current_battle)
+            new_spells = progress_manager.available_spells(self.current_battle)
         else:
-            # In sandbox mode or when current_battle is None, use current values
-            available_items_dict = self._items
-            available_spells_dict = self._spells
-
-        # Recreate the entire barracks UI
-        self.__init__(
-            manager=self.manager,
-            starting_units=self._units,
-            acquired_items=available_items_dict,
-            acquired_spells=available_spells_dict,
-            interactive=self.interactive,
-            sandbox_mode=self.sandbox_mode,
-            current_battle=self.current_battle
+            new_units = progress_manager.available_units(None)
+            new_items = progress_manager.available_items(None)
+            new_spells = progress_manager.available_spells(None)
+        
+        # Check if anything changed
+        units_changed = self._units != new_units
+        items_changed = self._items != new_items
+        spells_changed = self._spells != new_spells
+        
+        if not units_changed and not items_changed and not spells_changed:
+            # Nothing changed, just refresh tier styling in case tiers updated
+            self._refresh_tier_styling_if_needed()
+            return
+        
+        # Check if we need a full rebuild (items/spells tabs appearing/disappearing)
+        # Do this BEFORE updating internal state
+        had_items = self._has_acquired_items()
+        has_items = any(count > 0 for count in new_items.values())
+        had_spells = self._has_acquired_spells()
+        has_spells = any(count > 0 for count in new_spells.values())
+        
+        needs_full_rebuild = (
+            (not had_items and has_items) or  # Items tab needs to appear
+            (had_items and not has_items) or  # Items tab needs to disappear
+            (not had_spells and has_spells) or  # Spells tab needs to appear
+            (had_spells and not has_spells)  # Spells tab needs to disappear
         )
         
-        # Try to switch back to the same tab if it still exists
-        try:
-            if current_tab_name == "ITEMS" and self.items_tab_index is not None:
-                self.switch_current_container(self.items_tab_index)
-            elif current_tab_name == "SPELLS" and self.spells_tab_index is not None:
-                self.switch_current_container(self.spells_tab_index)
-            else:
-                self.switch_current_container(self.all_tab_index)
-        except:
-            # Fallback to ALL tab if switching fails
-            self.switch_current_container(self.all_tab_index)
-
-    def _sync_from_battle_state(self) -> None:
-        """Sync units, items, and spells counts with the current battle state and rebuild UI."""
-        if self.sandbox_mode or self.current_battle is None:
-            return
-
-        new_units = progress_manager.available_units(self.current_battle)
-        new_items = progress_manager.available_items(self.current_battle)
-        new_spells = progress_manager.available_spells(self.current_battle)
-
-        if self._units == new_units and self._items == new_items and self._spells == new_spells:
-            return
-
+        # Update internal state
         self._units = new_units
         self._items = new_items
         self._spells = new_spells
-
-        self._rebuild()
-
-    def _rebuild(self) -> None:
-        """Rebuild the UI when dimensions or content changes.
         
-        This method preserves the current counts and only updates the UI display.
-        To sync with battle state, use _full_rebuild() instead.
-        """
-        # Preserve current counts - this is called after manual updates to counts
-        # In sandbox mode or when current_battle is None, keep current values
-
-        # Fast path: avoid destroying/recreating UI trees. Most changes are count-only.
-        current_tab_name = self.get_tab(self.current_container_index)["text"]
-        if current_tab_name == "ALL":
-            # Only ALL tab's height/scrollbar can change based on available counts.
-            self._resize_for_current_tab()
-
-        self._ensure_all_tab_matches_state(10)
-        self._update_entity_counts()
+        if needs_full_rebuild:
+            # Store current tab before rebuild
+            current_tab_name = self.get_tab(self.current_container_index)["text"] if hasattr(self, 'current_container_index') else "ALL"
+            
+            # Kill all existing UI elements
+            self.kill()
+            
+            # Recreate the entire barracks UI
+            self.__init__(
+                manager=self.manager,
+                starting_units=self._units,
+                acquired_items=self._items,
+                acquired_spells=self._spells,
+                interactive=self.interactive,
+                sandbox_mode=self.sandbox_mode,
+                current_battle=self.current_battle
+            )
+            
+            # Try to switch back to the same tab if it still exists
+            try:
+                if current_tab_name == "ITEMS" and self.items_tab_index is not None:
+                    self.switch_current_container(self.items_tab_index)
+                elif current_tab_name == "SPELLS" and self.spells_tab_index is not None:
+                    self.switch_current_container(self.spells_tab_index)
+                else:
+                    self.switch_current_container(self.all_tab_index)
+            except:
+                # Fallback to ALL tab if switching fails
+                self.switch_current_container(self.all_tab_index)
+        else:
+            # Just update counts and ensure ALL tab matches state
+            current_tab_name = self.get_tab(self.current_container_index)["text"]
+            if current_tab_name == "ALL":
+                # Only ALL tab's height/scrollbar can change based on available counts.
+                self._resize_for_current_tab()
+            
+            self._ensure_all_tab_matches_state(10)
+            self._update_entity_counts()
+            self._refresh_tier_styling_if_needed()
+    
+    def _refresh_tier_styling_if_needed(self) -> None:
+        """Refresh tier-specific styling for all unit icons."""
+        for item in self.unit_list_items:
+            if hasattr(item, 'refresh_tier_styling'):
+                item.refresh_tier_styling()
 
     def _update_entity_counts(self) -> None:
         """Update counts for all existing entities without rebuilding."""
@@ -748,32 +764,12 @@ class BarracksUI(UITabContainer):
 
     def add_unit(self, unit_type: UnitType) -> None:
         """Add a unit of the specified type to the barracks."""
-        self._units[unit_type] += 1
-        
-        # Check if unit needs to be added to ALL tab (was count 0 before)
-        was_zero = self._units[unit_type] == 1 and not self.sandbox_mode
-        
-        if was_zero:
-            # Need to rebuild to add unit to ALL tab
-            self._rebuild()
-        else:
-            # Just update existing counts
-            self._update_entity_counts()
+        self._units[unit_type] = self._units.get(unit_type, 0) + 1
 
     def remove_unit(self, unit_type: UnitType) -> None:
         """Remove a unit of the specified type from the barracks."""
-        assert self._units[unit_type] > 0
+        assert self._units.get(unit_type, 0) > 0
         self._units[unit_type] -= 1
-        
-        # Check if unit needs to be removed from ALL tab (count became 0)
-        became_zero = self._units[unit_type] == 0 and not self.sandbox_mode
-        
-        if became_zero:
-            # Need to rebuild to remove unit from ALL tab
-            self._rebuild()
-        else:
-            # Just update existing counts
-            self._update_entity_counts()
 
     def select_unit_type(self, unit_type: Optional[UnitType]) -> None:
         """Select a unit type across all tabs."""
@@ -818,11 +814,6 @@ class BarracksUI(UITabContainer):
         """Get all unit count items across all tabs."""
         return [item for items in self.entity_items.values() for item in items if isinstance(item, UnitCount)]
 
-    def refresh_all_tier_styling(self) -> None:
-        """Refresh tier-specific styling for all unit icons."""
-        for item in self.unit_list_items:
-            if hasattr(item, 'refresh_tier_styling'):
-                item.refresh_tier_styling()
 
     def _resize_for_current_tab(self) -> None:
         """Resize the panel based on the current tab's content."""
@@ -909,38 +900,12 @@ class BarracksUI(UITabContainer):
 
     def add_item(self, item_type: ItemType) -> None:
         """Add an item of the specified type to the barracks."""
-        # Check if this is the first item acquired (need to show items tab)
-        had_no_items = not self._has_acquired_items() and not self.sandbox_mode
-        
-        self._items[item_type] += 1
-        
-        # Check if item needs to be added to ALL tab (was count 0 before)
-        was_zero = self._items[item_type] == 1 and not self.sandbox_mode
-        
-        if had_no_items:
-            # Need to completely rebuild to add items tab
-            self._full_rebuild()
-        elif was_zero:
-            # Need to rebuild to add item to ALL tab
-            self._rebuild()
-        else:
-            # Just update existing counts
-            self._update_entity_counts()
+        self._items[item_type] = self._items.get(item_type, 0) + 1
 
     def remove_item(self, item_type: ItemType) -> None:
         """Remove an item of the specified type from the barracks."""
-        assert self._items[item_type] > 0
+        assert self._items.get(item_type, 0) > 0
         self._items[item_type] -= 1
-        
-        # Check if item needs to be removed from ALL tab (count became 0)
-        became_zero = self._items[item_type] == 0 and not self.sandbox_mode
-        
-        if became_zero:
-            # Need to rebuild to remove item from ALL tab
-            self._rebuild()
-        else:
-            # Just update existing counts
-            self._update_entity_counts()
 
     def get_item_count(self, item_type: ItemType) -> int:
         """Get the count of a specific item type."""
@@ -952,38 +917,12 @@ class BarracksUI(UITabContainer):
     
     def add_spell(self, spell_type: SpellType) -> None:
         """Add a spell of the specified type to the barracks."""
-        # Check if this is the first spell acquired (need to show spells tab)
-        had_no_spells = not self._has_acquired_spells() and not self.sandbox_mode
-        
-        self._spells[spell_type] += 1
-        
-        # Check if spell needs to be added to ALL tab (was count 0 before)
-        was_zero = self._spells[spell_type] == 1 and not self.sandbox_mode
-        
-        if had_no_spells:
-            # Need to completely rebuild to add spells tab
-            self._full_rebuild()
-        elif was_zero:
-            # Need to rebuild to add spell to ALL tab
-            self._rebuild()
-        else:
-            # Just update existing counts
-            self._update_entity_counts()
+        self._spells[spell_type] = self._spells.get(spell_type, 0) + 1
 
     def remove_spell(self, spell_type: SpellType) -> None:
         """Remove a spell of the specified type from the barracks."""
-        assert self._spells[spell_type] > 0
+        assert self._spells.get(spell_type, 0) > 0
         self._spells[spell_type] -= 1
-        
-        # Check if spell needs to be removed from ALL tab (count became 0)
-        became_zero = self._spells[spell_type] == 0 and not self.sandbox_mode
-        
-        if became_zero:
-            # Need to rebuild to remove spell from ALL tab
-            self._rebuild()
-        else:
-            # Just update existing counts
-            self._update_entity_counts()
 
     def get_spell_count(self, spell_type: SpellType) -> int:
         """Get the count of a specific spell type."""
@@ -1081,7 +1020,10 @@ class BarracksUI(UITabContainer):
         return True
     
     def update(self, time_delta: float) -> None:
-        """Update the flash animation for unit buttons."""
+        """Update the flash animation for unit buttons and ensure barracks is synced."""
+        # Ensure barracks is in sync with progress_manager (check every frame)
+        self._ensure_barracks_is_synced()
+        
         should_flash = self._should_flash_units()
         
         if should_flash:

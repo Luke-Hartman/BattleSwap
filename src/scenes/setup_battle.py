@@ -42,7 +42,7 @@ from ui_components.upgrade_window import UpgradeWindow
 from corruption_powers import CorruptionPower
 from selected_unit_manager import selected_unit_manager
 from components.sprite_sheet import SpriteSheet
-from components.unit_tier import UnitTier
+from components.unit_tier import UnitTier, UnitTierComponent
 from components.spell_type import SpellType
 from components.spell import SpellComponent
 from entities.spells import create_spell
@@ -413,17 +413,25 @@ class SetupBattleScene(Scene):
     def create_unit_of_selected_type(self, placement_pos: Tuple[float, float], team: TeamType) -> None:
         """Create a unit of the selected type (as a group of size 1)."""
         assert self.sandbox_mode or team == TeamType.TEAM1
+        
+        # Check if unit is available before creating (use progress_manager directly for real-time check)
+        if not self.sandbox_mode:
+            available_units = progress_manager.available_units(self.battle)
+            if available_units.get(self.selected_unit_type, 0) <= 0:
+                # Unit not available, don't create it
+                return
+        
         self.world_map_view.add_unit(
             self.battle_id,
             self.selected_unit_type,
             placement_pos,
             team,
         )
-        # Sync barracks with battle state
-        self.barracks._sync_from_battle_state()
-        # Keep unit selected if there are more copies in the barracks
-        if not self.barracks.has_unit_available(self.selected_unit_type):
-            self.set_selected_unit_type(None, TeamType.TEAM1)
+        # Deselect unit if this was the last available copy (use progress_manager for real-time check)
+        if not self.sandbox_mode:
+            available_units = progress_manager.available_units(self.battle)
+            if available_units.get(self.selected_unit_type, 0) <= 0:
+                self.set_selected_unit_type(None, TeamType.TEAM1)
         if self.progress_panel is not None:
             self.progress_panel.update_battle(self.battle)
     
@@ -507,9 +515,6 @@ class SetupBattleScene(Scene):
             items=current_items
         )
         
-        # Sync barracks with battle state
-        self.barracks._sync_from_battle_state()
-        
         # Update CanHaveItem components - remove from all units first, then add back to eligible ones
         self._remove_can_have_item_from_units()
         if self._selected_item_type is not None:
@@ -563,9 +568,6 @@ class SetupBattleScene(Scene):
         # Add the spell to the world map view
         self.world_map_view.add_spell(self.battle_id, spell_entity)
         
-        # Sync barracks with battle state
-        self.barracks._sync_from_battle_state()
-        
         # Play success sound
         emit_event(PLAY_SOUND, event=PlaySoundEvent(
             filename="unit_placed.wav",
@@ -598,10 +600,6 @@ class SetupBattleScene(Scene):
                 # Remove the spell from the world map view
                 self.world_map_view.remove_spell(self.battle_id, ent)
                 
-                # Sync barracks with battle state (spell is automatically returned
-                # since it has been removed from the battle)
-                self.barracks._sync_from_battle_state()
-                
                 # Play sound
                 emit_event(PLAY_SOUND, event=PlaySoundEvent(
                     filename="unit_returned.wav",
@@ -622,52 +620,9 @@ class SetupBattleScene(Scene):
             unit_id,
         )
         
-        # Sync barracks with battle state (units, items, and spells are automatically
-        # returned since the unit has been removed from the battle)
-        self.barracks._sync_from_battle_state()
-        
         if self.progress_panel is not None:
             self.progress_panel.update_battle(self.battle)
 
-    def _replace_all_units_with_updated_tiers(self) -> None:
-        """Replace all units on the battlefield with updated tiers after upgrades."""
-        esper.switch_world(self.battle_id)
-        
-        # Collect all units that need to be replaced (not the "placing" preview units)
-        units_to_replace = []
-        for ent, (team, unit_type_comp) in esper.get_components(Team, UnitTypeComponent):
-            if not esper.has_component(ent, Placing):
-                # Get unit properties
-                pos = esper.component_for_entity(ent, Position)
-                unit_items = []
-                if esper.has_component(ent, ItemComponent):
-                    item_component = esper.component_for_entity(ent, ItemComponent)
-                    unit_items = item_component.items.copy()
-                
-                # Store unit data for recreation
-                units_to_replace.append({
-                    'entity': ent,
-                    'unit_type': unit_type_comp.type,
-                    'team': team.type,
-                    'x': pos.x,
-                    'y': pos.y,
-                    'items': unit_items,
-                })
-        
-        # Replace each unit
-        for unit_data in units_to_replace:
-            # Delete old unit (this removes it from battle.allies/enemies and deletes the entity)
-            if esper.entity_exists(unit_data['entity']):
-                self.world_map_view.remove_unit(self.battle_id, unit_data['entity'])
-            
-            # Add new unit with updated tier (add_unit creates the unit with the correct tier)
-            self.world_map_view.add_unit(
-                self.battle_id,
-                unit_data['unit_type'],
-                (unit_data['x'], unit_data['y']),
-                unit_data['team'],
-                items=unit_data['items'] if unit_data['items'] else None,
-            )
     
     def clear_allied_units(self) -> None:
         """Remove all allied units from the battlefield."""
@@ -941,9 +896,6 @@ class SetupBattleScene(Scene):
                 # Add the spell to the world map view
                 self.world_map_view.add_spell(self.battle_id, spell_entity)
         
-        # Sync barracks with battle state
-        self.barracks._sync_from_battle_state()
-        
         # Clear the group pickup
         self.clear_group_pickup()
         
@@ -955,10 +907,6 @@ class SetupBattleScene(Scene):
         if not (self.selected_group_partial_units or self.selected_group_partial_spells):
             return
             
-        # Sync barracks with battle state (units, items, and spells are automatically
-        # returned since they have been removed from the battle)
-        self.barracks._sync_from_battle_state()
-        
         # Clear the group pickup
         self.clear_group_pickup()
         
@@ -1164,6 +1112,10 @@ class SetupBattleScene(Scene):
     def update(self, time_delta: float, events: list[pygame.event.Event]) -> bool:
         """Update the sandbox scene."""
         esper.switch_world(self.battle_id)
+        
+        # Ensure all units have correct tiers (check every frame)
+        self.world_map_view.ensure_units_have_correct_tiers(self.battle_id)
+        
         keys = pygame.key.get_pressed()
         show_grid = keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL]
 
@@ -1208,11 +1160,6 @@ class SetupBattleScene(Scene):
 
             # Handle upgrade window events if it exists
             if self.upgrade_window is not None and self.upgrade_window.handle_event(event):
-                # Upgrade happened - rebuild barracks and replace units with updated tiers
-                if self.barracks is not None:
-                    self.barracks._rebuild()
-                    self.barracks.refresh_all_tier_styling()
-                self._replace_all_units_with_updated_tiers()
                 continue
 
             self.handle_escape(event)
