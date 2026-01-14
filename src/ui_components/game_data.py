@@ -2449,7 +2449,7 @@ def get_item_data(item_type: ItemType) -> ItemData:
     if item_type == ItemType.START_INVISIBLE:
         return ItemData(
             name="Start Invisible",
-            description=f"Grants {format_number(gc.ITEM_START_INVISIBLE_DURATION)} seconds of <a href='{GlossaryEntryType.INVISIBLE.value}'>Invisibility</a> at the start of combat.",
+            description=f"Grants {format_number(gc.ITEM_START_INVISIBLE_DURATION)} seconds of <a href='{GlossaryEntryType.INVISIBLE.value}'>Invisibility</a> at the start of combat. Invisibility is removed when an ability is activated.",
             tips={
                 "Strong when": ["Unit has high melee damage", "Against ranged enemies", "Unit is a hunter", "Unit is fast"],
                 "Weak when": ["Unit is overwhelmed after revealing itself"],
