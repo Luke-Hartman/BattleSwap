@@ -690,7 +690,7 @@ class ProgressManager(BaseModel):
         assert current_state in [HexLifecycleState.UNCLAIMED, HexLifecycleState.CORRUPTED]
         
         # Only unfog neighbors if we're not in a corrupted state (normal progression)
-        if current_state == HexLifecycleState.UNCLAIMED:
+        if current_state == HexLifecycleState.UNCLAIMED and not self.has_uncompleted_corrupted_battles():
             for neighbor_coords in hex_neighbors(hex_coords):
                 if self.get_hex_state(neighbor_coords) == HexLifecycleState.FOGGED:
                     self.set_hex_state(neighbor_coords, HexLifecycleState.UNCLAIMED)
