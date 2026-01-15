@@ -1117,6 +1117,14 @@
           -75.0
         ],
         []
+      ],
+      [
+        "CORE_VETERAN",
+        [
+          446.97644669694,
+          -10.0
+        ],
+        []
       ]
     ],
     "allies": null,
@@ -1166,7 +1174,7 @@
         "increase_percent": 100.0
       }
     ],
-    "spells": null
+    "spells": []
   },
   {
     "id": "Defeat the Paladin!",
@@ -1500,6 +1508,38 @@
           -200.0
         ],
         []
+      ],
+      [
+        "INFANTRY_PIKEMAN",
+        [
+          371.5154776142881,
+          -129.0
+        ],
+        []
+      ],
+      [
+        "INFANTRY_PIKEMAN",
+        [
+          372.5154776142881,
+          139.0
+        ],
+        []
+      ],
+      [
+        "INFANTRY_SOLDIER",
+        [
+          490.5154776142881,
+          -91.0
+        ],
+        []
+      ],
+      [
+        "INFANTRY_SOLDIER",
+        [
+          484.5154776142881,
+          87.0
+        ],
+        []
       ]
     ],
     "allies": null,
@@ -1584,7 +1624,7 @@
         "increase_percent": 100.0
       }
     ],
-    "spells": null
+    "spells": []
   },
   {
     "id": "Defeat the Gold Knight!",
@@ -1708,6 +1748,30 @@
           25.0
         ],
         []
+      ],
+      [
+        "CORE_VETERAN",
+        [
+          89.15612366939058,
+          466.0
+        ],
+        []
+      ],
+      [
+        "CORE_DEFENDER",
+        [
+          58.15612366939058,
+          436.0
+        ],
+        []
+      ],
+      [
+        "CORE_DEFENDER",
+        [
+          56.15612366939058,
+          490.0
+        ],
+        []
       ]
     ],
     "allies": null,
@@ -1765,7 +1829,7 @@
         "increase_percent": 100.0
       }
     ],
-    "spells": null
+    "spells": []
   },
   {
     "id": "I need a medic!",
@@ -2025,6 +2089,46 @@
           0.0
         ],
         []
+      ],
+      [
+        "CORE_VETERAN",
+        [
+          280.9138624765328,
+          -0.5
+        ],
+        []
+      ],
+      [
+        "INFANTRY_PIKEMAN",
+        [
+          372.4138624765328,
+          -50.0
+        ],
+        []
+      ],
+      [
+        "INFANTRY_PIKEMAN",
+        [
+          369.9138624765328,
+          52.5
+        ],
+        []
+      ],
+      [
+        "INFANTRY_SOLDIER",
+        [
+          324.4138624765328,
+          137.5
+        ],
+        []
+      ],
+      [
+        "INFANTRY_SOLDIER",
+        [
+          322.4138624765328,
+          -131.0
+        ],
+        []
       ]
     ],
     "allies": null,
@@ -2093,7 +2197,7 @@
         "increase_percent": 25.0
       }
     ],
-    "spells": null
+    "spells": []
   },
   {
     "id": "The Meat Grinder",
@@ -2701,38 +2805,6 @@
     "id": "The Wizards",
     "enemies": [
       [
-        "CORE_SWORDSMAN",
-        [
-          125.0,
-          50.0
-        ],
-        []
-      ],
-      [
-        "CORE_SWORDSMAN",
-        [
-          125.0,
-          100.0
-        ],
-        []
-      ],
-      [
-        "CORE_SWORDSMAN",
-        [
-          125.0,
-          -100.0
-        ],
-        []
-      ],
-      [
-        "CORE_SWORDSMAN",
-        [
-          125.0,
-          -50.0
-        ],
-        []
-      ],
-      [
         "CORE_WIZARD",
         [
           250.0,
@@ -2745,6 +2817,38 @@
         [
           250.0,
           100.0
+        ],
+        []
+      ],
+      [
+        "CORE_DEFENDER",
+        [
+          124.25773880714405,
+          -102.5
+        ],
+        []
+      ],
+      [
+        "CORE_DEFENDER",
+        [
+          124.25773880714405,
+          -62.0
+        ],
+        []
+      ],
+      [
+        "CORE_DEFENDER",
+        [
+          129.75773880714405,
+          58.5
+        ],
+        []
+      ],
+      [
+        "CORE_DEFENDER",
+        [
+          128.75773880714405,
+          103.0
         ],
         []
       ]
@@ -2807,7 +2911,7 @@
         "increase_percent": 50.0
       }
     ],
-    "spells": null
+    "spells": []
   },
   {
     "id": "Preview",
@@ -3026,26 +3130,50 @@
         []
       ],
       [
-        "CORE_SWORDSMAN",
+        "CORE_DEFENDER",
         [
-          625.0,
-          375.0
+          588.257738807144,
+          -379.0
+        ],
+        []
+      ],
+      [
+        "CORE_DEFENDER",
+        [
+          589.257738807144,
+          -20.0
+        ],
+        []
+      ],
+      [
+        "CORE_DEFENDER",
+        [
+          591.257738807144,
+          365.0
+        ],
+        []
+      ],
+      [
+        "CORE_LONGBOWMAN",
+        [
+          666.257738807144,
+          -16.0
         ],
         []
       ],
       [
         "CORE_SWORDSMAN",
         [
-          625.0,
-          -375.0
+          678.257738807144,
+          -204.0
         ],
         []
       ],
       [
         "CORE_SWORDSMAN",
         [
-          625.0,
-          0.0
+          673.257738807144,
+          186.0
         ],
         []
       ]
@@ -3100,7 +3228,7 @@
         "increase_percent": -70.0
       }
     ],
-    "spells": null
+    "spells": []
   },
   {
     "id": "Guardian Angels",
@@ -4278,5 +4406,255 @@
       }
     ],
     "spells": null
+  },
+  {
+    "id": "Veteran",
+    "enemies": [
+      [
+        "CORE_VETERAN",
+        [
+          224.5390309173472,
+          18.0
+        ],
+        []
+      ]
+    ],
+    "allies": null,
+    "hex_coords": [
+      2,
+      -1
+    ],
+    "is_test": false,
+    "tip_voice_filename": null,
+    "best_solution": null,
+    "best_corrupted_solution": null,
+    "corruption_powers": [
+      {
+        "name": "increased_movement_speed",
+        "required_team": 2,
+        "increase_percent": 50.0
+      },
+      {
+        "name": "increased_attack_speed",
+        "required_team": 2,
+        "increase_percent": 50.0
+      }
+    ],
+    "spells": []
+  },
+  {
+    "id": "Veterans and Friends",
+    "enemies": [
+      [
+        "CORE_VETERAN",
+        [
+          196.89838486224517,
+          -251.0
+        ],
+        []
+      ],
+      [
+        "CORE_VETERAN",
+        [
+          197.89838486224517,
+          196.0
+        ],
+        []
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          296.89838486224517,
+          153.0
+        ],
+        []
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          298.89838486224517,
+          245.0
+        ],
+        []
+      ],
+      [
+        "CORE_DUELIST",
+        [
+          231.89838486224517,
+          -248.0
+        ],
+        []
+      ]
+    ],
+    "allies": null,
+    "hex_coords": [
+      3,
+      -1
+    ],
+    "is_test": false,
+    "tip_voice_filename": null,
+    "best_solution": null,
+    "best_corrupted_solution": null,
+    "corruption_powers": [
+      {
+        "name": "increased_movement_speed",
+        "required_team": 2,
+        "increase_percent": -50.0
+      },
+      {
+        "name": "increased_max_health",
+        "required_team": 2,
+        "increase_percent": 200.0
+      }
+    ],
+    "spells": []
+  },
+  {
+    "id": "The Fellowship",
+    "enemies": [
+      [
+        "CORE_VETERAN",
+        [
+          224.89838486224562,
+          -64.0
+        ],
+        []
+      ],
+      [
+        "CORE_WIZARD",
+        [
+          270.8983848622456,
+          -41.0
+        ],
+        []
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          222.89838486224562,
+          -5.0
+        ],
+        []
+      ],
+      [
+        "CORE_CAVALRY",
+        [
+          542.8983848622456,
+          -38.0
+        ],
+        []
+      ],
+      [
+        "CORE_DEFENDER",
+        [
+          191.89838486224562,
+          -35.0
+        ],
+        []
+      ],
+      [
+        "CORE_DUELIST",
+        [
+          265.8983848622456,
+          4.0
+        ],
+        []
+      ],
+      [
+        "CORE_ARCHER",
+        [
+          288.8983848622456,
+          -77.0
+        ],
+        []
+      ],
+      [
+        "CORE_LONGBOWMAN",
+        [
+          376.8983848622456,
+          -27.0
+        ],
+        []
+      ]
+    ],
+    "allies": null,
+    "hex_coords": [
+      3,
+      -2
+    ],
+    "is_test": false,
+    "tip_voice_filename": null,
+    "best_solution": null,
+    "best_corrupted_solution": null,
+    "corruption_powers": [
+      {
+        "name": "increased_max_health",
+        "required_team": 2,
+        "increase_percent": 100.0
+      }
+    ],
+    "spells": []
+  },
+  {
+    "id": "Defenders",
+    "enemies": [
+      [
+        "CORE_DEFENDER",
+        [
+          247.3593539448982,
+          -79.0
+        ],
+        []
+      ],
+      [
+        "CORE_DEFENDER",
+        [
+          246.3593539448982,
+          -42.0
+        ],
+        []
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          345.3593539448982,
+          -63.0
+        ],
+        []
+      ],
+      [
+        "CORE_SWORDSMAN",
+        [
+          344.3593539448982,
+          -20.0
+        ],
+        []
+      ],
+      [
+        "CORE_DEFENDER",
+        [
+          247.3593539448982,
+          -3.0
+        ],
+        []
+      ]
+    ],
+    "allies": null,
+    "hex_coords": [
+      0,
+      2
+    ],
+    "is_test": false,
+    "tip_voice_filename": null,
+    "best_solution": null,
+    "best_corrupted_solution": null,
+    "corruption_powers": [
+      {
+        "name": "increased_movement_speed",
+        "required_team": 2,
+        "increase_percent": 100.0
+      }
+    ],
+    "spells": []
   }
 ]
