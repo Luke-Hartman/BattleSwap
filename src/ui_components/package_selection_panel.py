@@ -39,6 +39,7 @@ class PackageSelectionPanel(UIPanel):
         self.manager = manager  # Store manager for card creation
         self.confirmed = False
         self._displayed_package_index: Optional[int] = None
+        self._last_hovered_index: Optional[int] = None
         
         # Panel sized for vertical layout with card slot on top
         panel_width = 420
@@ -237,16 +238,23 @@ class PackageSelectionPanel(UIPanel):
                     hovered_button_index = i
                     break
             
-            # Display card for hovered button
-            if hovered_button_index is not None:
-                package = self.packages[hovered_button_index]
-                self._display_package_card(package, package_index=hovered_button_index)
+            # If a package has been selected, always show the selected package
+            if self.selected_package is not None:
+                selected_index = self.packages.index(self.selected_package)
+                self._display_package_card(self.selected_package, package_index=selected_index)
             else:
-                # If a selection exists, keep showing it; otherwise clear the card slot.
-                if self.selected_package is not None:
-                    selected_index = self.packages.index(self.selected_package)
-                    self._display_package_card(self.selected_package, package_index=selected_index)
+                # No selection yet - update preview based on hover
+                if hovered_button_index is not None:
+                    # Hovering over a button - update last hovered and show it
+                    self._last_hovered_index = hovered_button_index
+                    package = self.packages[hovered_button_index]
+                    self._display_package_card(package, package_index=hovered_button_index)
+                elif self._last_hovered_index is not None:
+                    # Not hovering, but we have a last hovered - show it
+                    package = self.packages[self._last_hovered_index]
+                    self._display_package_card(package, package_index=self._last_hovered_index)
                 else:
+                    # No hover and no last hovered - clear the card slot
                     self._clear_card_slot()
         
         # No Enter key handling needed - clicking buttons directly selects
