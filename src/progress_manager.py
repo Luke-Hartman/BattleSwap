@@ -400,6 +400,20 @@ class ProgressManager(BaseModel):
                     reclaimed_count += 1
         return reclaimed_count
     
+    def get_corruption_count(self) -> int:
+        """Calculate the number of completed corruptions from hex states.
+        
+        Returns:
+            The number of corruptions that have been completed.
+        """
+        reclaimed_battles = sum(
+            1 for coords, state in self.hex_states.items()
+            if state == HexLifecycleState.RECLAIMED
+        )
+        # Each corruption corrupts CORRUPTION_BATTLE_COUNT hexes
+        # So completed corruptions = reclaimed_battles // CORRUPTION_BATTLE_COUNT
+        return reclaimed_battles // gc.CORRUPTION_BATTLE_COUNT
+    
     def should_show_package_selection(self) -> bool:
         """Check if package selection should be shown based on reclaimed corrupted battles.
         
@@ -530,12 +544,14 @@ class ProgressManager(BaseModel):
             state in [HexLifecycleState.CORRUPTED]
             for state in self.hex_states.values()
         )
-        first_corruption = not any(
-            state in [HexLifecycleState.CORRUPTED, HexLifecycleState.RECLAIMED]
-            for state in self.hex_states.values()
-        )
-        # Use first corruption threshold if this is the first corruption, otherwise use regular threshold
-        corruption_threshold = gc.FIRST_CORRUPTION_TRIGGER_POINTS if first_corruption else gc.CORRUPTION_TRIGGER_POINTS
+        # Determine corruption threshold based on how many corruptions have been completed
+        corruption_count = self.get_corruption_count()
+        if corruption_count == 0:
+            corruption_threshold = gc.FIRST_CORRUPTION_TRIGGER_POINTS
+        elif corruption_count == 1:
+            corruption_threshold = gc.SECOND_CORRUPTION_TRIGGER_POINTS
+        else:
+            corruption_threshold = gc.CORRUPTION_TRIGGER_POINTS
         enough_points = available_points >= corruption_threshold
         enough_claimed_hexes = sum(
             1 for hex_coords in self.hex_states if self.hex_states[hex_coords] == HexLifecycleState.CLAIMED

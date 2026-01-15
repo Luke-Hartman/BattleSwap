@@ -100,12 +100,14 @@ class ProgressPanel(UIPanel):
                 numerator += 1
         percentage = int(numerator / denominator * 100)
         
-        # Corruption info - use first corruption threshold if no corruption has happened yet
-        has_been_corrupted = any(
-            state in [HexLifecycleState.CORRUPTED, HexLifecycleState.RECLAIMED]
-            for state in progress_manager.hex_states.values()
-        )
-        corruption_threshold = gc.FIRST_CORRUPTION_TRIGGER_POINTS if not has_been_corrupted else gc.CORRUPTION_TRIGGER_POINTS
+        # Corruption info - determine threshold based on corruption count
+        corruption_count = progress_manager.get_corruption_count()
+        if corruption_count == 0:
+            corruption_threshold = gc.FIRST_CORRUPTION_TRIGGER_POINTS
+        elif corruption_count == 1:
+            corruption_threshold = gc.SECOND_CORRUPTION_TRIGGER_POINTS
+        else:
+            corruption_threshold = gc.CORRUPTION_TRIGGER_POINTS
         
         # Create HTML content with clickable links
         points_link = f"<a href='{GlossaryEntryType.POINTS.value}'>pts</a>"

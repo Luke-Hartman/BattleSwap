@@ -706,6 +706,7 @@ class GameConstants(BaseModel):
 
     # Corruption constants
     FIRST_CORRUPTION_TRIGGER_POINTS: int
+    SECOND_CORRUPTION_TRIGGER_POINTS: int
     CORRUPTION_TRIGGER_POINTS: int
     CORRUPTION_BATTLE_COUNT: int
 
