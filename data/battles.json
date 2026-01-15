@@ -2314,13 +2314,45 @@
     "spells": null
   },
   {
-    "id": "Fear Him.",
+    "id": "Twins.",
     "enemies": [
+      [
+        "CRUSADER_PALADIN",
+        [
+          255.0545085316353,
+          -114.0
+        ],
+        []
+      ],
+      [
+        "CRUSADER_PALADIN",
+        [
+          252.0545085316353,
+          -25.0
+        ],
+        []
+      ],
       [
         "CRUSADER_BLACK_KNIGHT",
         [
-          250.0,
-          0.0
+          250.0545085316353,
+          -67.0
+        ],
+        []
+      ],
+      [
+        "CRUSADER_BLACK_KNIGHT",
+        [
+          253.0545085316353,
+          -159.0
+        ],
+        []
+      ],
+      [
+        "CRUSADER_BLACK_KNIGHT",
+        [
+          249.0545085316353,
+          21.0
         ],
         []
       ]
@@ -2381,9 +2413,14 @@
         "name": "increased_max_health",
         "required_team": 2,
         "increase_percent": 100.0
+      },
+      {
+        "name": "increased_movement_speed",
+        "required_team": 2,
+        "increase_percent": 100.0
       }
     ],
-    "spells": null
+    "spells": []
   },
   {
     "id": "1Archer vs 1Swordsman",
