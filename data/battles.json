@@ -93,8 +93,8 @@
     ],
     "allies": null,
     "hex_coords": [
-      1,
-      -1
+      0,
+      1
     ],
     "is_test": false,
     "tip_voice_filename": null,
@@ -165,8 +165,8 @@
     ],
     "allies": null,
     "hex_coords": [
-      0,
-      1
+      1,
+      -1
     ],
     "is_test": false,
     "tip_voice_filename": null,
@@ -213,8 +213,8 @@
     ],
     "allies": null,
     "hex_coords": [
-      1,
-      0
+      2,
+      -1
     ],
     "is_test": false,
     "tip_voice_filename": null,
@@ -306,8 +306,8 @@
     ],
     "allies": null,
     "hex_coords": [
-      2,
-      0
+      3,
+      -2
     ],
     "is_test": false,
     "tip_voice_filename": null,
@@ -402,7 +402,7 @@
     ],
     "allies": null,
     "hex_coords": [
-      3,
+      2,
       0
     ],
     "is_test": false,
@@ -611,7 +611,7 @@
     "allies": null,
     "hex_coords": [
       1,
-      1
+      0
     ],
     "is_test": false,
     "tip_voice_filename": null,
@@ -831,7 +831,7 @@
     ],
     "allies": null,
     "hex_coords": [
-      5,
+      3,
       0
     ],
     "is_test": false,
@@ -4458,8 +4458,8 @@
     ],
     "allies": null,
     "hex_coords": [
-      2,
-      -1
+      1,
+      1
     ],
     "is_test": false,
     "tip_voice_filename": null,
@@ -4616,8 +4616,8 @@
     ],
     "allies": null,
     "hex_coords": [
-      3,
-      -2
+      5,
+      0
     ],
     "is_test": false,
     "tip_voice_filename": null,
