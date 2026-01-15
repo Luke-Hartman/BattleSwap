@@ -24,7 +24,7 @@ class SpellComponent:
     effects: List[Effect]
     """The effects that will be triggered when this spell is cast."""
     
-    radius: float
+    radius: Optional[float]
     """The radius of the spell effect area."""
     
     ready_to_trigger: Optional[Callable[[int], bool]]
@@ -37,7 +37,7 @@ class SpellComponent:
         spell_type: SpellType, 
         team: int, 
         effects: List[Effect], 
-        radius: float,
+        radius: Optional[float] = None,
         ready_to_trigger: Optional[Callable[[int], bool]] = None
     ):
         self.spell_type = spell_type

@@ -748,7 +748,6 @@ class GameConstants(BaseModel):
 
     # Summon Lich Spell
     SPELL_SUMMON_LICH_POINTS: int
-    SPELL_SUMMON_LICH_RADIUS: float
     SPELL_SUMMON_LICH_HP_THRESHOLD: float
 
     # Explosion Visual Scaling

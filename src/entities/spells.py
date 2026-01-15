@@ -465,9 +465,9 @@ def create_summon_lich_spell(
 ) -> int:
     """Create a Summon Lich spell entity.
     
-    This spell monitors an area for corpses. When enough corpse HP has accumulated
-    in the area, a Skeleton Lich is summoned at the spell's location. The corpses are
-    not removed when counting.
+    This spell monitors the entire battlefield for corpses. When enough corpse HP has
+    accumulated across the battlefield, a Skeleton Lich is summoned at the spell's
+    location. The corpses are not removed when counting.
     
     Args:
         x: X coordinate to place the spell at
@@ -488,14 +488,11 @@ def create_summon_lich_spell(
     from effects import PlaySound, SoundEffect
     
     def check_corpse_threshold(spell_ent: int) -> bool:
-        """Check if enough corpse HP is present in the area to summon the lich."""
-        import math
-        
-        spell_pos = esper.component_for_entity(spell_ent, Position)
+        """Check if enough corpse HP is present across the battlefield to summon the lich."""
         total_corpse_hp = 0.0
         
-        # Sum up HP of all corpses in the area
-        for corpse_ent, (corpse_state, corpse_pos, health) in esper.get_components(UnitState, Position, Health):
+        # Sum up HP of all corpses on the battlefield
+        for corpse_ent, (corpse_state, health) in esper.get_components(UnitState, Health):
             # Skip if not a corpse
             if corpse_state.state != State.DEAD:
                 continue
@@ -504,13 +501,7 @@ def create_summon_lich_spell(
             if esper.has_component(corpse_ent, UnusableCorpse):
                 continue
             
-            # Check if corpse is within radius
-            dx = corpse_pos.x - spell_pos.x
-            dy = corpse_pos.y - spell_pos.y
-            distance = math.sqrt(dx * dx + dy * dy)
-            
-            if distance <= gc.SPELL_SUMMON_LICH_RADIUS:
-                total_corpse_hp += health.maximum
+            total_corpse_hp += health.maximum
         
         # Return True if we've reached the threshold
         return total_corpse_hp >= gc.SPELL_SUMMON_LICH_HP_THRESHOLD
@@ -534,7 +525,7 @@ def create_summon_lich_spell(
             summon_lich_effect,
             PlaySound(SoundEffect(filename="skeleton_lich_ability.wav", volume=0.4)),
         ],
-        radius=gc.SPELL_SUMMON_LICH_RADIUS,
+        radius=None,
         ready_to_trigger=check_corpse_threshold
     ))
     

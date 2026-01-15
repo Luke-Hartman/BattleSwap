@@ -478,13 +478,14 @@ class RenderingProcessor(esper.Processor):
                 circle_color = (*circle_color[:3], int(circle_color[3] * transparency.alpha / 255))
                 
             # Draw spell circle
-            self._draw_circle(
-                center_x=pos.x,
-                center_y=pos.y,
-                radius=spell_component.radius,
-                fill_color=None,
-                outline_color=circle_color
-            )
+            if spell_component.radius is not None:
+                self._draw_circle(
+                    center_x=pos.x,
+                    center_y=pos.y,
+                    radius=spell_component.radius,
+                    fill_color=None,
+                    outline_color=circle_color
+                )
             
             # Draw spell handle (spell icon)
             screen_pos = self.camera.world_to_screen(pos.x, pos.y)

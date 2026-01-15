@@ -90,7 +90,7 @@ class SpellCard(BaseCard):
         elif spell_type == SpellType.SUMMON_LICH:
             return SpellData(
                 name="Summon Lich",
-                description=f"Summons a <a href='{GlossaryEntryType.UPGRADE.value}'>Basic tier</a> <a href='{UnitType.SKELETON_LICH.value}'>Skeleton Lich</a> once {format_number(gc.SPELL_SUMMON_LICH_HP_THRESHOLD)} HP worth of <a href='{GlossaryEntryType.UNUSABLE_CORPSE.value}'>Usable Corpses</a> have died in an <a href='{GlossaryEntryType.AREA_OF_EFFECT.value}'>Area of Effect</a> of {format_number(gc.SPELL_SUMMON_LICH_RADIUS)}. Corpses are not removed when counted."
+                description=f"Summons a <a href='{GlossaryEntryType.UPGRADE.value}'>Basic tier</a> <a href='{UnitType.SKELETON_LICH.value}'>Skeleton Lich</a> once {format_number(gc.SPELL_SUMMON_LICH_HP_THRESHOLD)} HP worth of <a href='{GlossaryEntryType.UNUSABLE_CORPSE.value}'>Usable Corpses</a> are available anywhere on the battlefield. Corpses are not removed when counted."
             )
         else:
             raise ValueError(f"Unknown spell type: {spell_type}")
