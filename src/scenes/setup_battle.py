@@ -35,7 +35,7 @@ from auto_battle import BattleOutcome, simulate_battle
 import upgrade_hexes
 from voice import play_intro
 from world_map_view import BorderState, FillState, HexState, WorldMapView, hex_lifecycle_to_fill_state
-from scene_utils import draw_grid, get_center_line, get_placement_pos, get_hovered_unit, get_unit_placements, get_spell_placements, get_legal_placement_area, get_legal_spell_placement_area, has_unsaved_changes, mouse_over_ui, calculate_group_placement_positions, get_spell_placement_pos, clip_to_polygon
+from scene_utils import draw_grid, get_center_line, get_placement_pos, get_hovered_unit, get_hovered_item_icon, get_unit_placements, get_spell_placements, get_legal_placement_area, get_legal_spell_placement_area, has_unsaved_changes, mouse_over_ui, calculate_group_placement_positions, get_spell_placement_pos, clip_to_polygon
 from ui_components.progress_panel import ProgressPanel
 from ui_components.corruption_power_editor import CorruptionPowerEditorDialog
 from ui_components.upgrade_window import UpgradeWindow
@@ -119,6 +119,10 @@ class SetupBattleScene(Scene):
         self.is_drag_selecting = False
         self.drag_start_pos: Optional[Tuple[int, int]] = None
         self.drag_end_pos: Optional[Tuple[int, int]] = None
+
+        # Hovered item icon tracking
+        self.hovered_item_icon: Optional[Tuple[int, ItemType, int]] = None
+        self.last_hovered_item_type: Optional[ItemType] = None
         
         # Multi-entity pickup state (like single entity pickup but for groups)
         self.selected_group_partial_units: List[int] = []  # List of partial unit entity IDs
@@ -529,6 +533,80 @@ class SetupBattleScene(Scene):
         # Update progress panel if it exists
         if self.progress_panel is not None:
             self.progress_panel.update_battle(self.battle)
+
+    def remove_item_from_unit(self, unit_id: int, item_type: ItemType, item_index: int) -> None:
+        """Remove an item from a specific unit."""
+        if not esper.has_component(unit_id, ItemComponent):
+            return
+        item_component = esper.component_for_entity(unit_id, ItemComponent)
+        if not item_component.items:
+            return
+        if item_index >= len(item_component.items) or item_component.items[item_index] != item_type:
+            if item_type in item_component.items:
+                item_index = item_component.items.index(item_type)
+            else:
+                return
+
+        current_items = item_component.items.copy()
+        current_items.pop(item_index)
+
+        pos = esper.component_for_entity(unit_id, Position)
+        unit_type_comp = esper.component_for_entity(unit_id, UnitTypeComponent)
+        team = esper.component_for_entity(unit_id, Team)
+
+        self.world_map_view.remove_unit(self.battle_id, unit_id, play_sound=False)
+        self.world_map_view.add_unit(
+            self.battle_id,
+            unit_type_comp.type,
+            (pos.x, pos.y),
+            team.type,
+            items=current_items,
+            play_sound=False,
+        )
+
+        self._remove_can_have_item_from_units()
+        if self._selected_item_type is not None:
+            self._add_can_have_item_to_units()
+
+        if not self.sandbox_mode:
+            self.barracks.add_item(item_type)
+
+        emit_event(PLAY_SOUND, event=PlaySoundEvent(
+            filename="ui_click.wav",
+            volume=0.5,
+        ))
+
+        if self.progress_panel is not None:
+            self.progress_panel.update_battle(self.battle)
+
+    def _remove_hover_item_card(self, item_type: ItemType) -> None:
+        """Remove the hover-created item card if it isn't selected."""
+        if selected_unit_manager.selected_item_type == item_type:
+            return
+        card = selected_unit_manager._find_existing_item_card(item_type)
+        if card is None:
+            return
+        card.kill()
+        if card in selected_unit_manager.cards:
+            selected_unit_manager.cards.remove(card)
+
+    def _update_hovered_item_icon(self) -> None:
+        """Update the hovered item icon and associated card."""
+        hovered_item_icon = get_hovered_item_icon(self.camera)
+        if hovered_item_icon is None:
+            if self.last_hovered_item_type is not None:
+                self._remove_hover_item_card(self.last_hovered_item_type)
+            self.hovered_item_icon = None
+            self.last_hovered_item_type = None
+            return
+
+        _, item_type, _ = hovered_item_icon
+        if item_type != self.last_hovered_item_type:
+            if self.last_hovered_item_type is not None:
+                self._remove_hover_item_card(self.last_hovered_item_type)
+            selected_unit_manager._create_or_focus_item_card(item_type)
+            self.last_hovered_item_type = item_type
+        self.hovered_item_icon = hovered_item_icon
     
     def try_place_spell(self, mouse_pos: Tuple[int, int]) -> None:
         """Try to place the selected spell at the preview position."""
@@ -1348,6 +1426,7 @@ class SetupBattleScene(Scene):
                         self.drag_end_pos = event.pos
                         
                 elif event.button == pygame.BUTTON_RIGHT:
+                    self._update_hovered_item_icon()
                     # If we have a group picked up, cancel the pickup
                     if self.selected_group_partial_units or self.selected_group_partial_spells:
                         self.cancel_group_pickup()
@@ -1372,6 +1451,14 @@ class SetupBattleScene(Scene):
                             filename="ui_click.wav",
                             volume=0.5,
                         ))
+                    # If right clicking on an item icon, remove the item
+                    elif self.hovered_item_icon is not None:
+                        hovered_unit_id, item_type, item_index = self.hovered_item_icon
+                        if esper.has_component(hovered_unit_id, Team):
+                            unit_team = esper.component_for_entity(hovered_unit_id, Team).type
+                            if unit_team == TeamType.TEAM1:
+                                self.remove_item_from_unit(hovered_unit_id, item_type, item_index)
+                                self._update_hovered_item_icon()
                     # If right clicking on a unit, remove it
                     elif hovered_unit is not None and (self.sandbox_mode or hovered_team == TeamType.TEAM1):
                         self.remove_unit(hovered_unit)
@@ -1388,6 +1475,7 @@ class SetupBattleScene(Scene):
                 if self.is_drag_selecting:
                     # Update drag selection rectangle
                     self.drag_end_pos = event.pos
+                self._update_hovered_item_icon()
 
 
 

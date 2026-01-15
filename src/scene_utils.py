@@ -11,6 +11,8 @@ from battles import Battle
 from camera import Camera
 from components.placing import Placing
 from components.position import Position
+from components.health import Health
+from components.hitbox import Hitbox
 from components.sprite_sheet import SpriteSheet
 from components.unit_type import UnitType, UnitTypeComponent
 from components.item import ItemComponent
@@ -18,6 +20,7 @@ from components.spell import SpellComponent
 from components.spell_type import SpellType
 from components.team import Team, TeamType
 from components.item import ItemType
+from entities.items import item_icon_surfaces
 from game_constants import gc
 from hex_grid import get_hex_vertices, axial_to_world
 from shapely.ops import nearest_points
@@ -192,6 +195,93 @@ def get_hovered_spell(camera: Camera) -> Optional[int]:
                 candidate_spell_id = ent
                 
     return candidate_spell_id
+
+
+def _calculate_health_bar_position(
+    pos: Position,
+    hitbox: Hitbox,
+    camera: Camera,
+) -> tuple[float, float, float, float]:
+    """Calculate the position and dimensions of the health bar."""
+    bar_width = 20 * camera.scale
+    bar_height = 5 * camera.scale
+    bar_y_offset = 8 * camera.scale
+
+    screen_pos = camera.world_to_screen(pos.x, pos.y)
+    bar_x = screen_pos[0] - bar_width // 2
+    bar_y = screen_pos[1] - (hitbox.height * camera.scale) / 2 - bar_y_offset - bar_height
+    return bar_x, bar_y, bar_width, bar_height
+
+
+def get_item_icon_rects(
+    pos: Position,
+    item_component: ItemComponent,
+    hitbox: Hitbox,
+    health: Health,
+    camera: Camera,
+) -> List[Tuple[pygame.Rect, ItemType, int]]:
+    """Return screen-space rects for item icons above a unit."""
+    if health.current == 0 or not item_component.items:
+        return []
+
+    screen_pos = camera.world_to_screen(pos.x, pos.y)
+    bar_x, bar_y, _, _ = _calculate_health_bar_position(pos, hitbox, camera)
+
+    indicator_size = 16 * camera.scale
+    indicator_spacing = 3 * camera.scale
+    total_width = len(item_component.items) * (indicator_size + indicator_spacing) - indicator_spacing
+    start_x = screen_pos[0] - total_width // 2
+
+    health_bar_displayed = health.current < health.maximum
+    if health_bar_displayed:
+        start_y = bar_y - indicator_size - 3 * camera.scale
+    else:
+        start_y = bar_y
+
+    icon_rects: List[Tuple[pygame.Rect, ItemType, int]] = []
+    for index, item_type in enumerate(item_component.items):
+        x = start_x + index * (indicator_size + indicator_spacing)
+        y = start_y
+        icon_surface = item_icon_surfaces[item_type]
+        icon_width, icon_height = icon_surface.get_size()
+        max_dimension = max(icon_width, icon_height)
+        scale_factor = indicator_size / max_dimension
+        scaled_width = int(icon_width * scale_factor)
+        scaled_height = int(icon_height * scale_factor)
+        icon_x = x + (indicator_size - scaled_width) // 2
+        icon_y = y + (indicator_size - scaled_height) // 2
+        icon_rects.append(
+            (pygame.Rect(int(icon_x), int(icon_y), scaled_width, scaled_height), item_type, index)
+        )
+    return icon_rects
+
+
+def get_hovered_item_icon(camera: Camera) -> Optional[Tuple[int, ItemType, int]]:
+    """Return the unit and item info for the hovered item icon."""
+    mouse_pos = pygame.mouse.get_pos()
+    candidate_item = None
+    highest_y = -float("inf")
+    for ent, (pos, hitbox, health, item_component) in esper.get_components(
+        Position,
+        Hitbox,
+        Health,
+        ItemComponent,
+    ):
+        if esper.has_component(ent, Placing):
+            continue
+        for icon_rect, item_type, index in get_item_icon_rects(
+            pos=pos,
+            item_component=item_component,
+            hitbox=hitbox,
+            health=health,
+            camera=camera,
+        ):
+            if icon_rect.collidepoint(mouse_pos):
+                if pos.y > highest_y:
+                    highest_y = pos.y
+                    candidate_item = (ent, item_type, index)
+                break
+    return candidate_item
 
 def get_placement_pos(
     mouse_pos: Tuple[int, int],
